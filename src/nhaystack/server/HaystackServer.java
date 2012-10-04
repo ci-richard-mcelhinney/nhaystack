@@ -46,7 +46,7 @@ public class HaystackServer extends HServer
     public HaystackServer(BNHaystackService service)
     {
         this.service = service;
-        this.historyMgr = new HistoryManager(service);
+        this.historyMgr = new ImportedHistoryManager(service);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ public class HaystackServer extends HServer
         else if (comp instanceof BControlPoint)
         {
             BControlPoint point = (BControlPoint) comp;
-            BHistoryConfig cfg = historyMgr.lookupHistoryConfig(point);
+            BHistoryConfig cfg = lookupHistoryConfig(point);
             return service.getHistoryDb().getHistory(cfg.getId());
         }
         else
@@ -318,7 +318,7 @@ public class HaystackServer extends HServer
             // time zone
             if (!tags.has("tz"))
             {
-                BHistoryConfig cfg = historyMgr.lookupHistoryConfig(point);
+                BHistoryConfig cfg = lookupHistoryConfig(point);
                 if (cfg != null)
                 {
                     HTimeZone tz = makeTimeZone(cfg.getTimeZone());
@@ -330,7 +330,7 @@ public class HaystackServer extends HServer
                     // add hisInterpolate 
                     if (!tags.has("hisInterpolate"))
                     {
-                        BHistoryExt historyExt = HistoryManager.lookupHistoryExt(point);
+                        BHistoryExt historyExt = lookupHistoryExt(point);
                         if (historyExt != null && (historyExt instanceof BCovHistoryExt))
                             hdb.add("hisInterpolate", "cov");
                     }
@@ -525,6 +525,32 @@ public class HaystackServer extends HServer
 // misc
 ////////////////////////////////////////////////////////////////
 
+    /**
+      * Try to find either a local or imported history for the point
+      */
+    private BHistoryConfig lookupHistoryConfig(BControlPoint point)
+    {
+        // look for local history
+        BHistoryExt historyExt = lookupHistoryExt(point);
+        if (historyExt != null) return historyExt.getHistoryConfig();
+
+        // look for history that goes with a proxied point
+        return historyMgr.lookupImportedHistory(point);
+    }
+
+    /**
+      * Check if there is a history extension.  This will succeed
+      * if the point lives in this station, rather than being proxied.
+      */
+    private static BHistoryExt lookupHistoryExt(BControlPoint point)
+    {
+        Cursor cursor = point.getProperties();
+        if (cursor.next(BHistoryExt.class))
+            return (BHistoryExt) cursor.get();
+
+        return null;
+    }
+
     private static BUnit findUnits(BFacets facets)
     {
         if (facets == null) 
@@ -660,6 +686,6 @@ public class HaystackServer extends HServer
     private static final int STRING_KIND  =  3;
 
     private final BNHaystackService service;
-    private final HistoryManager historyMgr;
+    private final ImportedHistoryManager historyMgr;
 }
 
