@@ -1,0 +1,17 @@
+<!--
+  Copyright (c) 2012, J2 Innovations
+  Licensed under the Academic Free License version 3.0
+ 
+  History:
+    07 Nov 2011  Richard McElhinney  Creation
+    28 Sep 2012  Mike Jarmy          Ported from axhaystack
+-->
+
+<types>
+
+    <type name="Tags" class="nhaystack.BTags"/>
+
+    <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
+    <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
+
+</types>

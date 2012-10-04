@@ -1,0 +1,18 @@
+Contributors:
+
+Jason Briggs        jasonb@j2inn.com
+Mike Jarmy          mjarmy@gmail.com
+Richard McElhinney  rmcelhinney@airmaster.com.au
+
+-----------------------------------------------------------------------------
+
+Significant portions of this project have been adapted from the axhaystack 
+project, which is licensed under AFL 3.0, and hosted at: 
+
+    https://bitbucket.org/richiemac_77/axhaystack/
+
+This project makes use of the haystack-java project, which is licensed 
+under AFL 3.0, and hosted at: 
+
+    https://bitbucket.org/brianfrank/haystack-java
+

@@ -1,0 +1,41 @@
+<!--
+  Copyright (c) 2012, J2 Innovations
+  Licensed under the Academic Free License version 3.0
+ 
+  History:
+    07 Nov 2011  Richard McElhinney  Creation
+    28 Sep 2012  Mike Jarmy          Ported from axhaystack
+-->
+
+<module
+    name = "nhaystack"
+    bajaVersion="0"
+    preferredSymbol = "nh"
+    description = "Niagara Haystack"
+    vendor = "Project Haystack"
+>
+
+    <!-- Dependencies -->
+    <dependency name="alarm"     vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="baja"      vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="bajaui"    vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="bql"       vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="control"   vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="driver"    vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="file"      vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="gx"        vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="history"   vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="net"       vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="web"       vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="workbench" vendor="Tridium" vendorVersion="3.4"/>
+
+    <!-- Packages -->
+    <package name="nhaystack"            doc="true"/>
+    <package name="nhaystack.collection" doc="true"/>
+    <package name="nhaystack.server"     doc="true"/>
+    <package name="nhaystack.util"       doc="true"/>
+
+    <!-- Resources -->
+    <resources name="nhaystack/icons/*.*" />
+
+</module>
