@@ -9,13 +9,9 @@
 package nhaystack.server;
 
 import java.util.*;
-
 import javax.baja.sys.*;
 import javax.baja.util.*;
-
 import haystack.*;
-import haystack.io.*;
-import haystack.server.*;
 
 /**
   * NHWatch manages leased components

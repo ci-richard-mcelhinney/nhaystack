@@ -8,15 +8,9 @@
 package nhaystack.server;
 
 import java.util.*;
-
 import javax.baja.sys.*;
-import javax.baja.util.*;
-
 import haystack.*;
-import haystack.io.*;
-
 import nhaystack.*;
-import nhaystack.util.*;
 
 /**
   * NHServerIterator wraps an Iterator of BComponents,

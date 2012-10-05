@@ -11,11 +11,9 @@ package nhaystack.server;
 import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-
-import haystack.server.*;
-
 import javax.baja.sys.*;
 import javax.baja.web.*;
+import haystack.server.*;
 
 /**
   * BNHaystackServlet relays GET and POST requests 

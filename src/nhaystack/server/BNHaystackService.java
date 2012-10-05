@@ -8,17 +8,9 @@
 //
 package nhaystack.server;
 
-import java.io.*;
-import javax.servlet.http.*;
-
-import haystack.server.*;
-
-import javax.baja.history.*;
 import javax.baja.history.db.*;
 import javax.baja.naming.*;
-import javax.baja.space.*;
 import javax.baja.sys.*;
-import javax.baja.web.*;
 
 /**
   * BNHaystackService makes an NHServer available.  

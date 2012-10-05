@@ -8,11 +8,8 @@
 package nhaystack.collection;
 
 import java.util.*;
-
 import javax.baja.history.*;
 import javax.baja.history.db.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
 
 /**
   * HistoryDbIterator iterates through all

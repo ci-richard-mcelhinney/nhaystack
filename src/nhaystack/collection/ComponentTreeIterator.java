@@ -8,7 +8,6 @@
 package nhaystack.collection;
 
 import java.util.*;
-
 import javax.baja.sys.*;
 import javax.baja.util.*;
 

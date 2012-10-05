@@ -8,16 +8,10 @@
 //
 package nhaystack.server;
 
-import java.io.*;
 import java.util.*;
-import javax.servlet.http.*;
-
 import javax.baja.collection.*;
 import javax.baja.control.*;
-import javax.baja.control.ext.*;
-import javax.baja.driver.*;
 import javax.baja.driver.history.*;
-import javax.baja.driver.point.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
@@ -27,12 +21,9 @@ import javax.baja.sys.*;
 import javax.baja.timezone.*;
 import javax.baja.units.*;
 import javax.baja.util.*;
-import javax.baja.web.*;
 
 import haystack.*;
-import haystack.io.*;
 import haystack.server.*;
-
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.util.*;

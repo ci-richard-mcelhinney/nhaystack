@@ -9,7 +9,6 @@ package nhaystack.util;
 
 import java.io.*;
 import java.math.*;
-
 import javax.baja.sys.*;
 
 /**

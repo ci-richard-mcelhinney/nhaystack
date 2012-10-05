@@ -9,15 +9,6 @@ package nhaystack.collection;
 
 import java.util.*;
 
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import haystack.*;
-import haystack.io.*;
-
-import nhaystack.*;
-import nhaystack.util.*;
-
 /**
   * CompositeIterator iterates through an array of Iterators.
   */
