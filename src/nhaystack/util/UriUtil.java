@@ -20,10 +20,13 @@ public abstract class UriUtil
     // Hacked-up version of code found on StackOverflow at
     // http://stackoverflow.com/a/4265472
     // 
-    // This encoding substitutes '-' and '_' for '+' and '/',
-    // as per RFC 3548, but uses use '.' as padding instead 
-    // of '='.  This looks ugly but we have run out of 
-    // HRef-friendly special chars to use.
+    // This encoding uses '-' and '_' instead of '+' and '/',
+    // as per RFC 3548, and uses use '.' as padding instead 
+    // of '=' (this is the non-standard part).
+    //
+    // This approach plays well with HRef, because HRef has four 
+    // special chars for us to use: ":", ".", "-", "_".  
+    // We are using ":" in NHId, and using up the other three here.
     //
     // It would be simpler to just use BigInteger and encode
     // to base-36, but sadly J2ME doesn't have BigInteger.

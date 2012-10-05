@@ -10,6 +10,7 @@ package nhaystack.server;
 
 import javax.baja.history.*;
 import javax.baja.sys.*;
+import javax.baja.util.*;
 import haystack.*;
 import nhaystack.util.*;
 
@@ -27,15 +28,12 @@ public class NHId
       */
     public static NHId make(HRef ref)
     {
-        int colon = ref.val.indexOf(":");
-        int dot = ref.val.indexOf(".");
-        if (colon == -1) return null;
-        if (dot == -1) return null;
-        if (colon > dot) return null;
+        String[] a = TextUtil.split(ref.val, ':');
+        if (a.length != 3) return null;
 
-        String stationName = ref.val.substring(0, colon);
-        String space       = ref.val.substring(colon+1, dot);
-        String handle      = ref.val.substring(dot+1);
+        String stationName = a[0];
+        String space       = a[1];
+        String handle      = a[2];
 
         if (!(space.equals("c") || space.equals("h")))
             return null;
@@ -62,7 +60,7 @@ public class NHId
             String handle = UriUtil.encodeToUri(hid.toString());
 
             return new NHId(
-                HRef.make(stationName + ":" + space + "." + handle),
+                HRef.make(stationName + ":" + space + ":" + handle),
                 stationName, space, handle);
         }
         // component space
@@ -73,7 +71,7 @@ public class NHId
             String handle = comp.getHandle().toString();
             
             return new NHId(
-                HRef.make(stationName + ":" + space + "." + handle),
+                HRef.make(stationName + ":" + space + ":" + handle),
                 stationName, space, handle);
         }
     }
