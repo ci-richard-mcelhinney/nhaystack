@@ -19,7 +19,7 @@ import javax.baja.web.*;
 
 /**
   * BNHaystackServlet relays GET and POST requests 
-  * to the HaystackServer that is made available 
+  * to the NHServer that is made available 
   * by the BNHaystackService.
   */
 public class BNHaystackServlet extends BWebServlet

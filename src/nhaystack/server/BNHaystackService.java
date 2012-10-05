@@ -21,18 +21,48 @@ import javax.baja.sys.*;
 import javax.baja.web.*;
 
 /**
-  * BNHaystackService makes a HaystackServer available.  
+  * BNHaystackService makes an NHServer available.  
   */
 public class BNHaystackService extends BAbstractService
 {
     /*-
     class BNHaystackService
     {
+        properties
+        {
+            leaseInterval: BRelTime
+                 -- The amount of time that objects in watches are leased.
+                default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
+        }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(3531946816)1.0$ @*/
-/* Generated Tue Oct 02 13:31:43 EDT 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(3604345781)1.0$ @*/
+/* Generated Fri Oct 05 09:25:05 EDT 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+
+////////////////////////////////////////////////////////////////
+// Property "leaseInterval"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>leaseInterval</code> property.
+   * The amount of time that objects in watches are leased.
+   * @see nhaystack.server.BNHaystackService#getLeaseInterval
+   * @see nhaystack.server.BNHaystackService#setLeaseInterval
+   */
+  public static final Property leaseInterval = newProperty(0, BRelTime.make(2 * BRelTime.MINUTE.getMillis()),null);
+  
+  /**
+   * Get the <code>leaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#leaseInterval
+   */
+  public BRelTime getLeaseInterval() { return (BRelTime)get(leaseInterval); }
+  
+  /**
+   * Set the <code>leaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#leaseInterval
+   */
+  public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -59,7 +89,7 @@ public class BNHaystackService extends BAbstractService
 // public
 ////////////////////////////////////////////////////////////////
 
-    public HaystackServer getHaystackServer() 
+    public NHServer getHaystackServer() 
     { 
         return server; 
     }
@@ -82,7 +112,7 @@ public class BNHaystackService extends BAbstractService
 
     private static final Type[] SERVICE_TYPES = new Type[] { TYPE };
 
-    private final HaystackServer server = new HaystackServer(this);
+    private final NHServer server = new NHServer(this);
 
     private BHistoryDatabase historyDb;    
 }

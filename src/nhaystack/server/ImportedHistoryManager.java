@@ -80,7 +80,7 @@ public class ImportedHistoryManager
         // we are sure the point is proxied.  now lets see if
         // there is a matching history
 
-        // Make an id that matches the ones from ensureLoaded()
+        // Make an id that matches the ones created in ensureLoaded()
         String proxyPointId = stationName + ";" + slotPath;
 
         // look up imported history
@@ -97,7 +97,7 @@ public class ImportedHistoryManager
 
     /**
       * Stash away all the imported histories.
-      * This only happens the once.
+      * This only happens once.
       */
     private void ensureLoaded()
     {
@@ -240,7 +240,7 @@ public class ImportedHistoryManager
 
     private final BNHaystackService service;
 
-    private Map mapPointToConfig = null;  // String -> BHistoryConfig
-    private Map mapHistoryToPoint = null; // BHistoryId -> String
+    private Map mapPointToConfig  = null; // proxyPointId -> BHistoryConfig
+    private Map mapHistoryToPoint = null; // BHistoryId   -> proxyPointId
 }
 

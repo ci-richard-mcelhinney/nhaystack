@@ -27,6 +27,7 @@ public abstract class UriUtil
     {
         try
         {
+            // base 36
             BigInteger big = new BigInteger(str.getBytes("UTF8"));
             return big.toString(36);
         }
@@ -41,7 +42,15 @@ public abstract class UriUtil
       */
     public static String decodeFromUri(String str)
     {
-        BigInteger big = new BigInteger(str, 36);
-        return new String(big.toByteArray());
+        try
+        {
+            // base 36
+            BigInteger big = new BigInteger(str, 36);
+            return new String(big.toByteArray(), "UTF8");
+        }
+        catch (Exception e)
+        {
+            throw new BajaRuntimeException(e);
+        }
     }
 }
