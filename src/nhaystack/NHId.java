@@ -6,7 +6,7 @@
 //   07 Nov 2011  Richard McElhinney  Creation
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
 //
-package nhaystack.server;
+package nhaystack;
 
 import javax.baja.history.*;
 import javax.baja.sys.*;
@@ -16,7 +16,7 @@ import nhaystack.util.*;
 
 /**
   * NHId uniquely identifies an object by its 
-  * station, space, and handle.  Every AX object
+  * station, space, and path.  Every AX object
   * that is represented as a haystack entity has a
   * unique NHId.
   */
@@ -33,12 +33,12 @@ public class NHId
 
         String stationName = a[0];
         String space       = a[1];
-        String handle      = a[2];
+        String path        = a[2];
 
         if (!(space.equals("c") || space.equals("h")))
             return null;
 
-        return new NHId(ref, stationName, space, handle);
+        return new NHId(ref, stationName, space, path);
     }
 
     /**
@@ -57,31 +57,31 @@ public class NHId
 
             String stationName = Sys.getStation().getStationName();
             String space  = "h";
-            String handle = UriUtil.encodeToUri(hid.toString());
+            String path = UriUtil.encodeToUri(hid.toString());
 
             return new NHId(
-                HRef.make(stationName + ":" + space + ":" + handle),
-                stationName, space, handle);
+                HRef.make(stationName + ":" + space + ":" + path),
+                stationName, space, path);
         }
         // component space
         else
         {
             String stationName = Sys.getStation().getStationName();
             String space  = "c";
-            String handle = comp.getHandle().toString();
+            String path = UriUtil.encodeToUri(comp.getSlotPath().getBody());
             
             return new NHId(
-                HRef.make(stationName + ":" + space + ":" + handle),
-                stationName, space, handle);
+                HRef.make(stationName + ":" + space + ":" + path),
+                stationName, space, path);
         }
     }
 
-    private NHId(HRef ref, String stationName, String space, String handle)
+    private NHId(HRef ref, String stationName, String space, String path)
     {
-        this.ref = ref;
+        this.ref         = ref;
         this.stationName = stationName;
-        this.space  = space;
-        this.handle = handle;
+        this.space       = space;
+        this.path        = path;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ public class NHId
 ////////////////////////////////////////////////////////////////
 
     /**
-      * The ref is always <code>stationName + ":" + space + "." + handle</code>.
+      * The ref is always <code>stationName + ":" + space + "." + path</code>.
       */
     public final HRef ref;
 
@@ -131,12 +131,9 @@ public class NHId
     public final String space; 
 
     /**
-      * For a ComponentSpace, the handle is BComponent.getHandle(),
-      * which in practice is always a hexadecimal String.
-      * <p>
-      * For a HistorySpace, the handle is a reversible, URI-friendly 
-      * encoding of the BHistoryId. BHistoryId is the closest thing 
-      * to a "handle" that histories have.
+      * For a ComponentSpace, the path is an encoding of the slotPath.
+      *
+      * For a HistorySpace, the path is an encoding of the historyId.
       */
-    public final String handle;
+    public final String path;
 }

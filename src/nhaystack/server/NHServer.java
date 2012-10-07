@@ -331,6 +331,9 @@ public class NHServer extends HServer
                     // add ax-specific tags
                     hdb.add("axHistoryId", cfg.getId().toString());
 
+                    hdb.add("axHistorySource", 
+                        TextUtil.replace(cfg.getSource().toString(), "\n", "\\n"));
+
                     // add hisInterpolate 
                     if (!tags.has("hisInterpolate"))
                     {
@@ -479,7 +482,8 @@ public class NHServer extends HServer
         // component space
         if (nid.space.equals("c"))
         {
-            BComponent comp = service.getComponentSpace().findByHandle(nid.handle);
+            SlotPath slotPath = new SlotPath(UriUtil.decodeFromUri(nid.path));
+            BComponent comp = (BComponent) BOrd.make(slotPath).resolve(service, null).get();
             if (comp == null) return null; // not found
             if (findTags(comp) == null) return null; // must be annotated
             return comp;
@@ -487,7 +491,7 @@ public class NHServer extends HServer
         // history space
         else if (nid.space.equals("h"))
         {
-            BHistoryId hid = BHistoryId.make(UriUtil.decodeFromUri(nid.handle));
+            BHistoryId hid = BHistoryId.make(UriUtil.decodeFromUri(nid.path));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();
