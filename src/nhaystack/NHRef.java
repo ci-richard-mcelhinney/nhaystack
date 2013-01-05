@@ -12,42 +12,45 @@ import javax.baja.history.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 import haystack.*;
-import nhaystack.util.*;
+import haystack.util.*;
 
 /**
-  * NHId uniquely identifies an object by its 
-  * station, space, and path.  Every AX object
+  * NHRef uniquely identifies an object by its 
+  * station, space, and handle.  Every AX object
   * that is represented as a haystack entity has a
-  * unique NHId.
+  * unique NHRef.
   */
-public class NHId
+public class NHRef
 {
     /**
-      * Make an ID from an HRef, or return null
-      * if the HRef could not be parsed.
+      * Make an ID from an HRef.
       */
-    public static NHId make(HRef ref)
+    public static NHRef make(HRef ref)
     {
-        String[] a = TextUtil.split(ref.val, ':');
-        if (a.length != 3) return null;
+        String val = ref.val;
 
-        String stationName = a[0];
-        String space       = a[1];
-        String path        = a[2];
+        int colon = val.indexOf(":");
+        int dot = val.indexOf(".");
+        if ((colon == -1) || (dot == -1) || (colon > dot))
+            throw new BajaRuntimeException("Could not parse HRef '" + ref + "'.");
+
+        String stationName = val.substring(0, colon);
+        String space       = val.substring(colon+1, dot);
+        String handle      = val.substring(dot+1);
 
         if (!(space.equals("c") || space.equals("h")))
-            return null;
+            throw new BajaRuntimeException("Could not parse HRef '" + ref + "'.");
 
-        return new NHId(ref, stationName, space, path);
+        return new NHRef(ref, stationName, space, handle);
     }
 
     /**
       * Make an ID from a BComponent.  If the BComponent
-      * is a BHistoryConfig, create a HistorySpace id.
+      * is a BHistoryConfig, create a HistorySpace ID.
       * Otherwise assume the BComponent is mounted, and 
-      * create a ComponentSpace id.
+      * create a BComponentSpace ID from the component's handle.
       */
-    public static NHId make(BComponent comp)
+    public static NHRef make(BComponent comp)
     {
         // history space
         if (comp instanceof BHistoryConfig)
@@ -57,31 +60,34 @@ public class NHId
 
             String stationName = Sys.getStation().getStationName();
             String space  = "h";
-            String path = UriUtil.encodeToUri(hid.toString());
+            String handle = Base64.URI.encodeUTF8(hid.toString());
 
-            return new NHId(
-                HRef.make(stationName + ":" + space + ":" + path),
-                stationName, space, path);
+            return new NHRef(stationName, space, handle);
         }
         // component space
         else
         {
             String stationName = Sys.getStation().getStationName();
             String space  = "c";
-            String path = UriUtil.encodeToUri(comp.getSlotPath().getBody());
+            String handle = Base64.URI.encodeUTF8(comp.getHandle().toString());
             
-            return new NHId(
-                HRef.make(stationName + ":" + space + ":" + path),
-                stationName, space, path);
+            return new NHRef(stationName, space, handle);
         }
     }
 
-    private NHId(HRef ref, String stationName, String space, String path)
+    private NHRef(HRef ref, String stationName, String space, String handle)
     {
         this.ref         = ref;
         this.stationName = stationName;
         this.space       = space;
-        this.path        = path;
+        this.handle      = handle;
+    }
+
+    private NHRef(String stationName, String space, String handle)
+    {
+        this(
+            HRef.make(stationName + ":" + space + "." + handle),
+            stationName, space, handle); 
     }
 
 ////////////////////////////////////////////////////////////////
@@ -96,8 +102,8 @@ public class NHId
     {
         if (this == obj) return true;
 
-        return (obj instanceof NHId) ?
-            ref.equals(((NHId) obj).ref) :
+        return (obj instanceof NHRef) ?
+            ref.equals(((NHRef) obj).ref) :
             false;
     }
 
@@ -113,7 +119,7 @@ public class NHId
 ////////////////////////////////////////////////////////////////
 
     /**
-      * The ref is always <code>stationName + ":" + space + "." + path</code>.
+      * The ref is always <code>stationName + ":" + space + "." + handle</code>.
       */
     public final HRef ref;
 
@@ -131,9 +137,10 @@ public class NHId
     public final String space; 
 
     /**
-      * For a ComponentSpace, the path is an encoding of the slotPath.
+      * For a ComponentSpace, the handle is an encoding of the 
+      * component's handle.
       *
-      * For a HistorySpace, the path is an encoding of the historyId.
+      * For a HistorySpace, the handle is an encoding of the historyId.
       */
-    public final String path;
+    public final String handle;
 }

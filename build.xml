@@ -34,7 +34,6 @@
     <package name="nhaystack"            doc="true"/>
     <package name="nhaystack.collection" doc="true"/>
     <package name="nhaystack.server"     doc="true"/>
-    <package name="nhaystack.util"       doc="true"/>
 
     <!-- Resources -->
     <resources name="nhaystack/icons/*.*" />

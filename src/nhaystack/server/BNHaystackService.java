@@ -25,12 +25,14 @@ public class BNHaystackService extends BAbstractService
             leaseInterval: BRelTime
                  -- The amount of time that objects in watches are leased.
                 default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
+            servlet: BNHaystackServlet
+                default{[ new BNHaystackServlet() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(3604345781)1.0$ @*/
-/* Generated Fri Oct 05 09:25:05 EDT 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(416957698)1.0$ @*/
+/* Generated Wed Dec 26 12:52:05 EST 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -57,6 +59,29 @@ public class BNHaystackService extends BAbstractService
   public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "servlet"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>servlet</code> property.
+   * @see nhaystack.server.BNHaystackService#getServlet
+   * @see nhaystack.server.BNHaystackService#setServlet
+   */
+  public static final Property servlet = newProperty(0, new BNHaystackServlet(),null);
+  
+  /**
+   * Get the <code>servlet</code> property.
+   * @see nhaystack.server.BNHaystackService#servlet
+   */
+  public BNHaystackServlet getServlet() { return (BNHaystackServlet)get(servlet); }
+  
+  /**
+   * Set the <code>servlet</code> property.
+   * @see nhaystack.server.BNHaystackService#servlet
+   */
+  public void setServlet(BNHaystackServlet v) { set(servlet,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -64,8 +89,6 @@ public class BNHaystackService extends BAbstractService
   public static final Type TYPE = Sys.loadType(BNHaystackService.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
-
-    public BNHaystackService() { }
 
 ////////////////////////////////////////////////////////////////
 // BIService

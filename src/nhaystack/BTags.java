@@ -39,7 +39,7 @@ public final class BTags
 
     private BTags(HDict dict) 
     { 
-        this.tags = dict;
+        this.dict = dict;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public final class BTags
 
     public int hashCode() 
     { 
-        return tags.hashCode(); 
+        return dict.hashCode(); 
     }
 
     public boolean equals(Object obj)
@@ -57,7 +57,7 @@ public final class BTags
 
         if (!(obj instanceof BTags)) return false;
         BTags that = (BTags) obj;
-        return (tags.equals(that.tags));
+        return (dict.equals(that.dict));
     }
 
 ////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ public final class BTags
       */
     public void encode(DataOutput encoder) throws IOException
     { 
-        encoder.writeUTF(tags.toZinc()); 
+        encoder.writeUTF(dict.toZinc()); 
     }
 
     /**
@@ -86,7 +86,7 @@ public final class BTags
       */
     public String encodeToString() throws IOException
     { 
-        return tags.toZinc(); 
+        return dict.toZinc(); 
     }
 
     /**
@@ -102,7 +102,7 @@ public final class BTags
 // Access
 ////////////////////////////////////////////////////////////////
 
-    public HDict getDict() { return tags; }
+    public HDict getDict() { return dict; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
@@ -114,5 +114,5 @@ public final class BTags
     public Type getType() { return TYPE; }
     public static final Type TYPE = Sys.loadType(BTags.class);
 
-    private final HDict tags;
+    private final HDict dict;
 }

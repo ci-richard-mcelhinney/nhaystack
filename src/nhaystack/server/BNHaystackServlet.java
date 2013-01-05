@@ -51,6 +51,7 @@ public class BNHaystackServlet extends BWebServlet
 
     public void doGet(WebOp op) throws IOException, ServletException
     {   
+System.out.println("BNHaystackServlet.doGet: " + op);
         servlet.doGet(
             new RequestWrapper(op.getRequest()),
             op.getResponse());
@@ -58,6 +59,7 @@ public class BNHaystackServlet extends BWebServlet
 
     public void doPost(WebOp op) throws IOException, ServletException
     {
+System.out.println("BNHaystackServlet.doPost: " + op);
         servlet.doPost(
             new RequestWrapper(op.getRequest()),
             op.getResponse());
@@ -95,11 +97,18 @@ public class BNHaystackServlet extends BWebServlet
     {
         public HServer db()
         {        
-            BNHaystackService service = (BNHaystackService)
-                Sys.getService(BNHaystackService.TYPE);
+            if (db == null)
+            {
+                // in practice this will be the parent BNHaystackService,
+                // but theoretically it doesn't have to be 
+                BNHaystackService service = (BNHaystackService)
+                    Sys.getService(BNHaystackService.TYPE);
 
-            return service.getHaystackServer();
+                db = service.getHaystackServer();
+            }
+            return db;
         }
+        private HServer db;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -109,6 +118,5 @@ public class BNHaystackServlet extends BWebServlet
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
 
-    private final NServlet servlet = new NServlet();
-
+    private final HServlet servlet = new NServlet();
 }

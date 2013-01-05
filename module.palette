@@ -12,7 +12,6 @@
 <p m="b=baja" t="b:UnrestrictedFolder">
 
   <p n="NHaystackService" t="nh:NHaystackService" m="nh=nhaystack"/>
-  <p n="NHaystackServlet" t="nh:NHaystackServlet" />
 
 </p>
 </bajaObjectGraph>

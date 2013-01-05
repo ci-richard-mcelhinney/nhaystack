@@ -38,7 +38,7 @@ public class NHServerIterator implements Iterator
       */
     public boolean hasNext()
     {
-        return nextComp != null;
+        return nextDict != null;
     }
 
     /**
@@ -47,9 +47,11 @@ public class NHServerIterator implements Iterator
       */
     public Object next()
     {
-        HDict dict = server.makeDict(nextComp);
+        if (nextDict == null) throw new IllegalStateException();
+
+        HDict result = nextDict;
         findNext();
-        return dict;
+        return result;
     }
 
     /**
@@ -66,15 +68,15 @@ public class NHServerIterator implements Iterator
 
     private void findNext()
     {
-        nextComp = null;
+        nextDict = null;
         while (iterator.hasNext())
         {
             BComponent comp = (BComponent) iterator.next();
 
-            BTags tags = server.findTags(comp);
-            if (tags != null)
+            HDict dict = server.makeDict(comp);
+            if (dict != null)
             {
-                nextComp = comp;
+                nextDict = dict;
                 return;
             }
         }
@@ -86,5 +88,5 @@ public class NHServerIterator implements Iterator
 
     private final NHServer server;
     private final Iterator iterator;
-    private BComponent nextComp;
+    private HDict nextDict;
 }

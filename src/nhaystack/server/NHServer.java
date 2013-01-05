@@ -24,9 +24,9 @@ import javax.baja.util.*;
 
 import haystack.*;
 import haystack.server.*;
+import haystack.util.*;
 import nhaystack.*;
 import nhaystack.collection.*;
-import nhaystack.util.*;
 
 /**
   * NHServer is responsible for serving up 
@@ -74,6 +74,10 @@ public class NHServer extends HServer
         return hd.toDict();
     }
 
+////////////////////////////////////////////////////////////////
+// Reads
+////////////////////////////////////////////////////////////////
+
     /**
       * Look up the HDict representation of a BComponent 
       * by its HRef id.
@@ -102,6 +106,89 @@ public class NHServer extends HServer
             this, new CompositeIterator(new Iterator[] { c, h }));
     }
 
+////////////////////////////////////////////////////////////////
+// Navigation
+////////////////////////////////////////////////////////////////
+
+  /**
+   * Return navigation children for given navId.
+   */
+  public HGrid nav(String navId)
+  {
+    return onNav(navId);
+  }
+
+  /**
+   * Return navigation tree children for given navId.
+   * The grid must define the "navId" column.
+   */
+  protected HGrid onNav(String navId)
+  {
+      // TODO
+      throw new UnsupportedOperationException();
+  }
+
+////////////////////////////////////////////////////////////////
+// Watches
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Open a new watch.
+      */
+    protected HWatch onWatchOpen(String dis)
+    {
+        NHWatch watch = new NHWatch(this, dis);
+        watches.put(watch.id(), watch);
+        return watch;
+    }
+
+    /**
+      * Return current watches
+      */
+    protected HWatch[] onWatches()
+    {
+        HWatch[] arr = new HWatch[watches.size()];
+        int n = 0;
+        Iterator itr = watches.values().iterator();
+        while (itr.hasNext())
+            arr[n++] = (HWatch) itr.next();
+        return arr;
+    }
+
+    /**
+      * Look up a watch by id
+      */
+    protected HWatch onWatch(String id)
+    {
+        return (HWatch) watches.get(id);
+    }
+
+////////////////////////////////////////////////////////////////
+// Point Writes
+////////////////////////////////////////////////////////////////
+
+  /**
+   * Implementation hook for pointWriteArray
+   */
+  protected HGrid onPointWriteArray(HDict rec)
+  {
+      // TODO
+      throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Implementation hook for pointWrite
+   */
+  protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur)
+  {
+      // TODO
+      throw new UnsupportedOperationException();
+  }
+
+////////////////////////////////////////////////////////////////
+// History
+////////////////////////////////////////////////////////////////
+
     /**
       * Read the history for the given BComponent.
       * The items wil be exclusive of start and inclusive of end time.
@@ -112,6 +199,106 @@ public class NHServer extends HServer
         if (history == null) return new HHisItem[0];
 
         return readFromHistory(history, range);
+    }
+
+    /**
+      * Write the history for the given BComponent
+      */
+    protected void onHisWrite(HDict rec, HHisItem[] items)
+    {
+//        BIHistory history = lookupHistory(rec.id());
+//        if (history == null) return;
+
+        // TODO
+        throw new UnsupportedOperationException();
+    }
+
+//////////////////////////////////////////////////////////////// 
+// public API 
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Create the haystack representation of an annotated BComponent,
+      * or return null if the component is not annotated.
+      *
+      * The HDict that is returned is a combination of the annotation
+      * tags, and an 'id' HRef tag that is created via NHref.make().
+      */
+    public HDict makeDict(BComponent comp)
+    {
+        BTags btags = findTags(comp);
+        if (btags == null) 
+            return null;
+
+        HDict tags = btags.getDict();
+        HDictBuilder hdb = new HDictBuilder();
+
+        // add existing tags
+        hdb.add(tags);
+
+        // add id
+        hdb.add("id", NHRef.make(comp).ref);
+        
+        // add space-specific tags
+        if (comp instanceof BHistoryConfig)
+            addHistoryTags((BHistoryConfig) comp, tags, hdb);
+        else
+            addComponentTags(comp, tags, hdb);
+
+        // done
+        return hdb.toDict();
+    }
+
+    /**
+      * Look up the a BComponent by its HRef id.
+      *
+      * Return null if the BComponent cannot be found,
+      * or if it is not haystack-annotated.
+      */
+    public BComponent lookupComponent(HRef id)
+    {
+        BComponent comp = doLookupById(id);
+
+        // there are so many ways for the component to 
+        // end up null that its easier to just trace 
+        // them all here in one spot.
+        if (comp == null)
+            LOG.trace("lookupByHRef failed for id " + id);
+
+        return comp;
+    }
+
+////////////////////////////////////////////////////////////////
+// private
+////////////////////////////////////////////////////////////////
+
+    private BIHistory lookupHistory(HRef id)
+    {
+        BComponent comp = lookupComponent(id);
+        if (comp == null)
+        {
+            LOG.error("lookup failed for '" + id + "'");
+            return null;
+        }
+
+        // history space
+        if (comp instanceof BHistoryConfig)
+        {
+            BHistoryConfig cfg = (BHistoryConfig) comp;
+            return service.getHistoryDb().getHistory(cfg.getId());
+        }
+        // component space
+        else if (comp instanceof BControlPoint)
+        {
+            BControlPoint point = (BControlPoint) comp;
+            BHistoryConfig cfg = lookupHistoryConfig(point);
+            return service.getHistoryDb().getHistory(cfg.getId());
+        }
+        else
+        {
+            LOG.error("cannot find history for for '" + id + "'");
+            return null;
+        }
     }
 
     /**
@@ -172,82 +359,6 @@ public class NHServer extends HServer
     }
 
     /**
-      * Write the history for the given BComponent
-      */
-    protected void onHisWrite(HDict rec, HHisItem[] items)
-    {
-//        BIHistory history = lookupHistory(rec.id());
-//        if (history == null) return;
-
-        // TODO
-        throw new UnsupportedOperationException();
-    }
-
-    private BIHistory lookupHistory(HRef id)
-    {
-        BComponent comp = lookupComponent(id);
-        if (comp == null)
-        {
-            LOG.error("lookup failed for '" + id + "'");
-            return null;
-        }
-
-        // history space
-        if (comp instanceof BHistoryConfig)
-        {
-            BHistoryConfig cfg = (BHistoryConfig) comp;
-            return service.getHistoryDb().getHistory(cfg.getId());
-        }
-        // component space
-        else if (comp instanceof BControlPoint)
-        {
-            BControlPoint point = (BControlPoint) comp;
-            BHistoryConfig cfg = lookupHistoryConfig(point);
-            return service.getHistoryDb().getHistory(cfg.getId());
-        }
-        else
-        {
-            LOG.error("cannot find history for for '" + id + "'");
-            return null;
-        }
-    }
-
-    /**
-      * Open a new watch.
-      */
-    protected HWatch onWatchOpen(String dis)
-    {
-        NHWatch watch = new NHWatch(this, dis);
-        watches.put(watch.id(), watch);
-        return watch;
-    }
-
-    /**
-      * Return current watches
-      */
-    protected HWatch[] onWatches()
-    {
-        HWatch[] arr = new HWatch[watches.size()];
-        int n = 0;
-        Iterator itr = watches.values().iterator();
-        while (itr.hasNext())
-            arr[n++] = (HWatch) itr.next();
-        return arr;
-    }
-
-    /**
-      * Look up a watch by id
-      */
-    protected HWatch onWatch(String id)
-    {
-        return (HWatch) watches.get(id);
-    }
-
-//////////////////////////////////////////////////////////////// 
-// API 
-////////////////////////////////////////////////////////////////
-
-    /**
       * Return the annotation BTags for the component, or null
       * if there are no tags.
       *
@@ -256,7 +367,7 @@ public class NHServer extends HServer
       *
       * TODO explain BHistoryImport.configOverrides
       */
-    public BTags findTags(BComponent comp)
+    private BTags findTags(BComponent comp)
     {
         // ignore tags on BHistoryImport.configOverrides -- they 
         // will show up automatically in the history space
@@ -272,39 +383,6 @@ public class NHServer extends HServer
         if (val == null) return null;
 
         return (val instanceof BTags) ? (BTags) val : null;
-    }
-
-    /**
-      * Create the haystack representation of an annotated BComponent,
-      * or return null if the component is not annotated.
-      *
-      * The HDict that is returned is a combination of the annotation
-      * tags, and an 'id' HRef tag that is created by a call to
-      * makeId().
-      */
-    public HDict makeDict(BComponent comp)
-    {
-        BTags btags = findTags(comp);
-        if (btags == null) 
-            return null;
-
-        HDict tags = btags.getDict();
-        HDictBuilder hdb = new HDictBuilder();
-
-        // add existing tags
-        hdb.add(tags);
-
-        // add id
-        hdb.add("id", NHId.make(comp).ref);
-        
-        // add space-specific tags
-        if (comp instanceof BHistoryConfig)
-            addHistoryTags((BHistoryConfig) comp, tags, hdb);
-        else
-            addComponentTags(comp, tags, hdb);
-
-        // done
-        return hdb.toDict();
     }
 
     private void addComponentTags(BComponent comp, HDict tags, HDictBuilder hdb)
@@ -412,7 +490,7 @@ public class NHServer extends HServer
       * add the 'kind' tag, along with an associated tags 
       * like 'enum' or 'units'
       */
-    protected void addPointKindTags(
+    private void addPointKindTags(
         int pointKind, 
         BFacets facets, 
         HDict tags, 
@@ -452,28 +530,9 @@ public class NHServer extends HServer
         }
     }
 
-    /**
-      * Look up the a BComponent by its HRef id.
-      *
-      * Return null if the BComponent cannot be found,
-      * or if it is not haystack-annotated.
-      */
-    public BComponent lookupComponent(HRef id)
-    {
-        BComponent comp = doLookupById(id);
-
-        // there are so many ways for the component to 
-        // end up null that its easier to just trace 
-        // them all here in one spot.
-        if (comp == null)
-            LOG.trace("lookupByHRef failed for id " + id);
-
-        return comp;
-    }
-
     private BComponent doLookupById(HRef id)
     {
-        NHId nid = NHId.make(id);
+        NHRef nid = NHRef.make(id);
 
         // make sure station matches
         if (!nid.stationName.equals(Sys.getStation().getStationName()))
@@ -482,8 +541,7 @@ public class NHServer extends HServer
         // component space
         if (nid.space.equals("c"))
         {
-            SlotPath slotPath = new SlotPath(UriUtil.decodeFromUri(nid.path));
-            BComponent comp = (BComponent) BOrd.make(slotPath).resolve(service, null).get();
+            BComponent comp = service.getComponentSpace().findByHandle(nid.handle);
             if (comp == null) return null; // not found
             if (findTags(comp) == null) return null; // must be annotated
             return comp;
@@ -491,7 +549,7 @@ public class NHServer extends HServer
         // history space
         else if (nid.space.equals("h"))
         {
-            BHistoryId hid = BHistoryId.make(UriUtil.decodeFromUri(nid.path));
+            BHistoryId hid = BHistoryId.make(Base64.URI.decodeUTF8(nid.handle));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();
@@ -504,10 +562,6 @@ public class NHServer extends HServer
             return null;
         }
     }
-
-////////////////////////////////////////////////////////////////
-// misc
-////////////////////////////////////////////////////////////////
 
     /**
       * Try to find either a local or imported history for the point

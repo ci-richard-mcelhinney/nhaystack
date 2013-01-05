@@ -82,7 +82,7 @@ public class NHWatch extends HWatch
             else
             {
                 // ignore attempt to subscribe to history
-                if (NHId.make(id).isHistorySpace()) continue;
+                if (NHRef.make(id).isHistorySpace()) continue;
 
                 // create subscription
                 comp.lease(LEASE_DEPTH, leaseInterval); 

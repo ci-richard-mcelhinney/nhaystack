@@ -1,0 +1,80 @@
+<!--
+  Copyright (c) 2012, J2 Innovations
+  Licensed under the Academic Free License version 3.0
+ 
+  History:
+    21 Dec 2012  Mike Jarmy  Creation
+-->
+
+<project default="test-sys" basedir=".">
+
+  <property environment="env"/>
+
+  <!--========== nuke ==========-->
+  <target name="nuke">
+    <delete dir="staging"/>    
+    <delete dir="jars"/>    
+  </target>
+  
+  <!--========== clean ==========-->
+  <target name="clean">
+    <delete dir="staging"/>    
+  </target>
+
+  <!--========== test-compile ==========-->
+  <target name="test-compile">  
+
+    <mkdir dir="staging"/>    
+    <javac 
+      srcdir="src"
+      destdir="staging"
+      debug="on"
+      includeantruntime="false" >
+
+      <compilerarg value="-Xlint:unchecked"/>
+
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="${env.JUNIT_JAR}" />
+      </classpath>
+
+    </javac>
+
+  </target>
+
+  <!--========== test-jar ==========-->
+  <target name="test-jar">
+    <mkdir dir="jars"/>    
+    <jar 
+      destfile="jars/nhaystack_test.jar" 
+      basedir="staging" />
+  </target>
+
+  <!--========== test-build ==========-->
+  <target name="test-build" depends="clean,test-compile,test-jar"/>
+
+  <!--======================================================================-->
+  <!--========== system tests ==============================================-->
+  <!--======================================================================-->
+
+  <!--========== test-sys-junit ==========-->
+  <target name="test-sys-junit">
+    <junit>
+
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+        <pathelement location="${env.JUNIT_JAR}" />
+      </classpath>
+
+      <formatter type="brief" usefile="false" />
+
+      <test name="nhaystack.util.TestSimpleStation" />
+
+    </junit>
+  </target>
+
+  <!--========== test-sys ==========-->
+  <target name="test-sys" depends="test-build,test-sys-junit"/>
+
+</project>
