@@ -6,7 +6,7 @@
     21 Dec 2012  Mike Jarmy  Creation
 -->
 
-<project default="test-sys" basedir=".">
+<project default="test" basedir=".">
 
   <property environment="env"/>
 
@@ -21,8 +21,8 @@
     <delete dir="staging"/>    
   </target>
 
-  <!--========== test-compile ==========-->
-  <target name="test-compile">  
+  <!--========== compile ==========-->
+  <target name="compile">  
 
     <mkdir dir="staging"/>    
     <javac 
@@ -30,51 +30,35 @@
       destdir="staging"
       debug="on"
       includeantruntime="false" >
-
       <compilerarg value="-Xlint:unchecked"/>
-
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
-        <pathelement location="${env.JUNIT_JAR}" />
       </classpath>
-
     </javac>
 
   </target>
 
-  <!--========== test-jar ==========-->
-  <target name="test-jar">
+  <!--========== jar ==========-->
+  <target name="jar">
     <mkdir dir="jars"/>    
     <jar 
       destfile="jars/nhaystack_test.jar" 
       basedir="staging" />
   </target>
 
-  <!--========== test-build ==========-->
-  <target name="test-build" depends="clean,test-compile,test-jar"/>
+  <!--========== make ==========-->
+  <target name="make" depends="clean,compile,jar"/>
 
-  <!--======================================================================-->
-  <!--========== system tests ==============================================-->
-  <!--======================================================================-->
+  <!--========== test ==========-->
+  <target name="test" depends="make">
 
-  <!--========== test-sys-junit ==========-->
-  <target name="test-sys-junit">
-    <junit>
-
+    <java classname="nhaystack.test.NTest">
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />
-        <pathelement location="${env.JUNIT_JAR}" />
       </classpath>
+    </java>
 
-      <formatter type="brief" usefile="false" />
-
-      <test name="nhaystack.util.TestSimpleStation" />
-
-    </junit>
-  </target>
-
-  <!--========== test-sys ==========-->
-  <target name="test-sys" depends="test-build,test-sys-junit"/>
+  </target> 
 
 </project>
