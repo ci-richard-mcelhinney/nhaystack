@@ -36,7 +36,7 @@ public class NHRef
 
         String stationName = val.substring(0, colon);
         String space       = val.substring(colon+1, dot);
-        String handle      = val.substring(dot+1);
+        String handle      = Base64.URI.decodeUTF8(val.substring(dot+1));
 
         if (!(space.equals("c") || space.equals("h")))
             throw new BajaRuntimeException("Could not parse HRef '" + ref + "'.");
@@ -94,7 +94,14 @@ public class NHRef
 // Object
 ////////////////////////////////////////////////////////////////
 
-    public String toString() { return ref.val; }
+    public String toString()
+    {
+        return "[NHRef " +
+            "ref:" + ref + ", " +
+            "stationName:" + stationName + ", " +
+            "space:" + space + ", " +
+            "handle:" + handle + "]";
+    }
 
     public int hashCode() { return ref.hashCode(); }
 

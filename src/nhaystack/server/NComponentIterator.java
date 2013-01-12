@@ -8,23 +8,29 @@
 package nhaystack.server;
 
 import java.util.*;
+import javax.baja.control.*;
+import javax.baja.history.*;
 import javax.baja.sys.*;
 import haystack.*;
 import nhaystack.*;
+import nhaystack.collection.*;
 
 /**
-  * NHServerIterator wraps an Iterator of BComponents,
-  * and return an HDict for each BComponent that has been 
+  * NComponentIterator wraps an Iterator of BComponents,
+  * and return an HDict for each BComponent that 
+  * is either of a given type, or has been 
   * properly annotated with a BTags instance.
   */
-public class NHServerIterator implements Iterator
+public class NComponentIterator implements Iterator
 {
-    public NHServerIterator(
+    public NComponentIterator(
         NHServer server, 
-        Iterator iterator)
+        Iterator iterator,
+        Type type)
     {
         this.server = server;
         this.iterator = iterator;
+        this.type = type;
         findNext();
     }
 
@@ -73,10 +79,13 @@ public class NHServerIterator implements Iterator
         {
             BComponent comp = (BComponent) iterator.next();
 
-            HDict dict = server.makeDict(comp);
-            if (dict != null)
+            // Return an HDict for each BComponent that 
+            // is either of a given type, or has been 
+            // properly annotated with a BTags instance.
+            if (comp.getType().is(type) ||
+                (server.findAnnotatedTags(comp) != null))
             {
-                nextDict = dict;
+                nextDict = server.makeDict(comp);
                 return;
             }
         }
@@ -88,5 +97,6 @@ public class NHServerIterator implements Iterator
 
     private final NHServer server;
     private final Iterator iterator;
+    private final Type type;
     private HDict nextDict;
 }

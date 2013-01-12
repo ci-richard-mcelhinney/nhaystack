@@ -46,6 +46,8 @@ public class NSimpleClientTest extends Test
 
     void verifyAuth() throws Exception
     {
+        System.out.println("NSimpleClientTest.verifyAuth");
+
         // get bad credentials
         try { HClient.open(URI, "baduser", "badpass").about(); fail(); } catch (CallNetworkException e) { verifyException(e); }
         try { HClient.open(URI, "admin",   "badpass").about(); fail(); } catch (CallNetworkException e) { verifyException(e); }
@@ -60,6 +62,7 @@ public class NSimpleClientTest extends Test
 
     void verifyAbout() throws Exception
     {
+        System.out.println("NSimpleClientTest.verifyAbout");
         HDict r = client.about();
         verifyEq(r.getStr("haystackVersion"), "2.0");
         verifyEq(r.getStr("productName"), "nhaystack");
@@ -72,9 +75,9 @@ public class NSimpleClientTest extends Test
 
     void verifyOps() throws Exception
     {
-System.out.println("NSimpleClientTest.verifyOps");
+        System.out.println("NSimpleClientTest.verifyOps");
+
         HGrid g = client.ops();
-g.dump();
 
         // verify required columns
         verify(g.col("name")  != null);
@@ -93,6 +96,8 @@ g.dump();
 
     void verifyFormats() throws Exception
     {
+        System.out.println("NSimpleClientTest.verifyFormats");
+
         HGrid g = client.formats();
 
         // verify required columns
@@ -111,89 +116,86 @@ g.dump();
 
     void verifyRead() throws Exception
     {
-System.out.println("NSimpleClientTest.verifyFormats");
+        System.out.println("NSimpleClientTest.verifyRead");
+
         HGrid grid = client.readAll("id");
-        grid.dump();
+        verifyEq(grid.numRows(), 5);
+
+        verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_simple:c.OTk~"));
+        verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_simple:c.MTA0"));
+        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+
+        HDict dict = client.readById(HRef.make("nhaystack_simple:c.OTk~"));
+        verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
+        verify(dict.has("foo"));
+        verify(dict.has("bar"));
+        verifyEq(dict.get("kind"), HStr.make("Number"));
+        verify(dict.has("his"));
+        verifyEq(dict.get("curStatus"), HStr.make("ok"));
+        verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave1"));
+        verifyEq(dict.get("units"), HStr.make("°F"));
+        verify(dict.has("point"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        double curVal = dict.getDouble("curVal");
+        verify(curVal >= 0.0 && curVal <= 100.0);
+        verifyEq(dict.get("axHistoryRef"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+
+        dict = client.readById(HRef.make("nhaystack_simple:c.MTA0"));
+        verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
+        verify(dict.missing("foo"));
+        verify(dict.missing("bar"));
+        verifyEq(dict.get("kind"), HStr.make("Number"));
+        verify(dict.missing("his"));
+        verifyEq(dict.get("curStatus"), HStr.make("ok"));
+        verify(dict.missing("hisInterpolate"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave2"));
+        verifyEq(dict.get("units"), HStr.make("psi"));
+        verify(dict.has("point"));
+        verify(dict.missing("tz"));
+        curVal = dict.getDouble("curVal");
+        verify(curVal >= 0.0 && curVal <= 100.0);
+        verify(dict.missing("axHistoryRef"));
+
+        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verify(dict.missing("kind"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/AuditHistory"));
+        verify(dict.missing("hisInterpolate"));
+        verify(dict.missing("units"));
+        verify(dict.missing("axPointRef"));
+
+        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verify(dict.missing("kind"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
+        verify(dict.missing("hisInterpolate"));
+        verify(dict.missing("units"));
+        verify(dict.missing("axPointRef"));
+
+        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verifyEq(dict.get("kind"), HStr.make("Number"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave1"));
+        verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
+        verifyEq(dict.get("units"), HStr.make("°F"));
+        verifyEq(dict.get("axPointRef"), HRef.make("nhaystack_simple:c.OTk~"));
     }
 
-//    void verifyRead() throws Exception
-//    {
-//        // read
-//        String disA = "Gaithersburg";
-//        String disB = "Carytown";
-//        HDict recA = client.read("site and dis==\"" + disA + "\"");
-//        HDict recB = client.read("site and dis==\"" + disB + "\"");
-//        verifyEq(recA.dis(), disA);
-//        verifyEq(client.read("badTagShouldBeThere", false), null);
-//        try { client.read("badTagShouldBeThere"); fail(); } catch(UnknownRecException e) { verifyException(e); }
-//
-//        // readAll
-//        HGrid grid = client.readAll("site");
-//        verifyGridContains(grid, "dis", disA);
-//        verifyGridContains(grid, "dis", disB);
-//        verifyGridContains(grid, "id", recA.id());
-//        verifyGridContains(grid, "id", recB.id());
-//
-//        // readAll limit
-//        verify(grid.numRows() > 2);
-//        verifyEq(client.readAll("site", 2).numRows(), 2);
-//
-//        // readById
-//        HDict rec = client.readById(recA.id());
-//        verifyEq(rec.dis(), disA);
-//        HRef badId = HRef.make("badBadId");
-//        verifyEq(client.readById(badId, false), null);
-//        try { client.readById(badId); fail(); } catch(UnknownRecException e) { verifyException(e); }
-//
-//        // readByIds
-//        grid = client.readByIds(new HRef[] { recA.id(), recB.id() });
-//        verifyEq(grid.numRows(), 2);
-//        verifyEq(grid.row(0).dis(), disA);
-//        verifyEq(grid.row(1).dis(), disB);
-//        grid = client.readByIds(new HRef[] { recA.id(), badId, recB.id() }, false);
-//        verifyEq(grid.numRows(), 3);
-//        verifyEq(grid.row(0).dis(), disA);
-//        verifyEq(grid.row(1).missing("id"), true);
-//        verifyEq(grid.row(2).dis(), disB);
-//        try { client.readByIds(new HRef[] { recA.id(), badId }); fail(); } catch(UnknownRecException e) { verifyException(e); }
-//    }
-//
-////////////////////////////////////////////////////////////////////////////
-//// Eval
-////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyEval() throws Exception
-//    {
-//        HGrid g = client.eval("today()");
-//        verifyEq(g.row(0).get("val"), HDate.today());
-//
-//        g = client.eval("readAll(ahu)");
-//        verify(g.numRows() > 0);
-//        verifyGridContains(g, "navName", "RTU-1");
-//
-//        HGrid[] grids = client.evalAll(new String[] { "today()", "[10, 20, 30]", "readAll(site)"});
-//        verifyEq(grids.length, 3);
-//        g = grids[0];
-//        verifyEq(g.numRows(), 1);
-//        verifyEq(g.row(0).get("val"), HDate.today());
-//        g = grids[1];
-//        verifyEq(g.numRows(), 3);
-//        verifyEq(g.row(0).get("val"), HNum.make(10));
-//        verifyEq(g.row(1).get("val"), HNum.make(20));
-//        verifyEq(g.row(2).get("val"), HNum.make(30));
-//        g = grids[2];
-//        verify(g.numRows() > 2);
-//        verifyGridContains(g, "dis", "Carytown");
-//
-//        grids = client.evalAll(new String[] { "today()", "readById(@badBadBadId)"}, false);
-//        // for (int i=0; i<grids.length; ++i) grids[i].dump();
-//        verifyEq(grids.length, 2);
-//        verifyEq(grids[0].isErr(), false);
-//        verifyEq(grids[0].row(0).get("val"), HDate.today());
-//        verifyEq(grids[1].isErr(), true);
-//        try { client.evalAll(new String[] { "today()", "readById(@badBadBadId)"}); fail(); } catch (CallErrException e) { verifyException(e); }
-//    }
-//
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
 ////////////////////////////////////////////////////////////////////////////

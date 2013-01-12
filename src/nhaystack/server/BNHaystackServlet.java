@@ -51,7 +51,6 @@ public class BNHaystackServlet extends BWebServlet
 
     public void doGet(WebOp op) throws IOException, ServletException
     {   
-System.out.println("BNHaystackServlet.doGet: " + op);
         servlet.doGet(
             new RequestWrapper(op.getRequest()),
             op.getResponse());
@@ -59,7 +58,6 @@ System.out.println("BNHaystackServlet.doGet: " + op);
 
     public void doPost(WebOp op) throws IOException, ServletException
     {
-System.out.println("BNHaystackServlet.doPost: " + op);
         servlet.doPost(
             new RequestWrapper(op.getRequest()),
             op.getResponse());
