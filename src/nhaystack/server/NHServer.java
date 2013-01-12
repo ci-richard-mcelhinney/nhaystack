@@ -74,23 +74,6 @@ public class NHServer extends HServer
         return hd.toDict();
     }
 
-////////////////////////////////////////////////////////////////
-// Reads
-////////////////////////////////////////////////////////////////
-
-    /**
-      * Look up the HDict representation of a BComponent 
-      * by its HRef id.
-      *
-      * Return null if the BComponent cannot be found,
-      * or if it is not haystack-annotated.
-      */
-    protected HDict onReadById(HRef id)
-    {
-        BComponent comp = lookupComponent(id);
-        return (comp == null) ? null : makeDict(comp);
-    }
-
     /**
       * Iterate every haystack-annotated entry in both the BComponentSpace
       * and the BHistoryDatabase.
@@ -106,31 +89,28 @@ public class NHServer extends HServer
             this, new CompositeIterator(new Iterator[] { c, h }));
     }
 
-////////////////////////////////////////////////////////////////
-// Navigation
-////////////////////////////////////////////////////////////////
+    /**
+      * Look up the HDict representation of a BComponent 
+      * by its HRef id.
+      *
+      * Return null if the BComponent cannot be found,
+      * or if it is not haystack-annotated.
+      */
+    protected HDict onReadById(HRef id)
+    {
+        BComponent comp = lookupComponent(id);
+        return (comp == null) ? null : makeDict(comp);
+    }
 
-  /**
-   * Return navigation children for given navId.
-   */
-  public HGrid nav(String navId)
-  {
-    return onNav(navId);
-  }
-
-  /**
-   * Return navigation tree children for given navId.
-   * The grid must define the "navId" column.
-   */
-  protected HGrid onNav(String navId)
-  {
-      // TODO
-      throw new UnsupportedOperationException();
-  }
-
-////////////////////////////////////////////////////////////////
-// Watches
-////////////////////////////////////////////////////////////////
+    /**
+      * Return navigation tree children for given navId.
+      * The grid must define the "navId" column.
+      */
+    protected HGrid onNav(String navId)
+    {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 
     /**
       * Open a new watch.
@@ -163,31 +143,23 @@ public class NHServer extends HServer
         return (HWatch) watches.get(id);
     }
 
-////////////////////////////////////////////////////////////////
-// Point Writes
-////////////////////////////////////////////////////////////////
-
-  /**
-   * Implementation hook for pointWriteArray
-   */
-  protected HGrid onPointWriteArray(HDict rec)
-  {
-      // TODO
-      throw new UnsupportedOperationException();
-  }
-
-  /**
-   * Implementation hook for pointWrite
-   */
-  protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur)
-  {
-      // TODO
-      throw new UnsupportedOperationException();
-  }
-
-////////////////////////////////////////////////////////////////
-// History
-////////////////////////////////////////////////////////////////
+    /**
+      * Implementation hook for pointWriteArray
+      */
+    protected HGrid onPointWriteArray(HDict rec)
+    {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
+  
+    /**
+      * Implementation hook for pointWrite
+      */
+    protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur)
+    {
+        // TODO
+        throw new UnsupportedOperationException();
+    }
 
     /**
       * Read the history for the given BComponent.
@@ -202,19 +174,17 @@ public class NHServer extends HServer
     }
 
     /**
-      * Write the history for the given BComponent
+      * Write the history for the given BComponent.
+      * This is not currently supported.
       */
     protected void onHisWrite(HDict rec, HHisItem[] items)
     {
-//        BIHistory history = lookupHistory(rec.id());
-//        if (history == null) return;
-
-        // TODO
+        // TODO?
         throw new UnsupportedOperationException();
     }
 
 //////////////////////////////////////////////////////////////// 
-// public API 
+// public 
 ////////////////////////////////////////////////////////////////
 
     /**
@@ -266,6 +236,15 @@ public class NHServer extends HServer
             LOG.trace("lookupByHRef failed for id " + id);
 
         return comp;
+    }
+
+////////////////////////////////////////////////////////////////
+// package
+////////////////////////////////////////////////////////////////
+
+    void removeWatch(String watchId)
+    {
+        watches.remove(watchId);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -723,9 +702,9 @@ public class NHServer extends HServer
     private static final int ENUM_KIND    =  2;
     private static final int STRING_KIND  =  3;
 
-    final BNHaystackService service;
-    final ImportedHistoryManager historyMgr;
+    private final ImportedHistoryManager historyMgr;
+    private final HashMap watches = new HashMap();
 
-    final HashMap watches = new HashMap();
+    final BNHaystackService service;
 }
 

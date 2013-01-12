@@ -140,7 +140,7 @@ public class NHWatch extends HWatch
     public void close()
     {
         subscriptions.clear();
-        server.watches.remove(watchId);
+        server.removeWatch(watchId);
     }
 
 ////////////////////////////////////////////////////////////////

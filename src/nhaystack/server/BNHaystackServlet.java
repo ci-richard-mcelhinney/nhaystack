@@ -86,6 +86,11 @@ System.out.println("BNHaystackServlet.doPost: " + op);
 
         public String getPathInfo() { return pathInfo; }
 
+        public String getServletPath()
+        {
+            return "/" + getServletName();
+        }
+
         private final String pathInfo;
     }
 

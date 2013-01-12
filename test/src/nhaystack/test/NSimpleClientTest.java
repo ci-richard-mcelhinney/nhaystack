@@ -33,7 +33,7 @@ public class NSimpleClientTest extends Test
         verifyAbout();
         verifyOps();
         verifyFormats();
-//        verifyRead();
+        verifyRead();
 //        verifyEval();
 //        verifyWatches();
 //        verifyHisRead();
@@ -72,7 +72,9 @@ public class NSimpleClientTest extends Test
 
     void verifyOps() throws Exception
     {
+System.out.println("NSimpleClientTest.verifyOps");
         HGrid g = client.ops();
+g.dump();
 
         // verify required columns
         verify(g.col("name")  != null);
@@ -103,10 +105,17 @@ public class NSimpleClientTest extends Test
         verifyGridContains(g, "mime", "text/zinc");
     }
 
-////////////////////////////////////////////////////////////////////////////
-//// Reads
-////////////////////////////////////////////////////////////////////////////
-//
+//////////////////////////////////////////////////////////////////////////
+// Reads
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyRead() throws Exception
+    {
+System.out.println("NSimpleClientTest.verifyFormats");
+        HGrid grid = client.readAll("id");
+        grid.dump();
+    }
+
 //    void verifyRead() throws Exception
 //    {
 //        // read
