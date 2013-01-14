@@ -37,7 +37,7 @@ public class NHServer extends HServer
     public NHServer(BNHaystackService service)
     {
         this.service = service;
-        this.historyMgr = new ImportedHistoryManager(service);
+        this.proxyPointMgr = new ProxyPointManager(service);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -181,7 +181,6 @@ public class NHServer extends HServer
       */
     protected void onHisWrite(HDict rec, HHisItem[] items)
     {
-        // TODO?
         throw new UnsupportedOperationException();
     }
 
@@ -557,12 +556,15 @@ public class NHServer extends HServer
       */
     private BHistoryConfig lookupHistoryFromPoint(BControlPoint point)
     {
-        // look for local history
+        // local history
         BHistoryExt historyExt = lookupHistoryExt(point);
         if (historyExt != null) return historyExt.getHistoryConfig();
 
-        // look for history that goes with a proxied point
-        return historyMgr.lookupImportedHistory(point);
+        // look for history that goes with a proxied point (if any)
+        if (point.getProxyExt().getType().is(ProxyPointManager.NIAGARA_PROXY_EXT)) 
+            return proxyPointMgr.lookupImportedHistory(point);
+        else 
+            return null;
     }
 
     /**
@@ -571,21 +573,30 @@ public class NHServer extends HServer
       */
     private BControlPoint lookupPointFromHistory(BHistoryConfig cfg)
     {
-        BOrd[] ords = cfg.getSource().toArray();
-
-        // TODO: handle more than one ord in the ordList
-        if (ords.length != 1) throw new IllegalStateException("TODO");
-
-        // TODO handle annotated point rather than just BControlPoint 
-        BComponent source = (BComponent) ords[0].resolve(service, null).get();
-        if (source instanceof BHistoryExt)
+        // local history
+        if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
         {
-            BComponent parent = (BComponent) source.getParent();
-            if (parent instanceof BControlPoint)
-                return (BControlPoint) parent;
-        }
+            BOrd[] ords = cfg.getSource().toArray();
+            if (ords.length != 1) new IllegalStateException(
+                "invalid Source: " + cfg.getSource());
 
-        return null;
+            BComponent source = (BComponent) ords[0].resolve(service, null).get();
+
+            // the source does not *have* to be a BHistoryExt.  E.g. for 
+            // log history its LogHistoryService, strangely enough.
+            if (source instanceof BHistoryExt)
+            {
+                if (source.getParent() instanceof BControlPoint)
+                    return (BControlPoint) source.getParent();
+            }
+
+            return null;
+        }
+        // look for imported point that goes with history (if any)
+        else
+        {
+            return proxyPointMgr.lookupImportedPoint(cfg);
+        }
     }
 
     /**
@@ -735,7 +746,7 @@ public class NHServer extends HServer
     private static final int ENUM_KIND    =  2;
     private static final int STRING_KIND  =  3;
 
-    private final ImportedHistoryManager historyMgr;
+    private final ProxyPointManager proxyPointMgr;
     private final HashMap watches = new HashMap();
 
     final BNHaystackService service;

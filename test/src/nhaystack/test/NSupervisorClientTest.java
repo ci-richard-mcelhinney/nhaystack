@@ -13,14 +13,14 @@ import haystack.client.*;
 import haystack.test.*;
 
 /**
- * NSimpleClientTest -- this test requires an instance of Niagara
+ * NSupervisorClientTest -- this test requires an instance of Niagara
  * running localhost port 80 with the nhaystack_simple station
  * and user "admin", pwd "".
  */
-public class NSimpleClientTest extends Test
+public class NSupervisorClientTest extends Test
 {
 
-    final String URI = "http://localhost/haystack/";
+    final String URI = "http://localhost:81/haystack/";
     HClient client;
 
 //////////////////////////////////////////////////////////////////////////
@@ -30,9 +30,6 @@ public class NSimpleClientTest extends Test
     public void test() throws Exception
     {
         verifyAuth();
-        verifyAbout();
-        verifyOps();
-        verifyFormats();
         verifyRead();
 //        verifyEval();
 //        verifyWatches();
@@ -40,67 +37,9 @@ public class NSimpleClientTest extends Test
 //        verifyHisWrite();
     }
 
-//////////////////////////////////////////////////////////////////////////
-// Auth
-//////////////////////////////////////////////////////////////////////////
-
     void verifyAuth() throws Exception
     {
-        // get bad credentials
-        try { HClient.open(URI, "baduser", "badpass").about(); fail(); } catch (CallNetworkException e) { verifyException(e); }
-        try { HClient.open(URI, "admin",   "badpass").about(); fail(); } catch (CallNetworkException e) { verifyException(e); }
-
-        // create proper client
         this.client = HClient.open(URI, "admin", "");
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// About
-//////////////////////////////////////////////////////////////////////////
-
-    void verifyAbout() throws Exception
-    {
-        HDict r = client.about();
-        verifyEq(r.getStr("haystackVersion"), "2.0");
-        verifyEq(r.getStr("productName"), "nhaystack");
-        verifyEq(r.getStr("tz"), HTimeZone.DEFAULT.name);
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// Ops
-//////////////////////////////////////////////////////////////////////////
-
-    void verifyOps() throws Exception
-    {
-        HGrid g = client.ops();
-
-        // verify required columns
-        verify(g.col("name")  != null);
-        verify(g.col("summary") != null);
-
-        // verify required ops
-        verifyGridContains(g, "name", "about");
-        verifyGridContains(g, "name", "ops");
-        verifyGridContains(g, "name", "formats");
-        verifyGridContains(g, "name", "read");
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// Formats
-//////////////////////////////////////////////////////////////////////////
-
-    void verifyFormats() throws Exception
-    {
-        HGrid g = client.formats();
-
-        // verify required columns
-        verify(g.col("mime")  != null);
-        verify(g.col("read") != null);
-        verify(g.col("write") != null);
-
-        // verify required ops
-        verifyGridContains(g, "mime", "text/plain");
-        verifyGridContains(g, "mime", "text/zinc");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -110,80 +49,118 @@ public class NSimpleClientTest extends Test
     void verifyRead() throws Exception
     {
         HGrid grid = client.readAll("id");
-        verifyEq(grid.numRows(), 5);
-        verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_simple:c.OTk~"));
-        verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_simple:c.MTA0"));
-        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
-        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
-        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+        verifyEq(grid.numRows(), 8);
+        verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_sup:c.MTMx"));
+        verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_sup:c.MTMz"));
+        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_sup:c.MTM1"));
+        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTE~"));
+        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTI~"));
+        verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
+        verifyEq(grid.row(6).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
+        verifyEq(grid.row(7).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
 
-        HDict dict = client.readById(HRef.make("nhaystack_simple:c.OTk~"));
-        verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
-        verify(dict.has("foo"));
-        verify(dict.has("bar"));
+        HDict dict = client.readById(HRef.make("nhaystack_sup:c.MTMx"));
+        verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.has("his"));
-        verifyEq(dict.get("curStatus"), HStr.make("ok"));
-        verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
-        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave1"));
+        verify(dict.has("curStatus"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1"));
         verifyEq(dict.get("units"), HStr.make("°F"));
         verify(dict.has("point"));
         verifyEq(dict.get("tz"), HStr.make("New_York"));
-        double curVal = dict.getDouble("curVal");
-        verify(curVal >= 0.0 && curVal <= 100.0);
-        verifyEq(dict.get("axHistoryRef"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+        verify(dict.getDouble("curVal") == 0.0);
+        verifyEq(dict.get("axHistoryRef"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTE~"));
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
-        dict = client.readById(HRef.make("nhaystack_simple:c.MTA0"));
-        verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
-        verify(dict.missing("foo"));
-        verify(dict.missing("bar"));
+        dict = client.readById(HRef.make("nhaystack_sup:c.MTMz"));
+        verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
-        verify(dict.missing("his"));
-        verifyEq(dict.get("curStatus"), HStr.make("ok"));
-        verify(dict.missing("hisInterpolate"));
-        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave2"));
+        verify(dict.has("his"));
+        verify(dict.has("curStatus"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave2"));
         verifyEq(dict.get("units"), HStr.make("psi"));
         verify(dict.has("point"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verify(dict.getDouble("curVal") == 0.0);
+        verifyEq(dict.get("axHistoryRef"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTI~"));
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
+
+        dict = client.readById(HRef.make("nhaystack_sup:c.MTM1"));
+        verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
+        verifyEq(dict.get("kind"), HStr.make("Number"));
+        verify(dict.missing("his"));
+        verify(dict.has("curStatus"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace2/points/SineWave1"));
+        verifyEq(dict.get("units"), HStr.make("°F"));
+        verify(dict.has("point"));
         verify(dict.missing("tz"));
-        curVal = dict.getDouble("curVal");
-        verify(curVal >= 0.0 && curVal <= 100.0);
+        verify(dict.getDouble("curVal") == 0.0);
         verify(dict.missing("axHistoryRef"));
-
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
-        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
-        verify(dict.missing("kind"));
-        verify(dict.has("his"));
-        verify(dict.missing("curStatus"));
-        verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
-        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/AuditHistory"));
         verify(dict.missing("hisInterpolate"));
-        verify(dict.missing("units"));
-        verify(dict.missing("axPointRef"));
 
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
-        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
-        verify(dict.missing("kind"));
-        verify(dict.has("his"));
-        verify(dict.missing("curStatus"));
-        verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
-        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
-        verify(dict.missing("hisInterpolate"));
-        verify(dict.missing("units"));
-        verify(dict.missing("axPointRef"));
+        ////////////////////////////////////////////////////////////////
 
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTE~"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.has("his"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
         verifyEq(dict.get("tz"), HStr.make("New_York"));
-        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave1"));
-        verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/SineWave1"));
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
         verifyEq(dict.get("units"), HStr.make("°F"));
-        verifyEq(dict.get("axPointRef"), HRef.make("nhaystack_simple:c.OTk~"));
+        verifyEq(dict.get("axPointRef"), HRef.make("nhaystack_sup:c.MTMx"));
+
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTI~"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verifyEq(dict.get("kind"), HStr.make("Number"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/SineWave2"));
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
+        verifyEq(dict.get("units"), HStr.make("psi"));
+        verifyEq(dict.get("axPointRef"), HRef.make("nhaystack_sup:c.MTMz"));
+
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verifyEq(dict.get("kind"), HStr.make("Number"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace2/SineWave2"));
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
+        verifyEq(dict.get("units"), HStr.make("psi"));
+        verify(dict.missing("axPointRef"));
+
+        ////////////////////////////////////////////////////////////////
+
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verify(dict.missing("kind"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_sup/AuditHistory"));
+        verify(dict.missing("hisInterpolate"));
+        verify(dict.missing("units"));
+        verify(dict.missing("axPointRef"));
+
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verify(dict.missing("kind"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_sup/LogHistory"));
+        verify(dict.missing("hisInterpolate"));
+        verify(dict.missing("units"));
+        verify(dict.missing("axPointRef"));
     }
 
 ////////////////////////////////////////////////////////////////////////////
