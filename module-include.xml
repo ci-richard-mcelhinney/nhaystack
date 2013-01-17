@@ -9,7 +9,7 @@
 
 <types>
 
-    <type name="Tags" class="nhaystack.BTags"/>
+    <type name="HDict" class="nhaystack.BHDict"/>
 
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>

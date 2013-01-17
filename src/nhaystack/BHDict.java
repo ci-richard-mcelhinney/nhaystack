@@ -15,29 +15,29 @@ import haystack.*;
 import haystack.io.*;
 
 /**
- *  BTags wraps a Haystack HDict
+ *  BHDict wraps a Haystack HDict
  */
-public final class BTags
+public final class BHDict
     extends BSimple
 {
     /**
-      * Make a BTags instance from an HDict.
+      * Make a BHDict instance from an HDict.
       */
-    public static BTags make(HDict dict) 
+    public static BHDict make(HDict dict) 
     { 
-        return new BTags(dict);  
+        return new BHDict(dict);  
     }
 
     /**
-      * Make a BTags instance from a ZINC-encoded string.
+      * Make a BHDict instance from a ZINC-encoded string.
       */
-    public static BTags make(String s) 
+    public static BHDict make(String s) 
     { 
         HZincReader zr = new HZincReader(s);
-        return new BTags(zr.readDict());
+        return new BHDict(zr.readDict());
     }
 
-    private BTags(HDict dict) 
+    private BHDict(HDict dict) 
     { 
         this.dict = dict;
     }
@@ -55,8 +55,8 @@ public final class BTags
     {
         if (this == obj) return true;
 
-        if (!(obj instanceof BTags)) return false;
-        BTags that = (BTags) obj;
+        if (!(obj instanceof BHDict)) return false;
+        BHDict that = (BHDict) obj;
         return (dict.equals(that.dict));
     }
 
@@ -78,7 +78,7 @@ public final class BTags
     public BObject decode(DataInput decoder) throws IOException
     { 
         HZincReader zr = new HZincReader(decoder.readUTF());
-        return new BTags(zr.readDict());
+        return new BHDict(zr.readDict());
     }  
 
     /**
@@ -95,7 +95,7 @@ public final class BTags
     public BObject decodeFromString(String s) throws IOException
     { 
         HZincReader zr = new HZincReader(s);
-        return new BTags(zr.readDict());
+        return new BHDict(zr.readDict());
     }
 
 ////////////////////////////////////////////////////////////////
@@ -108,11 +108,11 @@ public final class BTags
 // Attributes
 //////////////////////////////////////////////////////////////// 
 
-    public static final BTags DEFAULT = new BTags(HDict.EMPTY);
-    public static final BTags NULL = new BTags(HDict.EMPTY);
+    public static final BHDict DEFAULT = new BHDict(HDict.EMPTY);
+    public static final BHDict NULL = new BHDict(HDict.EMPTY);
 
     public Type getType() { return TYPE; }
-    public static final Type TYPE = Sys.loadType(BTags.class);
+    public static final Type TYPE = Sys.loadType(BHDict.class);
 
     private final HDict dict;
 }

@@ -19,7 +19,7 @@ import nhaystack.collection.*;
   * NComponentIterator wraps an Iterator of BComponents,
   * and return an HDict for each BComponent that 
   * is either of a given type, or has been 
-  * properly annotated with a BTags instance.
+  * properly annotated with a BHDict instance.
   */
 public class NComponentIterator implements Iterator
 {
@@ -40,7 +40,7 @@ public class NComponentIterator implements Iterator
 
     /**
       * Return true if there are any more BComponents 
-      * that have been annotated with a BTags slot.
+      * that have been annotated with a BHDict slot.
       */
     public boolean hasNext()
     {
@@ -81,7 +81,7 @@ public class NComponentIterator implements Iterator
 
             // Return an HDict for each BComponent that 
             // is either of a given type, or has been 
-            // properly annotated with a BTags instance.
+            // properly annotated with a BHDict instance.
             if (comp.getType().is(type) ||
                 (server.findAnnotatedTags(comp) != null))
             {

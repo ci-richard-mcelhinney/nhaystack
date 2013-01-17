@@ -189,13 +189,13 @@ public class NHServer extends HServer
 ////////////////////////////////////////////////////////////////
 
     /**
-      * Return the explicit annotation BTags for the component, or null
+      * Return the explicit annotation BHDict for the component, or null
       * if there are no tags.
       *
       * In order for the tags to be valid, they 
       * must be stored in a property called 'haystack'.
       */
-    public BTags findAnnotatedTags(BComponent comp)
+    public BHDict findAnnotatedTags(BComponent comp)
     {
         // Ignore tags on BHistoryImport.configOverrides -- they 
         // will show up automatically in the history space.
@@ -211,7 +211,7 @@ public class NHServer extends HServer
         BValue val = comp.get("haystack");
         if (val == null) return null;
 
-        return (val instanceof BTags) ? (BTags) val : null;
+        return (val instanceof BHDict) ? (BHDict) val : null;
     }
 
     /**
@@ -223,7 +223,7 @@ public class NHServer extends HServer
       */
     public HDict makeDict(BComponent comp)
     {
-        BTags btags = findAnnotatedTags(comp);
+        BHDict btags = findAnnotatedTags(comp);
 
         HDict tags = (btags == null) ? 
             HDict.EMPTY : btags.getDict();
