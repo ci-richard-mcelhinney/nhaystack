@@ -6,7 +6,7 @@
     21 Dec 2012  Mike Jarmy  Creation
 -->
 
-<project default="test" basedir=".">
+<project default="make" basedir=".">
 
   <property environment="env"/>
 
@@ -49,10 +49,24 @@
   <!--========== make ==========-->
   <target name="make" depends="clean,compile,jar"/>
 
-  <!--========== test ==========-->
-  <target name="test" depends="make">
+  <!--========== test-hide-linked ==========-->
+  <target name="test-hide-linked" depends="make">
 
     <java classname="nhaystack.test.NTest">
+      <arg value="-h"/>
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+
+  </target> 
+
+  <!--========== test-show-linked ==========-->
+  <target name="test-show-linked" depends="make">
+
+    <java classname="nhaystack.test.NTest">
+      <arg value="showLinkedHistories"/>
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />

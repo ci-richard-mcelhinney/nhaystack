@@ -17,7 +17,7 @@ import haystack.test.*;
  * running localhost port 80 with the nhaystack_simple station
  * and user "admin", pwd "".
  */
-public class NSimpleClientTest extends Test
+public class NSimpleClientTest extends NTest
 {
 
     final String URI = "http://localhost/haystack/";
@@ -110,12 +110,14 @@ public class NSimpleClientTest extends Test
     void verifyRead() throws Exception
     {
         HGrid grid = client.readAll("id");
-        verifyEq(grid.numRows(), 5);
+        verifyEq(grid.numRows(), showLinkedHistories ? 5 : 4);
         verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_simple:c.OTk~"));
         verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_simple:c.MTA0"));
         verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
         verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
-        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+
+        if (showLinkedHistories)
+            verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
 
         HDict dict = client.readById(HRef.make("nhaystack_simple:c.OTk~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
@@ -131,7 +133,11 @@ public class NSimpleClientTest extends Test
         verifyEq(dict.get("tz"), HStr.make("New_York"));
         double curVal = dict.getDouble("curVal");
         verify(curVal >= 0.0 && curVal <= 100.0);
-        verifyEq(dict.get("axHistoryRef"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+
+        if (showLinkedHistories)
+            verifyEq(dict.get("axHistoryRef"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+        else
+            verify(dict.missing("axHistoryRef"));
 
         dict = client.readById(HRef.make("nhaystack_simple:c.MTA0"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
@@ -173,17 +179,24 @@ public class NSimpleClientTest extends Test
         verify(dict.missing("units"));
         verify(dict.missing("axPointRef"));
 
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
-        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
-        verifyEq(dict.get("kind"), HStr.make("Number"));
-        verify(dict.has("his"));
-        verify(dict.missing("curStatus"));
-        verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
-        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave1"));
-        verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
-        verifyEq(dict.get("units"), HStr.make("°F"));
-        verifyEq(dict.get("axPointRef"), HRef.make("nhaystack_simple:c.OTk~"));
+        if (showLinkedHistories)
+        {
+            dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+            verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+            verifyEq(dict.get("kind"), HStr.make("Number"));
+            verify(dict.has("his"));
+            verify(dict.missing("curStatus"));
+            verify(dict.missing("curVal"));
+            verifyEq(dict.get("tz"), HStr.make("New_York"));
+            verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave1"));
+            verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
+            verifyEq(dict.get("units"), HStr.make("°F"));
+            verifyEq(dict.get("axPointRef"), HRef.make("nhaystack_simple:c.OTk~"));
+        }
+        else
+        {
+            verify(client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"), false) == null);
+        }
     }
 
 ////////////////////////////////////////////////////////////////////////////

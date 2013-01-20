@@ -80,15 +80,108 @@ public class NHServer extends HServer
       */
     protected Iterator iterator()
     {
-        Iterator c = new ComponentTreeIterator(
-            (BComponent) BOrd.make("slot:/").resolve(service, null).get());
-
-        Iterator h = new HistoryDbIterator(service.getHistoryDb());
-
         return new CompositeIterator(new Iterator[] { 
-           new NComponentIterator(this, c, BControlPoint.TYPE), 
-           new NComponentIterator(this, h, BHistoryConfig.TYPE), 
+           new NComponentSpaceIterator(),
+           new NHistorySpaceIterator()
         });
+    }
+
+    /**
+      * Iterator for component space
+      */
+    private class NComponentSpaceIterator implements Iterator
+    {
+        private NComponentSpaceIterator()
+        {
+            iterator = new ComponentTreeIterator(
+                (BComponent) BOrd.make("slot:/").resolve(service, null).get());
+
+            findNext();
+        }
+
+        public boolean hasNext() { return nextDict != null; }
+
+        public void remove() { throw new UnsupportedOperationException(); }
+
+        public Object next()
+        {
+            if (nextDict == null) throw new IllegalStateException();
+
+            HDict dict = nextDict;
+            findNext();
+            return dict;
+        }
+
+        private void findNext()
+        {
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BComponent comp = (BComponent) iterator.next();
+
+                // Return an HDict for components that have been 
+                // annotated with a BHDict instance.
+                if (findAnnotatedTags(comp) != null)
+                {
+                    nextDict = makeDict(comp);
+                    break;
+                }
+
+                // Return an HDict for each BControlPoint.
+                if (comp instanceof BControlPoint)
+                {
+                    nextDict = makeDict(comp);
+                    break;
+                }
+            }
+        }
+
+        private final ComponentTreeIterator iterator;
+        private HDict nextDict;
+    }
+
+    /**
+      * Iterator for history space
+      */
+    private class NHistorySpaceIterator implements Iterator
+    {
+        private NHistorySpaceIterator()
+        {
+            iterator = new HistoryDbIterator(service.getHistoryDb());
+
+            findNext();
+        }
+
+        public boolean hasNext() { return nextDict != null; }
+
+        public void remove() { throw new UnsupportedOperationException(); }
+
+        public Object next()
+        {
+            if (nextDict == null) throw new IllegalStateException();
+
+            HDict dict = nextDict;
+            findNext();
+            return dict;
+        }
+
+        private void findNext()
+        {
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BHistoryConfig cfg = (BHistoryConfig) iterator.next();
+
+                if (isVisibleHistory(cfg))
+                {
+                    nextDict = makeDict(cfg);
+                    break;
+                }
+            }
+        }
+
+        private final HistoryDbIterator iterator;
+        private HDict nextDict;
     }
 
     /**
@@ -381,7 +474,9 @@ public class NHServer extends HServer
             if (cfg != null)
             {
                 hdb.add("his");
-                hdb.add("axHistoryRef", NHRef.make(cfg).ref);
+
+                if (service.getShowLinkedHistories())
+                    hdb.add("axHistoryRef", NHRef.make(cfg).ref);
 
                 // tz
                 if (!tags.has("tz"))
@@ -542,13 +637,34 @@ public class NHServer extends HServer
             BHistoryId hid = BHistoryId.make(nid.handle);
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
-            return history.getConfig();
+            BHistoryConfig cfg = history.getConfig();
+            return isVisibleHistory(cfg) ? cfg : null;
         }
         // invalid space
         else 
         {
             return null;
         }
+    }
+
+    /**
+      * Return whether this history is visible to the outside world.
+      */
+    private boolean isVisibleHistory(BHistoryConfig cfg)
+    {
+        // annotated 
+        if (findAnnotatedTags(cfg) != null)
+            return true;
+
+        // show linked
+        if (service.getShowLinkedHistories())
+            return true;
+
+        // make sure not linked
+        if (lookupPointFromHistory(cfg) == null)
+            return true;
+
+        return false;
     }
 
     /**
@@ -582,8 +698,8 @@ public class NHServer extends HServer
 
             BComponent source = (BComponent) ords[0].resolve(service, null).get();
 
-            // the source does not *have* to be a BHistoryExt.  E.g. for 
-            // log history its LogHistoryService, strangely enough.
+            // The source is not always a BHistoryExt.  E.g. for 
+            // LogHistory its the LogHistoryService.
             if (source instanceof BHistoryExt)
             {
                 if (source.getParent() instanceof BControlPoint)
@@ -595,6 +711,7 @@ public class NHServer extends HServer
         // look for imported point that goes with history (if any)
         else
         {
+            // TODO: very inefficient!
             return proxyPointMgr.lookupImportedPoint(cfg);
         }
     }

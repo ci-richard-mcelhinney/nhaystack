@@ -25,14 +25,17 @@ public class BNHaystackService extends BAbstractService
             leaseInterval: BRelTime
                  -- The amount of time that objects in watches are leased.
                 default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
+            showLinkedHistories: boolean
+                 -- Whether to show BHistoryConfigs that are linked to a BControlPoint
+                default{[ false ]}
             servlet: BNHaystackServlet
                 default{[ new BNHaystackServlet() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(416957698)1.0$ @*/
-/* Generated Wed Dec 26 12:52:05 EST 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(2922499927)1.0$ @*/
+/* Generated Sun Jan 20 12:06:27 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -57,6 +60,31 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#leaseInterval
    */
   public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "showLinkedHistories"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>showLinkedHistories</code> property.
+   * Whether to show BHistoryConfigs that are linked to
+   * a BControlPoint
+   * @see nhaystack.server.BNHaystackService#getShowLinkedHistories
+   * @see nhaystack.server.BNHaystackService#setShowLinkedHistories
+   */
+  public static final Property showLinkedHistories = newProperty(0, false,null);
+  
+  /**
+   * Get the <code>showLinkedHistories</code> property.
+   * @see nhaystack.server.BNHaystackService#showLinkedHistories
+   */
+  public boolean getShowLinkedHistories() { return getBoolean(showLinkedHistories); }
+  
+  /**
+   * Set the <code>showLinkedHistories</code> property.
+   * @see nhaystack.server.BNHaystackService#showLinkedHistories
+   */
+  public void setShowLinkedHistories(boolean v) { setBoolean(showLinkedHistories,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "servlet"

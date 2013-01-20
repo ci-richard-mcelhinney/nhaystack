@@ -21,32 +21,43 @@ public abstract class NTest extends Test
 // Test Case List
 //////////////////////////////////////////////////////////////////////////
 
-  public static String[] TESTS =
-  {
-    "nhaystack.test.NSimpleClientTest",
-    "nhaystack.test.NSupervisorClientTest",
-  };
+    public static String[] TESTS =
+    {
+        "nhaystack.test.NSimpleClientTest",
+        "nhaystack.test.NSupervisorClientTest",
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-  public static void main(String[] args)
-  {
-    String pattern = null;
-    for (int i=0; i<args.length; ++i)
+    static boolean showLinkedHistories = false;
+
+    public static void main(String[] args)
     {
-      String arg = args[i];
-      if (arg.startsWith("-"))
-      {
-        if (arg.equals("-v")) verbose = true;
-        else println("Uknown option: " + arg);
-      }
-      else if (pattern == null)
-      {
-        pattern = arg;
-      }
+        showLinkedHistories = false;
+        if ((args.length == 1) && (args[0].equals("showLinkedHistories")))
+            showLinkedHistories = true;
+
+        runTests(TESTS, null);
     }
-    runTests(TESTS, pattern);
-  }
+
+//  public static void main(String[] args)
+//  {
+//    String pattern = null;
+//    for (int i=0; i<args.length; ++i)
+//    {
+//      String arg = args[i];
+//      if (arg.startsWith("-"))
+//      {
+//        if (arg.equals("-v")) verbose = true;
+//        else println("Uknown option: " + arg);
+//      }
+//      else if (pattern == null)
+//      {
+//        pattern = arg;
+//      }
+//    }
+//    runTests(TESTS, pattern);
+//  }
 }

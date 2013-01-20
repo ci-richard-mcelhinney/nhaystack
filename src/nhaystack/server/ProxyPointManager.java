@@ -66,16 +66,20 @@ public class ProxyPointManager
         BDeviceNetwork network = getNiagaraNetwork();
         BDevice station = (BDevice) network.get(proxyPoint.getStationName());
 
-        // The following code is not terribly efficient, since we are doing it 
+        // TODO: The following code is very inefficient, since we are doing it 
         // every time we need to turn an imported BHistoryConfig into 
-        // an HDict.  A more sophisticated solution would be to make a 
+        // an HDict.  
+        //
+        // A better solution would be to make a 
         // custom javax.baja.sys.Subscriber, and keep track of the imported
         // points (and their comings and goings) in a data structure.
         //
         // This is essentially what we are already doing with histories, 
         // via the HistoryEventListener.  The problem here is that the points
         // can be found arbitrarily deep inside sub-folders, which
-        // makes subscription difficult to do properly.
+        // makes subscription difficult to do properly. In addition, subscribing
+        // to these points actually causes them to go out to their respective
+        // jaces (right???), which is obviously not what we want.
 
         // look up the points
         BPointDeviceExt pointDevExt = (BPointDeviceExt) station.get("points");
