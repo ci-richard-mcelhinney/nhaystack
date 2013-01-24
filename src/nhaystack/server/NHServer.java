@@ -233,10 +233,10 @@ public class NHServer extends HServer
       */
     protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
-        BIHistory history = lookupHistory(rec.id());
-        if (history == null) return new HHisItem[0];
+        BHistoryConfig cfg = lookupHistory(rec.id());
+        if (cfg == null) return new HHisItem[0];
 
-        return readFromHistory(history, range);
+        return readFromHistory(range, cfg, (HStr) rec.get("units", false));
     }
 
     /**
@@ -261,17 +261,6 @@ public class NHServer extends HServer
       */
     public BHDict findAnnotatedTags(BComponent comp)
     {
-//        // Ignore tags on BHistoryImport.configOverrides -- they 
-//        // will show up automatically in the history space.
-//        // TODO: why is this here?
-//        BComplex parent = comp.getParent();
-//        if ((parent != null) && (parent instanceof BHistoryImport))
-//        {
-//            Property prop = comp.getPropertyInParent();
-//            if (prop.getName().equals("configOverrides"))
-//                return null;
-//        }
-
         BValue val = comp.get("haystack");
         if (val == null) return null;
 
@@ -343,7 +332,7 @@ public class NHServer extends HServer
 // private
 ////////////////////////////////////////////////////////////////
 
-    private BIHistory lookupHistory(HRef id)
+    private BHistoryConfig lookupHistory(HRef id)
     {
         BComponent comp = lookupComponent(id);
         if (comp == null)
@@ -356,14 +345,14 @@ public class NHServer extends HServer
         if (comp instanceof BHistoryConfig)
         {
             BHistoryConfig cfg = (BHistoryConfig) comp;
-            return service.getHistoryDb().getHistory(cfg.getId());
+            return isVisibleHistory(cfg) ? 
+                cfg : null;
         }
         // component space
         else if (comp instanceof BControlPoint)
         {
-            BControlPoint point = (BControlPoint) comp;
-            BHistoryConfig cfg = lookupHistoryFromPoint(point);
-            return service.getHistoryDb().getHistory(cfg.getId());
+            return (comp instanceof BControlPoint) ?
+                lookupHistoryFromPoint((BControlPoint) comp) : null;
         }
         else
         {
@@ -375,28 +364,30 @@ public class NHServer extends HServer
     /**
       * The items wil be exclusive of start and inclusive of end time.
       */
-    private HHisItem[] readFromHistory(BIHistory history, HDateTimeRange range)
+    private HHisItem[] readFromHistory(HDateTimeRange range, BHistoryConfig cfg, HStr units)
     {
         // ASSUMPTION: the tz in both ends of the range matches the 
         // tz of the historized point, which in turn matches the 
         // history's tz in its historyConfig.
         HTimeZone tz = range.start.tz;
 
-        BHistoryConfig cfg = history.getConfig();
         BAbsTime rangeStart = BAbsTime.make(range.start.millis(), cfg.getTimeZone());
         BAbsTime rangeEnd   = BAbsTime.make(range.end.millis(),   cfg.getTimeZone());
 
         // NOTE: be careful, timeQuery() is inclusive of both start and end
+        BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
         BITable table = (BITable) history.timeQuery(rangeStart, rangeEnd);
         ColumnList columns = table.getColumns();
         Column timestampCol = columns.get("timestamp");
-        Column valueCol = columns.get("value");
+
+        // this will be null if its not a BTrendRecord
+        boolean isTrendRecord = cfg.getRecordType().getResolvedType().is(BTrendRecord.TYPE);
+        Column valueCol = isTrendRecord ? columns.get("value") : null;
 
         Array arr = new Array(HHisItem.class, table.size());
         for (int i = 0; i < table.size(); i++)
         {
             BAbsTime timestamp = (BAbsTime) table.get(i, timestampCol);
-            BValue   value     = (BValue)   table.get(i, valueCol);
 
             // ignore inclusive start value
             if (timestamp.equals(rangeStart)) continue;
@@ -406,19 +397,31 @@ public class NHServer extends HServer
 
             // create val
             HVal val = null;
-            if (cfg.getRecordType().getResolvedType().is(BNumericTrendRecord.TYPE))
+            if (isTrendRecord)
             {
-                BNumber num = (BNumber) value;
-                val = HNum.make(num.getDouble());
-            }
-            else if (cfg.getRecordType().getResolvedType().is(BBooleanTrendRecord.TYPE))
-            {
-                BBoolean bool = (BBoolean) value;
-                val = HBool.make(bool.getBoolean());
+                // extract value from BTrendRecord
+                BValue value = (BValue) table.get(i, valueCol);
+                if (cfg.getRecordType().getResolvedType().is(BNumericTrendRecord.TYPE))
+                {
+                    BNumber num = (BNumber) value;
+                    val = (units == null) ? 
+                        HNum.make(num.getDouble()) :
+                        HNum.make(num.getDouble(), units.val);
+                }
+                else if (cfg.getRecordType().getResolvedType().is(BBooleanTrendRecord.TYPE))
+                {
+                    BBoolean bool = (BBoolean) value;
+                    val = HBool.make(bool.getBoolean());
+                }
+                else
+                {
+                    val = HStr.make(value.toString());
+                }
             }
             else
             {
-                val = HStr.make(value.toString());
+                // if its not a BTrendRecord, just do a toString() of the whole record
+                val = HStr.make(table.get(i).toString());
             }
 
             // add item

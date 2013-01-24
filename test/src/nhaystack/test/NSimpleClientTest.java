@@ -35,8 +35,8 @@ public class NSimpleClientTest extends NTest
         verifyFormats();
         verifyRead();
         verifyNav();
+        verifyHisRead();
 //        verifyWatches();
-//        verifyHisRead();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -230,11 +230,11 @@ public class NSimpleClientTest extends NTest
 
         HGrid n = makeNavGrid(HStr.make("nhaystack_simple:h"));
         grid = client.call("nav", n);
-grid.dump();
+//grid.dump();
 
         n = makeNavGrid(HStr.make("nhaystack_simple:c"));
         grid = client.call("nav", n);
-grid.dump();
+//grid.dump();
         verifyEq(grid.numRows(), 1);
         verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_simple:c.MQ~~"));
         traverseComponents((HStr) grid.row(0).get("navId"));
@@ -243,7 +243,7 @@ grid.dump();
     private void traverseComponents(HStr navId)
     {
         HGrid grid = client.call("nav", makeNavGrid(navId));
-grid.dump();
+//grid.dump();
 
         for (int i = 0; i < grid.numRows(); i++)
         {
@@ -258,6 +258,43 @@ grid.dump();
         hd.add("navId", navId);
         return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
     }
+
+//////////////////////////////////////////////////////////////////////////
+// His Reads
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyHisRead() throws Exception
+    {
+        HGrid grid = client.readAll("his");
+        verifyEq(grid.numRows(), showLinkedHistories ? 4 : 3);
+
+        ///////////////////////////////////////////////
+
+        HDict dict = client.read("axSlotPath==\"slot:/Foo/SineWave1\"");
+        HGrid his = client.hisRead(dict.id(), "today");
+
+        verifyEq(his.meta().id(), dict.id());
+        verify(his.numRows() > 0);
+
+        int last = his.numRows()-1;
+        verifyEq(ts(his.row(last)).date, HDate.today());
+
+        verifyEq(numVal(his.row(0)).unit, "°F");
+
+        ///////////////////////////////////////////////
+
+        dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
+        his = client.hisRead(dict.id(), "today");
+        verifyEq(his.meta().id(), dict.id());
+        verify(his.numRows() > 0);
+
+        last = his.numRows()-1;
+        verifyEq(ts(his.row(last)).date, HDate.today());
+    }
+
+    private HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
+    private HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
+    private HNum numVal(HRow r) { return (HNum)r.get("val"); }
 
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
@@ -350,31 +387,6 @@ grid.dump();
 //        verifyEq(client.watch(w.id(), false), null);
 //        verifyEq(client.watches().length, 0);
 //    }
-//
-////////////////////////////////////////////////////////////////////////////
-//// His Reads
-////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyHisRead() throws Exception
-//    {
-//        HDict kw = client.read("kw and siteMeter");
-//        HGrid his = client.hisRead(kw.id(), "yesterday");
-//        verifyEq(his.meta().id(), kw.id());
-//        verifyEq(ts(his.meta(), "hisStart").date, HDate.today().minusDays(1));
-//        verifyEq(ts(his.meta(), "hisEnd").date, HDate.today());
-//        verify(his.numRows() > 90);
-//        int last = his.numRows()-1;
-//        verifyEq(ts(his.row(0)).date, HDate.today().minusDays(1));
-//        verifyEq(ts(his.row(0)).time, HTime.make(0, 15));
-//        verifyEq(ts(his.row(last)).date, HDate.today());
-//        verifyEq(ts(his.row(last)).time, HTime.make(0, 0));
-//        verifyEq(numVal(his.row(0)).unit, "kW");
-//    }
-//
-//    private HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
-//    private HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
-//    private HNum numVal(HRow r) { return (HNum)r.get("val"); }
-//
 
 //////////////////////////////////////////////////////////////////////////
 // Utils

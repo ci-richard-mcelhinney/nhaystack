@@ -32,8 +32,8 @@ public class NSupervisorClientTest extends NTest
         verifyAuth();
         verifyRead();
         verifyNav();
+        verifyHisRead();
 //        verifyWatches();
-//        verifyHisRead();
     }
 
     void verifyAuth() throws Exception
@@ -203,11 +203,11 @@ public class NSupervisorClientTest extends NTest
 
         HGrid n = makeNavGrid(HStr.make("nhaystack_sup:h"));
         grid = client.call("nav", n);
-grid.dump();
+//grid.dump();
 
         n = makeNavGrid(HStr.make("nhaystack_sup:c"));
         grid = client.call("nav", n);
-grid.dump();
+//grid.dump();
         verifyEq(grid.numRows(), 1);
         verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_sup:c.MQ~~"));
         traverseComponents((HStr) grid.row(0).get("navId"));
@@ -216,7 +216,7 @@ grid.dump();
     private void traverseComponents(HStr navId)
     {
         HGrid grid = client.call("nav", makeNavGrid(navId));
-grid.dump();
+//grid.dump();
 
         for (int i = 0; i < grid.numRows(); i++)
         {
@@ -231,6 +231,54 @@ grid.dump();
         hd.add("navId", navId);
         return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
     }
+
+//////////////////////////////////////////////////////////////////////////
+// His Reads
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyHisRead() throws Exception
+    {
+        HGrid grid = client.readAll("his");
+        verifyEq(grid.numRows(), showLinkedHistories ? 7 : 5);
+
+        ///////////////////////////////////////////////
+
+        HDict dict = client.read("axSlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1\"");
+        HGrid his = client.hisRead(dict.id(), "today");
+
+        verifyEq(his.meta().id(), dict.id());
+        verify(his.numRows() > 0);
+
+        int last = his.numRows()-1;
+        verifyEq(ts(his.row(last)).date, HDate.today());
+
+        verifyEq(numVal(his.row(0)).unit, "°F");
+
+        ///////////////////////////////////////////////
+
+        if (showLinkedHistories)
+        {
+            dict = client.read("axHistoryId==\"/nhaystack_jace1/SineWave1\"");
+            his = client.hisRead(dict.id(), "today");
+
+            verifyEq(his.meta().id(), dict.id());
+            verify(his.numRows() > 0);
+
+            last = his.numRows()-1;
+            verifyEq(ts(his.row(last)).date, HDate.today());
+
+            verifyEq(numVal(his.row(0)).unit, "°F");
+        }
+        else
+        {
+            try { client.read("axHistoryId==\"/nhaystack_jace1/SineWave1\""); } 
+            catch(UnknownRecException e) { verifyException(e); }
+        }
+    }
+
+    private HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
+    private HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
+    private HNum numVal(HRow r) { return (HNum)r.get("val"); }
 
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
