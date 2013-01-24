@@ -14,7 +14,7 @@ import haystack.test.*;
 
 /**
  * NSupervisorClientTest -- this test requires an instance of Niagara
- * running localhost port 80 with the nhaystack_simple station
+ * running localhost port 81 with the nhaystack_sup station
  * and user "admin", pwd "".
  */
 public class NSupervisorClientTest extends NTest
@@ -31,10 +31,9 @@ public class NSupervisorClientTest extends NTest
     {
         verifyAuth();
         verifyRead();
-//        verifyEval();
+        verifyNav();
 //        verifyWatches();
 //        verifyHisRead();
-//        verifyHisWrite();
     }
 
     void verifyAuth() throws Exception
@@ -187,6 +186,50 @@ public class NSupervisorClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("units"));
         verify(dict.missing("axPointRef"));
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// Nav
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyNav() throws Exception
+    {
+        HGrid grid = client.call("nav", HGrid.EMPTY);
+        verifyEq(grid.numRows(), 2);
+        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_sup:c"));
+        verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("nhaystack_sup:h"));
+        verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
+
+        HGrid n = makeNavGrid(HStr.make("nhaystack_sup:h"));
+        grid = client.call("nav", n);
+grid.dump();
+
+        n = makeNavGrid(HStr.make("nhaystack_sup:c"));
+        grid = client.call("nav", n);
+grid.dump();
+        verifyEq(grid.numRows(), 1);
+        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_sup:c.MQ~~"));
+        traverseComponents((HStr) grid.row(0).get("navId"));
+    }
+
+    private void traverseComponents(HStr navId)
+    {
+        HGrid grid = client.call("nav", makeNavGrid(navId));
+grid.dump();
+
+        for (int i = 0; i < grid.numRows(); i++)
+        {
+            if (grid.row(i).has("navId"))
+                traverseComponents((HStr) grid.row(i).get("navId"));
+        }
+    }
+
+    HGrid makeNavGrid(HStr navId)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("navId", navId);
+        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
     }
 
 ////////////////////////////////////////////////////////////////////////////

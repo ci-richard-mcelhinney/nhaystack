@@ -119,16 +119,7 @@ public class NHServer extends HServer
             {
                 BComponent comp = (BComponent) iterator.next();
 
-                // Return an HDict for components that have been 
-                // annotated with a BHDict instance.
-                if (findAnnotatedTags(comp) != null)
-                {
-                    nextDict = makeDict(comp);
-                    break;
-                }
-
-                // Return an HDict for each BControlPoint.
-                if (comp instanceof BControlPoint)
+                if (isComponentSpaceRecord(comp))
                 {
                     nextDict = makeDict(comp);
                     break;
@@ -138,6 +129,25 @@ public class NHServer extends HServer
 
         private final ComponentTreeIterator iterator;
         private HDict nextDict;
+    }
+
+    /**
+      * Return whether the given component-space component
+      * ought to be turned into a record.
+      */
+    private boolean isComponentSpaceRecord(BComponent comp)
+    {
+        // Return true for components that have been 
+        // annotated with a BHDict instance.
+        if (findAnnotatedTags(comp) != null)
+            return true;
+
+        // Return true for BControlPoints.
+        if (comp instanceof BControlPoint)
+            return true;
+
+        // nope
+        return false;
     }
 
     /**
@@ -203,8 +213,77 @@ public class NHServer extends HServer
       */
     protected HGrid onNav(String navId)
     {
-        // TODO
-        throw new UnsupportedOperationException();
+        // nav roots
+        if (navId == null)
+        {
+            Array dicts = new Array(HDict.class);
+
+            HDictBuilder hd = new HDictBuilder();
+            hd.add("navId", HStr.make(Sys.getStation().getStationName() + ":c"));
+            hd.add("dis", "ComponentSpace");
+            dicts.add(hd.toDict());
+
+            hd = new HDictBuilder();
+            hd.add("navId", HStr.make(Sys.getStation().getStationName() + ":h"));
+            hd.add("dis", "HistorySpace");
+            dicts.add(hd.toDict());
+
+            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        }
+        // child of ComponentSpace root
+        else if (navId.equals(Sys.getStation().getStationName() + ":c"))
+        {
+            BComponent root = (BComponent) BOrd.make("slot:/").resolve(service, null).get();
+            return HGridBuilder.dictsToGrid(new HDict[] { makeNavResult(root) });
+        }
+        // ComponentSpace component
+        else if (navId.startsWith(Sys.getStation().getStationName() + ":c."))
+        {
+            NHRef nid = NHRef.make(HRef.make(navId));
+            BComponent comp = service.getComponentSpace().findByHandle(nid.handle);
+            BComponent kids[] = comp.getChildComponents();
+
+            Array dicts = new Array(HDict.class);
+            for (int i = 0; i < kids.length; i++)
+                dicts.add(makeNavResult(kids[i]));
+            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        }
+        // children of HistorySpace root
+        else if (navId.equals(Sys.getStation().getStationName() + ":h"))
+        {
+            NHistorySpaceIterator itr = new NHistorySpaceIterator();
+            Array dicts = new Array(HDict.class);
+            while (itr.hasNext())
+                dicts.add(itr.next());
+            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        }
+        // error
+        else
+        {
+            throw new RuntimeException("Cannot lookup nav for " + navId);
+        }
+    }
+
+    private HDict makeNavResult(BComponent comp)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+
+        // add a navId, but only if this component is not a leaf
+        if (comp.getChildComponents().length > 0)
+            hdb.add("navId", NHRef.make(comp).ref.val);
+
+        if (isComponentSpaceRecord(comp))
+        {
+            hdb.add(makeDict(comp));
+        }
+        else
+        {
+            hdb.add("dis", comp.getDisplayName(null));
+            hdb.add("axType", comp.getType().toString());
+            hdb.add("axSlotPath", comp.getSlotPath().toString());
+        }
+
+        return hdb.toDict();
     }
 
     /**
@@ -290,16 +369,16 @@ public class NHServer extends HServer
       */
     public BHDict findAnnotatedTags(BComponent comp)
     {
-        // Ignore tags on BHistoryImport.configOverrides -- they 
-        // will show up automatically in the history space.
-        // TODO: why is this here?
-        BComplex parent = comp.getParent();
-        if ((parent != null) && (parent instanceof BHistoryImport))
-        {
-            Property prop = comp.getPropertyInParent();
-            if (prop.getName().equals("configOverrides"))
-                return null;
-        }
+//        // Ignore tags on BHistoryImport.configOverrides -- they 
+//        // will show up automatically in the history space.
+//        // TODO: why is this here?
+//        BComplex parent = comp.getParent();
+//        if ((parent != null) && (parent instanceof BHistoryImport))
+//        {
+//            Property prop = comp.getPropertyInParent();
+//            if (prop.getName().equals("configOverrides"))
+//                return null;
+//        }
 
         BValue val = comp.get("haystack");
         if (val == null) return null;
@@ -313,6 +392,8 @@ public class NHServer extends HServer
       * The haystack representation is a combination of the 
       * autogenerated tags, and those tags specified
       * in the explicit haystack annotation (if any).
+      *
+      * This method never returns null.
       */
     public HDict makeDict(BComponent comp)
     {
@@ -458,6 +539,7 @@ public class NHServer extends HServer
 
     private void addComponentTags(BComponent comp, HDict tags, HDictBuilder hdb)
     {
+        hdb.add("dis", comp.getDisplayName(null));
         hdb.add("axType", comp.getType().toString());
         hdb.add("axSlotPath", comp.getSlotPath().toString());
 
@@ -534,6 +616,7 @@ public class NHServer extends HServer
         HDict tags, 
         HDictBuilder hdb)
     {
+        hdb.add("dis", cfg.getDisplayName(null));
         hdb.add("axType", cfg.getType().toString());
         hdb.add("axHistoryId", cfg.getId().toString());
 
@@ -849,11 +932,13 @@ public class NHServer extends HServer
         HStdOps.ops,
         HStdOps.formats,
         HStdOps.read,
+        HStdOps.nav,
         HStdOps.watchSub,
         HStdOps.watchUnsub,
         HStdOps.watchPoll,
+        HStdOps.pointWrite,
         HStdOps.hisRead,
-        HStdOps.hisWrite
+        HStdOps.hisWrite,
     };
 
     // point kinds

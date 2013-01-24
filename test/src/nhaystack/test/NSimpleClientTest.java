@@ -34,10 +34,9 @@ public class NSimpleClientTest extends NTest
         verifyOps();
         verifyFormats();
         verifyRead();
-//        verifyEval();
+        verifyNav();
 //        verifyWatches();
 //        verifyHisRead();
-//        verifyHisWrite();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -199,6 +198,50 @@ public class NSimpleClientTest extends NTest
         }
     }
 
+//////////////////////////////////////////////////////////////////////////
+// Nav
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyNav() throws Exception
+    {
+        HGrid grid = client.call("nav", HGrid.EMPTY);
+        verifyEq(grid.numRows(), 2);
+        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_simple:c"));
+        verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("nhaystack_simple:h"));
+        verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
+
+        HGrid n = makeNavGrid(HStr.make("nhaystack_simple:h"));
+        grid = client.call("nav", n);
+grid.dump();
+
+        n = makeNavGrid(HStr.make("nhaystack_simple:c"));
+        grid = client.call("nav", n);
+grid.dump();
+        verifyEq(grid.numRows(), 1);
+        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_simple:c.MQ~~"));
+        traverseComponents((HStr) grid.row(0).get("navId"));
+    }
+
+    private void traverseComponents(HStr navId)
+    {
+        HGrid grid = client.call("nav", makeNavGrid(navId));
+grid.dump();
+
+        for (int i = 0; i < grid.numRows(); i++)
+        {
+            if (grid.row(i).has("navId"))
+                traverseComponents((HStr) grid.row(i).get("navId"));
+        }
+    }
+
+    HGrid makeNavGrid(HStr navId)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("navId", navId);
+        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    }
+
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
 ////////////////////////////////////////////////////////////////////////////
@@ -315,50 +358,6 @@ public class NSimpleClientTest extends NTest
 //    private HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
 //    private HNum numVal(HRow r) { return (HNum)r.get("val"); }
 //
-////////////////////////////////////////////////////////////////////////////
-//// His Reads
-////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyHisWrite() throws Exception
-//    {
-//        // setup test
-//        HDict kw = client.read("kw and not siteMeter");
-//        clearHisWrite(kw);
-//
-//        // create some items
-//        HDate date = HDate.make(2010, 6, 7);
-//        HTimeZone tz = HTimeZone.make(kw.getStr("tz"));
-//        HHisItem[] write = new HHisItem[5];
-//        for (int i=0; i<write.length; ++i)
-//        {
-//            HDateTime ts = HDateTime.make(date, HTime.make(i+1, 0), tz);
-//            HVal val = HNum.make(i, "kW");
-//            write[i] = HHisItem.make(ts, val);
-//        }
-//
-//        // write and verify
-//        client.hisWrite(kw.id(), write);
-//        Thread.sleep(200);
-//        HGrid read = client.hisRead(kw.id(), "2010-06-07");
-//        verifyEq(read.numRows(), write.length);
-//        for (int i=0; i<read.numRows(); ++i)
-//        {
-//            verifyEq(read.row(i).get("ts"), write[i].ts);
-//            verifyEq(read.row(i).get("val"), write[i].val);
-//        }
-//
-//        // clean test
-//        clearHisWrite(kw);
-//    }
-//
-//    private void clearHisWrite(HDict rec)
-//    {
-//        // existing data and verify we don't have any data for 7 June 20120
-//        String expr = "hisClear(@" + rec.id().val + ", 2010-06)";
-//        client.eval(expr);
-//        HGrid his = client.hisRead(rec.id(), "2010-06-07");
-//        verifyEq(his.numRows(), 0);
-//    }
 
 //////////////////////////////////////////////////////////////////////////
 // Utils
