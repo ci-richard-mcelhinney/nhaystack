@@ -87,114 +87,6 @@ public class NHServer extends HServer
     }
 
     /**
-      * Iterator for component space
-      */
-    private class NComponentSpaceIterator implements Iterator
-    {
-        private NComponentSpaceIterator()
-        {
-            iterator = new ComponentTreeIterator(
-                (BComponent) BOrd.make("slot:/").resolve(service, null).get());
-
-            findNext();
-        }
-
-        public boolean hasNext() { return nextDict != null; }
-
-        public void remove() { throw new UnsupportedOperationException(); }
-
-        public Object next()
-        {
-            if (nextDict == null) throw new IllegalStateException();
-
-            HDict dict = nextDict;
-            findNext();
-            return dict;
-        }
-
-        private void findNext()
-        {
-            nextDict = null;
-            while (iterator.hasNext())
-            {
-                BComponent comp = (BComponent) iterator.next();
-
-                if (isComponentSpaceRecord(comp))
-                {
-                    nextDict = makeDict(comp);
-                    break;
-                }
-            }
-        }
-
-        private final ComponentTreeIterator iterator;
-        private HDict nextDict;
-    }
-
-    /**
-      * Return whether the given component-space component
-      * ought to be turned into a record.
-      */
-    private boolean isComponentSpaceRecord(BComponent comp)
-    {
-        // Return true for components that have been 
-        // annotated with a BHDict instance.
-        if (findAnnotatedTags(comp) != null)
-            return true;
-
-        // Return true for BControlPoints.
-        if (comp instanceof BControlPoint)
-            return true;
-
-        // nope
-        return false;
-    }
-
-    /**
-      * Iterator for history space
-      */
-    private class NHistorySpaceIterator implements Iterator
-    {
-        private NHistorySpaceIterator()
-        {
-            iterator = new HistoryDbIterator(service.getHistoryDb());
-
-            findNext();
-        }
-
-        public boolean hasNext() { return nextDict != null; }
-
-        public void remove() { throw new UnsupportedOperationException(); }
-
-        public Object next()
-        {
-            if (nextDict == null) throw new IllegalStateException();
-
-            HDict dict = nextDict;
-            findNext();
-            return dict;
-        }
-
-        private void findNext()
-        {
-            nextDict = null;
-            while (iterator.hasNext())
-            {
-                BHistoryConfig cfg = (BHistoryConfig) iterator.next();
-
-                if (isVisibleHistory(cfg))
-                {
-                    nextDict = makeDict(cfg);
-                    break;
-                }
-            }
-        }
-
-        private final HistoryDbIterator iterator;
-        private HDict nextDict;
-    }
-
-    /**
       * Look up the HDict representation of a BComponent 
       * by its HRef id.
       *
@@ -272,7 +164,7 @@ public class NHServer extends HServer
         if (comp.getChildComponents().length > 0)
             hdb.add("navId", NHRef.make(comp).ref.val);
 
-        if (isComponentSpaceRecord(comp))
+        if (isVisibleComponent(comp))
         {
             hdb.add(makeDict(comp));
         }
@@ -712,7 +604,9 @@ public class NHServer extends HServer
         if (nid.space.equals("c"))
         {
             // this might be null
-            return service.getComponentSpace().findByHandle(nid.handle);
+            BComponent comp = service.getComponentSpace().findByHandle(nid.handle);
+            if (comp == null) return null;
+            return isVisibleComponent(comp) ? comp : null;
         }
         // history space
         else if (nid.space.equals("h"))
@@ -728,6 +622,25 @@ public class NHServer extends HServer
         {
             return null;
         }
+    }
+
+    /**
+      * Return whether the given component-space component
+      * ought to be turned into a record.
+      */
+    private boolean isVisibleComponent(BComponent comp)
+    {
+        // Return true for components that have been 
+        // annotated with a BHDict instance.
+        if (findAnnotatedTags(comp) != null)
+            return true;
+
+        // Return true for BControlPoints.
+        if (comp instanceof BControlPoint)
+            return true;
+
+        // nope
+        return false;
     }
 
     /**
@@ -915,6 +828,99 @@ public class NHServer extends HServer
         if (n != -1) tzName = tzName.substring(n+1);
 
         return HTimeZone.make(tzName, false);
+    }
+
+////////////////////////////////////////////////////////////////
+// Iterators
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Iterator for component space
+      */
+    private class NComponentSpaceIterator implements Iterator
+    {
+        private NComponentSpaceIterator()
+        {
+            iterator = new ComponentTreeIterator(
+                (BComponent) BOrd.make("slot:/").resolve(service, null).get());
+
+            findNext();
+        }
+
+        public boolean hasNext() { return nextDict != null; }
+
+        public void remove() { throw new UnsupportedOperationException(); }
+
+        public Object next()
+        {
+            if (nextDict == null) throw new IllegalStateException();
+
+            HDict dict = nextDict;
+            findNext();
+            return dict;
+        }
+
+        private void findNext()
+        {
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BComponent comp = (BComponent) iterator.next();
+
+                if (isVisibleComponent(comp))
+                {
+                    nextDict = makeDict(comp);
+                    break;
+                }
+            }
+        }
+
+        private final ComponentTreeIterator iterator;
+        private HDict nextDict;
+    }
+
+    /**
+      * Iterator for history space
+      */
+    private class NHistorySpaceIterator implements Iterator
+    {
+        private NHistorySpaceIterator()
+        {
+            iterator = new HistoryDbIterator(service.getHistoryDb());
+
+            findNext();
+        }
+
+        public boolean hasNext() { return nextDict != null; }
+
+        public void remove() { throw new UnsupportedOperationException(); }
+
+        public Object next()
+        {
+            if (nextDict == null) throw new IllegalStateException();
+
+            HDict dict = nextDict;
+            findNext();
+            return dict;
+        }
+
+        private void findNext()
+        {
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BHistoryConfig cfg = (BHistoryConfig) iterator.next();
+
+                if (isVisibleHistory(cfg))
+                {
+                    nextDict = makeDict(cfg);
+                    break;
+                }
+            }
+        }
+
+        private final HistoryDbIterator iterator;
+        private HDict nextDict;
     }
 
 ////////////////////////////////////////////////////////////////

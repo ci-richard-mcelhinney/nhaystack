@@ -109,14 +109,16 @@ public class NSimpleClientTest extends NTest
     void verifyRead() throws Exception
     {
         HGrid grid = client.readAll("id");
-        verifyEq(grid.numRows(), showLinkedHistories ? 5 : 4);
+
+        verifyEq(grid.numRows(), showLinkedHistories ? 6 : 5);
         verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_simple:c.OTk~"));
         verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_simple:c.MTA0"));
-        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
-        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_simple:c.MTg4"));
+        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
 
         if (showLinkedHistories)
-            verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
+            verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"));
 
         HDict dict = client.readById(HRef.make("nhaystack_simple:c.OTk~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
@@ -152,6 +154,19 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("tz"));
         curVal = dict.getDouble("curVal");
         verify(curVal >= 0.0 && curVal <= 100.0);
+        verify(dict.missing("axHistoryRef"));
+
+        dict = client.readById(HRef.make("nhaystack_simple:c.MTg4"));
+        verifyEq(dict.get("axType"), HStr.make("baja:Component"));
+        verify(dict.missing("kind"));
+        verify(dict.missing("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("hisInterpolate"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/comp"));
+        verify(dict.has("point"));
+        verify(dict.missing("tz"));
+        verify(dict.missing("units"));
+        verify(dict.missing("curVal"));
         verify(dict.missing("axHistoryRef"));
 
         dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
@@ -196,6 +211,8 @@ public class NSimpleClientTest extends NTest
         {
             verify(client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUx"), false) == null);
         }
+
+        try { client.readById(HRef.make("nhaystack_simple:c.Mg~~")); } catch(UnknownRecException e) { verifyException(e); }
     }
 
 //////////////////////////////////////////////////////////////////////////
