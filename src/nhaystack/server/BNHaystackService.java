@@ -24,7 +24,7 @@ public class BNHaystackService extends BAbstractService
         {
             leaseInterval: BRelTime
                  -- The amount of time that objects in watches are leased.
-                default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
+                default{[ BRelTime.make(BRelTime.MINUTE.getMillis()) ]}
             showLinkedHistories: boolean
                  -- Whether to show BHistoryConfigs that are linked to a BControlPoint
                 default{[ false ]}
@@ -34,8 +34,8 @@ public class BNHaystackService extends BAbstractService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(2922499927)1.0$ @*/
-/* Generated Sun Jan 20 12:06:27 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(3904091370)1.0$ @*/
+/* Generated Sat Jan 26 14:33:02 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -47,7 +47,7 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#getLeaseInterval
    * @see nhaystack.server.BNHaystackService#setLeaseInterval
    */
-  public static final Property leaseInterval = newProperty(0, BRelTime.make(2 * BRelTime.MINUTE.getMillis()),null);
+  public static final Property leaseInterval = newProperty(0, BRelTime.make(BRelTime.MINUTE.getMillis()),null);
   
   /**
    * Get the <code>leaseInterval</code> property.

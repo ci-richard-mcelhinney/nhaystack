@@ -170,7 +170,8 @@ public class NHServer extends HServer
         }
         else
         {
-            hdb.add("dis", comp.getDisplayName(null));
+            String dis = comp.getDisplayName(null);
+            if (dis != null) hdb.add("dis", dis);
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
         }
@@ -433,7 +434,8 @@ public class NHServer extends HServer
 
     private void addComponentTags(BComponent comp, HDict tags, HDictBuilder hdb)
     {
-        hdb.add("dis", comp.getDisplayName(null));
+        String dis = comp.getDisplayName(null);
+        if (dis != null) hdb.add("dis", dis);
         hdb.add("axType", comp.getType().toString());
         hdb.add("axSlotPath", comp.getSlotPath().toString());
 
@@ -510,7 +512,8 @@ public class NHServer extends HServer
         HDict tags, 
         HDictBuilder hdb)
     {
-        hdb.add("dis", cfg.getDisplayName(null));
+        String dis = cfg.getDisplayName(null);
+        if (dis != null) hdb.add("dis", dis);
         hdb.add("axType", cfg.getType().toString());
         hdb.add("axHistoryId", cfg.getId().toString());
 

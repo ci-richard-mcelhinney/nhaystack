@@ -30,6 +30,14 @@ public class NHWatch extends HWatch
             server.service.getLeaseInterval().getMillis();
     }
 
+    public String toString()
+    {
+        return "[NHWatch " +
+            "dis:'" + dis + "', " +
+            "watchId:'" + watchId + "', " +
+            "leaseInterval:" + leaseInterval + "]";
+    }
+
     /**
      * Unique watch identifier within a project database.
      */
@@ -60,11 +68,20 @@ public class NHWatch extends HWatch
      * ids cannot be resolved then raise UnknownRecException for first id
      * not resolved.  If checked is false, then each id not found has a
      * row where every cell is null.
+     * <p>
+     * The HGrid that is returned must contain metadata entries 
+     * for 'watchId' and 'lease'.
      */
     public HGrid sub(HRef[] ids, boolean checked)
     {
-        Array dicts = new Array(HDict.class);
+        // meta
+        HDict meta = new HDictBuilder()
+            .add("watchId", HStr.make(id()))
+            .add("lease", lease())
+            .toDict();
 
+        // dicts
+        Array dicts = new Array(HDict.class);
         for (int i = 0; i < ids.length; i++)
         {
             HRef id = ids[i];
@@ -72,19 +89,15 @@ public class NHWatch extends HWatch
             // lookup
             BComponent comp = server.lookupComponent(id);
 
-            // no such component
+            // no such component -- treat 'checked' as if it were false.
+            // ('checked' is handled on the client side).
             if (comp == null)
             {
-                if (checked) throw new UnknownRecException(id);
-                else dicts.add(null);
+                dicts.add(null);
             }
             // found
             else
             {
-                // ignore attempt to subscribe to history
-                if (NHRef.make(id).isHistorySpace()) continue;
-
-                // create subscription
                 comp.lease(LEASE_DEPTH, leaseInterval); 
                 HDict dict = server.makeDict(comp);
                 dicts.add(dict);
@@ -92,7 +105,7 @@ public class NHWatch extends HWatch
             }
         }
 
-        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        return HGridBuilder.dictsToGrid(meta, (HDict[]) dicts.trim());
     }
 
     /**
@@ -110,8 +123,23 @@ public class NHWatch extends HWatch
      */
     public HGrid pollChanges()
     {
-        // TODO
-        return pollRefresh();
+        Array dicts = new Array(HDict.class);
+
+        Iterator itr = subscriptions.values().iterator();
+        while (itr.hasNext())
+        {
+            Subscription sub = (Subscription) itr.next();
+            sub.comp.lease(LEASE_DEPTH, leaseInterval); 
+            HDict newDict = server.makeDict(sub.comp);
+
+            if (!sub.dict.equals(newDict))
+            {
+                sub.dict = newDict;
+                dicts.add(sub.dict);
+            }
+        }
+
+        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
     }
 
     /**
@@ -124,11 +152,10 @@ public class NHWatch extends HWatch
         Iterator itr = subscriptions.values().iterator();
         while (itr.hasNext())
         {
-            // update subscription
-            Subscription s = (Subscription) itr.next();
-            s.comp.lease(LEASE_DEPTH, leaseInterval); 
-            s.dict = server.makeDict(s.comp);
-            dicts.add(s.dict);
+            Subscription sub = (Subscription) itr.next();
+            sub.comp.lease(LEASE_DEPTH, leaseInterval); 
+            sub.dict = server.makeDict(sub.comp);
+            dicts.add(sub.dict);
         }
 
         return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
