@@ -351,8 +351,7 @@ public class NHServer extends HServer
         // component space
         else if (comp instanceof BControlPoint)
         {
-            return (comp instanceof BControlPoint) ?
-                lookupHistoryFromPoint((BControlPoint) comp) : null;
+            return lookupHistoryFromPoint((BControlPoint) comp);
         }
         else
         {
@@ -719,11 +718,20 @@ public class NHServer extends HServer
       * Check if there is a history extension.  This will succeed
       * if the point lives in this station, rather than being proxied.
       */
-    private static BHistoryExt lookupHistoryExt(BControlPoint point)
+    private BHistoryExt lookupHistoryExt(BControlPoint point)
     {
         Cursor cursor = point.getProperties();
         if (cursor.next(BHistoryExt.class))
-            return (BHistoryExt) cursor.get();
+        {
+            BHistoryExt ext = (BHistoryExt) cursor.get();
+
+            // Return null if the extension has never been enabled.
+            BHistoryConfig config = ext.getHistoryConfig();
+            if (service.getHistoryDb().getHistory(config.getId()) == null)
+                return null;
+
+            return ext;
+        }
 
         return null;
     }
@@ -789,17 +797,6 @@ public class NHServer extends HServer
         if (status.isUnackedAlarm()) return "unackedAlarm";
 
         throw new IllegalStateException();
-
-//        StringBuffer sb = new StringBuffer();
-//        if (status.isDisabled())     { if (sb.length() > 0) sb.append(","); sb.append("disabled");     }
-//        if (status.isFault())        { if (sb.length() > 0) sb.append(","); sb.append("fault");        }
-//        if (status.isDown())         { if (sb.length() > 0) sb.append(","); sb.append("down");         }
-//        if (status.isAlarm())        { if (sb.length() > 0) sb.append(","); sb.append("alarm");        }
-//        if (status.isStale())        { if (sb.length() > 0) sb.append(","); sb.append("stale");        }
-//        if (status.isOverridden())   { if (sb.length() > 0) sb.append(","); sb.append("overridden");   }
-//        if (status.isNull())         { if (sb.length() > 0) sb.append(","); sb.append("null");         }
-//        if (status.isUnackedAlarm()) { if (sb.length() > 0) sb.append(","); sb.append("unackedAlarm"); }
-//        return sb.toString();
     }
 
     private static int getControlPointKind(BControlPoint point)

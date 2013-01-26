@@ -40,6 +40,10 @@ public class ProxyPoint
         // the remote host.
         String slotPath = proxyExt.get("pointId").toString();
 
+        // get rid of unneeded "station:" ordQuery
+        if (slotPath.startsWith("station:|"))   
+            slotPath = slotPath.substring("station:|".length());
+
         // Find the ancestor NiagaraStation
         BDevice device = findParentDevice(point);
         if (device == null) return null;

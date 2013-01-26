@@ -65,6 +65,7 @@ public class ProxyPointManager
         // look up the station
         BDeviceNetwork network = getNiagaraNetwork();
         BDevice station = (BDevice) network.get(proxyPoint.getStationName());
+        if (station == null) return null;
 
         // TODO: The following code is very inefficient, since we are doing it 
         // every time we need to turn an imported BHistoryConfig into 
