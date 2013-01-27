@@ -47,8 +47,8 @@ public class NSimpleClientTest extends NTest
     void verifyAuth() throws Exception
     {
         // get bad credentials
-        try { HClient.open(URI, "baduser", "badpass").about(); fail(); } catch (CallNetworkException e) { verifyException(e); }
-        try { HClient.open(URI, "admin",   "badpass").about(); fail(); } catch (CallNetworkException e) { verifyException(e); }
+        try { HClient.open(URI, "baduser", "badpass").about(); fail(); } catch (CallAuthException e) { verifyException(e); }
+        try { HClient.open(URI, "admin",   "badpass").about(); fail(); } catch (CallAuthException e) { verifyException(e); }
 
         // create proper client
         this.client = HClient.open(URI, "admin", "");
