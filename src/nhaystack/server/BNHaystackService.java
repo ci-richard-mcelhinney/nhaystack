@@ -27,15 +27,15 @@ public class BNHaystackService extends BAbstractService
                 default{[ BRelTime.make(BRelTime.MINUTE.getMillis()) ]}
             showLinkedHistories: boolean
                  -- Whether to show BHistoryConfigs that are linked to a BControlPoint
-                default{[ false ]}
+                default{[ true ]}
             servlet: BNHaystackServlet
                 default{[ new BNHaystackServlet() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(3904091370)1.0$ @*/
-/* Generated Sat Jan 26 14:33:02 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1541442072)1.0$ @*/
+/* Generated Mon Jan 28 21:27:03 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -72,7 +72,7 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#getShowLinkedHistories
    * @see nhaystack.server.BNHaystackService#setShowLinkedHistories
    */
-  public static final Property showLinkedHistories = newProperty(0, false,null);
+  public static final Property showLinkedHistories = newProperty(0, true,null);
   
   /**
    * Get the <code>showLinkedHistories</code> property.
