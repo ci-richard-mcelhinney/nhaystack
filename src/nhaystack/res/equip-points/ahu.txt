@@ -49,3 +49,4 @@ freezeStat sensor
 heatWheel cmd
 faceBypass cmd
 bypass damper cmd
+

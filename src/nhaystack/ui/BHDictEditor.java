@@ -237,18 +237,48 @@ public class BHDictEditor extends BEdgePane
         String kind = (String) row.kinds.getSelectedItem();
         if (kind.equals("Str"))
         {
-            // change to BHTimeZoneFE
+            // change to tz
             if (name.equals("tz") && !(row.fe instanceof BHTimeZoneFE))
             {
                 row.fe = new BHTimeZoneFE();
                 row.fe.loadValue(BString.make(HTimeZone.DEFAULT.name));
                 fillGrid();
             }
-            // change away from 
+            // change away from tz
             else if (!name.equals("tz") && (row.fe instanceof BHTimeZoneFE))
             {
-                row.fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-                row.fe.loadValue(BString.DEFAULT);
+                if (name.equals("unit"))
+                {
+                    row.fe = new BHUnitFE();
+                    row.fe.loadValue(BString.make(Resources.getSymbolUnit("%").symbol));
+                }
+                else
+                {
+                    row.fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                    row.fe.loadValue(BString.DEFAULT);
+                }
+                fillGrid();
+            }
+            // change to unit
+            else if (name.equals("unit") && !(row.fe instanceof BHUnitFE))
+            {
+                row.fe = new BHUnitFE();
+                row.fe.loadValue(BString.make(Resources.getSymbolUnit("%").symbol));
+                fillGrid();
+            }
+            // change away from unit
+            else if (!name.equals("unit") && (row.fe instanceof BHUnitFE))
+            {
+                if (name.equals("tz"))
+                {
+                    row.fe = new BHTimeZoneFE();
+                    row.fe.loadValue(BString.make(HTimeZone.DEFAULT.name));
+                }
+                else
+                {
+                    row.fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                    row.fe.loadValue(BString.DEFAULT);
+                }
                 fillGrid();
             }
         }
@@ -397,6 +427,12 @@ public class BHDictEditor extends BEdgePane
             {
                 BWbFieldEditor fe = new BHTimeZoneFE();
                 fe.loadValue(BString.make(str.val));
+                return fe;
+            }
+            else if (kind.equals("Str") && name.equals("unit"))
+            {
+                BWbFieldEditor fe = new BHUnitFE();
+                fe.loadValue(BString.make(Resources.getSymbolUnit(str.val).symbol));
                 return fe;
             }
             else

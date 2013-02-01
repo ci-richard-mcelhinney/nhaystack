@@ -14,9 +14,10 @@
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
 
-    <type name="HDictDialog"  class="nhaystack.ui.BHDictDialog"/>
-    <type name="HDictEditor"  class="nhaystack.ui.BHDictEditor"/>
-    <type name="HDictFE"      class="nhaystack.ui.BHDictFE"><agent><on type="nhaystack:HDict"/></agent></type>
-    <type name="HTimeZoneFE"  class="nhaystack.ui.BHTimeZoneFE"/>
+    <type name="HDictDialog" class="nhaystack.ui.BHDictDialog"/>
+    <type name="HDictEditor" class="nhaystack.ui.BHDictEditor"/>
+    <type name="HDictFE"     class="nhaystack.ui.BHDictFE"><agent><on type="nhaystack:HDict"/></agent></type>
+    <type name="HTimeZoneFE" class="nhaystack.ui.BHTimeZoneFE"/>
+    <type name="HUnitFE"     class="nhaystack.ui.BHUnitFE"/>
 
 </types>

@@ -5,16 +5,16 @@ decibel,db
 power_factor,pf
 pH
 percent_relative_humidity,%RH
-grams_of_water_per_kilogram_dry_air,gH2O/kgAir
+grams_of_water_per_kilogram_dry_air,gHâ‚‚O/kgAir
 volts_per_degree_kelvin,V/K
-degree_days_celsius,°daysC
-degree_days_fahrenheit,°daysF
+degree_days_celsius,Â°daysC
+degree_days_fahrenheit,Â°daysF
 percent_obscuration_per_foot,%obsc/ft
 percent_obscuration_per_meter,%obsc/m
-psi_per_degree_fahrenheit,psi/°F
-square_meters_per_newton,m²/N
-watts_per_square_meter_degree_kelvin,W/m²K
-ampere_square_meter,Am²
+psi_per_degree_fahrenheit,psi/Â°F
+square_meters_per_newton,mÂ²/N
+watts_per_square_meter_degree_kelvin,W/mÂ²K
+ampere_square_meter,AmÂ²
 db_milliVolt,dBmV
 db_microVolt,dBuV
 parts_per_unit,ppu
@@ -30,24 +30,24 @@ formazin_nephelometric_unit,fnu
 
 -- currency --
 australian_dollar,AUD
-british_pound,GBP,£
+british_pound,GBP,Â£
 canadian_dollar,CAD
-chinese_yuan,CNY,?
-euro,EUR,€
+chinese_yuan,CNY,å…ƒ
+euro,EUR,â‚¬
 indian_rupee,INR
-japanese_yen,JPY,¥
-russian_ruble,RUB,???
-south_korean_won,KRW,?
+japanese_yen,JPY,Â¥
+russian_ruble,RUB,Ñ€ÑƒÐ±
+south_korean_won,KRW,â‚©
 swedish_krona,SEK,kr
 swiss_franc,CHF,Fr
 taiwan_dollar,TWD
 us_dollar,USD,$
 
 -- acceleration --
-meters_per_second_squared,m/s²
+meters_per_second_squared,m/sÂ²
 
 -- angular acceleration --
-radians_per_second_squared,rad/s²
+radians_per_second_squared,rad/sÂ²
 
 -- angular momentum --
 joule_second,Js
@@ -57,14 +57,14 @@ radians_per_second,rad/s
 revolutions_per_minute,rpm
 
 -- area --
-square_meter,m²
-square_millimeter,mm²
-square_centimeter,cm²
-square_kilometer,km²
-square_inch,in²
-square_foot,ft²
-square_yard,yd²
-square_mile,mile²
+square_meter,mÂ²
+square_millimeter,mmÂ²
+square_centimeter,cmÂ²
+square_kilometer,kmÂ²
+square_inch,inÂ²
+square_foot,ftÂ²
+square_yard,ydÂ²
+square_mile,mileÂ²
 acre
 
 -- capacitance --
@@ -76,7 +76,7 @@ kilowatt_per_ton,kW/ton
 energy_efficiency_ratio,Btu/Wh,EER
 
 -- density --
-kilograms_per_cubic_meter,kg/m³
+kilograms_per_cubic_meter,kg/mÂ³
 
 -- electric charge --
 coulomb,C
@@ -89,7 +89,7 @@ ampere,A
 milliampere,mA
 
 -- electric current density --
-amperes_per_square_meter,A/m²
+amperes_per_square_meter,A/mÂ²
 
 -- electric field strength --
 volts_per_meter,V/m
@@ -101,16 +101,16 @@ kiloVolt,kV
 megaVolt,MV
 
 -- electric resistance --
-ohm,O,?
-kilohm,kO,k?
-megohm,MO,M?
-milliohm,mO,m?
+ohm,Î©,â„¦
+kilohm,kÎ©,kâ„¦
+megohm,MÎ©,Mâ„¦
+milliohm,mÎ©,mâ„¦
 
 -- electrical conductivity --
 siemens_per_meter,S/m
 
 -- electrical resistivity --
-ohm_meter,Om,?m
+ohm_meter,Î©m,â„¦m
 
 -- energy --
 joule,J
@@ -139,13 +139,13 @@ kilovolt_ampere_reactive_hour,kVARh
 megavolt_ampere_reactive_hour,MVARh
 
 -- energy by area --
-joules_per_square_meter,J/m²
-kilowatt_hours_per_square_meter,kWh/m²
-kilowatt_hours_per_square_foot,kWh/ft²
-megajoules_per_square_meter,MJ/m²
-megajoules_per_square_foot,MJ/ft²
-kilobtu_per_square_foot,kBTU/ft²
-megabtu_per_square_foot,MBTU/ft²
+joules_per_square_meter,J/mÂ²
+kilowatt_hours_per_square_meter,kWh/mÂ²
+kilowatt_hours_per_square_foot,kWh/ftÂ²
+megajoules_per_square_meter,MJ/mÂ²
+megajoules_per_square_foot,MJ/ftÂ²
+kilobtu_per_square_foot,kBTU/ftÂ²
+megabtu_per_square_foot,MBTU/ftÂ²
 
 -- enthalpy --
 joules_per_gram,J/g
@@ -159,9 +159,9 @@ megajoules_per_kilogram_dry_air,MJ/kg_dry
 calorie_per_gram,cal/g
 
 -- entropy --
-joules_per_degree_kelvin,J/°K
-kilojoules_per_degree_kelvin,kJ/°K
-megajoules_per_degree_kelvin,MJ/°K
+joules_per_degree_kelvin,J/Â°K
+kilojoules_per_degree_kelvin,kJ/Â°K
+megajoules_per_degree_kelvin,MJ/Â°K
 
 -- force --
 newton,N
@@ -179,28 +179,28 @@ per_hour,/h
 percent_per_second,%/s
 
 -- grammage --
-kilograms_per_square_meter,kg/m²
-grams_per_square_meter,g/m²
+kilograms_per_square_meter,kg/mÂ²
+grams_per_square_meter,g/mÂ²
 
 -- heating rate --
 degrees_kelvin_per_second,K/s
-degrees_celsius_per_hour,°C/h
-degrees_celsius_per_minute,°C/min
-degrees_fahrenheit_per_hour,°F/h
-degrees_fahrenheit_per_minute,°F/min
+degrees_celsius_per_hour,Â°C/h
+degrees_celsius_per_minute,Â°C/min
+degrees_fahrenheit_per_hour,Â°F/h
+degrees_fahrenheit_per_minute,Â°F/min
 degrees_kelvin_per_hour,K/h
 degrees_kelvin_per_minute,K/min
 
 -- illuminance --
 lux,lx
-candelas_per_square_meter,cd/m²
+candelas_per_square_meter,cd/mÂ²
 
 -- inductance --
 henry,H
 
 -- irradiance --
-watts_per_square_meter_irradiance,W/m²_irr
-watts_per_square_foot_irradiance,W/ft²_irr
+watts_per_square_meter_irradiance,W/mÂ²_irr
+watts_per_square_foot_irradiance,W/ftÂ²_irr
 
 -- length --
 meter,m
@@ -265,14 +265,14 @@ tons_refrigeration,tonref
 kilobtus_per_hour,kBTU/h
 
 -- power by area --
-watts_per_square_meter,W/m²
-watts_per_square_foot,W/ft²
-kilowatts_per_square_meter,kW/m²
-kilowatts_per_square_foot,kW/ft²
-kilobtus_per_hour_per_square_foot,kBTU/h/ft²
+watts_per_square_meter,W/mÂ²
+watts_per_square_foot,W/ftÂ²
+kilowatts_per_square_meter,kW/mÂ²
+kilowatts_per_square_foot,kW/ftÂ²
+kilobtus_per_hour_per_square_foot,kBTU/h/ftÂ²
 
 -- power by volumetric flow --
-watts_per_cubic_meters_per_second,W/m³/s
+watts_per_cubic_meters_per_second,W/mÂ³/s
 watts_per_cubic_feet_per_minute,W/cfm
 kilowatts_per_kilocubic_feet_per_minute,kW/kcfm
 kilowatts_per_gallons_per_minute,kW/gal/min
@@ -293,8 +293,8 @@ kilopascal,kPa
 bar
 atmosphere,atm
 pounds_per_square_inch,psi
-centimeters_of_water,cmH2O
-inches_of_water,inH2O
+centimeters_of_water,cmHâ‚‚O
+inches_of_water,inHâ‚‚O
 millimeters_of_mercury,mmHg
 centimeters_of_mercury,cmHg
 inches_of_mercury,inHg
@@ -302,23 +302,23 @@ hectopascal,hPa
 millibar,mbar
 
 -- specific entropy --
-joules_per_kilogram_degree_kelvin,J/kg°K
+joules_per_kilogram_degree_kelvin,J/kgÂ°K
 
 -- surface tension --
 newtons_per_meter,N/m
 
 -- temperature --
-fahrenheit,°F
-celsius,°C
+fahrenheit,Â°F
+celsius,Â°C
 kelvin,K
 
 -- temperature differential --
-fahrenheit_degrees,?°F
-celsius_degrees,?°C
-kelvin_degrees,?K
+fahrenheit_degrees,Î”Â°F
+celsius_degrees,Î”Â°C
+kelvin_degrees,Î”K
 
 -- thermal conductivity --
-watts_per_meter_degree_kelvin,W/m°K
+watts_per_meter_degree_kelvin,W/mÂ°K
 
 -- time --
 nanosecond,ns
@@ -348,15 +348,15 @@ meters_per_hour,m/h
 knot
 
 -- volume --
-cubic_meter,m³
-cubic_millimeter,mm³
-cubic_centimeter,cm³
+cubic_meter,mÂ³
+cubic_millimeter,mmÂ³
+cubic_centimeter,cmÂ³
 milliliter,mL
 liter,L
 kiloliter,kL
-cubic_inch,in³
-cubic_foot,ft³
-cubic_yard,yd³
+cubic_inch,inÂ³
+cubic_foot,ftÂ³
+cubic_yard,ydÂ³
 gallon,gal
 quart,qt
 pint,pt
@@ -364,7 +364,7 @@ fluid_ounce,fl_oz
 imperial_gallon,galUK
 
 -- volumetric flow --
-cubic_meters_per_second,m³/s
+cubic_meters_per_second,mÂ³/s
 milliliters_per_second,mL/s
 liters_per_second,L/s
 cubic_feet_per_second,cfs
@@ -373,9 +373,9 @@ kilocubic_feet_per_minute,kcfm
 imperial_gallons_per_minute,galUK/min
 liters_per_minute,L/min
 gallons_per_minute,gal/min
-cubic_meters_per_hour,m³/h
+cubic_meters_per_hour,mÂ³/h
 liters_per_hour,L/h
-cubic_meters_per_minute,m³/min
+cubic_meters_per_minute,mÂ³/min
 
 -- bytes --
 byte
@@ -384,3 +384,4 @@ megabyte,MB
 gigabyte,GB
 terabyte,TB
 petabyte,PB
+

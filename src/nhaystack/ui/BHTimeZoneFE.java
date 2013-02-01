@@ -3,7 +3,7 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   27 Jan 2013  Mike Jarmy Creation
+//   01 Feb 2013  Mike Jarmy Creation
 //
 
 package nhaystack.ui;
