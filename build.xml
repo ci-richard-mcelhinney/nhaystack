@@ -24,6 +24,7 @@
     <dependency name="control"   vendor="Tridium" vendorVersion="3.4"/>
     <dependency name="driver"    vendor="Tridium" vendorVersion="3.4"/>
     <dependency name="file"      vendor="Tridium" vendorVersion="3.4"/>
+    <dependency name="fox"       vendor="Tridium" vendorVersion="3.4"/>
     <dependency name="gx"        vendor="Tridium" vendorVersion="3.4"/>
     <dependency name="history"   vendor="Tridium" vendorVersion="3.4"/>
     <dependency name="net"       vendor="Tridium" vendorVersion="3.4"/>
@@ -33,9 +34,14 @@
     <!-- Packages -->
     <package name="nhaystack"            doc="true"/>
     <package name="nhaystack.collection" doc="true"/>
+    <package name="nhaystack.res"        doc="true"/>
     <package name="nhaystack.server"     doc="true"/>
+    <package name="nhaystack.ui"         doc="true"/>
 
     <!-- Resources -->
+    <resources name="nhaystack/res/*.csv" />
+    <resources name="nhaystack/res/*.txt" />
+    <resources name="nhaystack/res/equip-points/*.txt" />
     <resources name="nhaystack/icons/*.*" />
 
 </module>

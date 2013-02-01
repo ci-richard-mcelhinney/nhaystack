@@ -132,7 +132,7 @@ public class NHServer extends HServer
         else if (navId.startsWith(Sys.getStation().getStationName() + ":c."))
         {
             NHRef nid = NHRef.make(HRef.make(navId));
-            BComponent comp = service.getComponentSpace().findByHandle(nid.handle);
+            BComponent comp = service.getComponentSpace().findByHandle(nid.getHandle());
             BComponent kids[] = comp.getChildComponents();
 
             Array dicts = new Array(HDict.class);
@@ -162,7 +162,7 @@ public class NHServer extends HServer
 
         // add a navId, but only if this component is not a leaf
         if (comp.getChildComponents().length > 0)
-            hdb.add("navId", NHRef.make(comp).ref.val);
+            hdb.add("navId", NHRef.make(comp).getHRef().val);
 
         if (isVisibleComponent(comp))
         {
@@ -289,7 +289,7 @@ public class NHServer extends HServer
         hdb.add(tags);
 
         // add id
-        hdb.add("id", NHRef.make(comp).ref);
+        hdb.add("id", NHRef.make(comp).getHRef());
         
         // add space-specific tags
         if (comp instanceof BHistoryConfig)
@@ -454,7 +454,7 @@ public class NHServer extends HServer
                 hdb.add("his");
 
                 if (service.getShowLinkedHistories())
-                    hdb.add("axHistoryRef", NHRef.make(cfg).ref);
+                    hdb.add("axHistoryRef", NHRef.make(cfg).getHRef());
 
                 // tz
                 if (!tags.has("tz"))
@@ -541,7 +541,7 @@ public class NHServer extends HServer
         if (point != null)
         {
             // add point ref
-            hdb.add("axPointRef", NHRef.make(point).ref);
+            hdb.add("axPointRef", NHRef.make(point).getHRef());
 
             // hisInterpolate 
             if (!tags.has("hisInterpolate"))
@@ -602,21 +602,21 @@ public class NHServer extends HServer
         NHRef nid = NHRef.make(id);
 
         // make sure station matches
-        if (!nid.stationName.equals(Sys.getStation().getStationName()))
+        if (!nid.getStationName().equals(Sys.getStation().getStationName()))
             return null;
 
         // component space
-        if (nid.space.equals("c"))
+        if (nid.isComponentSpace())
         {
             // this might be null
-            BComponent comp = service.getComponentSpace().findByHandle(nid.handle);
+            BComponent comp = service.getComponentSpace().findByHandle(nid.getHandle());
             if (comp == null) return null;
             return isVisibleComponent(comp) ? comp : null;
         }
         // history space
-        else if (nid.space.equals("h"))
+        else if (nid.isHistorySpace())
         {
-            BHistoryId hid = BHistoryId.make(nid.handle);
+            BHistoryId hid = BHistoryId.make(nid.getHandle());
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();

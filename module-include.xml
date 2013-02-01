@@ -14,4 +14,7 @@
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
 
+    <type name="HDictEditor" class="nhaystack.ui.BHDictEditor"/>
+    <type name="HDictFE" class="nhaystack.ui.BHDictFE"><agent><on type="nhaystack:HDict"/></agent></type>
+
 </types>

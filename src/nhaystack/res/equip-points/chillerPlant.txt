@@ -1,0 +1,17 @@
+**Chilled water to/from AHUs**
+chilled water leaving temp sensor
+chilled water leaving temp sp
+chilled water leaving flow sensor
+chilled water leaving pressure sensor
+chilled water entering temp sensor
+chilled water entering flow sensor
+chilled water entering pressure sensor
+chilled water delta temp sensor
+chilled water delta flow sensor
+chilled water delta pressure sensor
+chilled water delta pressure sp
+chilled water bypass valve cmd
+
+**Condensed water between Chillers/Cooling Towers**
+condensed water delta pressure sensor
+condensed water bypass valve cmd

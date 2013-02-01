@@ -1,0 +1,29 @@
+**Chilled water to/from AHUs**
+chilled water leaving temp sensor
+chilled water leaving temp sp
+chilled water leaving flow sensor
+chilled water leaving pressure sensor
+chilled water entering temp sensor
+chilled water entering flow sensor
+chilled water entering pressure sensor
+chilled water delta temp sensor
+chilled water delta flow sensor
+chilled water delta pressure sensor
+chilled water valve isolation cmd
+
+**Condensed water to/from cooling towers**
+condensed water leaving temp sensor
+condensed water leaving flow sensor
+condensed water leaving pressure sensor
+condensed water entering temp sensor
+condensed water entering pressure sensor
+condensed water entering flow sensor
+condensed water valve isolation cmd
+
+**Misc Internal**
+efficiency
+condenser cmd
+condenser refrig temp sensor
+condenser refrig pressure sensor
+evaporator refrig temp sensor
+evaporator refrig pressure sensor

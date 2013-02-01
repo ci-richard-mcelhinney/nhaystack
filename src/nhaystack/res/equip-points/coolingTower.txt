@@ -1,0 +1,9 @@
+condensed water leaving temp sensor
+condensed water leaving temp sp
+condensed water leaving flow sensor
+condensed water leaving pressure sensor
+condensed water entering temp sensor
+condensed water entering pressure sensor
+condensed water entering flow sensor
+fan cmd
+fan sensor

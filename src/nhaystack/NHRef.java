@@ -45,33 +45,36 @@ public class NHRef
     }
 
     /**
+      * Convenience for <code>make(Sys.getStation().getStationName(), comp)</code>.
+      */
+    public static NHRef make(BComponent comp)
+    {
+        return make(Sys.getStation().getStationName(), comp);
+    }
+
+    /**
       * Make an ID from a BComponent.  If the BComponent
       * is a BHistoryConfig, create a HistorySpace ID.
       * Otherwise assume the BComponent is mounted, and 
       * create a BComponentSpace ID from the component's handle.
       */
-    public static NHRef make(BComponent comp)
+    public static NHRef make(String stationName, BComponent comp)
     {
         // history space
         if (comp instanceof BHistoryConfig)
         {
             BHistoryConfig cfg = (BHistoryConfig) comp;
             BHistoryId hid = cfg.getId();
-
-            String stationName = Sys.getStation().getStationName();
-            String space  = "h";
             String handle = Base64.URI.encodeUTF8(hid.toString());
 
-            return new NHRef(stationName, space, handle);
+            return new NHRef(stationName, "h", handle);
         }
         // component space
         else
         {
-            String stationName = Sys.getStation().getStationName();
-            String space  = "c";
             String handle = Base64.URI.encodeUTF8(comp.getHandle().toString());
             
-            return new NHRef(stationName, space, handle);
+            return new NHRef(stationName, "c", handle);
         }
     }
 
@@ -118,30 +121,23 @@ public class NHRef
 // Access
 ////////////////////////////////////////////////////////////////
 
-    public boolean isComponentSpace() { return space.equals("c"); }
-    public boolean isHistorySpace()   { return space.equals("h"); }
-
-////////////////////////////////////////////////////////////////
-// Attributes
-////////////////////////////////////////////////////////////////
-
     /**
       * The ref is always <code>stationName + ":" + space + "." + handle</code>.
       */
-    public final HRef ref;
+    public HRef getHRef() { return ref; }
 
     /**
       * The name of the station that the object resides in.  
       * Standard AX practice is that station names must be
       * unique within an entire system.
       */
-    public final String stationName;
+    public String getStationName() { return stationName; }
 
     /**
-      * The space is always either "c" for ComponentSpace,
-      * or "h" for HistorySpace;
+      * The space is always either a componentSpace or a historySpace.
       */
-    public final String space; 
+    public boolean isComponentSpace() { return space.equals("c"); }
+    public boolean isHistorySpace()   { return space.equals("h"); }
 
     /**
       * For a ComponentSpace, the handle is an encoding of the 
@@ -149,5 +145,14 @@ public class NHRef
       *
       * For a HistorySpace, the handle is an encoding of the historyId.
       */
-    public final String handle;
+    public String getHandle() { return handle; }
+
+////////////////////////////////////////////////////////////////
+// Attributes
+////////////////////////////////////////////////////////////////
+
+    private final HRef ref;
+    private final String stationName;
+    private final String space; 
+    private final String handle;
 }
