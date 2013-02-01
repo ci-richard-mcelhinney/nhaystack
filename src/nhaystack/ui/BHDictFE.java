@@ -8,8 +8,6 @@
 
 package nhaystack.ui;
 
-import java.io.*;
-
 import javax.baja.fox.*;
 import javax.baja.gx.*;
 import javax.baja.sys.*;
@@ -20,7 +18,6 @@ import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
 import javax.baja.workbench.view.*;
 
-import haystack.*;
 import nhaystack.*;
 
 public class BHDictFE extends BWbFieldEditor

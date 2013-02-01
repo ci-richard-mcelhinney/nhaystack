@@ -7,15 +7,12 @@
 //
 package nhaystack.server;
 
-import java.util.*;
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
 import javax.baja.driver.*;
 import javax.baja.history.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 
 /**
   * A ProxyPoint represents a point that is proxied in some way

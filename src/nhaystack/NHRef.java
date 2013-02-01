@@ -10,7 +10,6 @@ package nhaystack;
 
 import javax.baja.history.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 import haystack.*;
 import haystack.util.*;
 

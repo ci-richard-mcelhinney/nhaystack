@@ -13,7 +13,6 @@ import javax.baja.control.ext.*;
 import javax.baja.driver.*;
 import javax.baja.driver.point.*;
 import javax.baja.history.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;

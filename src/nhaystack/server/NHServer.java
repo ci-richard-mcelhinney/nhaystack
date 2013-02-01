@@ -11,7 +11,6 @@ package nhaystack.server;
 import java.util.*;
 import javax.baja.collection.*;
 import javax.baja.control.*;
-import javax.baja.driver.history.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
@@ -24,7 +23,6 @@ import javax.baja.util.*;
 
 import haystack.*;
 import haystack.server.*;
-import haystack.util.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 
