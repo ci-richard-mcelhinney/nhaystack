@@ -20,13 +20,17 @@ import javax.baja.util.*;
 public class Resources
 {
     // tags.csv: kind -> tagName
-    private static final Map kindTags = new TreeMap();
+    private static Map kindTags;
+
+    // tz.txt
+    private static String[] timeZones;
 
     static
     {
         try
         {
             loadTags(Resources.class);
+            loadTz(Resources.class);
         }
         catch (Exception e)
         {
@@ -36,6 +40,8 @@ public class Resources
 
     private static void loadTags(Class cls) throws Exception
     {
+        kindTags = new TreeMap();
+
         InputStream in = cls.getResourceAsStream("/nhaystack/res/tags.csv");
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
@@ -56,11 +62,33 @@ public class Resources
         }
     }
 
+    private static void loadTz(Class cls) throws Exception
+    {
+        InputStream in = cls.getResourceAsStream("/nhaystack/res/tz.txt");
+        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+
+        Array arr = new Array(String.class);
+
+        String str = bin.readLine(); 
+        while (str != null)
+        {
+            arr.add(str.trim());
+            str = bin.readLine();
+        }
+
+        timeZones = (String[]) arr.trim();
+    }
+
     public static String[] getKindTags(String kind)
     {
         if (!kindTags.containsKey(kind)) return new String[0];
 
         Array arr = new Array(String.class, (Set) kindTags.get(kind));
         return (String[]) arr.trim();
+    }
+
+    public static String[] getTimeZones()
+    {
+        return timeZones;
     }
 }

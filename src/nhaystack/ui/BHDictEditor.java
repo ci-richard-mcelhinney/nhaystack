@@ -36,12 +36,13 @@ public class BHDictEditor extends BEdgePane
         actions
         {
             kindsModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
+            namesModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditor(2939891505)1.0$ @*/
-/* Generated Thu Jan 31 17:55:00 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictEditor(3566598203)1.0$ @*/
+/* Generated Fri Feb 01 10:39:16 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Action "kindsModified"
@@ -58,6 +59,22 @@ public class BHDictEditor extends BEdgePane
    * @see nhaystack.ui.BHDictEditor#kindsModified
    */
   public void kindsModified(BWidgetEvent event) { invoke(kindsModified,event,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "namesModified"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>namesModified</code> action.
+   * @see nhaystack.ui.BHDictEditor#namesModified()
+   */
+  public static final Action namesModified = newAction(0,new BWidgetEvent(),null);
+  
+  /**
+   * Invoke the <code>namesModified</code> action.
+   * @see nhaystack.ui.BHDictEditor#namesModified
+   */
+  public void namesModified(BWidgetEvent event) { invoke(namesModified,event,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -195,7 +212,7 @@ public class BHDictEditor extends BEdgePane
     public void doKindsModified(BWidgetEvent event)
     {
         BListDropDown kinds = (BListDropDown) event.getWidget();
-        Row row = (Row) rows.get(rowIndex(kinds));
+        Row row = (Row) rows.get(kindsIndex(kinds));
 
         String kind = (String) kinds.getSelectedItem();
 
@@ -210,12 +227,49 @@ public class BHDictEditor extends BEdgePane
         fillGrid();
     }
 
-    private int rowIndex(BListDropDown kinds)
+    public void doNamesModified(BWidgetEvent event)
+    {
+        BTextField text = (BTextField) event.getWidget();
+        BTextDropDown names = (BTextDropDown) text.getParent();
+        String name = names.getText();
+
+        Row row = (Row) rows.get(namesIndex(names));
+        String kind = (String) row.kinds.getSelectedItem();
+        if (kind.equals("Str"))
+        {
+            // change to BHTimeZoneFE
+            if (name.equals("tz") && !(row.fe instanceof BHTimeZoneFE))
+            {
+                row.fe = new BHTimeZoneFE();
+                row.fe.loadValue(BString.make(HTimeZone.DEFAULT.name));
+                fillGrid();
+            }
+            // change away from 
+            else if (!name.equals("tz") && (row.fe instanceof BHTimeZoneFE))
+            {
+                row.fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                row.fe.loadValue(BString.DEFAULT);
+                fillGrid();
+            }
+        }
+    }
+
+    private int kindsIndex(BListDropDown kinds)
     {
         for (int i = 0; i < rows.size(); i++)
         {
             Row row = (Row) rows.get(i);
             if (row.kinds == kinds) return i;
+        }
+        throw new IllegalStateException();
+    }
+
+    private int namesIndex(BTextDropDown names)
+    {
+        for (int i = 0; i < rows.size(); i++)
+        {
+            Row row = (Row) rows.get(i);
+            if (row.names == names) return i;
         }
         throw new IllegalStateException();
     }
@@ -319,7 +373,7 @@ public class BHDictEditor extends BEdgePane
             list.addItem(tags[i]);
     }
 
-    private BWbFieldEditor makeValueFE(HVal val)
+    private BWbFieldEditor makeValueFE(String kind, String name, HVal val)
     {
         if (val instanceof HMarker) 
         {
@@ -338,9 +392,19 @@ public class BHDictEditor extends BEdgePane
         else if (val instanceof HStr)
         {
             HStr str = (HStr) val;
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.make(str.val));
-            return fe;
+
+            if (kind.equals("Str") && name.equals("tz"))
+            {
+                BWbFieldEditor fe = new BHTimeZoneFE();
+                fe.loadValue(BString.make(str.val));
+                return fe;
+            }
+            else
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.make(str.val));
+                return fe;
+            }
         }
         else if (val instanceof HRef)
         {
@@ -357,7 +421,7 @@ public class BHDictEditor extends BEdgePane
             {
                 BOrd ord = BOrd.make("station:|h:" + nh.getHandle());
                 BComponent comp = (BComponent) ord.resolve(session, null).get();
-                fe.loadValue(comp.getSlotPathOrd());
+                fe.loadValue(BOrd.make("station:|" + comp.getSlotPathOrd()));
             }
             else if (nh.isHistorySpace())
             {
@@ -477,8 +541,9 @@ public class BHDictEditor extends BEdgePane
             this.names = new BTextDropDown();
             populateNames(kind, names);
             names.setText(name);
+            linkTo(names, BDropDown.valueModified, namesModified);  
 
-            this.fe = makeValueFE(val);
+            this.fe = makeValueFE(kind, name, val);
         }
 
         BListDropDown kinds = new BListDropDown();
