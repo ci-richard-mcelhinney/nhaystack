@@ -29,7 +29,7 @@ import haystack.io.*;
 import nhaystack.*;
 import nhaystack.res.*;
 
-public final class BHDictEditor extends BEdgePane
+public class BHDictEditor extends BEdgePane
 {
     /*-
     class BHDictEditor
@@ -71,14 +71,13 @@ public final class BHDictEditor extends BEdgePane
 
     public BHDictEditor() {}
 
-    public BHDictEditor(BFoxProxySession session, HDict orig)
+    public BHDictEditor(BFoxProxySession session, BHDict orig)
     {
         this.session = session;
-        this.orig = orig;
 
         // load rows
         this.rows = new Array(Row.class);
-        Iterator it = orig.iterator();
+        Iterator it = orig.getDict().iterator();
         while (it.hasNext())
         {
             Map.Entry entry = (Map.Entry) it.next();
@@ -107,7 +106,11 @@ public final class BHDictEditor extends BEdgePane
         setCenter(scroll);
     }
 
-    public HDict makeDict() throws Exception
+////////////////////////////////////////////////////////////////
+// public
+////////////////////////////////////////////////////////////////
+
+    public void save() throws Exception
     {
         HDictBuilder db = new HDictBuilder();
 
@@ -181,7 +184,9 @@ public final class BHDictEditor extends BEdgePane
             else throw new IllegalStateException();
         }
 
-        return db.toDict();
+        // encode to zinc and back just to be sure
+        this.zinc = db.toDict().toZinc();
+        this.tags = BHDict.make(new HZincReader(zinc).readDict());
     }
 
 ////////////////////////////////////////////////////////////////
@@ -220,11 +225,25 @@ public final class BHDictEditor extends BEdgePane
 // Commands
 ////////////////////////////////////////////////////////////////
 
-    class AddRow extends Command
+    class AddRowIcon extends Command
     {
-        public AddRow() { super(BHDictEditor.this, ""); }
+        public AddRowIcon() { super(BHDictEditor.this, ""); }
 
         public BImage getIcon() { return ADD; }
+
+        public CommandArtifact doInvoke()
+        {
+            String[] tags = Resources.getKindTags("Marker");
+            rows.add(new Row(tags[0], HMarker.VAL));
+            fillGrid();
+
+            return null;
+        }
+    }
+
+    class AddRowButton extends Command
+    {
+        public AddRowButton() { super(BHDictEditor.this, LEX.getText("addTag")); }
 
         public CommandArtifact doInvoke()
         {
@@ -416,8 +435,11 @@ public final class BHDictEditor extends BEdgePane
             }
         }
 
-        grid.add(null, makeAddRemove(new AddRow()));
-        grid.add(null, new BLabel(LEX.getText("addTag")));
+        BButton button = new BButton(new AddRowButton());
+        button.setButtonStyle(BButtonStyle.toolBar);
+
+        grid.add(null, makeAddRemove(new AddRowIcon()));
+        grid.add(null, button);
         grid.add(null, new BNullWidget());
         grid.add(null, new BNullWidget());
 
@@ -466,6 +488,20 @@ public final class BHDictEditor extends BEdgePane
     }
 
 ////////////////////////////////////////////////////////////////
+// Access
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Returns null if the call to save() failed.
+      */
+    public BHDict getTags() { return tags; }
+
+    /**
+      * Returns null if the call to save() failed.
+      */
+    public String getZinc() { return zinc; }
+
+////////////////////////////////////////////////////////////////
 // Attributes 
 ////////////////////////////////////////////////////////////////
 
@@ -489,7 +525,9 @@ public final class BHDictEditor extends BEdgePane
 
     private BFoxProxySession session;
 
-    private HDict orig;
     private Array rows;
     private BGridPane grid;
+
+    private BHDict tags = null;
+    private String zinc = null;
 }

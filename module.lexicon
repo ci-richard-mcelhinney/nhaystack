@@ -4,3 +4,5 @@ addTag=Add Tag
 type=Type
 name=Name
 value=Value
+ok=OK
+cancel=Cancel

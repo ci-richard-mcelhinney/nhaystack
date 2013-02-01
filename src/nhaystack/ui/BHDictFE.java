@@ -23,7 +23,7 @@ import javax.baja.workbench.view.*;
 import haystack.*;
 import nhaystack.*;
 
-public final class BHDictFE extends BWbFieldEditor
+public class BHDictFE extends BWbFieldEditor
 {
     /*-
     class BHDictFE
@@ -58,13 +58,13 @@ public final class BHDictFE extends BWbFieldEditor
 
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
-        dict = (BHDict) value;
-        textField.setText(dict.encodeToString());
+        tags = (BHDict) value;
+        textField.setText(tags.encodeToString());
     }
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
-        return dict;
+        return tags;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -82,26 +82,19 @@ public final class BHDictFE extends BWbFieldEditor
 
     private void edit()
     {
-        BHDictEditor editor = new BHDictEditor(findProxySession(), dict.getDict());
+        BHDictEditor editor = new BHDictEditor(findProxySession(), tags);
 
-        int result = BDialog.open(this, LEX.getText("haystackTags"), editor, BDialog.OK_CANCEL);
-        if (result == BDialog.OK)
+        BHDictDialog dialog = BHDictDialog.make(this, editor);
+        dialog.setBoundsCenteredOnOwner();
+        dialog.open();
+
+        BHDict result = editor.getTags();
+        if (result != null && !result.equals(tags))
         {
-            try
-            {
-                BHDict newDict = BHDict.make(editor.makeDict());
-                if (!newDict.equals(dict))
-                {
-                    dict = newDict;
-                    textField.setText(dict.encodeToString());
-                    textField.relayout();
-                    setModified();
-                }
-            }
-            catch (Exception e)
-            {
-                BDialog.error(this, LEX.getText("cannotSaveTags"), e.getMessage(), e);
-            }
+            tags = result;
+            textField.setText(editor.getZinc());
+            textField.relayout();
+            setModified();
         }
     }
 
@@ -139,5 +132,5 @@ public final class BHDictFE extends BWbFieldEditor
     private final BTextField textField;
     private final BButton button;
 
-    private BHDict dict;
+    private BHDict tags;
 }
