@@ -8,7 +8,6 @@
 
 package nhaystack.ui;
 
-import javax.baja.fox.*;
 import javax.baja.gx.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
@@ -20,6 +19,12 @@ import javax.baja.workbench.view.*;
 
 import nhaystack.*;
 
+/**
+  * BHDictFE displays a BHDict, and allows editing via a BHDictEditor.
+  * </p>
+  * Note that this BWbFieldEditor only works if it is
+  * mounted somewhere inside of a BWbComponentView.
+  */
 public class BHDictFE extends BWbFieldEditor
 {
     /*-
@@ -79,7 +84,7 @@ public class BHDictFE extends BWbFieldEditor
 
     private void edit()
     {
-        BHDictEditor editor = new BHDictEditor(findProxySession(), tags);
+        BHDictEditor editor = new BHDictEditor(findParentComponent(), tags);
 
         BHDictDialog dialog = BHDictDialog.make(this, editor);
         dialog.setBoundsCenteredOnOwner();
@@ -95,26 +100,20 @@ public class BHDictFE extends BWbFieldEditor
         }
     }
 
-    /**
-      * A BFoxProxySession can be obtained by walking up
-      * the widget tree until we find a BWbComponentView,
-      * and then using the proxy session of the view's component.
-      */
-    private BFoxProxySession findProxySession()
+    private BComponent findParentComponent()
     {
-        BWidget parent = getParentWidget();
-        while (parent != null)
+        BWidget widget = getParentWidget();
+        while (widget != null)
         {
-            if (parent instanceof BWbComponentView) 
+            if (widget instanceof BWbComponentView) 
             {
-                BWbComponentView view = (BWbComponentView) parent;
-                BComponent comp = (BComponent) view.getCurrentValue();
-                return (BFoxProxySession) comp.getSession();
+                BWbComponentView view = (BWbComponentView) widget;
+                return (BComponent) view.getCurrentValue();
             }
-            parent = parent.getParentWidget();
+            widget = widget.getParentWidget();
         }
-
-        throw new IllegalStateException();
+        throw new IllegalStateException(
+            "Cannot find parent BWbComponentView");
     }
 
 ////////////////////////////////////////////////////////////////

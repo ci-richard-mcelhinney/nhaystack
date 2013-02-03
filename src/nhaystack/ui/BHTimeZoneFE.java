@@ -16,6 +16,9 @@ import javax.baja.workbench.fieldeditor.*;
 
 import nhaystack.res.*;
 
+/**
+  * BHTimeZoneFE edits a Haystack timezone.
+  */
 public class BHTimeZoneFE extends BWbFieldEditor
 {
     /*-

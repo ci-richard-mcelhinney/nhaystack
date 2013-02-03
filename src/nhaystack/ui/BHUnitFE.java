@@ -19,6 +19,9 @@ import javax.baja.workbench.fieldeditor.*;
 
 import nhaystack.res.*;
 
+/**
+  * BHUnitFE edits a haystack unit.
+  */
 public class BHUnitFE extends BWbFieldEditor
 {
     /*-

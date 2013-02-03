@@ -28,7 +28,10 @@ import haystack.io.*;
 import nhaystack.*;
 import nhaystack.res.*;
 
-public class BHDictEditor extends BEdgePane
+/**
+  * BHDictEditor is the actual editor for BHDicts.
+  */
+public class BHDictEditor extends BScrollPane
 {
     /*-
     class BHDictEditor
@@ -37,12 +40,13 @@ public class BHDictEditor extends BEdgePane
         {
             kindsModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
             namesModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
+            markerGroupsModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditor(3566598203)1.0$ @*/
-/* Generated Fri Feb 01 10:39:16 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictEditor(3168623275)1.0$ @*/
+/* Generated Sun Feb 03 09:44:48 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Action "kindsModified"
@@ -77,6 +81,22 @@ public class BHDictEditor extends BEdgePane
   public void namesModified(BWidgetEvent event) { invoke(namesModified,event,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "markerGroupsModified"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>markerGroupsModified</code> action.
+   * @see nhaystack.ui.BHDictEditor#markerGroupsModified()
+   */
+  public static final Action markerGroupsModified = newAction(0,new BWidgetEvent(),null);
+  
+  /**
+   * Invoke the <code>markerGroupsModified</code> action.
+   * @see nhaystack.ui.BHDictEditor#markerGroupsModified
+   */
+  public void markerGroupsModified(BWidgetEvent event) { invoke(markerGroupsModified,event,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -87,39 +107,131 @@ public class BHDictEditor extends BEdgePane
 
     public BHDictEditor() {}
 
-    public BHDictEditor(BFoxProxySession session, BHDict orig)
+    public BHDictEditor(BComponent parentComponent, BHDict orig)
     {
-        this.session = session;
+        this.session = (BFoxProxySession) parentComponent.getSession();
 
-        // load rows
+        // main grid
+        this.mainGrid = new BGridPane();
+        mainGrid.setColumnCount(4);
+        mainGrid.setHalign(BHalign.left);
+        mainGrid.setValign(BValign.top);
+
+        BBorderPane mainBorder = new BBorderPane(mainGrid);
+        mainBorder.setPadding(BInsets.make(10));
+        mainBorder.setMargin(BInsets.make(10));
+        mainBorder.setBorder(BBorder.make("inset"));
+
+        BConstrainedPane mainCons = new BConstrainedPane(mainBorder);
+        mainCons.setMinWidth(MIN_GRID_WIDTH);
+        mainCons.setMinHeight(MIN_GRID_HEIGHT);
+
+        // marker groups
+        this.markerGroups = new BListDropDown();
+        this.markerGroupTags = new BListDropDown();
+
+        BConstrainedPane mgCons = new BConstrainedPane(markerGroupTags);
+        mgCons.setMinWidth(150);
+
+        BGridPane mgGrid = new BGridPane(3); 
+        mgGrid.setHalign(BHalign.left);
+        mgGrid.setValign(BValign.top);
+        mgGrid.add(null, new BLabel(LEX.getText("markerGroups") + " ", BOLD));
+        mgGrid.add(null, markerGroups);
+        mgGrid.add(null, mgCons);
+
+        BBorderPane mgBorder = new BBorderPane(mgGrid);
+        mgBorder.setPadding(BInsets.make(0, 0, 10, 10));
+
+        // put it together
+        BEdgePane ep = new BEdgePane();
+        ep.setCenter(mainCons);
+        ep.setBottom(mgBorder);
+        setViewportBackground(BBrush.makeSolid(BColor.make("#CCCCCC")));
+        setContent(ep);
+
+        // load up
+        Map tagMap = asTagMap(orig.getDict());
+        loadMarkerGroups(tagMap);
+        loadMainGrid(tagMap);
+    }
+
+    /**
+      * Convert an HDict into a TreeMap<String,HVal>
+      */
+    private static Map asTagMap(HDict dict)
+    {
+        Map tagMap = new TreeMap();
+        Iterator it = dict.iterator();
+        while (it.hasNext())
+        {
+            Map.Entry entry = (Map.Entry) it.next();
+            tagMap.put(entry.getKey(), entry.getValue());
+        }
+        return tagMap;
+    }
+
+    /**
+      * set up the marker ui.
+      */
+    private void loadMarkerGroups(Map tagMap) // TreeMap<String,HVal>
+    {
+        // populate markerGroups
+        markerGroups.getList().addItem(LEX.getText("none"));
+        String[] mg = Resources.getMarkerGroups();
+        for (int i = 0; i < mg.length; i++)
+            markerGroups.getList().addItem(mg[i]);
+
+        // assumer that there are no groups in the tagMap
+        markerGroups.setSelectedIndex(0);
+        markerGroupTags.setEnabled(false);
+
+        // try to find a group in the tagMap
+        Set tagKeys = tagMap.keySet();
+        outerLoop: for (int i = 0; i < mg.length; i++)
+        {
+            String[] mt = Resources.getMarkerGroupTags(mg[i]);
+            for (int j = 0; j < mt.length; j++)
+            {
+                Set set = new HashSet(Arrays.asList(TextUtil.split(mt[j], ' ')));
+
+                // found a group!
+                if (tagKeys.containsAll(set))
+                {
+                    markerGroupTags.setEnabled(true);
+                    BList list = markerGroupTags.getList();
+                    for (int k = 0; k < mt.length; k++)
+                        list.addItem(mt[k]);
+
+                    markerGroups.setSelectedItem(mg[i]);
+                    markerGroupTags.setSelectedItem(mt[j]);
+
+                    tagKeys.removeAll(set);
+                    break outerLoop;
+                }
+            }
+        }
+
+        // done
+        linkTo(markerGroups, BDropDown.valueModified, markerGroupsModified);  
+    }
+
+    /**
+      * Set up the mainGrid
+      */
+    private void loadMainGrid(Map tagMap) // TreeMap<String,HVal>
+    {
         this.rows = new Array(Row.class);
-        Iterator it = orig.getDict().iterator();
+        Iterator it = tagMap.entrySet().iterator();
         while (it.hasNext())
         {
             Map.Entry entry = (Map.Entry) it.next();
             String name = (String) entry.getKey();
             HVal val = (HVal) entry.getValue();
 
-            this.rows.add(new Row(name, val));
+            this.rows.add(new Row(this, name, val));
         }
-
-        // set up ui
-        this.grid = new BGridPane();
-        grid.setColumnCount(4);
-        grid.setHalign(BHalign.left);
-        grid.setValign(BValign.top);
-        fillGrid();
-
-        BConstrainedPane cons = new BConstrainedPane(this.grid);
-        cons.setMinWidth(MIN_WIDTH);
-        cons.setMinHeight(MIN_HEIGHT);
-
-        BBorderPane border = new BBorderPane(cons, BInsets.make(5));
-
-        BScrollPane scroll = new BScrollPane();
-        scroll.setViewportBackground(BBrush.makeSolid(BColor.make("#CCCCCC")));
-        scroll.setContent(border);
-        setCenter(scroll);
+        fillMainGrid();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -128,8 +240,9 @@ public class BHDictEditor extends BEdgePane
 
     public void save() throws Exception
     {
-        HDictBuilder db = new HDictBuilder();
+        HDictBuilder builder = new HDictBuilder();
 
+        // from mainGrid rows
         Set used = new HashSet();
         for (int i = 0; i < rows.size(); i++)
         {
@@ -149,17 +262,17 @@ public class BHDictEditor extends BEdgePane
             // add to builder
             if (kind.equals("Marker"))
             {
-                db.add(name);
+                builder.add(name);
             }
             else if (kind.equals("Number"))
             {
                 BDouble num = (BDouble) row.fe.saveValue();
-                db.add(name, num.getDouble());
+                builder.add(name, num.getDouble());
             }
             else if (kind.equals("Str"))
             {
                 BString str = (BString) row.fe.saveValue();
-                db.add(name, str.getString());
+                builder.add(name, str.getString());
             }
             else if (kind.equals("Ref"))
             {
@@ -178,14 +291,14 @@ public class BHDictEditor extends BEdgePane
                     if (!comp.isMounted())
                         throw new BajaRuntimeException(ord + " is not mounted.");
                     NHRef nh = NHRef.make(session.getStationName(), comp);
-                    db.add(name, nh.getHRef());
+                    builder.add(name, nh.getHRef());
                 }
                 else if (obj instanceof BIHistory)
                 {
                     BIHistory history = (BIHistory) obj;
                     BHistoryConfig cfg = history.getConfig();
                     NHRef nh = NHRef.make(session.getStationName(), cfg);
-                    db.add(name, nh.getHRef());
+                    builder.add(name, nh.getHRef());
                 }
                 else
                 {
@@ -195,13 +308,23 @@ public class BHDictEditor extends BEdgePane
             else if (kind.equals("Bool"))
             {
                 BBoolean bool = (BBoolean) row.fe.saveValue();
-                db.add(name, bool.getBoolean());
+                builder.add(name, bool.getBoolean());
             }
             else throw new IllegalStateException();
         }
 
+        // from markerGroupTags
+        String mg = (String) markerGroups.getSelectedItem();
+        if (!mg.equals(LEX.getText("none")))
+        {
+            String item = (String) markerGroupTags.getSelectedItem();
+            String[] markers = TextUtil.split(item, ' ');
+            for (int i = 0; i < markers.length; i++)
+                builder.add(markers[i]);
+        }
+
         // encode to zinc and back just to be sure
-        this.zinc = db.toDict().toZinc();
+        this.zinc = builder.toDict().toZinc();
         this.tags = BHDict.make(new HZincReader(zinc).readDict());
     }
 
@@ -216,15 +339,15 @@ public class BHDictEditor extends BEdgePane
 
         String kind = (String) kinds.getSelectedItem();
 
-        populateNames(kind, row.names);
+        row.populateNames(kind);
         if (row.names.getList().getItemCount() == 0)
             row.names.setText("");
         else
             row.names.setText((String) row.names.getList().getItem(0));
 
-        row.fe = initValueFE(kind);
+        row.fe = Row.initValueFE(kind);
 
-        fillGrid();
+        fillMainGrid();
     }
 
     public void doNamesModified(BWidgetEvent event)
@@ -242,7 +365,7 @@ public class BHDictEditor extends BEdgePane
             {
                 row.fe = new BHTimeZoneFE();
                 row.fe.loadValue(BString.make(HTimeZone.DEFAULT.name));
-                fillGrid();
+                fillMainGrid();
             }
             // change away from tz
             else if (!name.equals("tz") && (row.fe instanceof BHTimeZoneFE))
@@ -257,14 +380,14 @@ public class BHDictEditor extends BEdgePane
                     row.fe = BWbFieldEditor.makeFor(BString.DEFAULT);
                     row.fe.loadValue(BString.DEFAULT);
                 }
-                fillGrid();
+                fillMainGrid();
             }
             // change to unit
             else if (name.equals("unit") && !(row.fe instanceof BHUnitFE))
             {
                 row.fe = new BHUnitFE();
                 row.fe.loadValue(BString.make(Resources.getSymbolUnit("%").symbol));
-                fillGrid();
+                fillMainGrid();
             }
             // change away from unit
             else if (!name.equals("unit") && (row.fe instanceof BHUnitFE))
@@ -279,7 +402,7 @@ public class BHDictEditor extends BEdgePane
                     row.fe = BWbFieldEditor.makeFor(BString.DEFAULT);
                     row.fe.loadValue(BString.DEFAULT);
                 }
-                fillGrid();
+                fillMainGrid();
             }
         }
     }
@@ -304,6 +427,30 @@ public class BHDictEditor extends BEdgePane
         throw new IllegalStateException();
     }
 
+    public void doMarkerGroupsModified(BWidgetEvent event)
+    {
+        markerGroupTags.setSelectedIndex(-1);
+        BList list = markerGroupTags.getList();
+        list.removeAllItems();
+
+        String mg = (String) markerGroups.getSelectedItem();
+        if (mg.equals(LEX.getText("none")))
+        {
+            markerGroupTags.setEnabled(false);
+        }
+        else
+        {
+            markerGroupTags.setEnabled(true);
+
+            String[] mt = Resources.getMarkerGroupTags(mg);
+            for (int i = 0; i < mt.length; i++)
+                list.addItem(mt[i]);
+            markerGroupTags.setSelectedItem(mt[0]);
+        }
+
+        relayoutAncestors(markerGroupTags, this);
+    }
+
 ////////////////////////////////////////////////////////////////
 // Commands
 ////////////////////////////////////////////////////////////////
@@ -317,8 +464,10 @@ public class BHDictEditor extends BEdgePane
         public CommandArtifact doInvoke()
         {
             String[] tags = Resources.getKindTags("Marker");
-            rows.add(new Row(tags[0], HMarker.VAL));
-            fillGrid();
+            rows.add(new Row(BHDictEditor.this, tags[0], HMarker.VAL));
+
+            fillMainGrid();
+            relayoutAncestors(mainGrid, BHDictEditor.this);
 
             return null;
         }
@@ -331,8 +480,10 @@ public class BHDictEditor extends BEdgePane
         public CommandArtifact doInvoke()
         {
             String[] tags = Resources.getKindTags("Marker");
-            rows.add(new Row(tags[0], HMarker.VAL));
-            fillGrid();
+            rows.add(new Row(BHDictEditor.this, tags[0], HMarker.VAL));
+
+            fillMainGrid();
+            relayoutAncestors(mainGrid, BHDictEditor.this);
 
             return null;
         }
@@ -351,7 +502,9 @@ public class BHDictEditor extends BEdgePane
         public CommandArtifact doInvoke()
         {
             rows.remove(index);
-            fillGrid();
+
+            fillMainGrid();
+            relayoutAncestors(mainGrid, BHDictEditor.this);
 
             return null;
         }
@@ -363,186 +516,36 @@ public class BHDictEditor extends BEdgePane
 // private
 ////////////////////////////////////////////////////////////////
 
-    private static String makeKind(HVal val)
+    private void fillMainGrid()
     {
-        if      (val instanceof HMarker) return "Marker";
-        else if (val instanceof HNum)    return "Number";
-        else if (val instanceof HStr)    return "Str";
-        else if (val instanceof HRef)    return "Ref";
-        else if (val instanceof HBool)   return "Bool";
-//        else if (val instanceof HUri)      return "Uri";
-//        else if (val instanceof HBin)      return "Bin";
-//        else if (val instanceof HDate)     return "Date";
-//        else if (val instanceof HTime)     return "Time";
-//        else if (val instanceof HDateTime) return "DateTime";
-        else throw new IllegalStateException();
-    }
-
-    private static void populateKinds(String kind, BListDropDown kinds)
-    {
-        BList list = kinds.getList();
-        list.addItem("Marker");
-        list.addItem("Number");
-        list.addItem("Str");
-        list.addItem("Ref");
-        list.addItem("Bool");
-//        list.addItem("Uri");
-//        list.addItem("Bin");
-//        list.addItem("Date");
-//        list.addItem("Time");
-//        list.addItem("DateTime");
-        list.setSelectedItem(kind);
-    }
-
-    private static void populateNames(String kind, BTextDropDown names)
-    {
-        BList list = names.getList();
-        list.removeAllItems();
-        String[] tags = Resources.getKindTags(kind);
-        for (int i = 0; i < tags.length; i++)
-            list.addItem(tags[i]);
-    }
-
-    private BWbFieldEditor makeValueFE(String kind, String name, HVal val)
-    {
-        if (val instanceof HMarker) 
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            fe.setReadonly(true);
-            return fe;
-        }
-        else if (val instanceof HNum)
-        {
-            HNum num = (HNum) val;
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BDouble.DEFAULT);
-            fe.loadValue(BDouble.make(num.val));
-            return fe;
-        }
-        else if (val instanceof HStr)
-        {
-            HStr str = (HStr) val;
-
-            if (kind.equals("Str") && name.equals("tz"))
-            {
-                BWbFieldEditor fe = new BHTimeZoneFE();
-                fe.loadValue(BString.make(str.val));
-                return fe;
-            }
-            else if (kind.equals("Str") && name.equals("unit"))
-            {
-                BWbFieldEditor fe = new BHUnitFE();
-                fe.loadValue(BString.make(Resources.getSymbolUnit(str.val).symbol));
-                return fe;
-            }
-            else
-            {
-                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-                fe.loadValue(BString.make(str.val));
-                return fe;
-            }
-        }
-        else if (val instanceof HRef)
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
-
-            HRef id = (HRef) val;
-            NHRef nh = NHRef.make(id);
-            if (!nh.getStationName().equals(session.getStationName()))
-                throw new BajaRuntimeException(
-                    "station name '" + nh.getStationName() + "' does not match " +
-                    "session station name '" + session.getStationName() + "'");
-
-            if (nh.isComponentSpace())
-            {
-                BOrd ord = BOrd.make("station:|h:" + nh.getHandle());
-                BComponent comp = (BComponent) ord.resolve(session, null).get();
-                fe.loadValue(BOrd.make("station:|" + comp.getSlotPathOrd()));
-            }
-            else if (nh.isHistorySpace())
-            {
-                fe.loadValue(BOrd.make("history:" + nh.getHandle()));
-            }
-            else throw new IllegalStateException();
-
-            return fe;
-        }
-        else if (val instanceof HBool)
-        {
-            HBool bool = (HBool) val;
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
-            fe.loadValue(bool.val ? BBoolean.TRUE : BBoolean.FALSE);
-            return fe;
-        }
-        else throw new IllegalStateException();
-    }
-
-    private BWbFieldEditor initValueFE(String kind)
-    {
-        if (kind.equals("Marker"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            fe.setReadonly(true);
-            return fe;
-        }
-        else if (kind.equals("Number"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BDouble.DEFAULT);
-            fe.loadValue(BDouble.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Str"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Ref"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
-            fe.loadValue(BOrd.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Bool"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
-            fe.loadValue(BBoolean.DEFAULT);
-            return fe;
-        }
-        else throw new IllegalStateException();
-    }
-
-    private void fillGrid()
-    {
-        grid.removeAll();
+        mainGrid.removeAll();
 
         if (rows.size() > 0)
         {
-            grid.add(null, new BNullWidget());
-            grid.add(null, new BLabel(LEX.getText("type"), BOLD));
-            grid.add(null, new BLabel(LEX.getText("name"), BOLD));
-            grid.add(null, new BLabel(LEX.getText("value"), BOLD));
+            mainGrid.add(null, new BNullWidget());
+            mainGrid.add(null, new BLabel(LEX.getText("type"), BOLD));
+            mainGrid.add(null, new BLabel(LEX.getText("name"), BOLD));
+            mainGrid.add(null, new BLabel(LEX.getText("value"), BOLD));
 
             for (int i = 0; i < rows.size(); i++)
             {
                 Row row = (Row) rows.get(i);
-                grid.add(null, makeAddRemove(new RemoveRow(i)));
-                grid.add(null, row.kinds);
-                grid.add(null, row.names);
-                grid.add(null, row.fe);
+                mainGrid.add(null, makeAddRemove(new RemoveRow(i)));
+                mainGrid.add(null, row.kinds);
+                mainGrid.add(null, row.names);
+                mainGrid.add(null, row.fe);
             }
         }
 
         BButton button = new BButton(new AddRowButton());
         button.setButtonStyle(BButtonStyle.toolBar);
 
-        grid.add(null, makeAddRemove(new AddRowIcon()));
-        grid.add(null, button);
-        grid.add(null, new BNullWidget());
-        grid.add(null, new BNullWidget());
+        mainGrid.add(null, makeAddRemove(new AddRowIcon()));
+        mainGrid.add(null, button);
+        mainGrid.add(null, new BNullWidget());
+        mainGrid.add(null, new BNullWidget());
 
-        grid.relayout();
+        mainGrid.relayout();
     }
 
     static BConstrainedPane makeAddRemove(Command command)
@@ -559,32 +562,15 @@ public class BHDictEditor extends BEdgePane
         return cons;
     }
 
-////////////////////////////////////////////////////////////////
-// Row
-////////////////////////////////////////////////////////////////
-
-    class Row
+    static void relayoutAncestors(BWidget from, BWidget to)
     {
-        Row(String name, HVal val)
+        BWidget widget = from;
+        while (widget != to)
         {
-            String kind = makeKind(val);
-
-            this.kinds = new BListDropDown();
-            populateKinds(kind, kinds);
-            kinds.setSelectedItem(kind);
-            linkTo(kinds, BDropDown.valueModified, kindsModified);  
-
-            this.names = new BTextDropDown();
-            populateNames(kind, names);
-            names.setText(name);
-            linkTo(names, BDropDown.valueModified, namesModified);  
-
-            this.fe = makeValueFE(kind, name, val);
+            widget.relayout();
+            widget = widget.getParentWidget();
         }
-
-        BListDropDown kinds = new BListDropDown();
-        BTextDropDown names = new BTextDropDown();
-        BWbFieldEditor fe;
+        to.relayout();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -602,7 +588,7 @@ public class BHDictEditor extends BEdgePane
     public String getZinc() { return zinc; }
 
 ////////////////////////////////////////////////////////////////
-// Attributes 
+// static attribs
 ////////////////////////////////////////////////////////////////
 
     private static final Lexicon LEX = Lexicon.make("nhaystack");
@@ -612,8 +598,9 @@ public class BHDictEditor extends BEdgePane
     private static final BImage ADD    = BImage.make("module://nhaystack/nhaystack/icons/tag_add.png");
     private static final BImage REMOVE = BImage.make("module://nhaystack/nhaystack/icons/tag_remove.png");
 
-    private static final int MIN_WIDTH  = 555; // empirically determined
-    private static final int MIN_HEIGHT = 89;
+    // empirically determined
+    private static final int MIN_GRID_WIDTH  = 555; 
+    private static final int MIN_GRID_HEIGHT = 62;
 
     private static final int ADD_REMOVE_SIZE;
     static
@@ -623,10 +610,19 @@ public class BHDictEditor extends BEdgePane
         ADD_REMOVE_SIZE = (int) listDrop.getPreferredHeight();
     }
 
+////////////////////////////////////////////////////////////////
+// attribs
+////////////////////////////////////////////////////////////////
+
+    BFoxProxySession session() { return session; }
+
     private BFoxProxySession session;
 
     private Array rows;
-    private BGridPane grid;
+
+    private BGridPane mainGrid;
+    private BListDropDown markerGroups;
+    private BListDropDown markerGroupTags;
 
     private BHDict tags = null;
     private String zinc = null;

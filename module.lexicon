@@ -6,3 +6,5 @@ name=Name
 value=Value
 ok=OK
 cancel=Cancel
+markerGroups=Marker Groups:
+none=-- none --

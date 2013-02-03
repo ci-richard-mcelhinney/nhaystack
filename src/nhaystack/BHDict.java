@@ -104,9 +104,13 @@ public final class BHDict
 
     public HDict getDict() { return dict; }
 
+
 ////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////// 
+
+    public BIcon getIcon() { return ICON; }
+    private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
 
     public static final BHDict DEFAULT = new BHDict(HDict.EMPTY);
     public static final BHDict NULL = new BHDict(HDict.EMPTY);

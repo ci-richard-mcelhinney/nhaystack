@@ -14,6 +14,9 @@ import javax.baja.ui.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 
+/**
+  * BHDictDialog is used by a BHDictFE to bring up a BHDictEditor.
+  */
 public final class BHDictDialog extends BDialog
 {
     /*-

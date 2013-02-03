@@ -23,18 +23,26 @@ public class Resources
     private static final String TZ    = "/nhaystack/res/tz.txt";
     private static final String UNITS = "/nhaystack/res/units.txt";
 
-    // String => Set<String>
-    private static Map kindTags;
+    private static final String ELEC_METER     = "/nhaystack/res/equip-points/elecMeter.txt";
+    private static final String VAV            = "/nhaystack/res/equip-points/vav.txt";
+    private static final String HEAT_EXCHANGER = "/nhaystack/res/equip-points/heatExchanger.txt";
+    private static final String COOLING_TOWER  = "/nhaystack/res/equip-points/coolingTower.txt";
+    private static final String CHILLER_PLANT  = "/nhaystack/res/equip-points/chillerPlant.txt";
+    private static final String CHILLER        = "/nhaystack/res/equip-points/chiller.txt";
+    private static final String AHU            = "/nhaystack/res/equip-points/ahu.txt";
+
+    private static Map kindTags; // <String,Set<String>>
 
     private static String[] timeZones;
 
-    // String => Array<Unit>
-    private static Map quantityUnits;
-
-    // String => Unit
-    private static Map symbolUnits;
-
+    private static Map quantityUnits; // <String,Array<Unit>>
+    private static Map symbolUnits;   // <String,Unit>
     private static String[] quantities;
+
+    private static String[] markerGroups = new String[] {
+        "elecMeter", "vav", "heatExchanger", "coolingTower",
+        "chillerPlant", "chiller", "ahu" };
+    private static Map markerGroupTags; // <String,Array<String>>
 
 ////////////////////////////////////////////////////////////////
 //  load
@@ -47,6 +55,7 @@ public class Resources
             loadTags();
             loadTimeZones();
             loadUnits();
+            loadMarkerGroups();
         }
         catch (Exception e)
         {
@@ -76,6 +85,8 @@ public class Resources
 
             str = bin.readLine();
         }
+
+        bin.close();
     }
 
     private static void loadTimeZones() throws Exception
@@ -93,6 +104,7 @@ public class Resources
         }
 
         timeZones = (String[]) arr.trim();
+        bin.close();
     }
 
     private static void loadUnits() throws Exception
@@ -132,6 +144,7 @@ public class Resources
         }
 
         quantities = (String[]) arr.trim();
+        bin.close();
     }
 
     private static void loadUnit(Unit unit)
@@ -142,15 +155,55 @@ public class Resources
         arr.add(unit);
 
         if (symbolUnits.containsKey(unit.symbol))
-            throw new IllegalStateException("Duplicate symbol: " + unit.symbol);
+            throw new BajaRuntimeException("Duplicate symbol: " + unit.symbol);
 
         symbolUnits.put(unit.symbol, unit);
+    }
+
+    private static void loadMarkerGroups() throws Exception
+    {
+        markerGroupTags = new HashMap();
+
+        markerGroupTags.put("elecMeter",     loadMarkerGroup(ELEC_METER));
+        markerGroupTags.put("vav",           loadMarkerGroup(VAV));
+        markerGroupTags.put("heatExchanger", loadMarkerGroup(HEAT_EXCHANGER));
+        markerGroupTags.put("coolingTower",  loadMarkerGroup(COOLING_TOWER));
+        markerGroupTags.put("chillerPlant",  loadMarkerGroup(CHILLER_PLANT));
+        markerGroupTags.put("chiller",       loadMarkerGroup(CHILLER));
+        markerGroupTags.put("ahu",           loadMarkerGroup(AHU));
+    }
+
+    private static Array loadMarkerGroup(String resourcePath) throws Exception
+    {
+        InputStream in = Resources.class.getResourceAsStream(resourcePath);
+        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+
+        Array arr = new Array(String.class);
+
+        String str = bin.readLine(); 
+        while (str != null)
+        {
+            if (!str.equals("") && !str.startsWith("**"))
+            {
+                while (str.indexOf("  ") != -1)
+                    str = TextUtil.replace(str, "  ", " ");
+                arr.add(str);
+            }
+
+            str = bin.readLine();
+        }
+
+        bin.close();
+        return arr;
     }
 
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
 
+    /**
+      * Get the different 'kinds' of tags: Str, Marker, Bool, etc
+      */
     public static String[] getKindTags(String kind)
     {
         if (!kindTags.containsKey(kind)) return new String[0];
@@ -159,27 +212,60 @@ public class Resources
         return (String[]) arr.trim();
     }
 
+    /**
+      * Get all the timezones.
+      */
     public static String[] getTimeZones()
     {
         return timeZones;
     }
 
+    /**
+      * Get all the different quantities of units.
+      */
     public static String[] getUnitQuantities()
     {
         return quantities;
     }
 
+    /**
+      * Get all the Units associated with a given quantity.
+      */
     public static Unit[] getUnits(String quantity)
     {
         Array arr = (Array) quantityUnits.get(quantity);
         return (Unit[]) arr.trim();
     }
 
+    /**
+      * Get the unit associated with a given symbol.
+      */
     public static Unit getSymbolUnit(String symbol)
     {
         Unit unit = (Unit) symbolUnits.get(symbol);
         if (unit == null)
-            throw new IllegalStateException("Cannot find Unit for symbol '" + symbol + "'.");
+            throw new BajaRuntimeException(
+                "Cannot find Unit for symbol '" + symbol + "'.");
         return unit;
+    }
+
+    /**
+      * Get the names of all the Marker Groups.
+      */
+    public static String[] getMarkerGroups()
+    {
+        return markerGroups;
+    }
+
+    /**
+      * Get the space-delimited list of the tags
+      * associated with the given Marker Group name.
+      */
+    public static String[] getMarkerGroupTags(String group)
+    {
+        Array arr = (Array) markerGroupTags.get(group);
+        if (arr == null) throw new BajaRuntimeException(
+            "Cannot find marker group '" + group + "'.");
+        return (String[]) arr.trim();
     }
 }
