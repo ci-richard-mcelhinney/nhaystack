@@ -38,7 +38,7 @@ public class NSupervisorClientTest extends NTest
 
     void verifyAuth() throws Exception
     {
-        this.client = HClient.open(URI, "admin", "");
+        this.client = HClient.open(URI, "admin", "abc123");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,26 +48,30 @@ public class NSupervisorClientTest extends NTest
     void verifyRead() throws Exception
     {
         HGrid grid = client.readAll("id");
-        verifyEq(grid.numRows(), showLinkedHistories ? 8 : 6);
+        verifyEq(grid.numRows(), showLinkedHistories ? 10 : 8);
         if (showLinkedHistories)
         {
             verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_sup:c.MTMx"));
             verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_sup:c.MTMz"));
             verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_sup:c.MTM1"));
-            verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTE~"));
-            verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTI~"));
-            verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
-            verifyEq(grid.row(6).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
-            verifyEq(grid.row(7).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
+            verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
+            verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
+            verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTE~"));
+            verifyEq(grid.row(6).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9TaW5lV2F2ZTI~"));
+            verifyEq(grid.row(7).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
+            verifyEq(grid.row(8).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
+            verifyEq(grid.row(9).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
         }
         else
         {
             verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_sup:c.MTMx"));
             verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_sup:c.MTMz"));
             verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_sup:c.MTM1"));
-            verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
-            verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
-            verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
+            verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
+            verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
+            verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
+            verifyEq(grid.row(6).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
+            verifyEq(grid.row(7).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
         }
 
         HDict dict = client.readById(HRef.make("nhaystack_sup:c.MTMx"));
@@ -186,6 +190,30 @@ public class NSupervisorClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("units"));
         verify(dict.missing("axPointRef"));
+
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verify(dict.missing("kind"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/AuditHistory"));
+        verify(dict.missing("hisInterpolate"));
+        verify(dict.missing("units"));
+        verify(dict.missing("axPointRef"));
+
+        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
+        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        verify(dict.missing("kind"));
+        verify(dict.has("his"));
+        verify(dict.missing("curStatus"));
+        verify(dict.missing("curVal"));
+        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/LogHistory"));
+        verify(dict.missing("hisInterpolate"));
+        verify(dict.missing("units"));
+        verify(dict.missing("axPointRef"));
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -239,7 +267,7 @@ public class NSupervisorClientTest extends NTest
     void verifyHisRead() throws Exception
     {
         HGrid grid = client.readAll("his");
-        verifyEq(grid.numRows(), showLinkedHistories ? 7 : 5);
+        verifyEq(grid.numRows(), showLinkedHistories ? 9 : 7);
 
         ///////////////////////////////////////////////
 

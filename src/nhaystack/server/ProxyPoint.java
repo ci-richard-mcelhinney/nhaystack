@@ -23,7 +23,7 @@ import javax.baja.sys.*;
 public class ProxyPoint
 {
     /**
-      * Create a ProxyPoint for a BControlPoint.
+      * Create a ProxyPoint for a BControlPoint, or return null.
       * The BControlPoint must be for an imported point.
       */
     public static ProxyPoint make(BControlPoint point)
@@ -51,7 +51,7 @@ public class ProxyPoint
     }
 
     /**
-      * Create a ProxyPoint for a BHistoryConfig.
+      * Create a ProxyPoint for a BHistoryConfig, or return null.
       * The BHistoryConfig must be for an imported history.
       */
     public static ProxyPoint make(BHistoryConfig cfg)
@@ -75,6 +75,10 @@ public class ProxyPoint
         // get rid of unneeded "station:" ordQuery
         if (slotPath.startsWith("station:|"))   
             slotPath = slotPath.substring("station:|".length());
+
+        // if its not actually a SlotPath (e.g. imported AuditHistory), then return null
+        if (!slotPath.startsWith("slot:"))
+            return null;
 
         // The slotPath will be of the form "slot:/Path/To/Point/HistoryExt".
         // This doesn't *quite* match the "pointId" slot on the 

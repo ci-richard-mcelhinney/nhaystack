@@ -51,7 +51,7 @@ public class NSimpleClientTest extends NTest
         try { HClient.open(URI, "admin",   "badpass").about(); fail(); } catch (CallException e) { verifyException(e); }
 
         // create proper client
-        this.client = HClient.open(URI, "admin", "");
+        this.client = HClient.open(URI, "admin", "abc123");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("curStatus"));
         verify(dict.missing("hisInterpolate"));
         verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/comp"));
-        verify(dict.has("point"));
+        verify(dict.missing("point"));
         verify(dict.missing("tz"));
         verify(dict.missing("units"));
         verify(dict.missing("curVal"));

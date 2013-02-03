@@ -60,6 +60,7 @@ public class ProxyPointManager
             throw new IllegalStateException();
 
         ProxyPoint proxyPoint = ProxyPoint.make(cfg);
+        if (proxyPoint == null) return null;
 
         // look up the station
         BDeviceNetwork network = getNiagaraNetwork();
@@ -134,8 +135,11 @@ public class ProxyPointManager
                 continue;
 
             ProxyPoint proxyPoint = ProxyPoint.make(cfg);
-            mapPointToConfig.put(proxyPoint, cfg);
-            mapHistoryToPoint.put(hid, proxyPoint);
+            if (proxyPoint != null)
+            {
+                mapPointToConfig.put(proxyPoint, cfg);
+                mapHistoryToPoint.put(hid, proxyPoint);
+            }
         }
 
         // now that we've loaded all the histories, we'll set up a
@@ -180,8 +184,11 @@ public class ProxyPointManager
 
             synchronized(this)
             {
-                mapPointToConfig.put(proxyPoint, cfg);
-                mapHistoryToPoint.put(hid, proxyPoint);
+                if (proxyPoint != null)
+                {
+                    mapPointToConfig.put(proxyPoint, cfg);
+                    mapHistoryToPoint.put(hid, proxyPoint);
+                }
             }
         }
 
