@@ -99,11 +99,29 @@ public final class BHDict
     }
 
 ////////////////////////////////////////////////////////////////
+// public
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Return the explicit annotation BHDict for the component, 
+      * or return null.
+      *
+      * In order for the annotation to be recognized, it
+      * must be stored in a property called 'haystack'.
+      */
+    public static BHDict findTagAnnotation(BComponent comp)
+    {
+        BValue val = comp.get("haystack");
+        if (val == null) return null;
+
+        return (val instanceof BHDict) ? (BHDict) val : null;
+    }
+
+////////////////////////////////////////////////////////////////
 // Access
 ////////////////////////////////////////////////////////////////
 
     public HDict getDict() { return dict; }
-
 
 ////////////////////////////////////////////////////////////////
 // Attributes

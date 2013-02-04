@@ -8,6 +8,7 @@
 //
 package nhaystack.server;
 
+import javax.baja.driver.*;
 import javax.baja.history.db.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
@@ -26,16 +27,16 @@ public class BNHaystackService extends BAbstractService
                  -- The amount of time that objects in watches are leased.
                 default{[ BRelTime.make(BRelTime.MINUTE.getMillis()) ]}
             showLinkedHistories: boolean
-                 -- Whether to show BHistoryConfigs that are linked to a BControlPoint
-                default{[ true ]}
+                 -- Whether to show BHistoryConfigs that are linked to a BControlPoint 
+                default{[ true ]} 
             servlet: BNHaystackServlet
                 default{[ new BNHaystackServlet() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1541442072)1.0$ @*/
-/* Generated Mon Jan 28 21:27:03 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(3918282007)1.0$ @*/
+/* Generated Mon Feb 04 14:03:54 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -146,16 +147,27 @@ public class BNHaystackService extends BAbstractService
         return historyDb; 
     }
 
+    public final BDeviceNetwork getNiagaraNetwork()
+    {
+        if (niagaraNetwork == null)
+            niagaraNetwork = (BDeviceNetwork)
+                NIAGARA_NETWORK.resolve(this, null).get();
+
+        return niagaraNetwork;
+    }
+
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
 
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
+    private static BOrd NIAGARA_NETWORK = BOrd.make("station:|slot:/Drivers/NiagaraNetwork");
 
     private static final Type[] SERVICE_TYPES = new Type[] { TYPE };
 
     private final NHServer server = new NHServer(this);
 
     private BHistoryDatabase historyDb;    
+    private BDeviceNetwork niagaraNetwork;
 }

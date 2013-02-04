@@ -18,15 +18,14 @@ import haystack.*;
   */
 public class NHWatch extends HWatch
 {
-    public NHWatch(NHServer server, String dis)
+    public NHWatch(NHServer server, String dis, long leaseInterval)
     {
         this.server = server;
         this.dis = dis;
 
         this.watchId = BUuid.make().toString();
 
-        this.leaseInterval = 
-            server.service.getLeaseInterval().getMillis();
+        this.leaseInterval = leaseInterval; 
     }
 
     public String toString()
@@ -98,7 +97,7 @@ public class NHWatch extends HWatch
             else
             {
                 comp.lease(LEASE_DEPTH, leaseInterval); 
-                HDict dict = server.makeDict(comp);
+                HDict dict = server.createTags(comp);
                 dicts.add(dict);
                 subscriptions.put(id, new Subscription(comp, dict));
             }
@@ -129,7 +128,7 @@ public class NHWatch extends HWatch
         {
             Subscription sub = (Subscription) itr.next();
             sub.comp.lease(LEASE_DEPTH, leaseInterval); 
-            HDict newDict = server.makeDict(sub.comp);
+            HDict newDict = server.createTags(sub.comp);
 
             if (!sub.dict.equals(newDict))
             {
@@ -153,7 +152,7 @@ public class NHWatch extends HWatch
         {
             Subscription sub = (Subscription) itr.next();
             sub.comp.lease(LEASE_DEPTH, leaseInterval); 
-            sub.dict = server.makeDict(sub.comp);
+            sub.dict = server.createTags(sub.comp);
             dicts.add(sub.dict);
         }
 

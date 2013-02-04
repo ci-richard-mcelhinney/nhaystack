@@ -5,7 +5,7 @@
 // History:
 //   04 Oct 2012  Mike Jarmy  Creation
 //
-package nhaystack.server;
+package nhaystack.server.storehouse;
 
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
@@ -13,24 +13,25 @@ import javax.baja.driver.*;
 import javax.baja.history.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
+import javax.baja.util.*;
 
 /**
-  * A ProxyPoint represents a point that is proxied in some way
-  * in a NiagaraNetwork.  A ProxyPoint always has either an 
-  * associated imported history, or an associated imported point, 
-  * or both.
+  * A RemotePoint represents a point that is present in
+  * in a NiagaraNetwork.  A RemotePoint always has either an 
+  * associated NiagaraNetwork history, or an associated 
+  * NiagaraNetwork point, or both.
   */
-public class ProxyPoint
+class RemotePoint
 {
     /**
-      * Create a ProxyPoint for a BControlPoint, or return null.
-      * The BControlPoint must be for an imported point.
+      * Create a RemotePoint from a BControlPoint, or return null.
+      * The BControlPoint must be an imported point.
       */
-    public static ProxyPoint make(BControlPoint point)
+    static RemotePoint fromControlPoint(BControlPoint point)
     {
         // Check for a NiagaraProxyExt
         BAbstractProxyExt proxyExt = point.getProxyExt();
-        if (!proxyExt.getType().is(ProxyPointManager.NIAGARA_PROXY_EXT)) 
+        if (!proxyExt.getType().is(NIAGARA_PROXY_EXT)) 
             throw new IllegalStateException();
 
         // "pointId" seems to always contain the slotPath on 
@@ -44,17 +45,17 @@ public class ProxyPoint
         // Find the ancestor NiagaraStation
         BDevice device = findParentDevice(point);
         if (device == null) return null;
-        if (!device.getType().is(ProxyPointManager.NIAGARA_STATION)) return null;
+        if (!device.getType().is(NIAGARA_STATION)) return null;
 
         // We are sure the point is proxied.  
-        return new ProxyPoint(device.getName(), slotPath);
+        return new RemotePoint(device.getName(), slotPath);
     }
 
     /**
-      * Create a ProxyPoint for a BHistoryConfig, or return null.
-      * The BHistoryConfig must be for an imported history.
+      * Create a RemotePoint from a BHistoryConfig, or return null.
+      * The BHistoryConfig must be an imported history.
       */
-    public static ProxyPoint make(BHistoryConfig cfg)
+    static RemotePoint fromHistoryConfig(BHistoryConfig cfg)
     {
         // cannot be local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
@@ -88,10 +89,10 @@ public class ProxyPoint
         slotPath = slotPath.substring(0, last);
 
         // done
-        return new ProxyPoint(cfg.getId().getDeviceName(), slotPath);
+        return new RemotePoint(cfg.getId().getDeviceName(), slotPath);
     }
 
-    private ProxyPoint(String stationName, String slotPathStr)
+    private RemotePoint(String stationName, String slotPathStr)
     {
         if (!slotPathStr.startsWith("slot:"))
             throw new IllegalStateException();
@@ -118,7 +119,7 @@ public class ProxyPoint
 
     public String toString()
     {
-        return "[ProxyPoint " +
+        return "[RemotePoint " +
             "stationName:" + stationName + ", " +
             "slotPath:" + slotPath + "]";
     }
@@ -127,9 +128,9 @@ public class ProxyPoint
     {
         if (this == obj) return true;
 
-        if (!(obj instanceof ProxyPoint)) return false;
+        if (!(obj instanceof RemotePoint)) return false;
 
-        ProxyPoint that = (ProxyPoint) obj;
+        RemotePoint that = (RemotePoint) obj;
         return 
             this.stationName          .equals(that.stationName) &&
             this.slotPath.getScheme() .equals(that.slotPath.getScheme()) &&
@@ -145,17 +146,29 @@ public class ProxyPoint
 // Access
 ////////////////////////////////////////////////////////////////
 
-    // The name of the remote station that the point is proxied from.  
-    // This will always correspond to the name of a NiagaraStation 
-    // underneath the NiagaraNetwork.
-    public String getStationName() { return stationName; }
+    /**
+      * The name of the remote station that the point is proxied from.  
+      * This will always correspond to the name of a NiagaraStation 
+      * underneath the NiagaraNetwork.
+      */
+    String getStationName() { return stationName; }
 
-    // The slotPath of the point on the remote station.
-    public SlotPath getSlotPath() { return slotPath; }
+    /**
+      * The slotPath of the point on the remote station.
+      */
+    SlotPath getSlotPath() { return slotPath; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    static final Type NIAGARA_PROXY_EXT;
+    static final Type NIAGARA_STATION;
+    static
+    {
+        NIAGARA_PROXY_EXT = BTypeSpec.make("niagaraDriver:NiagaraProxyExt") .getResolvedType();
+        NIAGARA_STATION   = BTypeSpec.make("niagaraDriver:NiagaraStation")  .getResolvedType();
+    }
 
     private final String stationName;
     private final SlotPath slotPath;
