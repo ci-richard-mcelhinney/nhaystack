@@ -35,9 +35,9 @@ public class NSimpleClientTest extends NTest
         verifyOps();
         verifyFormats();
         verifyRead();
-        verifyNav();
-        verifyHisRead();
         verifyWatches();
+        verifyHisRead();
+        verifyNav();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -232,6 +232,7 @@ public class NSimpleClientTest extends NTest
         HGrid n = makeNavGrid(HStr.make("nhaystack_simple:h"));
         grid = client.call("nav", n);
 //grid.dump();
+        verifyEq(grid.numRows(), showLinkedHistories ? 3 : 2);
 
         n = makeNavGrid(HStr.make("nhaystack_simple:c"));
         grid = client.call("nav", n);
@@ -267,6 +268,7 @@ public class NSimpleClientTest extends NTest
     void verifyHisRead() throws Exception
     {
         HGrid grid = client.readAll("his");
+//grid.dump();
         verifyEq(grid.numRows(), showLinkedHistories ? 4 : 3);
 
         ///////////////////////////////////////////////

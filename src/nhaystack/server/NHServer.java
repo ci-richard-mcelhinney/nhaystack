@@ -80,15 +80,15 @@ public class NHServer extends HServer
     }
 
     /**
-      * Iterate every haystack-annotated entry in both the BComponentSpace
-      * and the BHistoryDatabase.
+      * Iterate every haystack-annotated entry in both the 
+      * BComponentSpace and the BHistoryDatabase.
       */
     protected Iterator iterator()
     {
-        return new CompositeIterator(new Iterator[] { 
-           configStorehouse.makeIterator(),
-           historyStorehouse.makeIterator()
-        });
+        ConfigStorehouseIterator c = configStorehouse.makeIterator();
+        HistoryStorehouseIterator h = historyStorehouse.makeIterator(c);
+
+        return new CompositeIterator(new Iterator[] { c, h });
     }
 
     /**

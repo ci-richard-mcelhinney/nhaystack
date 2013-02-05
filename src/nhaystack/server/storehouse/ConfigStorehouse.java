@@ -7,8 +7,6 @@
 //
 package nhaystack.server.storehouse;
 
-import java.util.*;
-
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
 import javax.baja.driver.*;
@@ -22,7 +20,6 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
-import nhaystack.collection.*;
 import nhaystack.server.*;
 
 /**
@@ -89,7 +86,7 @@ public class ConfigStorehouse extends Storehouse
                 // hisInterpolate 
                 if (!tags.has("hisInterpolate"))
                 {
-                    BHistoryExt historyExt = lookupHistoryExt(point);
+                    BHistoryExt historyExt = service.lookupHistoryExt(point);
                     if (historyExt != null && (historyExt instanceof BCovHistoryExt))
                         hdb.add("hisInterpolate", "cov");
                 }
@@ -134,8 +131,8 @@ public class ConfigStorehouse extends Storehouse
     }
 
     /**
-      * Return whether the given component-space component
-      * ought to be turned into a record.
+      * Return whether the given component
+      * ought to be turned into a Haystack record.
       */
     public boolean isVisibleComponent(BComponent comp)
     {
@@ -153,37 +150,8 @@ public class ConfigStorehouse extends Storehouse
     }
 
     /**
-      * Try to find the point that goes with a history,
-      * or return null.
+      * Return navigation tree children for given navId. 
       */
-    public BControlPoint lookupPointFromHistory(BHistoryConfig cfg)
-    {
-        // local history
-        if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
-        {
-            BOrd[] ords = cfg.getSource().toArray();
-            if (ords.length != 1) new IllegalStateException(
-                "invalid Source: " + cfg.getSource());
-
-            BComponent source = (BComponent) ords[0].resolve(service, null).get();
-
-            // The source is not always a BHistoryExt.  E.g. for 
-            // LogHistory its the LogHistoryService.
-            if (source instanceof BHistoryExt)
-            {
-                if (source.getParent() instanceof BControlPoint)
-                    return (BControlPoint) source.getParent();
-            }
-
-            return null;
-        }
-        // look for imported point that goes with history (if any)
-        else
-        {
-            return lookupRemotePoint(cfg);
-        }
-    }
-
     public HGrid onNav(String navId)
     {
         // child of ComponentSpace root
@@ -208,33 +176,61 @@ public class ConfigStorehouse extends Storehouse
     }
 
     /**
-      * Return the BHistoryExt for the point, if there is one.
-      * Returns null if the BHistoryExt has never been enabled.
+      * Iterator through all the points
       */
-    public BHistoryExt lookupHistoryExt(BControlPoint point)
+    public ConfigStorehouseIterator makeIterator()
     {
-        Cursor cursor = point.getProperties();
-        if (cursor.next(BHistoryExt.class))
-        {
-            BHistoryExt ext = (BHistoryExt) cursor.get();
-
-            // Return null if the extension has never been enabled.
-            BHistoryConfig config = ext.getHistoryConfig();
-            if (service.getHistoryDb().getHistory(config.getId()) == null)
-                return null;
-
-            return ext;
-        }
-
-        return null;
+        return new ConfigStorehouseIterator(this);
     }
 
     /**
-      * Iterator through all the points
+      * Try to find the point that goes with a history,
+      * or return null.
+      *
+      * @param configIterator contains an internal data structure
+      * that will make this method run much faster.  It
+      * is OK for configIterator to be null.  If configIterator is non-null,
+      * then it must have been completely exhausted by
+      * calls to next() before it is passed to this method,
+      * or it will throw an IllegalStateException.
       */
-    public Iterator makeIterator()
+    public BControlPoint lookupPointFromHistory(
+        BHistoryConfig cfg, 
+        ConfigStorehouseIterator configIterator)
     {
-        return new PointStorehouseIterator();
+        // local history
+        if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
+        {
+            BOrd[] ords = cfg.getSource().toArray();
+            if (ords.length != 1) new IllegalStateException(
+                "invalid Source: " + cfg.getSource());
+
+            BComponent source = (BComponent) ords[0].resolve(service, null).get();
+
+            // The source is not always a BHistoryExt.  E.g. for 
+            // LogHistory its the LogHistoryService.
+            if (source instanceof BHistoryExt)
+            {
+                if (source.getParent() instanceof BControlPoint)
+                    return (BControlPoint) source.getParent();
+            }
+
+            return null;
+        }
+        // look for imported point that goes with history (if any)
+        else
+        {
+            RemotePoint remote = RemotePoint.fromHistoryConfig(cfg);
+            if (remote == null) return null;
+
+            // the slow way
+            if (configIterator == null)
+                return lookupRemotePoint(cfg, remote);
+
+            // the fast way
+            else
+                return configIterator.getControlPoint(remote);
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -249,18 +245,11 @@ public class ConfigStorehouse extends Storehouse
       * in bulk, e.g. inside NHServer.iterator(), a different approach 
       * should be used.
       */
-    private BControlPoint lookupRemotePoint(BHistoryConfig cfg)
+    private BControlPoint lookupRemotePoint(BHistoryConfig cfg, RemotePoint remote)
     {
-        // cannot be local history
-        if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
-            throw new IllegalStateException();
-
-        RemotePoint remotePoint = RemotePoint.fromHistoryConfig(cfg);
-        if (remotePoint == null) return null;
-
         // look up the station
         BDeviceNetwork network = service.getNiagaraNetwork();
-        BDevice station = (BDevice) network.get(remotePoint.getStationName());
+        BDevice station = (BDevice) network.get(remote.getStationName());
         if (station == null) return null;
 
         // look up the points
@@ -281,7 +270,7 @@ public class ConfigStorehouse extends Storehouse
             String slotPath = proxyExt.get("pointId").toString();
 
             // found it!
-            if (slotPath.equals(remotePoint.getSlotPath().toString()))
+            if (slotPath.equals(remote.getSlotPath().toString()))
                 return point;
         }
 
@@ -338,55 +327,6 @@ public class ConfigStorehouse extends Storehouse
         }
 
         return hdb.toDict();
-    }
-
-////////////////////////////////////////////////////////////////
-// PointStorehouseIterator
-////////////////////////////////////////////////////////////////
-
-    /**
-      * PointStorehouseIterator
-      */
-    private class PointStorehouseIterator implements Iterator
-    {
-        private PointStorehouseIterator()
-        {
-            iterator = new ComponentTreeIterator(
-                (BComponent) BOrd.make("slot:/").resolve(service, null).get());
-
-            findNext();
-        }
-
-        public boolean hasNext() { return nextDict != null; }
-
-        public void remove() { throw new UnsupportedOperationException(); }
-
-        public Object next()
-        {
-            if (nextDict == null) throw new IllegalStateException();
-
-            HDict dict = nextDict;
-            findNext();
-            return dict;
-        }
-
-        private void findNext()
-        {
-            nextDict = null;
-            while (iterator.hasNext())
-            {
-                BComponent comp = (BComponent) iterator.next();
-
-                if (isVisibleComponent(comp))
-                {
-                    nextDict = createComponentTags(comp);
-                    break;
-                }
-            }
-        }
-
-        private final ComponentTreeIterator iterator;
-        private HDict nextDict;
     }
 }
 

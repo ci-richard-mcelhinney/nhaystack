@@ -31,9 +31,9 @@ public class NSupervisorClientTest extends NTest
     {
         verifyAuth();
         verifyRead();
-        verifyNav();
-        verifyHisRead();
 //        verifyWatches();
+        verifyHisRead();
+        verifyNav();
     }
 
     void verifyAuth() throws Exception
@@ -232,6 +232,7 @@ public class NSupervisorClientTest extends NTest
         HGrid n = makeNavGrid(HStr.make("nhaystack_sup:h"));
         grid = client.call("nav", n);
 //grid.dump();
+        verifyEq(grid.numRows(), showLinkedHistories ? 7 : 5);
 
         n = makeNavGrid(HStr.make("nhaystack_sup:c"));
         grid = client.call("nav", n);

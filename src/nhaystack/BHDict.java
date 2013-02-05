@@ -103,7 +103,7 @@ public final class BHDict
 ////////////////////////////////////////////////////////////////
 
     /**
-      * Return the explicit annotation BHDict for the component, 
+      * Return the explicitly annotated tags for the component, 
       * or return null.
       *
       * In order for the annotation to be recognized, it
@@ -121,6 +121,9 @@ public final class BHDict
 // Access
 ////////////////////////////////////////////////////////////////
 
+    /**
+      * Return the underlying HDict.
+      */
     public HDict getDict() { return dict; }
 
 ////////////////////////////////////////////////////////////////

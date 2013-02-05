@@ -29,7 +29,7 @@ import nhaystack.*;
 import nhaystack.res.*;
 
 /**
-  * BHDictEditor is the actual editor for BHDicts.
+  * BHDictEditor is the editor for BHDicts.
   */
 public class BHDictEditor extends BScrollPane
 {

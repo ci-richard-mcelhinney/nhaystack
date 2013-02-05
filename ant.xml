@@ -1,0 +1,29 @@
+<!--
+  Copyright (c) 2012, J2 Innovations
+  Licensed under the Academic Free License version 3.0
+ 
+  History:
+    05 Feb 2013    Mike Jarmy    Creation
+-->
+
+<project default="javadoc" basedir=".">
+
+  <target name="javadoc">
+    <delete dir="javadoc"/>    
+    <mkdir dir="javadoc"/>    
+    <javadoc
+      access="protected"
+      destdir="javadoc"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="Niagara Haystack">
+  
+      <fileset dir="src">
+          <include name="**/*.java"/>
+      </fileset>
+
+    </javadoc>
+  </target>
+
+</project>

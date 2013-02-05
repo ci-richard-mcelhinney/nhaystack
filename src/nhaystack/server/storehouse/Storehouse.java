@@ -33,7 +33,7 @@ public abstract class Storehouse
       * add the 'kind' tag, along with an associated tags 
       * like 'enum' or 'units'
       */
-    protected static void addPointKindTags(
+    static void addPointKindTags(
         int pointKind, 
         BFacets facets, 
         HDict tags, 
@@ -73,7 +73,7 @@ public abstract class Storehouse
         }
     }
 
-    protected static HTimeZone makeTimeZone(BTimeZone timeZone)
+    static HTimeZone makeTimeZone(BTimeZone timeZone)
     {
         String tzName = timeZone.getId();
 
@@ -138,13 +138,13 @@ public abstract class Storehouse
 ////////////////////////////////////////////////////////////////
 
     // point kinds
-    protected static final int UNKNOWN_KIND = -1;
-    protected static final int NUMERIC_KIND =  0;
-    protected static final int BOOLEAN_KIND =  1;
-    protected static final int ENUM_KIND    =  2;
-    protected static final int STRING_KIND  =  3;
+    static final int UNKNOWN_KIND = -1;
+    static final int NUMERIC_KIND =  0;
+    static final int BOOLEAN_KIND =  1;
+    static final int ENUM_KIND    =  2;
+    static final int STRING_KIND  =  3;
 
-    protected final NHServer server;
-    protected final BNHaystackService service;
+    final NHServer server;
+    final BNHaystackService service;
 }
 
