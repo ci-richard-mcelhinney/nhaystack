@@ -4,6 +4,7 @@
 //
 // History:
 //   10 Feb 2013  Mike Jarmy  Creation
+//
 
 package nhaystack;
 
@@ -13,31 +14,31 @@ import haystack.*;
 import haystack.io.*;
 
 /**
- *  BHDict wraps a Haystack HDict
+ *  BHNum wraps a Haystack HNum
  */
-public final class BHDict
+public final class BHNum
     extends BSimple
 {
     /**
-      * Make a BHDict instance from an HDict.
+      * Make a BHNum instance from an HNum.
       */
-    public static BHDict make(HDict dict) 
+    public static BHNum make(HNum num) 
     { 
-        return new BHDict(dict);  
+        return new BHNum(num);  
     }
 
     /**
-      * Make a BHDict instance from a ZINC-encoded string.
+      * Make a BHNum instance from a ZINC-encoded string.
       */
-    public static BHDict make(String s) 
+    public static BHNum make(String s) 
     { 
         HZincReader zr = new HZincReader(s);
-        return new BHDict(zr.readDict());
+        return new BHNum((HNum) zr.readScalar());
     }
 
-    private BHDict(HDict dict) 
+    private BHNum(HNum num) 
     { 
-        this.dict = dict;
+        this.num = num;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -46,16 +47,16 @@ public final class BHDict
 
     public int hashCode() 
     { 
-        return dict.hashCode(); 
+        return num.hashCode(); 
     }
 
     public boolean equals(Object obj)
     {
         if (this == obj) return true;
 
-        if (!(obj instanceof BHDict)) return false;
-        BHDict that = (BHDict) obj;
-        return (dict.equals(that.dict));
+        if (!(obj instanceof BHNum)) return false;
+        BHNum that = (BHNum) obj;
+        return (num.equals(that.num));
     }
 
 ////////////////////////////////////////////////////////////////
@@ -67,7 +68,7 @@ public final class BHDict
       */
     public void encode(DataOutput encoder) throws IOException
     { 
-        encoder.writeUTF(dict.toZinc()); 
+        encoder.writeUTF(num.toZinc()); 
     }
 
     /**
@@ -76,7 +77,7 @@ public final class BHDict
     public BObject decode(DataInput decoder) throws IOException
     { 
         HZincReader zr = new HZincReader(decoder.readUTF());
-        return new BHDict(zr.readDict());
+        return new BHNum((HNum) zr.readScalar());
     }  
 
     /**
@@ -84,7 +85,7 @@ public final class BHDict
       */
     public String encodeToString() throws IOException
     { 
-        return dict.toZinc(); 
+        return num.toZinc(); 
     }
 
     /**
@@ -93,26 +94,7 @@ public final class BHDict
     public BObject decodeFromString(String s) throws IOException
     { 
         HZincReader zr = new HZincReader(s);
-        return new BHDict(zr.readDict());
-    }
-
-////////////////////////////////////////////////////////////////
-// public
-////////////////////////////////////////////////////////////////
-
-    /**
-      * Return the explicitly annotated tags for the component, 
-      * or return null.
-      *
-      * In order for the annotation to be recognized, it
-      * must be stored in a property called 'haystack'.
-      */
-    public static BHDict findTagAnnotation(BComponent comp)
-    {
-        BValue val = comp.get("haystack");
-        if (val == null) return null;
-
-        return (val instanceof BHDict) ? (BHDict) val : null;
+        return new BHNum((HNum) zr.readScalar());
     }
 
 ////////////////////////////////////////////////////////////////
@@ -120,22 +102,19 @@ public final class BHDict
 ////////////////////////////////////////////////////////////////
 
     /**
-      * Return the underlying HDict.
+      * Return the underlying HNum.
       */
-    public HDict getDict() { return dict; }
+    public HNum getNum() { return num; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////// 
 
-    public BIcon getIcon() { return ICON; }
-    private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
-
-    /** * The default is HDict.EMPTY. */
-    public static final BHDict DEFAULT = new BHDict(HDict.EMPTY);
+    /** * The default is HNum.ZERO. */
+    public static final BHNum DEFAULT = new BHNum(HNum.ZERO);
 
     public Type getType() { return TYPE; }
-    public static final Type TYPE = Sys.loadType(BHDict.class);
+    public static final Type TYPE = Sys.loadType(BHNum.class);
 
-    private final HDict dict;
+    private final HNum num;
 }

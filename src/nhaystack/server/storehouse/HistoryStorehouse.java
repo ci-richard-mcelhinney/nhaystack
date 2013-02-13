@@ -74,7 +74,7 @@ public class HistoryStorehouse extends Storehouse
       */
     public HGrid onNav(String navId)
     {
-        if (navId.equals(Sys.getStation().getStationName() + ":h"))
+        if (navId.equals(Sys.getStation().getStationName() + ":" + NHRef.HISTORY))
         {
             ConfigStorehouseIterator c = server.getConfigStorehouse().makeIterator();
             // force the iterator to collect all the remote points

@@ -8,6 +8,8 @@
 //
 package nhaystack.server;
 
+import java.util.*;
+
 import javax.baja.control.*;
 import javax.baja.driver.*;
 import javax.baja.history.*;
@@ -15,6 +17,12 @@ import javax.baja.history.db.*;
 import javax.baja.history.ext.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
+import javax.baja.util.*;
+
+import haystack.*;
+import nhaystack.*;
+import nhaystack.collection.*;
+import nhaystack.site.*;
 
 /**
   * BNHaystackService makes an NHServer available.  
@@ -31,15 +39,28 @@ public class BNHaystackService extends BAbstractService
                 default{[ BRelTime.make(BRelTime.MINUTE.getMillis()) ]}
             showLinkedHistories: boolean
                  -- Whether to show BHistoryConfigs that are linked to a BControlPoint 
-                default{[ true ]} 
+                default{[ false ]} 
             servlet: BNHaystackServlet
                 default{[ new BNHaystackServlet() ]}
+        }
+        actions
+        {
+            readById(id: BHRef): BHDict 
+                -- Lookup an entity record by it's unique identifier.
+                flags { hidden }
+                default {[ BHRef.DEFAULT ]}
+            fetchSites(): BHGrid
+                -- fetch all the records that are tagged as 'site'.
+                flags { hidden }
+            fetchEquips(): BHGrid
+                -- fetch all the records that are tagged as 'equip'.
+                flags { hidden }
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(3918282007)1.0$ @*/
-/* Generated Mon Feb 04 14:03:54 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(2747625900)1.0$ @*/
+/* Generated Wed Feb 13 11:03:52 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -76,7 +97,7 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#getShowLinkedHistories
    * @see nhaystack.server.BNHaystackService#setShowLinkedHistories
    */
-  public static final Property showLinkedHistories = newProperty(0, true,null);
+  public static final Property showLinkedHistories = newProperty(0, false,null);
   
   /**
    * Get the <code>showLinkedHistories</code> property.
@@ -114,6 +135,57 @@ public class BNHaystackService extends BAbstractService
   public void setServlet(BNHaystackServlet v) { set(servlet,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "readById"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>readById</code> action.
+   * Lookup an entity record by it's unique identifier.
+   * @see nhaystack.server.BNHaystackService#readById()
+   */
+  public static final Action readById = newAction(Flags.HIDDEN,BHRef.DEFAULT,null);
+  
+  /**
+   * Invoke the <code>readById</code> action.
+   * @see nhaystack.server.BNHaystackService#readById
+   */
+  public BHDict readById(BHRef id) { return (BHDict)invoke(readById,id,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "fetchSites"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>fetchSites</code> action.
+   * fetch all the records that are tagged as 'site'.
+   * @see nhaystack.server.BNHaystackService#fetchSites()
+   */
+  public static final Action fetchSites = newAction(Flags.HIDDEN,null);
+  
+  /**
+   * Invoke the <code>fetchSites</code> action.
+   * @see nhaystack.server.BNHaystackService#fetchSites
+   */
+  public BHGrid fetchSites() { return (BHGrid)invoke(fetchSites,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "fetchEquips"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>fetchEquips</code> action.
+   * fetch all the records that are tagged as 'equip'.
+   * @see nhaystack.server.BNHaystackService#fetchEquips()
+   */
+  public static final Action fetchEquips = newAction(Flags.HIDDEN,null);
+  
+  /**
+   * Invoke the <code>fetchEquips</code> action.
+   * @see nhaystack.server.BNHaystackService#fetchEquips
+   */
+  public BHGrid fetchEquips() { return (BHGrid)invoke(fetchEquips,null,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -121,6 +193,11 @@ public class BNHaystackService extends BAbstractService
   public static final Type TYPE = Sys.loadType(BNHaystackService.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
+
+    public boolean isParentLegal(BComponent parent)
+    {
+        return parent instanceof BServiceContainer;
+    }
 
 ////////////////////////////////////////////////////////////////
 // BIService
@@ -131,6 +208,37 @@ public class BNHaystackService extends BAbstractService
     public void serviceStarted() throws Exception { }
 
     public void serviceStopped() throws Exception { }
+
+////////////////////////////////////////////////////////////////
+// Actions
+////////////////////////////////////////////////////////////////
+
+    public BHDict doReadById(BHRef id) throws Exception
+    {
+        return BHDict.make(server.readById(id.getRef()));
+    }
+
+    public BHGrid doFetchSites() throws Exception
+    {
+        BHSite[] sites = server.getSiteStorehouse().fetchSites();
+
+        Array arr = new Array(HDict.class);
+        for (int i = 0; i < sites.length; i++)
+            arr.add(server.getConfigStorehouse().createComponentTags(sites[i]));
+            
+        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+    }
+
+    public BHGrid doFetchEquips() throws Exception
+    {
+        BHEquip[] equips = server.getSiteStorehouse().fetchEquips();
+
+        Array arr = new Array(HDict.class);
+        for (int i = 0; i < equips.length; i++)
+            arr.add(server.getConfigStorehouse().createComponentTags(equips[i]));
+            
+        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+    }
 
 ////////////////////////////////////////////////////////////////
 // public

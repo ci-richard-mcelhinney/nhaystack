@@ -21,6 +21,7 @@ import haystack.server.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.storehouse.*;
+import nhaystack.site.*;
 
 /**
   * NHServer is responsible for serving up 
@@ -32,8 +33,9 @@ public class NHServer extends HServer
     {
         this.service = service;
 
-        this.configStorehouse   = new ConfigStorehouse(this);
+        this.configStorehouse  = new ConfigStorehouse(this);
         this.historyStorehouse = new HistoryStorehouse(this);
+        this.siteStorehouse    = new SiteStorehouse(this);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -83,7 +85,7 @@ public class NHServer extends HServer
       * Iterate every haystack-annotated entry in both the 
       * BComponentSpace and the BHistoryDatabase.
       */
-    protected Iterator iterator()
+    public Iterator iterator()
     {
         ConfigStorehouseIterator c = configStorehouse.makeIterator();
         HistoryStorehouseIterator h = historyStorehouse.makeIterator(c);
@@ -110,32 +112,44 @@ public class NHServer extends HServer
       */
     protected HGrid onNav(String navId)
     {
+        String stationName = Sys.getStation().getStationName();
+
         // nav roots
         if (navId == null)
         {
             Array dicts = new Array(HDict.class);
 
             HDictBuilder hd = new HDictBuilder();
-            hd.add("navId", HStr.make(Sys.getStation().getStationName() + ":c"));
+            hd.add("navId", HStr.make(stationName + ":" + NHRef.COMPONENT));
             hd.add("dis", "ComponentSpace");
             dicts.add(hd.toDict());
 
             hd = new HDictBuilder();
-            hd.add("navId", HStr.make(Sys.getStation().getStationName() + ":h"));
+            hd.add("navId", HStr.make(stationName + ":" + NHRef.HISTORY));
             hd.add("dis", "HistorySpace");
+            dicts.add(hd.toDict());
+
+            hd = new HDictBuilder();
+            hd.add("navId", HStr.make(SiteNavId.SITE));
+            hd.add("dis", "Sites");
             dicts.add(hd.toDict());
 
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
         // config nav
-        else if (navId.startsWith(Sys.getStation().getStationName() + ":c"))
+        else if (navId.startsWith(stationName + ":" + NHRef.COMPONENT))
         {
             return configStorehouse.onNav(navId);
         }
         // history nav
-        else if (navId.startsWith(Sys.getStation().getStationName() + ":h"))
+        else if (navId.startsWith(stationName + ":" + NHRef.HISTORY))
         {
             return historyStorehouse.onNav(navId);
+        }
+        // site nav
+        else if (navId.startsWith(SiteNavId.SITE) || navId.startsWith(EquipNavId.EQUIP))
+        {
+            return siteStorehouse.onNav(navId);
         }
         // error
         else
@@ -206,7 +220,7 @@ public class NHServer extends HServer
         BHistoryConfig cfg = lookupHisRead(rec.id());
         if (cfg == null) return new HHisItem[0];
 
-        HStr units = (HStr) rec.get("units", false);
+        HStr unit = (HStr) rec.get("unit", false);
 
         // ASSUMPTION: the tz in both ends of the range matches the 
         // tz of the historized point, which in turn matches the 
@@ -243,14 +257,16 @@ public class NHServer extends HServer
             {
                 // extract value from BTrendRecord
                 BValue value = (BValue) table.get(i, valueCol);
-                if (cfg.getRecordType().getResolvedType().is(BNumericTrendRecord.TYPE))
+
+                Type recType = cfg.getRecordType().getResolvedType();
+                if (recType.is(BNumericTrendRecord.TYPE))
                 {
                     BNumber num = (BNumber) value;
-                    val = (units == null) ? 
+                    val = (unit == null) ? 
                         HNum.make(num.getDouble()) :
-                        HNum.make(num.getDouble(), units.val);
+                        HNum.make(num.getDouble(), unit.val);
                 }
-                else if (cfg.getRecordType().getResolvedType().is(BBooleanTrendRecord.TYPE))
+                else if (recType.is(BBooleanTrendRecord.TYPE))
                 {
                     BBoolean bool = (BBoolean) value;
                     val = HBool.make(bool.getBoolean());
@@ -262,7 +278,8 @@ public class NHServer extends HServer
             }
             else
             {
-                // if its not a BTrendRecord, just do a toString() of the whole record
+                // if its not a BTrendRecord, just do a toString() 
+                // of the whole record
                 val = HStr.make(table.get(i).toString());
             }
 
@@ -284,7 +301,7 @@ public class NHServer extends HServer
     }
 
 ////////////////////////////////////////////////////////////////
-// package-scope
+// public
 ////////////////////////////////////////////////////////////////
 
     /**
@@ -296,7 +313,7 @@ public class NHServer extends HServer
       *
       * This method never returns null.
       */
-    HDict createTags(BComponent comp)
+    public HDict createTags(BComponent comp)
     {
         if (comp instanceof BHistoryConfig)
             return historyStorehouse.createHistoryTags((BHistoryConfig) comp);
@@ -310,26 +327,26 @@ public class NHServer extends HServer
       * Return null if the BComponent cannot be found,
       * or if it is not haystack-annotated.
       */
-    BComponent lookupComponent(HRef id)
+    public BComponent lookupComponent(HRef id)
     {
-        NHRef nid = NHRef.make(id);
+        NHRef nh = NHRef.make(id);
 
         // make sure station matches
-        if (!nid.getStationName().equals(Sys.getStation().getStationName()))
+        if (!nh.getStationName().equals(Sys.getStation().getStationName()))
             return null;
 
         // component space
-        if (nid.isComponentSpace())
+        if (nh.getSpace().equals(NHRef.COMPONENT))
         {
             // this might be null
-            BComponent comp = service.getComponentSpace().findByHandle(nid.getHandle());
+            BComponent comp = service.getComponentSpace().findByHandle(nh.getHandle());
             if (comp == null) return null;
             return configStorehouse.isVisibleComponent(comp) ? comp : null;
         }
         // history space
-        else if (nid.isHistorySpace())
+        else if (nh.getSpace().equals(NHRef.HISTORY))
         {
-            BHistoryId hid = BHistoryId.make(nid.getHandle());
+            BHistoryId hid = BHistoryId.make(nh.getHandle());
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();
@@ -341,6 +358,10 @@ public class NHServer extends HServer
             return null;
         }
     }
+
+////////////////////////////////////////////////////////////////
+// package-scope
+////////////////////////////////////////////////////////////////
 
     void removeWatch(String watchId)
     {
@@ -387,6 +408,7 @@ public class NHServer extends HServer
 
     public ConfigStorehouse  getConfigStorehouse()  { return configStorehouse;  }
     public HistoryStorehouse getHistoryStorehouse() { return historyStorehouse; }
+    public SiteStorehouse    getSiteStorehouse()    { return siteStorehouse;    }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 
@@ -416,5 +438,6 @@ public class NHServer extends HServer
     private final BNHaystackService service;
     private final ConfigStorehouse  configStorehouse;
     private final HistoryStorehouse historyStorehouse;
+    private final SiteStorehouse    siteStorehouse;
 }
 

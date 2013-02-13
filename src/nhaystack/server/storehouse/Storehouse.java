@@ -15,7 +15,10 @@ import haystack.*;
 import nhaystack.server.*;
 
 /**
-  * A Storehouse is analogous to a javax.baja.space.BSpace.
+  * A Storehouse is similar to a javax.baja.space.BSpace.
+  *
+  * However, not all Storehouses have a BSpace, and
+  * not all BSpaces have a Storehouse.
   */
 public abstract class Storehouse
 {
@@ -25,13 +28,18 @@ public abstract class Storehouse
         this.service = server.getService();
     }
 
+    /**
+      * Return navigation tree children for given navId. 
+      */
+    public abstract HGrid onNav(String navId);
+
 ////////////////////////////////////////////////////////////////
 // protected
 ////////////////////////////////////////////////////////////////
 
     /**
       * add the 'kind' tag, along with an associated tags 
-      * like 'enum' or 'units'
+      * like 'enum' or 'unit'
       */
     static void addPointKindTags(
         int pointKind, 
@@ -45,11 +53,11 @@ public abstract class Storehouse
 
                 if (!tags.has("kind")) hdb.add("kind", "Number");
 
-                if (!tags.has("units"))
+                if (!tags.has("unit"))
                 {
-                    BUnit units = findUnits(facets);
-                    if (units != null) 
-                        hdb.add("units", units.toString());
+                    BUnit unit = findUnit(facets);
+                    if (unit != null) 
+                        hdb.add("unit", unit.toString());
                 }
 
                 break;
@@ -84,25 +92,25 @@ public abstract class Storehouse
         return HTimeZone.make(tzName, false);
     }
 
-////////////////////////////////////////////////////////////////
-// private
-////////////////////////////////////////////////////////////////
-
-    private static BUnit findUnits(BFacets facets)
+    static BUnit findUnit(BFacets facets)
     {
         if (facets == null) 
             return null;
 
-        BUnit units = (BUnit)facets.get("units");
-        if ((units == null) || (units.isNull()))
+        BUnit unit = (BUnit)facets.get("units");
+        if ((unit == null) || (unit.isNull()))
             return null;
 
         int conv = facets.geti("unitConversion", 0);
         if (conv != 0)
-            units = BUnitConversion.make(conv).getDesiredUnit(units);
+            unit = BUnitConversion.make(conv).getDesiredUnit(unit);
 
-        return units;
+        return unit;
     }
+
+////////////////////////////////////////////////////////////////
+// private
+////////////////////////////////////////////////////////////////
 
     private static String findTrueFalse(BFacets facets)
     {

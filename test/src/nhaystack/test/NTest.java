@@ -27,6 +27,13 @@ public abstract class NTest extends Test
         "nhaystack.test.NSupervisorClientTest",
     };
 
+    static HGrid makeNavGrid(HStr navId)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("navId", navId);
+        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    }
+
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////

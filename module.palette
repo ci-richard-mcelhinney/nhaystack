@@ -1,17 +1,8 @@
-<!--
-  Copyright (c) 2012, J2 Innovations
-  Licensed under the Academic Free License version 3.0
- 
-  History:
-    07 Nov 2011  Richard McElhinney  Creation
-    28 Sep 2012  Mike Jarmy          Ported from axhaystack
--->
-
 <?xml version="1.0" encoding="UTF-8"?>
 <bajaObjectGraph version="1.0">
 <p m="b=baja" t="b:UnrestrictedFolder">
-
-  <p n="NHaystackService" t="nh:NHaystackService" m="nh=nhaystack"/>
-
+ <p n="NHaystackService" m="nh=nhaystack" t="nh:NHaystackService"/> 
+ <p n="site" t="nh:HSite"/>
+ <p n="equip" t="nh:HEquip"/>
 </p>
 </bajaObjectGraph>

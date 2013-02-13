@@ -16,11 +16,13 @@ import javax.baja.history.ext.*;
 import javax.baja.naming.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
+import javax.baja.units.*;
 import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
+import nhaystack.site.*;
 
 /**
   * ConfigStorehouse manages access to the BComponentSpace
@@ -43,91 +45,172 @@ public class ConfigStorehouse extends Storehouse
       */
     public HDict createComponentTags(BComponent comp)
     {
-        HDictBuilder hdb = new HDictBuilder();
-
-        // add existing tags
-        BHDict btags = BHDict.findTagAnnotation(comp);
-        HDict tags = (btags == null) ?  HDict.EMPTY : btags.getDict();
-        hdb.add(tags);
-
-        // add id
-        hdb.add("id", NHRef.make(comp).getHRef());
-        
-        // add misc other tags
-        String dis = comp.getDisplayName(null);
-        if (dis != null) hdb.add("dis", dis);
-        hdb.add("axType", comp.getType().toString());
-        hdb.add("axSlotPath", comp.getSlotPath().toString());
-
-        // points get special treatment
-        if (comp instanceof BControlPoint)
+        if (comp instanceof BHTagged)
         {
-            BControlPoint point = (BControlPoint) comp;
-
-            // ensure there is a point marker tag
-            hdb.add("point");
-
-            // check if this point has a history
-            BHistoryConfig cfg = server.getHistoryStorehouse().lookupHistoryFromPoint(point);
-            if (cfg != null)
-            {
-                hdb.add("his");
-
-                if (service.getShowLinkedHistories())
-                    hdb.add("axHistoryRef", NHRef.make(cfg).getHRef());
-
-                // tz
-                if (!tags.has("tz"))
-                {
-                    HTimeZone tz = makeTimeZone(cfg.getTimeZone());
-                    hdb.add("tz", tz.name);
-                }
-
-                // hisInterpolate 
-                if (!tags.has("hisInterpolate"))
-                {
-                    BHistoryExt historyExt = service.lookupHistoryExt(point);
-                    if (historyExt != null && (historyExt instanceof BCovHistoryExt))
-                        hdb.add("hisInterpolate", "cov");
-                }
-            }
-
-            // point kind tags
-            int pointKind = getControlPointKind(point);
-            BFacets facets = (BFacets) point.get("facets");
-            addPointKindTags(pointKind, facets, tags, hdb);
-
-            // curVal, curStatus
-            switch(pointKind)
-            {
-                case NUMERIC_KIND:
-                    BNumericPoint np = (BNumericPoint) point;
-                    hdb.add("curVal",    HNum.make(np.getNumeric()));
-                    hdb.add("curStatus", makeStatusString(point.getStatus()));
-                    break;
-
-                case BOOLEAN_KIND:
-                    BBooleanPoint bp = (BBooleanPoint) point;
-                    hdb.add("curVal",    HBool.make(bp.getBoolean()));
-                    hdb.add("curStatus", makeStatusString(point.getStatus()));
-                    break;
-
-                case ENUM_KIND:
-                    BEnumPoint ep = (BEnumPoint) point;
-                    hdb.add("curVal",    HStr.make(ep.getEnum().toString()));
-                    hdb.add("curStatus", makeStatusString(point.getStatus()));
-                    break;
-
-                case STRING_KIND:
-                    BStringPoint sp = (BStringPoint) point;
-                    hdb.add("curVal",    HStr.make(sp.getOut().getValue().toString()));
-                    hdb.add("curStatus", makeStatusString(point.getStatus()));
-                    break;
-            }
+            return ((BHTagged) comp).generateTags();
         }
+        else
+        {
+            HDictBuilder hdb = new HDictBuilder();
 
-        // done
-        return hdb.toDict();
+            // add existing tags
+            BHDict btags = BHDict.findTagAnnotation(comp);
+            HDict tags = (btags == null) ?  HDict.EMPTY : btags.getDict();
+            hdb.add(tags);
+
+            // add id
+            hdb.add("id", NHRef.make(comp).getHRef());
+
+            // add misc other tags
+            String dis = comp.getDisplayName(null);
+            if (dis != null) hdb.add("dis", dis);
+            hdb.add("axType", comp.getType().toString());
+            hdb.add("axSlotPath", comp.getSlotPath().toString());
+
+            // points get special treatment
+            if (comp instanceof BControlPoint)
+            {
+                BControlPoint point = (BControlPoint) comp;
+
+                // ensure there is a point marker tag
+                hdb.add("point");
+
+                // check if this point has a history
+                BHistoryConfig cfg = server.getHistoryStorehouse()
+                    .lookupHistoryFromPoint(point);
+                if (cfg != null)
+                {
+                    hdb.add("his");
+
+                    if (service.getShowLinkedHistories())
+                        hdb.add("axHistoryRef", NHRef.make(cfg).getHRef());
+
+                    // tz
+                    if (!tags.has("tz"))
+                    {
+                        HTimeZone tz = makeTimeZone(cfg.getTimeZone());
+                        hdb.add("tz", tz.name);
+                    }
+
+                    // hisInterpolate 
+                    if (!tags.has("hisInterpolate"))
+                    {
+                        BHistoryExt historyExt = service.lookupHistoryExt(point);
+                        if (historyExt != null && (historyExt instanceof BCovHistoryExt))
+                            hdb.add("hisInterpolate", "cov");
+                    }
+                }
+
+                // point kind tags
+                int pointKind = getControlPointKind(point);
+                BFacets facets = (BFacets) point.get("facets");
+                addPointKindTags(pointKind, facets, tags, hdb);
+
+                // curVal, curStatus
+                switch(pointKind)
+                {
+                    case NUMERIC_KIND:
+                        BNumericPoint np = (BNumericPoint) point;
+
+                        HNum curVal = null;
+                        if (tags.has("unit"))
+                        {
+                            HVal unit = tags.get("unit");
+                            curVal = HNum.make(np.getNumeric(), unit.toString());
+                        }
+                        else
+                        {
+                            BUnit unit = findUnit(facets);
+                            if (unit == null) 
+                                curVal = HNum.make(np.getNumeric());
+                            else
+                                curVal = HNum.make(np.getNumeric(), unit.toString());
+                        }
+                        hdb.add("curVal", curVal);
+                        hdb.add("curStatus", makeStatusString(point.getStatus()));
+
+                        break;
+
+                    case BOOLEAN_KIND:
+                        BBooleanPoint bp = (BBooleanPoint) point;
+                        hdb.add("curVal",    HBool.make(bp.getBoolean()));
+                        hdb.add("curStatus", makeStatusString(point.getStatus()));
+                        break;
+
+                    case ENUM_KIND:
+                        BEnumPoint ep = (BEnumPoint) point;
+                        hdb.add("curVal",    HStr.make(ep.getEnum().toString()));
+                        hdb.add("curStatus", makeStatusString(point.getStatus()));
+                        break;
+
+                    case STRING_KIND:
+                        BStringPoint sp = (BStringPoint) point;
+                        hdb.add("curVal",    HStr.make(sp.getOut().getValue().toString()));
+                        hdb.add("curStatus", makeStatusString(point.getStatus()));
+                        break;
+                }
+
+                // the point is explicitly tagged with an equipRef
+                if (tags.has("equipRef"))
+                {
+                    // try to look up  siteRef too
+                    BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
+                    if (equip != null) // this should actually always succeed...
+                    {
+                        HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
+                        if (equipTags.has("siteRef"))
+                            hdb.add("siteRef", equipTags.get("siteRef"));
+                    }
+                }
+                // else try to find a parent device that has a BHEquip child
+                else
+                {
+                    BDevice parentDevice = findParentDevice(point);
+                    if (parentDevice != null)
+                    {
+                        BHEquip equip = (BHEquip) parentDevice.getChildren(BHEquip.class)[0];
+
+                        // generate an equipRef
+                        hdb.add("equipRef", NHRef.make(equip).getHRef());
+
+                        // try to look up the siteRef too
+                        HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
+                        if (equipTags.has("siteRef"))
+                            hdb.add("siteRef", equipTags.get("siteRef"));
+                    }
+                }
+            }
+
+            // done
+            return hdb.toDict();
+        }
+    }
+
+    /**
+      * Find a parent device that has a BHEquip child
+      */
+    private BDevice findParentDevice(BControlPoint point)
+    {
+        BComponent parent = (BComponent) point.getParent();
+
+        while (true)
+        {
+            // keep looking
+            if (parent instanceof BIPointFolder)
+            {
+                parent = (BComponent) parent.getParent();
+            }
+            // maybe the parent has a BHEquip child
+            else if (parent instanceof BDevice)
+            {
+                if (parent.getChildren(BHEquip.class).length > 0)
+                    return (BDevice) parent;
+                else
+                    return null;
+            }
+            // nope
+            else return null;
+        }
     }
 
     /**
@@ -157,7 +240,7 @@ public class ConfigStorehouse extends Storehouse
         // child of ComponentSpace root
         if (navId.equals(Sys.getStation().getStationName() + ":c"))
         {
-            BComponent root = (BComponent) BOrd.make("slot:/").resolve(service, null).get();
+            BComponent root = (BComponent) BOrd.make("slot:/").get(service, null);
             return HGridBuilder.dictsToGrid(new HDict[] { makeNavResult(root) });
         }
         // ComponentSpace component
@@ -165,8 +248,8 @@ public class ConfigStorehouse extends Storehouse
         {
             NHRef nid = NHRef.make(HRef.make(navId));
             BComponent comp = service.getComponentSpace().findByHandle(nid.getHandle());
-            BComponent kids[] = comp.getChildComponents();
 
+            BComponent kids[] = comp.getChildComponents();
             Array dicts = new Array(HDict.class);
             for (int i = 0; i < kids.length; i++)
                 dicts.add(makeNavResult(kids[i]));
@@ -237,6 +320,29 @@ public class ConfigStorehouse extends Storehouse
 // private
 ////////////////////////////////////////////////////////////////
 
+    private HDict makeNavResult(BComponent comp)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+
+        // add a navId, but only if this component is not a leaf
+        if (comp.getChildComponents().length > 0)
+            hdb.add("navId", NHRef.make(comp).getHRef().val);
+
+        if (isVisibleComponent(comp))
+        {
+            hdb.add(createComponentTags(comp));
+        }
+        else
+        {
+            String dis = comp.getDisplayName(null);
+            if (dis != null) hdb.add("dis", dis);
+            hdb.add("axType", comp.getType().toString());
+            hdb.add("axSlotPath", comp.getSlotPath().toString());
+        }
+
+        return hdb.toDict();
+    }
+
     /**
       * Find the imported point that goes with an imported history, 
       * or return null.  
@@ -245,7 +351,8 @@ public class ConfigStorehouse extends Storehouse
       * in bulk, e.g. inside NHServer.iterator(), a different approach 
       * should be used.
       */
-    private BControlPoint lookupRemotePoint(BHistoryConfig cfg, RemotePoint remote)
+    private BControlPoint lookupRemotePoint(
+        BHistoryConfig cfg, RemotePoint remote)
     {
         // look up the station
         BDeviceNetwork network = service.getNiagaraNetwork();
@@ -253,8 +360,9 @@ public class ConfigStorehouse extends Storehouse
         if (station == null) return null;
 
         // look up the points
+        // this fetches from sub-folders too
         BPointDeviceExt pointDevExt = (BPointDeviceExt) station.get("points");
-        BControlPoint[] points = pointDevExt.getPoints(); // fetches from sub-folders too
+        BControlPoint[] points = pointDevExt.getPoints(); 
 
         // find a point with matching slot path
         for (int i = 0; i < points.length; i++)
@@ -304,29 +412,6 @@ public class ConfigStorehouse extends Storehouse
         if (status.isUnackedAlarm()) return "unackedAlarm";
 
         throw new IllegalStateException();
-    }
-
-    private HDict makeNavResult(BComponent comp)
-    {
-        HDictBuilder hdb = new HDictBuilder();
-
-        // add a navId, but only if this component is not a leaf
-        if (comp.getChildComponents().length > 0)
-            hdb.add("navId", NHRef.make(comp).getHRef().val);
-
-        if (isVisibleComponent(comp))
-        {
-            hdb.add(createComponentTags(comp));
-        }
-        else
-        {
-            String dis = comp.getDisplayName(null);
-            if (dis != null) hdb.add("dis", dis);
-            hdb.add("axType", comp.getType().toString());
-            hdb.add("axSlotPath", comp.getSlotPath().toString());
-        }
-
-        return hdb.toDict();
     }
 }
 

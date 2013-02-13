@@ -14,6 +14,8 @@ import javax.baja.ui.list.*;
 import javax.baja.workbench.*;
 import javax.baja.workbench.fieldeditor.*;
 
+import haystack.*;
+import nhaystack.*;
 import nhaystack.res.*;
 
 /**
@@ -51,15 +53,21 @@ public class BHTimeZoneFE extends BWbFieldEditor
         setContent(dropDown);
     }
 
-    protected void doLoadValue(BObject value, Context cx) throws Exception
+    protected void doSetReadonly(boolean readonly)
     {
-        BString units = (BString) value;
-        dropDown.setSelectedItem(units.getString());
+        dropDown.setEnabled(!readonly);
+    }
+
+    protected void doLoadValue(BObject value, Context cx) throws Exception
+
+    {
+        BHTimeZone tz = (BHTimeZone) value;
+        dropDown.setSelectedItem(tz.getTimeZone().name);
     }
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
-        return BString.make((String) dropDown.getSelectedItem());
+        return BHTimeZone.make(HTimeZone.make((String) dropDown.getSelectedItem()));
     }
 
 ////////////////////////////////////////////////////////////////

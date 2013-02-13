@@ -27,26 +27,27 @@ import haystack.*;
 import haystack.io.*;
 import nhaystack.*;
 import nhaystack.res.*;
+import nhaystack.server.*;
 
 /**
   * BHDictEditor is the editor for BHDicts.
   */
-public class BHDictEditor extends BScrollPane
+public class BHDictEditor extends BEdgePane
 {
     /*-
     class BHDictEditor
     {
         actions
         {
-            kindsModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
-            namesModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
-            markerGroupsModified (event: BWidgetEvent) default {[ new BWidgetEvent() ]}
+            kindsModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]}
+            namesModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]} 
+            markerGroupsModified()
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditor(3168623275)1.0$ @*/
-/* Generated Sun Feb 03 09:44:48 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictEditor(703237734)1.0$ @*/
+/* Generated Sun Feb 10 06:48:00 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Action "kindsModified"
@@ -88,13 +89,13 @@ public class BHDictEditor extends BScrollPane
    * Slot for the <code>markerGroupsModified</code> action.
    * @see nhaystack.ui.BHDictEditor#markerGroupsModified()
    */
-  public static final Action markerGroupsModified = newAction(0,new BWidgetEvent(),null);
+  public static final Action markerGroupsModified = newAction(0,null);
   
   /**
    * Invoke the <code>markerGroupsModified</code> action.
    * @see nhaystack.ui.BHDictEditor#markerGroupsModified
    */
-  public void markerGroupsModified(BWidgetEvent event) { invoke(markerGroupsModified,event,null); }
+  public void markerGroupsModified() { invoke(markerGroupsModified,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -107,68 +108,55 @@ public class BHDictEditor extends BScrollPane
 
     public BHDictEditor() {}
 
-    public BHDictEditor(BComponent parentComponent, BHDict orig)
+    public BHDictEditor(
+        BHDictEditorGroup editorGroup, 
+        Map origTags, 
+        int editorType)
     {
-        this.session = (BFoxProxySession) parentComponent.getSession();
+        this.editorGroup = editorGroup;
+        this.editorType = editorType;
 
         // main grid
-        this.mainGrid = new BGridPane();
-        mainGrid.setColumnCount(4);
+        this.mainGrid = new BGridPane(4);
         mainGrid.setHalign(BHalign.left);
         mainGrid.setValign(BValign.top);
 
         BBorderPane mainBorder = new BBorderPane(mainGrid);
-        mainBorder.setPadding(BInsets.make(10));
-        mainBorder.setMargin(BInsets.make(10));
+        mainBorder.setPadding(BInsets.make(4, 4, 8, 4));
+        mainBorder.setMargin(BInsets.make(4));
         mainBorder.setBorder(BBorder.make("inset"));
 
         BConstrainedPane mainCons = new BConstrainedPane(mainBorder);
         mainCons.setMinWidth(MIN_GRID_WIDTH);
-        mainCons.setMinHeight(MIN_GRID_HEIGHT);
 
-        // marker groups
-        this.markerGroups = new BListDropDown();
-        this.markerGroupTags = new BListDropDown();
+        setCenter(mainCons);
 
-        BConstrainedPane mgCons = new BConstrainedPane(markerGroupTags);
-        mgCons.setMinWidth(150);
+        if (editorType == OPTIONAL)
+        {
+            // marker groups
+            this.markerGroups = new BListDropDown();
+            this.markerGroupTags = new BListDropDown();
+            BGridPane mgGrid = new BGridPane(3); 
+            mgGrid.setHalign(BHalign.left);
+            mgGrid.setValign(BValign.top);
+            mgGrid.add(null, new BLabel(LEX.getText("markerGroups") + " ", BOLD));
+            mgGrid.add(null, markerGroups);
+            mgGrid.add(null, constrainMinWidth(markerGroupTags, 150));
+            BBorderPane mgBorder = new BBorderPane(mgGrid);
+            mgBorder.setPadding(BInsets.make(4));
+            setBottom(mgBorder);
 
-        BGridPane mgGrid = new BGridPane(3); 
-        mgGrid.setHalign(BHalign.left);
-        mgGrid.setValign(BValign.top);
-        mgGrid.add(null, new BLabel(LEX.getText("markerGroups") + " ", BOLD));
-        mgGrid.add(null, markerGroups);
-        mgGrid.add(null, mgCons);
+            loadMarkerGroups(origTags); // this might remove some tags!
+        }
 
-        BBorderPane mgBorder = new BBorderPane(mgGrid);
-        mgBorder.setPadding(BInsets.make(0, 0, 10, 10));
-
-        // put it together
-        BEdgePane ep = new BEdgePane();
-        ep.setCenter(mainCons);
-        ep.setBottom(mgBorder);
-        setViewportBackground(BBrush.makeSolid(BColor.make("#CCCCCC")));
-        setContent(ep);
-
-        // load up
-        Map tagMap = asTagMap(orig.getDict());
-        loadMarkerGroups(tagMap);
-        loadMainGrid(tagMap);
+        loadMainGrid(origTags);
     }
 
-    /**
-      * Convert an HDict into a TreeMap<String,HVal>
-      */
-    private static Map asTagMap(HDict dict)
+    private static BConstrainedPane constrainMinWidth(BWidget widget, int minWidth)
     {
-        Map tagMap = new TreeMap();
-        Iterator it = dict.iterator();
-        while (it.hasNext())
-        {
-            Map.Entry entry = (Map.Entry) it.next();
-            tagMap.put(entry.getKey(), entry.getValue());
-        }
-        return tagMap;
+        BConstrainedPane cons = new BConstrainedPane(widget);
+        cons.setMinWidth(minWidth);
+        return cons;
     }
 
     /**
@@ -177,7 +165,7 @@ public class BHDictEditor extends BScrollPane
     private void loadMarkerGroups(Map tagMap) // TreeMap<String,HVal>
     {
         // populate markerGroups
-        markerGroups.getList().addItem(LEX.getText("none"));
+        markerGroups.getList().addItem(NONE);
         String[] mg = Resources.getMarkerGroups();
         for (int i = 0; i < mg.length; i++)
             markerGroups.getList().addItem(mg[i]);
@@ -240,6 +228,9 @@ public class BHDictEditor extends BScrollPane
 
     public void save() throws Exception
     {
+        if (editorType == AUTO_GEN)
+            throw new IllegalStateException();
+
         HDictBuilder builder = new HDictBuilder();
 
         // from mainGrid rows
@@ -256,7 +247,8 @@ public class BHDictEditor extends BScrollPane
 
             // check duplicate name
             if (used.contains(name))
-                throw new BajaRuntimeException("Name '" + name + "' is used more than once.");
+                throw new BajaRuntimeException(
+                    "Name '" + name + "' is used more than once.");
             used.add(name);
 
             // add to builder
@@ -266,43 +258,66 @@ public class BHDictEditor extends BScrollPane
             }
             else if (kind.equals("Number"))
             {
-                BDouble num = (BDouble) row.fe.saveValue();
-                builder.add(name, num.getDouble());
+                HNum num = ((BHNum) row.fe.saveValue()).getNum();
+                builder.add(name, num);
             }
             else if (kind.equals("Str"))
             {
-                BString str = (BString) row.fe.saveValue();
-                builder.add(name, str.getString());
+                if (name.equals("unit"))
+                {
+                    BHUnit unit = (BHUnit) row.fe.saveValue();
+                    builder.add(name, unit.getSymbol());
+                }
+                else if (name.equals("tz"))
+                {
+                    BHTimeZone tz = (BHTimeZone) row.fe.saveValue();
+                    builder.add(name, tz.getTimeZone().name);
+                }
+                else
+                {
+                    BString str = (BString) row.fe.saveValue();
+                    builder.add(name, str.getString());
+                }
             }
             else if (kind.equals("Ref"))
             {
                 BOrd ord = (BOrd) row.fe.saveValue();
-                OrdQuery[] oq = ord.parse();
-                OrdQuery query = oq[oq.length - 1];
 
-                if (!(query.getScheme().equals("slot") || 
-                      query.getScheme().equals("history")))
-                    throw new BajaRuntimeException("Cannot save '" + ord + "' as an HRef.");
+                // if its a null ord, just don't add anything to the builder
+                if (!ord.equals(BOrd.DEFAULT))
+                {
+                    OrdQuery[] oq = ord.parse();
+                    OrdQuery query = oq[oq.length - 1];
 
-                BObject obj = ord.resolve(session, null).get();
-                if (obj instanceof BComponent)
-                {
-                    BComponent comp = (BComponent) obj;
-                    if (!comp.isMounted())
-                        throw new BajaRuntimeException(ord + " is not mounted.");
-                    NHRef nh = NHRef.make(session.getStationName(), comp);
-                    builder.add(name, nh.getHRef());
-                }
-                else if (obj instanceof BIHistory)
-                {
-                    BIHistory history = (BIHistory) obj;
-                    BHistoryConfig cfg = history.getConfig();
-                    NHRef nh = NHRef.make(session.getStationName(), cfg);
-                    builder.add(name, nh.getHRef());
-                }
-                else
-                {
-                    throw new BajaRuntimeException("Cannot save '" + ord + "' as an HRef.");
+                    if (query.getScheme().equals("slot"))
+                    {
+                        BObject obj = BOrd.make("station:|" + ord).resolve(
+                                editorGroup.session(), null).get();
+                        BComponent comp = (BComponent) obj;
+                        if (!comp.isMounted())
+                            throw new BajaRuntimeException(
+                                ord + " is not mounted.");
+
+                        NHRef nh = NHRef.make(
+                            editorGroup.session().getStationName(), comp);
+                        builder.add(name, nh.getHRef());
+                    }
+                    else if (query.getScheme().equals("history"))
+                    {
+                        BObject obj = ord.resolve(
+                            editorGroup.session(), null).get();
+
+                        BIHistory history = (BIHistory) obj;
+                        BHistoryConfig cfg = history.getConfig();
+                        NHRef nh = NHRef.make(
+                            editorGroup.session().getStationName(), cfg);
+                        builder.add(name, nh.getHRef());
+                    }
+                    else
+                    {
+                        throw new BajaRuntimeException(
+                            "Cannot save '" + ord + "' as an HRef.");
+                    }
                 }
             }
             else if (kind.equals("Bool"))
@@ -314,13 +329,16 @@ public class BHDictEditor extends BScrollPane
         }
 
         // from markerGroupTags
-        String mg = (String) markerGroups.getSelectedItem();
-        if (!mg.equals(LEX.getText("none")))
+        if (editorType == OPTIONAL)
         {
-            String item = (String) markerGroupTags.getSelectedItem();
-            String[] markers = TextUtil.split(item, ' ');
-            for (int i = 0; i < markers.length; i++)
-                builder.add(markers[i]);
+            String mg = (String) markerGroups.getSelectedItem();
+            if (!mg.equals(NONE))
+            {
+                String item = (String) markerGroupTags.getSelectedItem();
+                String[] markers = TextUtil.split(item, ' ');
+                for (int i = 0; i < markers.length; i++)
+                    builder.add(markers[i]);
+            }
         }
 
         // encode to zinc and back just to be sure
@@ -364,7 +382,7 @@ public class BHDictEditor extends BScrollPane
             if (name.equals("tz") && !(row.fe instanceof BHTimeZoneFE))
             {
                 row.fe = new BHTimeZoneFE();
-                row.fe.loadValue(BString.make(HTimeZone.DEFAULT.name));
+                row.fe.loadValue(BHTimeZone.make(HTimeZone.DEFAULT));
                 fillMainGrid();
             }
             // change away from tz
@@ -373,7 +391,7 @@ public class BHDictEditor extends BScrollPane
                 if (name.equals("unit"))
                 {
                     row.fe = new BHUnitFE();
-                    row.fe.loadValue(BString.make(Resources.getSymbolUnit("%").symbol));
+                    row.fe.loadValue(BHUnit.make(Resources.getSymbolUnit("%").symbol));
                 }
                 else
                 {
@@ -386,7 +404,7 @@ public class BHDictEditor extends BScrollPane
             else if (name.equals("unit") && !(row.fe instanceof BHUnitFE))
             {
                 row.fe = new BHUnitFE();
-                row.fe.loadValue(BString.make(Resources.getSymbolUnit("%").symbol));
+                row.fe.loadValue(BHUnit.make(Resources.getSymbolUnit("%").symbol));
                 fillMainGrid();
             }
             // change away from unit
@@ -395,7 +413,7 @@ public class BHDictEditor extends BScrollPane
                 if (name.equals("tz"))
                 {
                     row.fe = new BHTimeZoneFE();
-                    row.fe.loadValue(BString.make(HTimeZone.DEFAULT.name));
+                    row.fe.loadValue(BHTimeZone.make(HTimeZone.DEFAULT));
                 }
                 else
                 {
@@ -427,14 +445,14 @@ public class BHDictEditor extends BScrollPane
         throw new IllegalStateException();
     }
 
-    public void doMarkerGroupsModified(BWidgetEvent event)
+    public void doMarkerGroupsModified()
     {
         markerGroupTags.setSelectedIndex(-1);
         BList list = markerGroupTags.getList();
         list.removeAllItems();
 
         String mg = (String) markerGroups.getSelectedItem();
-        if (mg.equals(LEX.getText("none")))
+        if (mg.equals(NONE))
         {
             markerGroupTags.setEnabled(false);
         }
@@ -530,20 +548,27 @@ public class BHDictEditor extends BScrollPane
             for (int i = 0; i < rows.size(); i++)
             {
                 Row row = (Row) rows.get(i);
-                mainGrid.add(null, makeAddRemove(new RemoveRow(i)));
+
+                mainGrid.add(null, (editorType == OPTIONAL) ?
+                    (BWidget) makeAddRemove(new RemoveRow(i)) :
+                    (BWidget) new BNullWidget());
+
                 mainGrid.add(null, row.kinds);
                 mainGrid.add(null, row.names);
                 mainGrid.add(null, row.fe);
             }
         }
 
-        BButton button = new BButton(new AddRowButton());
-        button.setButtonStyle(BButtonStyle.toolBar);
+        if (editorType == OPTIONAL)
+        {
+            BButton button = new BButton(new AddRowButton());
+            button.setButtonStyle(BButtonStyle.toolBar);
 
-        mainGrid.add(null, makeAddRemove(new AddRowIcon()));
-        mainGrid.add(null, button);
-        mainGrid.add(null, new BNullWidget());
-        mainGrid.add(null, new BNullWidget());
+            mainGrid.add(null, makeAddRemove(new AddRowIcon()));
+            mainGrid.add(null, button);
+            mainGrid.add(null, new BNullWidget());
+            mainGrid.add(null, new BNullWidget());
+        }
 
         mainGrid.relayout();
     }
@@ -591,8 +616,10 @@ public class BHDictEditor extends BScrollPane
 // static attribs
 ////////////////////////////////////////////////////////////////
 
-    private static final Lexicon LEX = Lexicon.make("nhaystack");
+    private static final BOrd NH_SERVICE = BOrd.make("station:|slot:/Services/NHaystackService");
 
+    private static final Lexicon LEX = Lexicon.make("nhaystack");
+    private static final String NONE = LEX.getText("none");
     private static BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
 
     private static final BImage ADD    = BImage.make("module://nhaystack/nhaystack/icons/tag_add.png");
@@ -600,7 +627,6 @@ public class BHDictEditor extends BScrollPane
 
     // empirically determined
     private static final int MIN_GRID_WIDTH  = 555; 
-    private static final int MIN_GRID_HEIGHT = 62;
 
     private static final int ADD_REMOVE_SIZE;
     static
@@ -611,12 +637,22 @@ public class BHDictEditor extends BScrollPane
     }
 
 ////////////////////////////////////////////////////////////////
+// access
+////////////////////////////////////////////////////////////////
+    
+    BHDictEditorGroup group() { return editorGroup; }
+    int editorType() { return editorType; }
+
+////////////////////////////////////////////////////////////////
 // attribs
 ////////////////////////////////////////////////////////////////
 
-    BFoxProxySession session() { return session; }
+    static final int ESSENTIALS = 1;
+    static final int OPTIONAL = 2;
+    static final int AUTO_GEN = 3;
 
-    private BFoxProxySession session;
+    private BHDictEditorGroup editorGroup;
+    private int editorType;
 
     private Array rows;
 

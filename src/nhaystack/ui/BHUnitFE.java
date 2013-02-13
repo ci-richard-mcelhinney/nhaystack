@@ -17,6 +17,7 @@ import javax.baja.ui.pane.*;
 import javax.baja.workbench.*;
 import javax.baja.workbench.fieldeditor.*;
 
+import nhaystack.*;
 import nhaystack.res.*;
 
 /**
@@ -69,9 +70,6 @@ public class BHUnitFE extends BWbFieldEditor
         for (int i = 0; i < quantities.length; i++)
             list.addItem(quantities[i]);
 
-        linkTo(quantDropDown, BDropDown.valueModified, BHUnitFE.quantitiesModified);
-        linkTo(unitsDropDown, BDropDown.valueModified, BWbPlugin.setModified);
-
         BGridPane grid = new BGridPane(2);
         grid.setHalign(BHalign.left);
         grid.setValign(BValign.top);
@@ -79,11 +77,22 @@ public class BHUnitFE extends BWbFieldEditor
         grid.add(null, unitsDropDown);
 
         setContent(grid);
+
+        linkTo(quantDropDown, BDropDown.valueModified, BHUnitFE.quantitiesModified);
+        linkTo(unitsDropDown, BDropDown.valueModified, BWbPlugin.setModified);
+
+        eventsEnabled = true;
+    }
+
+    protected void doSetReadonly(boolean readonly)
+    {
+        quantDropDown.setEnabled(!readonly);
+        unitsDropDown.setEnabled(!readonly);
     }
 
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
-        String sym = ((BString) value).getString();
+        String sym = ((BHUnit) value).getSymbol();
         Unit unit = Resources.getSymbolUnit(sym);
 
         quantDropDown.setSelectedItem(unit.quantity);
@@ -94,20 +103,37 @@ public class BHUnitFE extends BWbFieldEditor
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
+        if (!getEnabled()) throw new IllegalStateException();
+
         Unit unit = curUnits[unitsDropDown.getSelectedIndex()];
-        return BString.make(unit.symbol);
+        return BHUnit.make(unit.symbol);
     }
 
-////////////////////////////////////////////////////////////////
-// Actions
-////////////////////////////////////////////////////////////////
+    public void setEnabled(boolean enabled)
+    {
+        eventsEnabled = false;
+
+        super.setEnabled(enabled);
+
+        quantDropDown.setEnabled(enabled);
+        unitsDropDown.setEnabled(enabled);
+
+        eventsEnabled = true;
+    }
 
     public void doQuantitiesModified(BWidgetEvent event)
     {
+        if (!eventsEnabled) return;
+
         setModified();
 
         populateUnitsDropDown((String) quantDropDown.getSelectedItem());
         unitsDropDown.setSelectedIndex(0);
+    }
+
+    void lockQuantity()
+    {
+        quantDropDown.setEnabled(false);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -126,6 +152,8 @@ public class BHUnitFE extends BWbFieldEditor
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private boolean eventsEnabled;
 
     private BListDropDown quantDropDown = new BListDropDown();
     private BListDropDown unitsDropDown = new BListDropDown();

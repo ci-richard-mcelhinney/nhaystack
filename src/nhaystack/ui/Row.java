@@ -8,6 +8,7 @@
 
 package nhaystack.ui;
 
+import javax.baja.fox.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
@@ -34,7 +35,20 @@ class Row
         names.setText(name);
         editor.linkTo(names, BDropDown.valueModified, BHDictEditor.namesModified);  
 
-        this.fe = makeValueFE(editor, kind, name, val);
+        this.fe = makeValueFE(editor, name, val);
+
+        switch(editor.editorType())
+        {
+            case BHDictEditor.ESSENTIALS:
+                kinds.setEnabled(false);
+                names.setEnabled(false);
+                break;
+            case BHDictEditor.AUTO_GEN:
+                kinds.setEnabled(false);
+                names.setEnabled(false);
+                fe.setReadonly(true);
+                break;
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -47,7 +61,13 @@ class Row
         list.removeAllItems();
         String[] tags = Resources.getKindTags(kind);
         for (int i = 0; i < tags.length; i++)
+        {
+            if (tags[i].equals("id")) continue;
+            if (tags[i].equals("siteRef")) continue;
+            if (tags[i].equals("equipRef")) continue;
+
             list.addItem(tags[i]);
+        }
     }
 
     static BWbFieldEditor initValueFE(String kind)
@@ -61,8 +81,8 @@ class Row
         }
         else if (kind.equals("Number"))
         {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BDouble.DEFAULT);
-            fe.loadValue(BDouble.DEFAULT);
+            BWbFieldEditor fe = new BHNumFE();
+            fe.loadValue(BHNum.DEFAULT);
             return fe;
         }
         else if (kind.equals("Str"))
@@ -73,6 +93,8 @@ class Row
         }
         else if (kind.equals("Ref"))
         {
+            // because we removed siteRef and equipRef from the names dropdown,
+            // its OK to just use the default ord FE
             BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
             fe.loadValue(BOrd.DEFAULT);
             return fe;
@@ -121,78 +143,120 @@ class Row
         list.setSelectedItem(kind);
     }
 
-    private static BWbFieldEditor makeValueFE(BHDictEditor editor, String kind, String name, HVal val)
+    private static BWbFieldEditor makeValueFE(
+        BHDictEditor editor, String name, HVal val)
     {
         if (val instanceof HMarker) 
+            return makeMarkerFE();
+
+        else if (val instanceof HNum)
+            return makeNumFE((HNum) val);
+
+        else if (val instanceof HStr)
+            return makeStrFE(name, (HStr) val);
+
+        else if (val instanceof HRef)
+            return makeRefFE(editor, name, (HRef) val);
+
+        else if (val instanceof HBool)
+            return makeBoolFE((HBool) val);
+
+        else throw new IllegalStateException();
+    }
+
+    private static BWbFieldEditor makeMarkerFE()
+    {
+        BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+        fe.loadValue(BString.DEFAULT);
+        fe.setReadonly(true);
+        return fe;
+    }
+
+    private static BWbFieldEditor makeNumFE(HNum num)
+    {
+        BWbFieldEditor fe = new BHNumFE();
+        fe.loadValue(BHNum.make(num));
+        return fe;
+    }
+
+    private static BWbFieldEditor makeStrFE(String name, HStr str)
+    {
+        if (name.equals("tz"))
+        {
+            BWbFieldEditor fe = new BHTimeZoneFE();
+            fe.loadValue(BHTimeZone.make(HTimeZone.make(str.val)));
+            return fe;
+        }
+        else if (name.equals("unit"))
+        {
+            BWbFieldEditor fe = new BHUnitFE();
+            fe.loadValue(BHUnit.make(Resources.getSymbolUnit(str.val).symbol));
+            return fe;
+        }
+        else
         {
             BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            fe.setReadonly(true);
+            fe.loadValue(BString.make(str.val));
             return fe;
         }
-        else if (val instanceof HNum)
-        {
-            HNum num = (HNum) val;
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BDouble.DEFAULT);
-            fe.loadValue(BDouble.make(num.val));
-            return fe;
-        }
-        else if (val instanceof HStr)
-        {
-            HStr str = (HStr) val;
+    }
 
-            if (kind.equals("Str") && name.equals("tz"))
-            {
-                BWbFieldEditor fe = new BHTimeZoneFE();
-                fe.loadValue(BString.make(str.val));
-                return fe;
-            }
-            else if (kind.equals("Str") && name.equals("unit"))
-            {
-                BWbFieldEditor fe = new BHUnitFE();
-                fe.loadValue(BString.make(Resources.getSymbolUnit(str.val).symbol));
-                return fe;
-            }
-            else
-            {
-                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-                fe.loadValue(BString.make(str.val));
-                return fe;
-            }
-        }
-        else if (val instanceof HRef)
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
+    private static BWbFieldEditor makeRefFE(BHDictEditor editor, String name, HRef ref)
+    {
+        BFoxProxySession session = editor.group().session();
 
-            HRef id = (HRef) val;
-            NHRef nh = NHRef.make(id);
-            if (!nh.getStationName().equals(editor.session().getStationName()))
+        // create ord
+        BOrd ord = null;
+        if (BHRef.make(ref).equals(BHRef.DEFAULT))
+        {
+            ord = BOrd.DEFAULT;
+        }
+        else
+        {
+            NHRef nh = NHRef.make(ref);
+            if (!nh.getStationName().equals(session.getStationName()))
                 throw new BajaRuntimeException(
                     "station name '" + nh.getStationName() + "' does not match " +
-                    "session station name '" + editor.session().getStationName() + "'");
+                    "session station name '" + session.getStationName() + "'");
 
-            if (nh.isComponentSpace())
+            if (nh.getSpace().equals(NHRef.COMPONENT))
             {
-                BOrd ord = BOrd.make("station:|h:" + nh.getHandle());
-                BComponent comp = (BComponent) ord.resolve(editor.session(), null).get();
-                fe.loadValue(BOrd.make("station:|" + comp.getSlotPathOrd()));
+                BOrd handleOrd = BOrd.make("station:|h:" + nh.getHandle());
+                BComponent comp = (BComponent) handleOrd.resolve(session, null).get();
+                ord = comp.getSlotPathOrd();
             }
-            else if (nh.isHistorySpace())
+            else if (nh.getSpace().equals(NHRef.HISTORY))
             {
-                fe.loadValue(BOrd.make("history:" + nh.getHandle()));
+                ord = BOrd.make("history:" + nh.getHandle());
             }
             else throw new IllegalStateException();
+        }
 
-            return fe;
-        }
-        else if (val instanceof HBool)
+        // create field editor
+        BWbFieldEditor fe = null;
+        if (name.equals("siteRef"))
         {
-            HBool bool = (HBool) val;
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
-            fe.loadValue(bool.val ? BBoolean.TRUE : BBoolean.FALSE);
-            return fe;
+            fe = new BSiteRefFE(editor.group());
         }
-        else throw new IllegalStateException();
+        else if (name.equals("equipRef"))
+        {
+            fe = new BEquipRefFE(editor.group());
+        }
+        else
+        {
+            fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
+        }
+
+        // load
+        fe.loadValue(ord);
+        return fe;
+    }
+
+    private static BWbFieldEditor makeBoolFE(HBool bool)
+    {
+        BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
+        fe.loadValue(bool.val ? BBoolean.TRUE : BBoolean.FALSE);
+        return fe;
     }
 
 ////////////////////////////////////////////////////////////////

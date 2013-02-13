@@ -223,11 +223,13 @@ public class NSimpleClientTest extends NTest
     void verifyNav() throws Exception
     {
         HGrid grid = client.call("nav", HGrid.EMPTY);
-        verifyEq(grid.numRows(), 2);
+        verifyEq(grid.numRows(), 3);
         verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_simple:c"));
         verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
         verifyEq(grid.row(1).get("navId"), HStr.make("nhaystack_simple:h"));
         verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("site"));
+        verifyEq(grid.row(2).get("dis"),   HStr.make("Sites"));
 
         HGrid n = makeNavGrid(HStr.make("nhaystack_simple:h"));
         grid = client.call("nav", n);
@@ -252,13 +254,6 @@ public class NSimpleClientTest extends NTest
             if (grid.row(i).has("navId"))
                 traverseComponents((HStr) grid.row(i).get("navId"));
         }
-    }
-
-    HGrid makeNavGrid(HStr navId)
-    {
-        HDictBuilder hd = new HDictBuilder();
-        hd.add("navId", navId);
-        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
     }
 
 //////////////////////////////////////////////////////////////////////////

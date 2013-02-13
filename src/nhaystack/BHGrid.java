@@ -13,31 +13,31 @@ import haystack.*;
 import haystack.io.*;
 
 /**
- *  BHDict wraps a Haystack HDict
+ *  BHGrid wraps a Haystack HGrid
  */
-public final class BHDict
+public final class BHGrid
     extends BSimple
 {
     /**
-      * Make a BHDict instance from an HDict.
+      * Make a BHGrid instance from an HGrid.
       */
-    public static BHDict make(HDict dict) 
+    public static BHGrid make(HGrid grid) 
     { 
-        return new BHDict(dict);  
+        return new BHGrid(grid);  
     }
 
     /**
-      * Make a BHDict instance from a ZINC-encoded string.
+      * Make a BHGrid instance from a ZINC-encoded string.
       */
-    public static BHDict make(String s) 
+    public static BHGrid make(String s) 
     { 
         HZincReader zr = new HZincReader(s);
-        return new BHDict(zr.readDict());
+        return new BHGrid(zr.readGrid());
     }
 
-    private BHDict(HDict dict) 
+    private BHGrid(HGrid grid) 
     { 
-        this.dict = dict;
+        this.grid = grid;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -46,16 +46,16 @@ public final class BHDict
 
     public int hashCode() 
     { 
-        return dict.hashCode(); 
+        return grid.hashCode(); 
     }
 
     public boolean equals(Object obj)
     {
         if (this == obj) return true;
 
-        if (!(obj instanceof BHDict)) return false;
-        BHDict that = (BHDict) obj;
-        return (dict.equals(that.dict));
+        if (!(obj instanceof BHGrid)) return false;
+        BHGrid that = (BHGrid) obj;
+        return (grid.equals(that.grid));
     }
 
 ////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ public final class BHDict
       */
     public void encode(DataOutput encoder) throws IOException
     { 
-        encoder.writeUTF(dict.toZinc()); 
+        encoder.writeUTF(HZincWriter.gridToString(grid));
     }
 
     /**
@@ -76,7 +76,7 @@ public final class BHDict
     public BObject decode(DataInput decoder) throws IOException
     { 
         HZincReader zr = new HZincReader(decoder.readUTF());
-        return new BHDict(zr.readDict());
+        return new BHGrid(zr.readGrid());
     }  
 
     /**
@@ -84,7 +84,7 @@ public final class BHDict
       */
     public String encodeToString() throws IOException
     { 
-        return dict.toZinc(); 
+        return HZincWriter.gridToString(grid);
     }
 
     /**
@@ -93,7 +93,7 @@ public final class BHDict
     public BObject decodeFromString(String s) throws IOException
     { 
         HZincReader zr = new HZincReader(s);
-        return new BHDict(zr.readDict());
+        return new BHGrid(zr.readGrid());
     }
 
 ////////////////////////////////////////////////////////////////
@@ -107,12 +107,12 @@ public final class BHDict
       * In order for the annotation to be recognized, it
       * must be stored in a property called 'haystack'.
       */
-    public static BHDict findTagAnnotation(BComponent comp)
+    public static BHGrid findTagAnnotation(BComponent comp)
     {
         BValue val = comp.get("haystack");
         if (val == null) return null;
 
-        return (val instanceof BHDict) ? (BHDict) val : null;
+        return (val instanceof BHGrid) ? (BHGrid) val : null;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -120,9 +120,9 @@ public final class BHDict
 ////////////////////////////////////////////////////////////////
 
     /**
-      * Return the underlying HDict.
+      * Return the underlying HGrid.
       */
-    public HDict getDict() { return dict; }
+    public HGrid getGrid() { return grid; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
@@ -131,11 +131,11 @@ public final class BHDict
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
 
-    /** * The default is HDict.EMPTY. */
-    public static final BHDict DEFAULT = new BHDict(HDict.EMPTY);
+    /** * The default is HGrid.EMPTY. */
+    public static final BHGrid DEFAULT = new BHGrid(HGrid.EMPTY);
 
     public Type getType() { return TYPE; }
-    public static final Type TYPE = Sys.loadType(BHDict.class);
+    public static final Type TYPE = Sys.loadType(BHGrid.class);
 
-    private final HDict dict;
+    private final HGrid grid;
 }

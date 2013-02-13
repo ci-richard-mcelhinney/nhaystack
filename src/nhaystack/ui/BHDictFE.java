@@ -58,6 +58,11 @@ public class BHDictFE extends BWbFieldEditor
         setContent(ep);
     }
 
+    protected void doSetReadonly(boolean readonly)
+    {
+        button.setEnabled(!readonly);
+    }
+
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
         tags = (BHDict) value;
@@ -84,17 +89,17 @@ public class BHDictFE extends BWbFieldEditor
 
     private void edit()
     {
-        BHDictEditor editor = new BHDictEditor(findParentComponent(), tags);
+        BHDictEditorGroup edGroup = new BHDictEditorGroup(findParentComponent());
 
-        BHDictDialog dialog = BHDictDialog.make(this, editor);
+        BHDictDialog dialog = BHDictDialog.make(this, edGroup);
         dialog.setBoundsCenteredOnOwner();
         dialog.open();
 
-        BHDict result = editor.getTags();
+        BHDict result = edGroup.getTags();
         if (result != null && !result.equals(tags))
         {
             tags = result;
-            textField.setText(editor.getZinc());
+            textField.setText(edGroup.getZinc());
             textField.relayout();
             setModified();
         }

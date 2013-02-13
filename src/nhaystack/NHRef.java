@@ -3,13 +3,13 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   07 Nov 2011  Richard McElhinney  Creation
-//   28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//   06 Feb 2013  Mike Jarmy  Creation
 //
 package nhaystack;
 
 import javax.baja.history.*;
 import javax.baja.sys.*;
+
 import haystack.*;
 import haystack.util.*;
 
@@ -31,14 +31,16 @@ public class NHRef
         int colon = val.indexOf(":");
         int dot = val.indexOf(".");
         if ((colon == -1) || (dot == -1) || (colon > dot))
-            throw new BajaRuntimeException("Could not parse HRef '" + ref + "'.");
+            throw new BajaRuntimeException(
+                "Could not parse HRef '" + ref + "'.");
 
         String stationName = val.substring(0, colon);
         String space       = val.substring(colon+1, dot);
         String handle      = Base64.URI.decodeUTF8(val.substring(dot+1));
 
-        if (!(space.equals("c") || space.equals("h")))
-            throw new BajaRuntimeException("Could not parse HRef '" + ref + "'.");
+        if (!(space.equals(COMPONENT) || space.equals(HISTORY)))
+            throw new BajaRuntimeException(
+                "Could not parse HRef '" + ref + "'.");
 
         return new NHRef(ref, stationName, space, handle);
     }
@@ -48,14 +50,15 @@ public class NHRef
       */
     public static NHRef make(BComponent comp)
     {
+//        if (comp instanceof BIHaystackNav)
+//            throw new BajaRuntimeException(
+//                "Cannot create NHRef for " + comp.getClass());
+
         return make(Sys.getStation().getStationName(), comp);
     }
 
     /**
-      * Make an ID from a BComponent.  If the BComponent
-      * is a BHistoryConfig, create a HistorySpace ID.
-      * Otherwise assume the BComponent is mounted, and 
-      * create a BComponentSpace ID from the component's handle.
+      * Make an ID from a BComponent.  
       */
     public static NHRef make(String stationName, BComponent comp)
     {
@@ -66,14 +69,14 @@ public class NHRef
             BHistoryId hid = cfg.getId();
             String handle = Base64.URI.encodeUTF8(hid.toString());
 
-            return new NHRef(stationName, "h", handle);
+            return new NHRef(stationName, HISTORY, handle);
         }
         // component space
         else
         {
             String handle = Base64.URI.encodeUTF8(comp.getHandle().toString());
             
-            return new NHRef(stationName, "c", handle);
+            return new NHRef(stationName, COMPONENT, handle);
         }
     }
 
@@ -133,22 +136,21 @@ public class NHRef
     public String getStationName() { return stationName; }
 
     /**
-      * The space is always either a componentSpace or a historySpace.
+      * The space is always either COMPONENT or HISTORY.
       */
-    public boolean isComponentSpace() { return space.equals("c"); }
-    public boolean isHistorySpace()   { return space.equals("h"); }
+    public String getSpace() { return space; }
 
     /**
-      * For a ComponentSpace, the handle is an encoding of the 
-      * component's handle.
-      *
-      * For a HistorySpace, the handle is an encoding of the historyId.
+      * The handle identifies an object within its space.
       */
     public String getHandle() { return handle; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    public static final String COMPONENT = "c";
+    public static final String HISTORY   = "h";
 
     private final HRef ref;
     private final String stationName;

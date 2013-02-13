@@ -229,7 +229,7 @@ public class Resources
     }
 
     /**
-      * Get all the Units associated with a given quantity.
+      * Get all the Units having a given quantity.
       */
     public static Unit[] getUnits(String quantity)
     {
@@ -238,7 +238,25 @@ public class Resources
     }
 
     /**
-      * Get the unit associated with a given symbol.
+      * Get all the Units having a given quantity and name.
+      */
+    public static Unit[] getUnits(String quantity, String name)
+    {
+        Array a1 = (Array) quantityUnits.get(quantity);
+        Array a2 = new Array(Unit.class);
+
+        for (int i = 0; i < a1.size(); i++)
+        {
+            Unit unit = (Unit) a1.get(i);
+            if (unit.name.equals(name))
+                a2.add(unit);
+        }
+
+        return (Unit[]) a2.trim();
+    }
+
+    /**
+      * Get the unit having a given symbol.
       */
     public static Unit getSymbolUnit(String symbol)
     {

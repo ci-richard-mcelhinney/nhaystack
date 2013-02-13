@@ -9,15 +9,31 @@
 
 <types>
 
-    <type name="HDict" class="nhaystack.BHDict"/>
+    <type name="HDict"     class="nhaystack.BHDict"/>
+    <type name="HNum"      class="nhaystack.BHNum"/>
+    <type name="HGrid"     class="nhaystack.BHGrid"/>
+    <type name="HRef"      class="nhaystack.BHRef"/>
+    <type name="HTimeZone" class="nhaystack.BHTimeZone"/>
+    <type name="HUnit"     class="nhaystack.BHUnit"/>
 
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
 
-    <type name="HDictDialog" class="nhaystack.ui.BHDictDialog"/>
-    <type name="HDictEditor" class="nhaystack.ui.BHDictEditor"/>
-    <type name="HDictFE"     class="nhaystack.ui.BHDictFE"><agent><on type="nhaystack:HDict"/></agent></type>
-    <type name="HTimeZoneFE" class="nhaystack.ui.BHTimeZoneFE"/>
-    <type name="HUnitFE"     class="nhaystack.ui.BHUnitFE"/>
+    <type name="GroupPane"        class="nhaystack.ui.BGroupPane"/>
+    <type name="HDictDialog"      class="nhaystack.ui.BHDictDialog"/>
+    <type name="HDictEditor"      class="nhaystack.ui.BHDictEditor"/>
+    <type name="HDictEditorGroup" class="nhaystack.ui.BHDictEditorGroup"/>
+
+    <type name="HDictFE"     class="nhaystack.ui.BHDictFE">     <agent><on type="nhaystack:HDict"/>     </agent></type>
+    <type name="HNumFE"      class="nhaystack.ui.BHNumFE">      <agent><on type="nhaystack:HNum"/>      </agent></type>
+    <type name="HTimeZoneFE" class="nhaystack.ui.BHTimeZoneFE"> <agent><on type="nhaystack:HTimeZone"/> </agent></type>
+    <type name="HUnitFE"     class="nhaystack.ui.BHUnitFE">     <agent><on type="nhaystack:HUnit"/>     </agent></type>
+
+    <type name="EquipRefFE" class="nhaystack.ui.BEquipRefFE"/>
+    <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>
+
+    <type name="HEquip"  class="nhaystack.site.BHEquip"/>
+    <type name="HSite"   class="nhaystack.site.BHSite"/>
+    <type name="HTagged" class="nhaystack.site.BHTagged"/>
 
 </types>
