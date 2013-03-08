@@ -246,8 +246,9 @@ public class ConfigStorehouse extends Storehouse
         // ComponentSpace component
         else if (navId.startsWith(Sys.getStation().getStationName() + ":c."))
         {
-            NHRef nid = NHRef.make(HRef.make(navId));
-            BComponent comp = service.getComponentSpace().findByHandle(nid.getHandle());
+            NHRef nh = NHRef.make(HRef.make(navId));
+            BOrd ord = BOrd.make("station:|" + nh.getPath());
+            BComponent comp = (BComponent) ord.get(service, null);
 
             BComponent kids[] = comp.getChildComponents();
             Array dicts = new Array(HDict.class);

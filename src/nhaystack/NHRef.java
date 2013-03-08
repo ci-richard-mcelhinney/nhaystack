@@ -15,7 +15,7 @@ import haystack.util.*;
 
 /**
   * NHRef uniquely identifies an object by its 
-  * station, space, and handle.  Every AX object
+  * station, space, and path.  Every AX object
   * that is represented as a haystack entity has a
   * unique NHRef.
   */
@@ -36,13 +36,13 @@ public class NHRef
 
         String stationName = val.substring(0, colon);
         String space       = val.substring(colon+1, dot);
-        String handle      = Base64.URI.decodeUTF8(val.substring(dot+1));
+        String path        = Base64.URI.decodeUTF8(val.substring(dot+1));
 
         if (!(space.equals(COMPONENT) || space.equals(HISTORY)))
             throw new BajaRuntimeException(
                 "Could not parse HRef '" + ref + "'.");
 
-        return new NHRef(ref, stationName, space, handle);
+        return new NHRef(ref, stationName, space, path);
     }
 
     /**
@@ -50,10 +50,6 @@ public class NHRef
       */
     public static NHRef make(BComponent comp)
     {
-//        if (comp instanceof BIHaystackNav)
-//            throw new BajaRuntimeException(
-//                "Cannot create NHRef for " + comp.getClass());
-
         return make(Sys.getStation().getStationName(), comp);
     }
 
@@ -67,32 +63,32 @@ public class NHRef
         {
             BHistoryConfig cfg = (BHistoryConfig) comp;
             BHistoryId hid = cfg.getId();
-            String handle = Base64.URI.encodeUTF8(hid.toString());
+            String path = Base64.URI.encodeUTF8(hid.toString());
 
-            return new NHRef(stationName, HISTORY, handle);
+            return new NHRef(stationName, HISTORY, path);
         }
         // component space
         else
         {
-            String handle = Base64.URI.encodeUTF8(comp.getHandle().toString());
+            String path = Base64.URI.encodeUTF8(comp.getSlotPath().toString());
             
-            return new NHRef(stationName, COMPONENT, handle);
+            return new NHRef(stationName, COMPONENT, path);
         }
     }
 
-    private NHRef(HRef ref, String stationName, String space, String handle)
+    private NHRef(HRef ref, String stationName, String space, String path)
     {
         this.ref         = ref;
         this.stationName = stationName;
         this.space       = space;
-        this.handle      = handle;
+        this.path      = path;
     }
 
-    private NHRef(String stationName, String space, String handle)
+    private NHRef(String stationName, String space, String path)
     {
         this(
-            HRef.make(stationName + ":" + space + "." + handle),
-            stationName, space, handle); 
+            HRef.make(stationName + ":" + space + "." + path),
+            stationName, space, path); 
     }
 
 ////////////////////////////////////////////////////////////////
@@ -105,7 +101,7 @@ public class NHRef
             "ref:" + ref + ", " +
             "stationName:" + stationName + ", " +
             "space:" + space + ", " +
-            "handle:" + handle + "]";
+            "path:" + path + "]";
     }
 
     public int hashCode() { return ref.hashCode(); }
@@ -124,7 +120,7 @@ public class NHRef
 ////////////////////////////////////////////////////////////////
 
     /**
-      * The ref is always <code>stationName + ":" + space + "." + handle</code>.
+      * The ref is always <code>stationName + ":" + space + "." + path</code>.
       */
     public HRef getHRef() { return ref; }
 
@@ -141,9 +137,9 @@ public class NHRef
     public String getSpace() { return space; }
 
     /**
-      * The handle identifies an object within its space.
+      * The path identifies an object within its space.
       */
-    public String getHandle() { return handle; }
+    public String getPath() { return path; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
@@ -155,5 +151,5 @@ public class NHRef
     private final HRef ref;
     private final String stationName;
     private final String space; 
-    private final String handle;
+    private final String path;
 }

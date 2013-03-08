@@ -13,6 +13,7 @@ import javax.baja.collection.*;
 import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.log.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
@@ -300,6 +301,14 @@ public class NHServer extends HServer
         throw new UnsupportedOperationException();
     }
 
+    /**
+      * Implementation hook for invokeAction
+      */
+    protected HGrid onInvokeAction(HDict rec, String action, HDict args)
+    {
+        throw new UnsupportedOperationException();
+    }
+
 ////////////////////////////////////////////////////////////////
 // public
 ////////////////////////////////////////////////////////////////
@@ -339,14 +348,15 @@ public class NHServer extends HServer
         if (nh.getSpace().equals(NHRef.COMPONENT))
         {
             // this might be null
-            BComponent comp = service.getComponentSpace().findByHandle(nh.getHandle());
+            BOrd ord = BOrd.make("station:|" + nh.getPath());
+            BComponent comp = (BComponent) ord.get(service, null);
             if (comp == null) return null;
             return configStorehouse.isVisibleComponent(comp) ? comp : null;
         }
         // history space
         else if (nh.getSpace().equals(NHRef.HISTORY))
         {
-            BHistoryId hid = BHistoryId.make(nh.getHandle());
+            BHistoryId hid = BHistoryId.make(nh.getPath());
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();

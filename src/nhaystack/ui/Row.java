@@ -221,13 +221,13 @@ class Row
 
             if (nh.getSpace().equals(NHRef.COMPONENT))
             {
-                BOrd handleOrd = BOrd.make("station:|h:" + nh.getHandle());
-                BComponent comp = (BComponent) handleOrd.resolve(session, null).get();
+                BOrd refOrd = BOrd.make("station:|" + nh.getPath());
+                BComponent comp = (BComponent) refOrd.resolve(session, null).get();
                 ord = comp.getSlotPathOrd();
             }
             else if (nh.getSpace().equals(NHRef.HISTORY))
             {
-                ord = BOrd.make("history:" + nh.getHandle());
+                ord = BOrd.make("history:" + nh.getPath());
             }
             else throw new IllegalStateException();
         }
