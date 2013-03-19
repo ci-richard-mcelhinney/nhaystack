@@ -60,15 +60,15 @@ public class NHServer extends HServer
 
         hd.add("serverName", Sys.getStation().getStationName());
 
-        BModule module = service.getType().getModule();
+        BModule baja = BComponent.TYPE.getModule();
+        hd.add("productName",    "NiagaraAX");
+        hd.add("productVersion", baja.getBajaVersion().toString());
+        hd.add("productUri",     HUri.make("http://www.tridium.com/"));
 
-        hd.add("productName",    module.getModuleName());
-        hd.add("productVersion", module.getBajaVersion().toString());
-        hd.add("productUri",     REPO);
-
+        BModule module = BNHaystackService.TYPE.getModule();
         hd.add("moduleName",    module.getModuleName());
         hd.add("moduleVersion", module.getBajaVersion().toString());
-        hd.add("moduleUri",     REPO);
+        hd.add("moduleUri",     HUri.make("https://bitbucket.org/jasondbriggs/nhaystack"));
 
         return hd.toDict();
     }
@@ -425,8 +425,6 @@ public class NHServer extends HServer
 ////////////////////////////////////////////////////////////////
 
     private static final Log LOG = Log.getLog("nhaystack");
-
-    private static final HUri REPO = HUri.make("https://bitbucket.org/jasondbriggs/nhaystack");
 
     protected static final HOp[] OPS = new HOp[]
     {
