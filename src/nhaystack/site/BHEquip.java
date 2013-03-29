@@ -24,36 +24,12 @@ public class BHEquip extends BHTagged
     {
         properties
         {
-            haystackNav: BFormat default{[ BFormat.make("%parent.name%") ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHEquip(408458736)1.0$ @*/
-/* Generated Sun Feb 10 10:55:18 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
-
-////////////////////////////////////////////////////////////////
-// Property "haystackNav"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>haystackNav</code> property.
-   * @see nhaystack.site.BHEquip#getHaystackNav
-   * @see nhaystack.site.BHEquip#setHaystackNav
-   */
-  public static final Property haystackNav = newProperty(0, BFormat.make("%parent.name%"),null);
-  
-  /**
-   * Get the <code>haystackNav</code> property.
-   * @see nhaystack.site.BHEquip#haystackNav
-   */
-  public BFormat getHaystackNav() { return (BFormat)get(haystackNav); }
-  
-  /**
-   * Set the <code>haystackNav</code> property.
-   * @see nhaystack.site.BHEquip#haystackNav
-   */
-  public void setHaystackNav(BFormat v) { set(haystackNav,v,null); }
+/*@ $nhaystack.site.BHEquip(3108637456)1.0$ @*/
+/* Generated Fri Mar 29 12:39:07 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -68,7 +44,7 @@ public class BHEquip extends BHTagged
     {
         return EquipNavId.make(
             siteNav.getSiteName(),
-            getHaystackNav().format(this));
+            getDisplayName(null));
     }
 
     /**
@@ -97,9 +73,8 @@ public class BHEquip extends BHTagged
         hdb.add("equip");
 
         // add dis
-//        String dis = getDisplayName(null);
-//        if (dis != null) hdb.add("dis", dis);
-        hdb.add("dis", getHaystackNav().format(this));
+        hdb.add("dis", getDisplayName(null));
+//        hdb.add("navName", getDisplayName(null));
 
         // add misc other tags
         hdb.add("axType", getType().toString());

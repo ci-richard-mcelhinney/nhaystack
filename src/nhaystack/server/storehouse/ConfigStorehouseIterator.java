@@ -15,27 +15,18 @@ import javax.baja.sys.*;
 
 import haystack.*;
 import nhaystack.collection.*;
+import nhaystack.server.*;
 
 /**
   * ConfigStorehouseIterator is an Iterator created by a ConfigStorehouse.
-  * It builds an internal data structure as it is being traversed.
   */
-public class ConfigStorehouseIterator implements Iterator
+class ConfigStorehouseIterator implements Iterator
 {
     ConfigStorehouseIterator(ConfigStorehouse storehouse)
     {
         this.storehouse = storehouse;
         this.iterator = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(storehouse.service, null).get());
-    }
-
-////////////////////////////////////////////////////////////////
-// Object 
-////////////////////////////////////////////////////////////////
-
-    public String toString()
-    {
-        return "[ConfigStorehouseIterator: " + remotePoints + "]";
     }
 
 ////////////////////////////////////////////////////////////////
@@ -68,25 +59,6 @@ public class ConfigStorehouseIterator implements Iterator
     }
 
 ////////////////////////////////////////////////////////////////
-// package-scope
-////////////////////////////////////////////////////////////////
-
-    /**
-      * NOTE: This method cannot be called until 
-      * this Iterator has been exhausted!
-      */
-    BControlPoint getControlPoint(RemotePoint remote)
-    {
-        if (!init) throw new IllegalStateException(
-            "ConfigStorehouseIterator has not been completely exhausted!");
-
-        if (nextDict != null) throw new IllegalStateException(
-            "ConfigStorehouseIterator has not been completely exhausted!");
-
-        return (BControlPoint) remotePoints.get(remote);
-    }
-
-////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
 
@@ -100,18 +72,6 @@ public class ConfigStorehouseIterator implements Iterator
             if (storehouse.isVisibleComponent(comp))
             {
                 nextDict = storehouse.createComponentTags(comp);
-
-                // stash away all the remote points
-                if (comp instanceof BControlPoint)
-                {
-                    BControlPoint point = (BControlPoint) comp;
-                    if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 
-                    {
-                        RemotePoint remote = RemotePoint.fromControlPoint(point);
-                        if (remote != null) remotePoints.put(remote, point);
-                    }
-                }
-
                 break;
             }
         }
@@ -122,9 +82,7 @@ public class ConfigStorehouseIterator implements Iterator
 ////////////////////////////////////////////////////////////////
 
     private final ConfigStorehouse storehouse;
-
     private final ComponentTreeIterator iterator;
-    private final Map remotePoints = new HashMap();
 
     private boolean init = false;
     private HDict nextDict;

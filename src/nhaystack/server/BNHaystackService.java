@@ -47,20 +47,23 @@ public class BNHaystackService extends BAbstractService
         {
             readById(id: BHRef): BHDict 
                 -- Lookup an entity record by it's unique identifier.
-                flags { hidden }
+                flags { operator, hidden }
                 default {[ BHRef.DEFAULT ]}
             fetchSites(): BHGrid
                 -- fetch all the records that are tagged as 'site'.
-                flags { hidden }
+                flags { operator, hidden }
             fetchEquips(): BHGrid
                 -- fetch all the records that are tagged as 'equip'.
-                flags { hidden }
+                flags { operator, hidden }
+            rebuildCache()
+                -- Rebuild the internal cache
+                flags { operator }
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(2747625900)1.0$ @*/
-/* Generated Wed Feb 13 11:03:52 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(4263160030)1.0$ @*/
+/* Generated Fri Mar 29 10:17:48 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -143,7 +146,7 @@ public class BNHaystackService extends BAbstractService
    * Lookup an entity record by it's unique identifier.
    * @see nhaystack.server.BNHaystackService#readById()
    */
-  public static final Action readById = newAction(Flags.HIDDEN,BHRef.DEFAULT,null);
+  public static final Action readById = newAction(Flags.OPERATOR|Flags.HIDDEN,BHRef.DEFAULT,null);
   
   /**
    * Invoke the <code>readById</code> action.
@@ -160,7 +163,7 @@ public class BNHaystackService extends BAbstractService
    * fetch all the records that are tagged as 'site'.
    * @see nhaystack.server.BNHaystackService#fetchSites()
    */
-  public static final Action fetchSites = newAction(Flags.HIDDEN,null);
+  public static final Action fetchSites = newAction(Flags.OPERATOR|Flags.HIDDEN,null);
   
   /**
    * Invoke the <code>fetchSites</code> action.
@@ -177,13 +180,30 @@ public class BNHaystackService extends BAbstractService
    * fetch all the records that are tagged as 'equip'.
    * @see nhaystack.server.BNHaystackService#fetchEquips()
    */
-  public static final Action fetchEquips = newAction(Flags.HIDDEN,null);
+  public static final Action fetchEquips = newAction(Flags.OPERATOR|Flags.HIDDEN,null);
   
   /**
    * Invoke the <code>fetchEquips</code> action.
    * @see nhaystack.server.BNHaystackService#fetchEquips
    */
   public BHGrid fetchEquips() { return (BHGrid)invoke(fetchEquips,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "rebuildCache"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>rebuildCache</code> action.
+   * Rebuild the internal cache
+   * @see nhaystack.server.BNHaystackService#rebuildCache()
+   */
+  public static final Action rebuildCache = newAction(Flags.OPERATOR,null);
+  
+  /**
+   * Invoke the <code>rebuildCache</code> action.
+   * @see nhaystack.server.BNHaystackService#rebuildCache
+   */
+  public void rebuildCache() { invoke(rebuildCache,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -209,6 +229,11 @@ public class BNHaystackService extends BAbstractService
 
     public void serviceStopped() throws Exception { }
 
+    public void atSteadyState() throws Exception
+    {
+        server.getCache().rebuild();
+    }
+
 ////////////////////////////////////////////////////////////////
 // Actions
 ////////////////////////////////////////////////////////////////
@@ -220,24 +245,31 @@ public class BNHaystackService extends BAbstractService
 
     public BHGrid doFetchSites() throws Exception
     {
-        BHSite[] sites = server.getSiteStorehouse().fetchSites();
-
-        Array arr = new Array(HDict.class);
-        for (int i = 0; i < sites.length; i++)
-            arr.add(server.getConfigStorehouse().createComponentTags(sites[i]));
-            
-        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+        throw new IllegalStateException();
+//        BHSite[] sites = server.getSiteStorehouse().fetchSites();
+//
+//        Array arr = new Array(HDict.class);
+//        for (int i = 0; i < sites.length; i++)
+//            arr.add(server.getConfigStorehouse().createComponentTags(sites[i]));
+//            
+//        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
     }
 
     public BHGrid doFetchEquips() throws Exception
     {
-        BHEquip[] equips = server.getSiteStorehouse().fetchEquips();
+        throw new IllegalStateException();
+//        BHEquip[] equips = server.getSiteStorehouse().fetchEquips();
+//
+//        Array arr = new Array(HDict.class);
+//        for (int i = 0; i < equips.length; i++)
+//            arr.add(server.getConfigStorehouse().createComponentTags(equips[i]));
+//            
+//        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+    }
 
-        Array arr = new Array(HDict.class);
-        for (int i = 0; i < equips.length; i++)
-            arr.add(server.getConfigStorehouse().createComponentTags(equips[i]));
-            
-        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+    public void doRebuildCache() throws Exception
+    {
+        server.getCache().rebuild();
     }
 
 ////////////////////////////////////////////////////////////////

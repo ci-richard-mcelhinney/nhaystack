@@ -167,23 +167,23 @@ public class ConfigStorehouse extends Storehouse
                             hdb.add("siteRef", equipTags.get("siteRef"));
                     }
                 }
-                // else try to find a parent device that has a BHEquip child
-                else
-                {
-                    BComponent parentComp = findEquipParent(point);
-                    if (parentComp != null)
-                    {
-                        BHEquip equip = (BHEquip) parentComp.getChildren(BHEquip.class)[0];
-
-                        // generate an equipRef
-                        hdb.add("equipRef", NHRef.make(equip).getHRef());
-
-                        // try to look up the siteRef too
-                        HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
-                        if (equipTags.has("siteRef"))
-                            hdb.add("siteRef", equipTags.get("siteRef"));
-                    }
-                }
+//                // else try to find a parent device that has a BHEquip child
+//                else
+//                {
+//                    BComponent parentComp = findEquipParent(point);
+//                    if (parentComp != null)
+//                    {
+//                        BHEquip equip = (BHEquip) parentComp.getChildren(BHEquip.class)[0];
+//
+//                        // generate an equipRef
+//                        hdb.add("equipRef", NHRef.make(equip).getHRef());
+//
+//                        // try to look up the siteRef too
+//                        HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
+//                        if (equipTags.has("siteRef"))
+//                            hdb.add("siteRef", equipTags.get("siteRef"));
+//                    }
+//                }
             }
 
             // done
@@ -191,25 +191,25 @@ public class ConfigStorehouse extends Storehouse
         }
     }
 
-    /**
-      * Find a parent device that has a BHEquip child
-      */
-    private BComponent findEquipParent(BControlPoint point)
-    {
-        BComponent parent = (BComponent) point.getParent();
-
-        while (true)
-        {
-            if (parent == null) 
-                return null;
-
-            else if (parent.getChildren(BHEquip.class).length > 0)
-                return parent;
-
-            else
-                parent = (BComponent) parent.getParent();
-        }
-    }
+//    /**
+//      * Find a parent device that has a BHEquip child
+//      */
+//    private BComponent findEquipParent(BControlPoint point)
+//    {
+//        BComponent parent = (BComponent) point.getParent();
+//
+//        while (true)
+//        {
+//            if (parent == null) 
+//                return null;
+//
+//            else if (parent.getChildren(BHEquip.class).length > 0)
+//                return parent;
+//
+//            else
+//                parent = (BComponent) parent.getParent();
+//        }
+//    }
 
     /**
       * Return whether the given component
@@ -268,17 +268,8 @@ public class ConfigStorehouse extends Storehouse
     /**
       * Try to find the point that goes with a history,
       * or return null.
-      *
-      * @param configIterator contains an internal data structure
-      * that will make this method run much faster.  It
-      * is OK for configIterator to be null.  If configIterator is non-null,
-      * then it must have been completely exhausted by
-      * calls to next() before it is passed to this method,
-      * or it will throw an IllegalStateException.
       */
-    public BControlPoint lookupPointFromHistory(
-        BHistoryConfig cfg, 
-        ConfigStorehouseIterator configIterator)
+    public BControlPoint lookupPointFromHistory(BHistoryConfig cfg)
     {
         // local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
@@ -312,13 +303,7 @@ public class ConfigStorehouse extends Storehouse
             RemotePoint remote = RemotePoint.fromHistoryConfig(cfg);
             if (remote == null) return null;
 
-            // the slow way
-            if (configIterator == null)
-                return lookupRemotePoint(cfg, remote);
-
-            // the fast way
-            else
-                return configIterator.getControlPoint(remote);
+            return server.getCache().getControlPoint(remote);
         }
     }
 

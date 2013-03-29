@@ -26,36 +26,12 @@ public class BHSite extends BHTagged
     {
         properties
         {
-            haystackNav: BFormat default{[ BFormat.make("%name%") ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHSite(269428171)1.0$ @*/
-/* Generated Sun Feb 10 10:55:18 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
-
-////////////////////////////////////////////////////////////////
-// Property "haystackNav"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>haystackNav</code> property.
-   * @see nhaystack.site.BHSite#getHaystackNav
-   * @see nhaystack.site.BHSite#setHaystackNav
-   */
-  public static final Property haystackNav = newProperty(0, BFormat.make("%name%"),null);
-  
-  /**
-   * Get the <code>haystackNav</code> property.
-   * @see nhaystack.site.BHSite#haystackNav
-   */
-  public BFormat getHaystackNav() { return (BFormat)get(haystackNav); }
-  
-  /**
-   * Set the <code>haystackNav</code> property.
-   * @see nhaystack.site.BHSite#haystackNav
-   */
-  public void setHaystackNav(BFormat v) { set(haystackNav,v,null); }
+/*@ $nhaystack.site.BHSite(875174785)1.0$ @*/
+/* Generated Fri Mar 29 12:39:07 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -68,7 +44,7 @@ public class BHSite extends BHTagged
 
     public SiteNavId makeNavId()
     {
-        return SiteNavId.make(getHaystackNav().format(this));
+        return SiteNavId.make(getDisplayName(null));
     }
 
     /**
@@ -97,9 +73,8 @@ public class BHSite extends BHTagged
         hdb.add("site");
 
         // add dis
-//        String dis = getDisplayName(null);
-//        if (dis != null) hdb.add("dis", dis);
-        hdb.add("dis", getHaystackNav().format(this));
+        hdb.add("dis", getDisplayName(null));
+//        hdb.add("navName", getDisplayName(null));
 
         // add misc other tags
         hdb.add("axType", getType().toString());

@@ -5,7 +5,7 @@
 // History:
 //   04 Oct 2012  Mike Jarmy  Creation
 //
-package nhaystack.server.storehouse;
+package nhaystack.server;
 
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
@@ -21,13 +21,13 @@ import javax.baja.util.*;
   * associated NiagaraNetwork history, or an associated 
   * NiagaraNetwork point, or both.
   */
-class RemotePoint
+public class RemotePoint
 {
     /**
       * Create a RemotePoint from a BControlPoint, or return null.
       * The BControlPoint must be an imported point.
       */
-    static RemotePoint fromControlPoint(BControlPoint point)
+    public static RemotePoint fromControlPoint(BControlPoint point)
     {
         // Check for a NiagaraProxyExt
         BAbstractProxyExt proxyExt = point.getProxyExt();
@@ -55,7 +55,7 @@ class RemotePoint
       * Create a RemotePoint from a BHistoryConfig, or return null.
       * The BHistoryConfig must be an imported history.
       */
-    static RemotePoint fromHistoryConfig(BHistoryConfig cfg)
+    public static RemotePoint fromHistoryConfig(BHistoryConfig cfg)
     {
         // cannot be local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
@@ -151,19 +151,19 @@ class RemotePoint
       * This will always correspond to the name of a NiagaraStation 
       * underneath the NiagaraNetwork.
       */
-    String getStationName() { return stationName; }
+    public String getStationName() { return stationName; }
 
     /**
       * The slotPath of the point on the remote station.
       */
-    SlotPath getSlotPath() { return slotPath; }
+    public SlotPath getSlotPath() { return slotPath; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    static final Type NIAGARA_PROXY_EXT;
-    static final Type NIAGARA_STATION;
+    public static final Type NIAGARA_PROXY_EXT;
+    public static final Type NIAGARA_STATION;
     static
     {
         NIAGARA_PROXY_EXT = BTypeSpec.make("niagaraDriver:NiagaraProxyExt") .getResolvedType();

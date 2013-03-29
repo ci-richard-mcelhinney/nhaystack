@@ -108,10 +108,9 @@ public class NHServer extends HServer
     {
         try
         {
-            ConfigStorehouseIterator c = configStorehouse.makeIterator();
-            HistoryStorehouseIterator h = historyStorehouse.makeIterator(c);
-
-            return new CompositeIterator(new Iterator[] { c, h });
+            return new CompositeIterator(new Iterator[] { 
+                configStorehouse.makeIterator(),
+                historyStorehouse.makeIterator() });
         }
         catch (RuntimeException e)
         {
@@ -754,6 +753,8 @@ public class NHServer extends HServer
     public HistoryStorehouse getHistoryStorehouse() { return historyStorehouse; }
     public SiteStorehouse    getSiteStorehouse()    { return siteStorehouse;    }
 
+    public Cache getCache() { return cache; }
+
 ////////////////////////////////////////////////////////////////
 // Attributes 
 ////////////////////////////////////////////////////////////////
@@ -784,5 +785,7 @@ public class NHServer extends HServer
     private final ConfigStorehouse  configStorehouse;
     private final HistoryStorehouse historyStorehouse;
     private final SiteStorehouse    siteStorehouse;
+
+    private final Cache cache = new Cache(this);
 }
 

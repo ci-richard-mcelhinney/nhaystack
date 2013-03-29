@@ -17,14 +17,11 @@ import nhaystack.collection.*;
 /**
   * HistoryStorehouseIterator is an Iterator created by a HistoryStorehouse.
   */
-public class HistoryStorehouseIterator implements Iterator
+class HistoryStorehouseIterator implements Iterator
 {
-    HistoryStorehouseIterator(
-        HistoryStorehouse storehouse,
-        ConfigStorehouseIterator configIterator)
+    HistoryStorehouseIterator(HistoryStorehouse storehouse)
     {
         this.storehouse = storehouse;
-        this.configIterator = configIterator;
         this.iterator = new HistoryDbIterator(storehouse.service.getHistoryDb());
     }
 
@@ -65,13 +62,9 @@ public class HistoryStorehouseIterator implements Iterator
         {
             BHistoryConfig cfg = (BHistoryConfig) iterator.next();
 
-            // Using a non-null configIterator will make 
-            // ConfigStorehouse.lookupPointFromHistory()
-            // run much faster.
-
-            if (storehouse.doIsVisibleHistory(cfg, configIterator))
+            if (storehouse.isVisibleHistory(cfg))
             {
-                nextDict = storehouse.doCreateHistoryTags(cfg, configIterator);
+                nextDict = storehouse.createHistoryTags(cfg);
                 break;
             }
         }
@@ -82,7 +75,6 @@ public class HistoryStorehouseIterator implements Iterator
 ////////////////////////////////////////////////////////////////
 
     private final HistoryStorehouse storehouse;
-    private final ConfigStorehouseIterator configIterator;
     private final HistoryDbIterator iterator;
 
     private boolean init = false;

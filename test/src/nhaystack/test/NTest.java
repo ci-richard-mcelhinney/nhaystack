@@ -24,7 +24,7 @@ public abstract class NTest extends Test
     public static String[] TESTS =
     {
         "nhaystack.test.NSimpleClientTest",
-//        "nhaystack.test.NSupervisorClientTest",
+        "nhaystack.test.NSupervisorClientTest",
     };
 
     static HGrid makeNavGrid(HStr navId)

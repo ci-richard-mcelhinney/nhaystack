@@ -214,7 +214,7 @@ public class BHDictEditorGroup extends BScrollPane
     // this is every single tag which the server may have auto-generated
     private static final String[] AUTO_GEN_TAGS = new String[] {
             "axHistoryId", "axHistoryRef", "axPointRef", "axSlotPath", "axType",
-            "curStatus", "curVal", "dis", "equip", "his", "hisInterpolate", 
+            "cur", "curStatus", "curVal", "dis", "equip", "his", "hisInterpolate", 
             "id", "kind", "point", "site", "tz", "unit" };
 
     private BFoxProxySession session;
