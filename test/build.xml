@@ -49,24 +49,10 @@
   <!--========== make ==========-->
   <target name="make" depends="clean,compile,jar"/>
 
-  <!--========== test-hide-linked ==========-->
-  <target name="test-hide-linked" depends="make">
+  <!--========== test ==========-->
+  <target name="test" depends="make">
 
     <java classname="nhaystack.test.NTest">
-      <arg value="-h"/>
-      <classpath>
-        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
-        <pathelement location="jars/nhaystack_test.jar" />
-      </classpath>
-    </java>
-
-  </target> 
-
-  <!--========== test-show-linked ==========-->
-  <target name="test-show-linked" depends="make">
-
-    <java classname="nhaystack.test.NTest">
-      <arg value="showLinkedHistories"/>
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />

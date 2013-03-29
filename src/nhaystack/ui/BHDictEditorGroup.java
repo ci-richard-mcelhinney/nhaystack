@@ -167,8 +167,16 @@ public class BHDictEditorGroup extends BScrollPane
       */
     private HDict fetchTagsFromServer(BComponent comp)
     {
-        BHRef id = BHRef.make(NHRef.make(session.getStationName(), comp).getHRef());
-        return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
+        try
+        {
+            BHRef id = BHRef.make(NHRef.make(session.getStationName(), comp).getHRef());
+            return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return HDict.EMPTY;
+        }
     }
 
     /**

@@ -106,6 +106,11 @@ public class ConfigStorehouse extends Storehouse
                 BFacets facets = (BFacets) point.get("facets");
                 addPointKindTags(pointKind, facets, tags, hdb);
 
+                // cur, writable
+                hdb.add("cur");
+                if (point.isWritablePoint())
+                    hdb.add("writable");
+
                 // curVal, curStatus
                 switch(pointKind)
                 {
@@ -165,10 +170,10 @@ public class ConfigStorehouse extends Storehouse
                 // else try to find a parent device that has a BHEquip child
                 else
                 {
-                    BDevice parentDevice = findParentDevice(point);
-                    if (parentDevice != null)
+                    BComponent parentComp = findEquipParent(point);
+                    if (parentComp != null)
                     {
-                        BHEquip equip = (BHEquip) parentDevice.getChildren(BHEquip.class)[0];
+                        BHEquip equip = (BHEquip) parentComp.getChildren(BHEquip.class)[0];
 
                         // generate an equipRef
                         hdb.add("equipRef", NHRef.make(equip).getHRef());
@@ -189,27 +194,20 @@ public class ConfigStorehouse extends Storehouse
     /**
       * Find a parent device that has a BHEquip child
       */
-    private BDevice findParentDevice(BControlPoint point)
+    private BComponent findEquipParent(BControlPoint point)
     {
         BComponent parent = (BComponent) point.getParent();
 
         while (true)
         {
-            // keep looking
-            if (parent instanceof BIPointFolder)
-            {
+            if (parent == null) 
+                return null;
+
+            else if (parent.getChildren(BHEquip.class).length > 0)
+                return parent;
+
+            else
                 parent = (BComponent) parent.getParent();
-            }
-            // maybe the parent has a BHEquip child
-            else if (parent instanceof BDevice)
-            {
-                if (parent.getChildren(BHEquip.class).length > 0)
-                    return (BDevice) parent;
-                else
-                    return null;
-            }
-            // nope
-            else return null;
         }
     }
 
@@ -289,14 +287,21 @@ public class ConfigStorehouse extends Storehouse
             if (ords.length != 1) new IllegalStateException(
                 "invalid Source: " + cfg.getSource());
 
-            BComponent source = (BComponent) ords[0].resolve(service, null).get();
-
-            // The source is not always a BHistoryExt.  E.g. for 
-            // LogHistory its the LogHistoryService.
-            if (source instanceof BHistoryExt)
+            try
             {
-                if (source.getParent() instanceof BControlPoint)
-                    return (BControlPoint) source.getParent();
+                BComponent source = (BComponent) ords[0].resolve(service, null).get();
+
+                // The source is not always a BHistoryExt.  E.g. for 
+                // LogHistory its the LogHistoryService.
+                if (source instanceof BHistoryExt)
+                {
+                    if (source.getParent() instanceof BControlPoint)
+                        return (BControlPoint) source.getParent();
+                }
+            }
+            catch (UnresolvedException e)
+            {
+                return null;
             }
 
             return null;
@@ -402,7 +407,6 @@ public class ConfigStorehouse extends Storehouse
         if (status.isOk())
             return "ok";
 
-        // TODO define proper ordering for these -- look at oBIX
         if (status.isDisabled())     return "disabled";
         if (status.isFault())        return "fault";
         if (status.isDown())         return "down";

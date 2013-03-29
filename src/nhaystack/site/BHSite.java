@@ -96,9 +96,12 @@ public class BHSite extends BHTagged
         hdb.add("id", NHRef.make(this).getHRef());
         hdb.add("site");
 
+        // add dis
+//        String dis = getDisplayName(null);
+//        if (dis != null) hdb.add("dis", dis);
+        hdb.add("dis", getHaystackNav().format(this));
+
         // add misc other tags
-        String dis = getDisplayName(null);
-        if (dis != null) hdb.add("dis", dis);
         hdb.add("axType", getType().toString());
         hdb.add("axSlotPath", getSlotPath().toString());
 

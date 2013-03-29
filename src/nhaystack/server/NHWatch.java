@@ -12,6 +12,7 @@ import java.util.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 import haystack.*;
+import nhaystack.*;
 
 /**
   * NHWatch manages leased components
@@ -72,6 +73,8 @@ public class NHWatch extends HWatch
      */
     public HGrid sub(HRef[] ids, boolean checked)
     {
+System.out.println("NHWatch.sub: aaa " + watchId);
+
         // meta
         HDict meta = new HDictBuilder()
             .add("watchId", HStr.make(id()))
@@ -83,6 +86,8 @@ public class NHWatch extends HWatch
         for (int i = 0; i < ids.length; i++)
         {
             HRef id = ids[i];
+
+System.out.println("NHWatch.sub: bbb " + NHRef.make(id) + ", " + id);
 
             // lookup
             BComponent comp = server.lookupComponent(id);
@@ -112,6 +117,7 @@ public class NHWatch extends HWatch
      */
     public void unsub(HRef[] ids)
     {
+System.out.println("NHWatch.unsub: " + watchId + ", " + Arrays.asList(ids));
         for (int i = 0; i < ids.length; i++)
             subscriptions.remove(ids[i]);
     }
@@ -121,6 +127,7 @@ public class NHWatch extends HWatch
      */
     public HGrid pollChanges()
     {
+System.out.println("NHWatch.pollChanges " + watchId);
         Array dicts = new Array(HDict.class);
 
         Iterator itr = subscriptions.values().iterator();
@@ -145,6 +152,7 @@ public class NHWatch extends HWatch
      */
     public HGrid pollRefresh()
     {
+System.out.println("NHWatch.pollRefresh " + watchId);
         Array dicts = new Array(HDict.class);
 
         Iterator itr = subscriptions.values().iterator();
@@ -164,6 +172,7 @@ public class NHWatch extends HWatch
      */
     public void close()
     {
+System.out.println("NHWatch.close " + watchId);
         subscriptions.clear();
         server.removeWatch(watchId);
     }

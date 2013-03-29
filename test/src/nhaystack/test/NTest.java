@@ -3,7 +3,7 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   06 Jun 2011  Brian Frank  Creation
+//   06 Feb 2013  Mike Jarmy  Creation
 //
 package nhaystack.test;
 
@@ -24,7 +24,7 @@ public abstract class NTest extends Test
     public static String[] TESTS =
     {
         "nhaystack.test.NSimpleClientTest",
-        "nhaystack.test.NSupervisorClientTest",
+//        "nhaystack.test.NSupervisorClientTest",
     };
 
     static HGrid makeNavGrid(HStr navId)
@@ -38,14 +38,8 @@ public abstract class NTest extends Test
 // Main
 //////////////////////////////////////////////////////////////////////////
 
-    static boolean showLinkedHistories = false;
-
     public static void main(String[] args)
     {
-        showLinkedHistories = false;
-        if ((args.length == 1) && (args[0].equals("showLinkedHistories")))
-            showLinkedHistories = true;
-
         runTests(TESTS, null);
     }
 
