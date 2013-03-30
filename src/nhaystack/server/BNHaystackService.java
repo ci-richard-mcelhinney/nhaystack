@@ -245,26 +245,24 @@ public class BNHaystackService extends BAbstractService
 
     public BHGrid doFetchSites() throws Exception
     {
-        throw new IllegalStateException();
-//        BHSite[] sites = server.getSiteStorehouse().fetchSites();
-//
-//        Array arr = new Array(HDict.class);
-//        for (int i = 0; i < sites.length; i++)
-//            arr.add(server.getConfigStorehouse().createComponentTags(sites[i]));
-//            
-//        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+        BComponent[] comps = server.getCache().getAllSites();
+
+        HDict[] dicts = new HDict[comps.length];
+        for (int i = 0; i < comps.length; i++)
+            dicts[i] = server.getConfigStorehouse().createComponentTags(comps[i]);
+
+        return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
 
     public BHGrid doFetchEquips() throws Exception
     {
-        throw new IllegalStateException();
-//        BHEquip[] equips = server.getSiteStorehouse().fetchEquips();
-//
-//        Array arr = new Array(HDict.class);
-//        for (int i = 0; i < equips.length; i++)
-//            arr.add(server.getConfigStorehouse().createComponentTags(equips[i]));
-//            
-//        return BHGrid.make(HGridBuilder.dictsToGrid((HDict[]) arr.trim()));
+        BComponent[] comps = server.getCache().getAllEquips();
+
+        HDict[] dicts = new HDict[comps.length];
+        for (int i = 0; i < comps.length; i++)
+            dicts[i] = server.getConfigStorehouse().createComponentTags(comps[i]);
+
+        return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
 
     public void doRebuildCache() throws Exception

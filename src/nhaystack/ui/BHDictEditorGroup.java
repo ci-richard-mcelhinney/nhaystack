@@ -110,6 +110,10 @@ public class BHDictEditorGroup extends BScrollPane
         Map autoGenTags = asTagMap(all);
         autoGenTags.keySet().retainAll(allPossibleAuto);
 
+        // move 'equip' to optional if its not really a BHEquip
+        if (autoGenTags.containsKey("equip") && !(comp instanceof BHEquip))
+            optionalTags.put("equip", autoGenTags.remove("equip"));
+
         //////////////////////
         // widgets
 

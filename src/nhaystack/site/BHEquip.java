@@ -40,13 +40,6 @@ public class BHEquip extends BHTagged
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    public EquipNavId makeNavId(SiteNavId siteNav)
-    {
-        return EquipNavId.make(
-            siteNav.getSiteName(),
-            getDisplayName(null));
-    }
-
     /**
       * Return default values for those tags which are essential for
       * defining this component.

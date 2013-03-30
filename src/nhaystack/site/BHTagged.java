@@ -31,7 +31,7 @@ public abstract class BHTagged extends BComponent
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.site.BHTagged(2191060138)1.0$ @*/
-/* Generated Sat Feb 09 08:04:57 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Fri Mar 29 19:40:38 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystack"

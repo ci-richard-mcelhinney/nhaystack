@@ -47,8 +47,7 @@ public class NSupervisorClientTest extends NTest
 
     void verifyRead() throws Exception
     {
-        HGrid grid = client.readAll("id");
-grid.dump();
+        HGrid grid = client.readAll("point");
 
 //axType,kind,id,curStatus,dis,axSlotPath,unit,point,cur,curVal,his,axHistoryId,tz
 //"history:HistoryConfig",,@nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~,,,,,M,,,M,"/nhaystack_jace1/AuditHistory","New_York"
@@ -183,38 +182,43 @@ grid.dump();
 
     void verifyNav() throws Exception
     {
-        HGrid grid = client.call("nav", HGrid.EMPTY);
-        verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_sup:c"));
-        verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("nhaystack_sup:h"));
-        verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("site"));
-        verifyEq(grid.row(2).get("dis"),   HStr.make("Sites"));
+//[site]
+//    [site:Blacksburg] slot:/Sites/Blacksburg
+//        [equip:Blacksburg.nhaystack_jace1] slot:/Drivers/NiagaraNetwork/nhaystack_jace1
+//            [---] slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1
+//            [---] slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave2
+//        [equip:Blacksburg.Transmogrifier] slot:/Sites/Blacksburg/Transmogrifier
+//            [---] slot:/Drivers/NiagaraNetwork/nhaystack_jace2/points/SineWave1
+//        [equip:Blacksburg.FluxCapacitor] slot:/Sites/Blacksburg/FluxCapacitor
 
-        HGrid n = makeNavGrid(HStr.make("nhaystack_sup:h"));
-        grid = client.call("nav", n);
-//grid.dump();
-        verifyEq(grid.numRows(), 5);
-
-        n = makeNavGrid(HStr.make("nhaystack_sup:c"));
-        grid = client.call("nav", n);
-//grid.dump();
+        HGrid grid = client.call("nav", makeNavGrid(HStr.make("site")));
         verifyEq(grid.numRows(), 1);
-        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_sup:c.c2xvdDov"));
-        traverseComponents((HStr) grid.row(0).get("navId"));
-    }
+        verifyEq(grid.row(0).get("navId"), HStr.make("site:Blacksburg"));
+        verifyEq(grid.row(0).get("axSlotPath"), HStr.make("slot:/Sites/Blacksburg"));
 
-    private void traverseComponents(HStr navId)
-    {
-        HGrid grid = client.call("nav", makeNavGrid(navId));
-//grid.dump();
+        grid = client.call("nav", makeNavGrid(HStr.make("site:Blacksburg")));
+        verifyEq(grid.numRows(), 3);
+        verifyEq(grid.row(0).get("navId"), HStr.make("equip:Blacksburg.nhaystack_jace1"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("equip:Blacksburg.Transmogrifier"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("equip:Blacksburg.FluxCapacitor"));
+        verifyEq(grid.row(0).get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1"));
+        verifyEq(grid.row(1).get("axSlotPath"), HStr.make("slot:/Sites/Blacksburg/Transmogrifier"));
+        verifyEq(grid.row(2).get("axSlotPath"), HStr.make("slot:/Sites/Blacksburg/FluxCapacitor"));
 
-        for (int i = 0; i < grid.numRows(); i++)
-        {
-            if (grid.row(i).has("navId"))
-                traverseComponents((HStr) grid.row(i).get("navId"));
-        }
+        grid = client.call("nav", makeNavGrid(HStr.make("equip:Blacksburg.nhaystack_jace1")));
+        verifyEq(grid.numRows(), 2);
+        verify(grid.row(0).missing("navId"));
+        verify(grid.row(1).missing("navId"));
+        verifyEq(grid.row(0).get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1"));
+        verifyEq(grid.row(1).get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave2"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("equip:Blacksburg.Transmogrifier")));
+        verifyEq(grid.numRows(), 1);
+        verify(grid.row(0).missing("navId"));
+        verifyEq(grid.row(0).get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace2/points/SineWave1"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("equip:Blacksburg.FluxCapacitor")));
+        verifyEq(grid.numRows(), 0);
     }
 
 //////////////////////////////////////////////////////////////////////////

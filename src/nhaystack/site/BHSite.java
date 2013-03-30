@@ -42,11 +42,6 @@ public class BHSite extends BHTagged
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    public SiteNavId makeNavId()
-    {
-        return SiteNavId.make(getDisplayName(null));
-    }
-
     /**
       * Return default values for those tags which are essential for
       * defining this component.

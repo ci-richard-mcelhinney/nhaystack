@@ -158,58 +158,33 @@ public class ConfigStorehouse extends Storehouse
                 // the point is explicitly tagged with an equipRef
                 if (tags.has("equipRef"))
                 {
-                    // try to look up  siteRef too
                     BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
-                    if (equip != null) // this should actually always succeed...
+
+                    // try to look up  siteRef too
+                    HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
+                    if (equipTags.has("siteRef"))
+                        hdb.add("siteRef", equipTags.get("siteRef"));
+                }
+                // maybe we've cached an implicit equipRef
+                else
+                {
+                    BComponent equip = server.getCache().getImplicitEquip(point);
+                    if (equip != null)
                     {
+                        hdb.add("equipRef", NHRef.make(equip).getHRef());
+
+                        // try to look up  siteRef too
                         HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
                         if (equipTags.has("siteRef"))
                             hdb.add("siteRef", equipTags.get("siteRef"));
                     }
                 }
-//                // else try to find a parent device that has a BHEquip child
-//                else
-//                {
-//                    BComponent parentComp = findEquipParent(point);
-//                    if (parentComp != null)
-//                    {
-//                        BHEquip equip = (BHEquip) parentComp.getChildren(BHEquip.class)[0];
-//
-//                        // generate an equipRef
-//                        hdb.add("equipRef", NHRef.make(equip).getHRef());
-//
-//                        // try to look up the siteRef too
-//                        HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
-//                        if (equipTags.has("siteRef"))
-//                            hdb.add("siteRef", equipTags.get("siteRef"));
-//                    }
-//                }
             }
 
             // done
             return hdb.toDict();
         }
     }
-
-//    /**
-//      * Find a parent device that has a BHEquip child
-//      */
-//    private BComponent findEquipParent(BControlPoint point)
-//    {
-//        BComponent parent = (BComponent) point.getParent();
-//
-//        while (true)
-//        {
-//            if (parent == null) 
-//                return null;
-//
-//            else if (parent.getChildren(BHEquip.class).length > 0)
-//                return parent;
-//
-//            else
-//                parent = (BComponent) parent.getParent();
-//        }
-//    }
 
     /**
       * Return whether the given component

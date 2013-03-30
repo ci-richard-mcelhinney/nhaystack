@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bajaObjectGraph version="1.0">
-<p m="b=baja" t="b:UnrestrictedFolder">
- <p n="NHaystackService" m="nh=nhaystack" t="nh:NHaystackService"/> 
- <p n="site" t="nh:HSite"/>
- <p n="equip" t="nh:HEquip"/>
+<p h="1" m="b=baja" t="b:UnrestrictedFolder">
+ <!-- /NHaystackService -->
+ <p n="NHaystackService" h="2" m="nh=nhaystack" t="nh:NHaystackService">
+  <p n="servlet" h="3" t="nh:NHaystackServlet">
+   <p n="servletName" v="haystack"/>
+  </p>
+ </p>
+ <!-- /site -->
+ <p n="site" h="4" t="nh:HSite">
+ </p>
+ <!-- /equip -->
+ <p n="equip" h="5" t="nh:HEquip">
+ </p>
 </p>
 </bajaObjectGraph>

@@ -26,7 +26,7 @@ import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
 
 /**
-  * Cache stores cached information that makes it faster to look things up.
+  * Cache stores various data structures that make it faster to look things up.
   */
 public class Cache
 {
@@ -80,17 +80,83 @@ public class Cache
         return (BControlPoint) remoteToPoint.get(remotePoint);
     }
 
+    /**
+      * Get everything that is tagged as 'site'
+      */
+    public BComponent[] getAllSites()
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        return sites;
+    }
+
+    /**
+      * Get everything that is tagged as 'equip'
+      */
+    public BComponent[] getAllEquips()
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        return equips;
+    }
+
+    /**
+      * Return the implicit 'equip' for the point, or null.
+      */
+    public BComponent getImplicitEquip(BControlPoint point)
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        return (BComponent) implicitEquips.get(point.getHandle());
+    }
+
+    /**
+      * Get all the equips associated with the given site.
+      */
+    public BComponent[] getSiteEquips(SiteNavId siteNav)
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        BComponent site = (BComponent) siteNavs.get(siteNav);
+
+        Array arr = (Array) siteEquips.get(site.getHandle());
+        return (arr == null) ?  
+            new BComponent[0] : 
+            (BComponent[]) arr.trim();
+    }
+
+    /**
+      * Get all the points associated with the given equip.
+      */
+    public BControlPoint[] getEquipPoints(EquipNavId equipNav)
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        BComponent equip = (BComponent) equipNavs.get(equipNav);
+
+        Array arr = (Array) equipPoints.get(equip.getHandle());
+        return (arr == null) ?  
+            new BControlPoint[0] : 
+            (BControlPoint[]) arr.trim();
+    }
+
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
 
     private void rebuildComponentCache()
     {
-        remoteToPoint = new HashMap();
+        remoteToPoint  = new HashMap();
+        implicitEquips = new HashMap();
+        siteNavs  = new HashMap();
+        equipNavs = new HashMap();
+        siteEquips  = new HashMap();
+        equipPoints = new HashMap();
+
         ConfigStorehouse storehouse = server.getConfigStorehouse();
 
-//        Array sitesArr = new Array(HDict.class);
-//        Array equipsArr = new Array(HDict.class);
+        Array sitesArr = new Array(BComponent.class);
+        Array equipsArr = new Array(BComponent.class);
 
         Iterator iterator = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
@@ -98,22 +164,115 @@ public class Cache
         while (iterator.hasNext())
         {
             BComponent comp = (BComponent) iterator.next();
+            BHDict btags = BHDict.findTagAnnotation(comp);
+            HDict tags = (btags == null) ? null : btags.getDict();
 
-            // remote point
+            // point
             if (comp instanceof BControlPoint)
             {
                 BControlPoint point = (BControlPoint) comp;
+
+                // save remote point 
                 if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 
                 {
                     RemotePoint remote = RemotePoint.fromControlPoint(point);
                     if (remote != null) remoteToPoint.put(remote, point);
                 }
-            }
 
-//            // check tags
-//            HDict tags = storehouse.createComponentTags(comp);
-//            if (tags.has("site")) sitesArr.add(tags);
-//            if (tags.has("equip")) equipsArr.add(tags);
+                // explicit equip
+                if (tags != null && tags.has("equipRef"))
+                {
+                    HRef ref = tags.getRef("equipRef");
+                    BComponent equip = server.lookupComponent(ref);
+                    addBackwardsEquipPoint(equip, point);
+                }
+                // implicit equip
+                else
+                {
+                    BComponent equip = findImplicitEquip(point);
+                    if (equip != null)
+                    {
+                        addBackwardsEquipPoint(equip, point);
+                        implicitEquips.put(point.getHandle(), equip);
+                    }
+                }
+            }
+            // auto-tagged site and equip
+            else if (comp instanceof BHTagged)
+            {
+                if (comp instanceof BHSite)
+                {
+                    sitesArr.add(comp);
+                    siteNavs.put(
+                        SiteNavId.make(comp.getDisplayName(null)),
+                        comp);
+                }
+                else if (comp instanceof BHEquip)
+                {
+                    equipsArr.add(comp);
+                    processEquip(comp);
+                }
+            }
+            // implicit equip
+            else
+            {
+                if ((tags != null) && tags.has("equip"))
+                {
+                    equipsArr.add(comp);
+                    processEquip(comp);
+                }
+            }
+        }
+
+        sites  = (BComponent[]) sitesArr.trim();
+        equips = (BComponent[]) equipsArr.trim();
+    }
+
+    /**
+      * This will save a reference to the point from its equip.
+      */
+    private void addBackwardsEquipPoint(BComponent equip, BControlPoint point)
+    {
+        Array arr = (Array) equipPoints.get(equip.getHandle());
+        if (arr == null)
+            equipPoints.put(equip.getHandle(), arr = new Array(BControlPoint.class));
+        arr.add(point);
+    }
+
+    /**
+      * This will save a reference to the equip from its site.
+      */
+    private void addBackwardsSiteEquip(BComponent site, BComponent equip)
+    {
+        Array arr = (Array) siteEquips.get(site.getHandle());
+        if (arr == null)
+            siteEquips.put(site.getHandle(), arr = new Array(BComponent.class));
+        arr.add(equip);
+    }
+
+    private void processEquip(BComponent equip)
+    {
+        BHDict btags = BHDict.findTagAnnotation(equip);
+        if (btags != null)
+        {
+            HDict tags = btags.getDict();
+            if (tags.has("siteRef"))
+            {
+                HRef ref = tags.getRef("siteRef");
+                BComponent site = server.lookupComponent(ref);
+                if (site != null)
+                {
+                    // add backwards reference
+                    addBackwardsSiteEquip(site, equip);
+
+                    // save the equip nav too
+                    equipNavs.put(
+                        EquipNavId.make(
+                            site.getDisplayName(null),
+                            equip.getDisplayName(null)),
+                        equip);
+                }
+            }
         }
     }
 
@@ -139,6 +298,25 @@ public class Cache
         }
     }
 
+    /**
+      * Find a parent device that has a BHEquip child
+      */
+    private BComponent findImplicitEquip(BControlPoint point)
+    {
+        BComponent parent = (BComponent) point.getParent();
+
+        while (true)
+        {
+            if (parent == null) return null;
+
+            BHDict btags = BHDict.findTagAnnotation(parent);
+            if (btags != null && btags.getDict().has("equip"))
+                return parent;
+
+            parent = (BComponent) parent.getParent();
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // attribs
 ////////////////////////////////////////////////////////////////
@@ -148,7 +326,14 @@ public class Cache
     private final NHServer server;
     private boolean initialized = false;
 
-    private Map remoteToConfig = null; // RemotePoint -> BHistoryConfig
-    private Map remoteToPoint  = null; // RemotePoint -> BControlPoint
+    private Map remoteToConfig  = null; // RemotePoint -> BHistoryConfig
+    private Map remoteToPoint   = null; // RemotePoint -> BControlPoint
+    private BComponent[] sites  = null;
+    private BComponent[] equips = null;
+    private Map implicitEquips  = null; // Handle -> BComponent
+    private Map siteNavs  = null; // SiteNavId -> BComponent
+    private Map equipNavs = null; // EquipNavId -> BComponent
+    private Map siteEquips  = null; // Handle -> Array<BComponent>
+    private Map equipPoints = null; // Handle -> Array<BControlPoint>
 }
 
