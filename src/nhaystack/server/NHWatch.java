@@ -3,8 +3,7 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   07 Nov 2011  Richard McElhinney  Creation
-//   28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//   30 Mar 2013  Mike Jarmy  Creation
 //
 package nhaystack.server;
 
@@ -71,139 +70,151 @@ public class NHWatch extends HWatch
      * The HGrid that is returned must contain metadata entries 
      * for 'watchId' and 'lease'.
      */
-    public HGrid sub(HRef[] ids, boolean checked)
+    public synchronized HGrid sub(HRef[] ids, boolean checked)
     {
-System.out.println("NHWatch.sub: aaa " + watchId);
-
-        // meta
         HDict meta = new HDictBuilder()
             .add("watchId", HStr.make(id()))
             .add("lease", lease())
             .toDict();
 
-        // dicts
-        Array dicts = new Array(HDict.class);
+        Array dictArr = new Array(HDict.class);
         for (int i = 0; i < ids.length; i++)
         {
             HRef id = ids[i];
-
-System.out.println("NHWatch.sub: bbb " + NHRef.make(id) + ", " + id);
-
-            // lookup
             BComponent comp = server.lookupComponent(id);
 
-            // no such component -- treat 'checked' as if it were false.
-            // ('checked' is handled on the client side).
+            // no such component -- treat 'checked' as if it were false, since
+            // 'checked' is handled on the client side.
             if (comp == null)
             {
-                dicts.add(null);
+                dictArr.add(null);
             }
             // found
             else
             {
-                comp.lease(LEASE_DEPTH, leaseInterval); 
+                subscriber.subscribe(comp, DEPTH);
+
                 HDict dict = server.createTags(comp);
-                dicts.add(dict);
-                subscriptions.put(id, new Subscription(comp, dict));
+                dictArr.add(dict);
+                allDicts.put(comp, dict);
             }
         }
 
-        return HGridBuilder.dictsToGrid(meta, (HDict[]) dicts.trim());
+        return HGridBuilder.dictsToGrid(meta, (HDict[]) dictArr.trim());
     }
 
     /**
      * Remove a list of records from watch.  Silently ignore
      * any invalid ids.
      */
-    public void unsub(HRef[] ids)
+    public synchronized void unsub(HRef[] ids)
     {
-System.out.println("NHWatch.unsub: " + watchId + ", " + Arrays.asList(ids));
         for (int i = 0; i < ids.length; i++)
-            subscriptions.remove(ids[i]);
+        {
+            HRef id = ids[i];
+            BComponent comp = server.lookupComponent(id);
+            if (comp != null)
+            {
+                subscriber.unsubscribe(comp);
+                allDicts.remove(comp);
+                changedDicts.remove(comp);
+            }
+        }
     }
 
     /**
      * Poll for any changes to the subscriptions records.
      */
-    public HGrid pollChanges()
+    public synchronized HGrid pollChanges()
     {
-System.out.println("NHWatch.pollChanges " + watchId);
-        Array dicts = new Array(HDict.class);
+        Array dictArr = new Array(HDict.class);
 
-        Iterator itr = subscriptions.values().iterator();
+        Iterator itr = changedDicts.values().iterator();
         while (itr.hasNext())
         {
-            Subscription sub = (Subscription) itr.next();
-            sub.comp.lease(LEASE_DEPTH, leaseInterval); 
-            HDict newDict = server.createTags(sub.comp);
-
-            if (!sub.dict.equals(newDict))
-            {
-                sub.dict = newDict;
-                dicts.add(sub.dict);
-            }
+            HDict dict = (HDict) itr.next();
+            dictArr.add(dict);
         }
 
-        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        return HGridBuilder.dictsToGrid((HDict[]) dictArr.trim());
     }
 
     /**
      * Poll all the subscriptions records even if there have been no changes.
      */
-    public HGrid pollRefresh()
+    public synchronized HGrid pollRefresh()
     {
-System.out.println("NHWatch.pollRefresh " + watchId);
-        Array dicts = new Array(HDict.class);
+        Array dictArr = new Array(HDict.class);
 
-        Iterator itr = subscriptions.values().iterator();
+        Iterator itr = allDicts.keySet().iterator();
         while (itr.hasNext())
         {
-            Subscription sub = (Subscription) itr.next();
-            sub.comp.lease(LEASE_DEPTH, leaseInterval); 
-            sub.dict = server.createTags(sub.comp);
-            dicts.add(sub.dict);
+            BComponent comp = (BComponent) itr.next();
+            HDict dict = server.createTags(comp);
+
+            dictArr.add(dict);
+            allDicts.put(comp, dict);
         }
 
-        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        changedDicts.clear();
+        return HGridBuilder.dictsToGrid((HDict[]) dictArr.trim());
     }
 
     /**
      * Close the watch and free up any state resources.
      */
-    public void close()
+    public synchronized void close()
     {
-System.out.println("NHWatch.close " + watchId);
-        subscriptions.clear();
+        subscriber.unsubscribeAll();
+
+        allDicts.clear();
+        changedDicts.clear();
+
         server.removeWatch(watchId);
     }
 
 ////////////////////////////////////////////////////////////////
-// Subscription
+// NSubscriber
 ////////////////////////////////////////////////////////////////
 
-    private static class Subscription
+    private class NSubscriber extends Subscriber
     {
-        public Subscription(BComponent comp, HDict dict)
+        public void event(BComponentEvent event)     
         {
-            this.comp = comp;
-            this.dict = dict;
-        }
+            BComponent comp = event.getSourceComponent();
 
-        private BComponent comp;
-        private HDict dict;
+            // Check components upwards to the depth that we are subscribed.
+            // This will put things like proxyExts covs up to the 'point' 
+            // component where they belong.
+            for (int i = 0; i < DEPTH; i++)
+            {
+                if (allDicts.containsKey(comp))
+                {
+                    HDict dict = server.createTags(comp);
+                    changedDicts.put(comp, dict);
+                    break;
+                }
+
+                comp = (BComponent) comp.getParent();
+            }
+        }
     }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final int LEASE_DEPTH = 1;
+    // this is deep enough to get Cov callbacks on proxy extensions
+    private static final int DEPTH = 2;
 
     private final NHServer server;
     private final String dis;
     private final String watchId;
     private final long leaseInterval;
 
-    private final HashMap subscriptions = new HashMap();
+    private final Subscriber subscriber = new NSubscriber();
+
+    private final HashMap allDicts     = new HashMap(); // comp -> dict
+    private final HashMap changedDicts = new HashMap(); // comp -> dict
 }
 

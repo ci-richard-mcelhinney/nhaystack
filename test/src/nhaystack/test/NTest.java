@@ -17,16 +17,6 @@ import haystack.test.*;
  */
 public abstract class NTest extends Test
 {
-//////////////////////////////////////////////////////////////////////////
-// Test Case List
-//////////////////////////////////////////////////////////////////////////
-
-    public static String[] TESTS =
-    {
-        "nhaystack.test.NSimpleClientTest",
-        "nhaystack.test.NSupervisorClientTest",
-    };
-
     static HGrid makeNavGrid(HStr navId)
     {
         HDictBuilder hd = new HDictBuilder();
@@ -34,31 +24,23 @@ public abstract class NTest extends Test
         return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
     }
 
-//////////////////////////////////////////////////////////////////////////
-// Main
-//////////////////////////////////////////////////////////////////////////
-
-    public static void main(String[] args)
-    {
-        runTests(TESTS, null);
+    void verifyGridContains(HGrid g, String col, String val) 
+    { 
+        verifyGridContains(g, col, HStr.make(val)); 
     }
 
-//  public static void main(String[] args)
-//  {
-//    String pattern = null;
-//    for (int i=0; i<args.length; ++i)
-//    {
-//      String arg = args[i];
-//      if (arg.startsWith("-"))
-//      {
-//        if (arg.equals("-v")) verbose = true;
-//        else println("Uknown option: " + arg);
-//      }
-//      else if (pattern == null)
-//      {
-//        pattern = arg;
-//      }
-//    }
-//    runTests(TESTS, pattern);
-//  }
+    void verifyGridContains(HGrid g, String col, HVal val)
+    {
+        boolean found = false;
+        for (int i=0; i<g.numRows(); ++i)
+        {
+            HVal x = g.row(i).get(col, false);
+            if (x != null && x.equals(val)) { found = true; break; }
+        }
+        if (!found)
+        {
+            System.out.println("verifyGridContains " + col + "=" + val + " failed!");
+            fail();
+        }
+    }
 }

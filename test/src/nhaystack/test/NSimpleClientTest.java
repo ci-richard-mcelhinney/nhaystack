@@ -12,15 +12,13 @@ import haystack.io.*;
 import haystack.client.*;
 import haystack.test.*;
 import haystack.util.*;
+import nhaystack.*;
 
 /**
- * NSimpleClientTest -- this test requires an instance of Niagara
- * running localhost port 80 with the nhaystack_simple station
- * and user "admin", pwd "".
+ * NSimpleClientTest -- this test uses nhaystack_simple
  */
 public class NSimpleClientTest extends NTest
 {
-
     final String URI = "http://localhost/haystack/";
     HClient client;
 
@@ -31,13 +29,13 @@ public class NSimpleClientTest extends NTest
     public void test() throws Exception
     {
         verifyAuth();
-        verifyAbout();
-        verifyOps();
-        verifyFormats();
-        verifyRead();
+//        verifyAbout();
+//        verifyOps();
+//        verifyFormats();
+//        verifyRead();
         verifyWatches();
-        verifyHisRead();
-        verifyNav();
+//        verifyHisRead();
+//        verifyNav();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -297,87 +295,78 @@ public class NSimpleClientTest extends NTest
 
     void verifyWatches() throws Exception
     {
-//TODO: fix subscription mechanism
+        // create new watch
+        HWatch w = client.watchOpen("NHaystack Simple Test");
+        verifyEq(w.id(), null);
+        verifyEq(w.dis(), "NHaystack Simple Test");
 
-//        // create new watch
-//        HWatch w = client.watchOpen("NHaystack Simple Test");
-//        verifyEq(w.id(), null);
-//        verifyEq(w.dis(), "NHaystack Simple Test");
-//
-//        // do query to get some recs
-//        HGrid recs = client.readAll("point");
-//        verify(recs.numRows() >= 4);
-//        HDict a = recs.row(0);
-//        HDict b = recs.row(1);
-//        HDict c = recs.row(2);
-//        HDict d = recs.row(3);
-//
-//        // do first sub
-//        HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
-//        verifyEq(sub.numRows(), 2);
-//        verifyEq(sub.row(0).dis(), a.dis());
-//        verifyEq(sub.row(1).dis(), b.dis());
-//
-//        // check bad id 
-//        HRef badId = HRef.make("nhaystack_simple:c." + Base64.URI.encode("badBadBad"));
-//        try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
-//
-//        // now add c, bad, d
-//        sub = w.sub(new HRef[] { c.id(), badId , d.id() }, false);
-//        verifyEq(sub.numRows(), 3);
-//        verifyEq(sub.row(0).dis(), c.dis());
-//        verifyEq(sub.row(1).missing("id"), true);
-//        verifyEq(sub.row(2).dis(), d.dis());
-//
-//        // verify state of watch now
-//        verify(client.watch(w.id()) == w);
-//        verifyEq(client.watches().length, 1);
-//        verify(client.watches()[0] == w);
-//        verifyEq(w.lease().millis(), 60000L);
-//
-//        // poll refresh
-//        HGrid poll = w.pollRefresh();
-//        verifyEq(poll.numRows(), 4);
-//        verifyGridContains(poll, "id", a.id());
-//        verifyGridContains(poll, "id", b.id());
-//        verifyGridContains(poll, "id", c.id());
-//        verifyGridContains(poll, "id", d.id());
-//
-//        // poll changes
-//        Thread.sleep(2000); // wait for the sine waves to tick over
-//        poll = w.pollChanges();
-//        verifyEq(poll.numRows(), 2);
-//
-//        // remove d, and then poll refresh
-//        w.unsub(new HRef[] { d.id() });
-//        poll = w.pollRefresh();
-//        verifyEq(poll.numRows(), 3);
-//
-//        // close
-//        w.close();
-//        try { poll = w.pollRefresh(); fail(); } catch (Exception e) { verifyException(e); }
-//        verifyEq(client.watch(w.id(), false), null);
-//        verifyEq(client.watches().length, 0);
+        // do query to get some recs
+        HGrid recs = client.readAll("point");
+        verify(recs.numRows() >= 4);
+        HDict a = recs.row(0);
+        HDict b = recs.row(1);
+        HDict c = recs.row(2);
+        HDict d = recs.row(3);
+
+//System.out.println(a);
+//System.out.println(b);
+//System.out.println(c);
+//System.out.println(d);
+
+        // do first sub
+        HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
+        verifyEq(sub.numRows(), 2);
+        verifyEq(sub.row(0).dis(), a.dis());
+        verifyEq(sub.row(1).dis(), b.dis());
+
+        // now add c, d
+        sub = w.sub(new HRef[] { c.id(), d.id() }, false);
+        verifyEq(sub.numRows(), 2);
+        verifyEq(sub.row(0).dis(), c.dis());
+        verifyEq(sub.row(1).dis(), d.dis());
+
+        // verify state of watch now
+        verify(client.watch(w.id()) == w);
+        verifyEq(client.watches().length, 1);
+        verify(client.watches()[0] == w);
+        verifyEq(w.lease().millis(), 60000L);
+
+        // poll refresh
+        HGrid poll = w.pollRefresh();
+        verifyEq(poll.numRows(), 4);
+        verifyGridContains(poll, "id", a.id());
+        verifyGridContains(poll, "id", b.id());
+        verifyGridContains(poll, "id", c.id());
+        verifyGridContains(poll, "id", d.id());
+
+        // poll changes
+        Thread.sleep(2000); // wait for the sine waves to tick over
+        poll = w.pollChanges();
+        verifyEq(poll.numRows(), 2);
+
+        // remove d, and then poll refresh
+        w.unsub(new HRef[] { d.id() });
+        poll = w.pollRefresh();
+        verifyEq(poll.numRows(), 3);
+
+        // close
+        w.close();
+        try { w.pollRefresh(); fail(); } catch (Exception e) { verifyException(e); }
+        verifyEq(client.watch(w.id(), false), null);
+        verifyEq(client.watches().length, 0);
+
+        // check bad id 
+        w = client.watchOpen("Bogus Test");
+        HRef badId = HRef.make("nhaystack_simple:c." + Base64.URI.encode("badBadBad"));
+        try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
     }
 
 //////////////////////////////////////////////////////////////////////////
-// Utils
+// Main
 //////////////////////////////////////////////////////////////////////////
 
-    void verifyGridContains(HGrid g, String col, String val) { verifyGridContains(g, col, HStr.make(val)); }
-    void verifyGridContains(HGrid g, String col, HVal val)
+    public static void main(String[] args)
     {
-        boolean found = false;
-        for (int i=0; i<g.numRows(); ++i)
-        {
-            HVal x = g.row(i).get(col, false);
-            if (x != null && x.equals(val)) { found = true; break; }
-        }
-        if (!found)
-        {
-            System.out.println("verifyGridContains " + col + "=" + val + " failed!");
-            fail();
-        }
+        runTests(new String[] { "nhaystack.test.NSimpleClientTest", }, null);
     }
-
 }

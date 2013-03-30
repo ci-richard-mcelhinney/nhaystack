@@ -49,16 +49,24 @@
   <!--========== make ==========-->
   <target name="make" depends="clean,compile,jar"/>
 
-  <!--========== test ==========-->
-  <target name="test" depends="make">
-
-    <java classname="nhaystack.test.NTest">
+  <!--========== test-simple ==========-->
+  <target name="test-simple" depends="make">
+    <java classname="nhaystack.test.NSimpleClientTest">
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />
       </classpath>
     </java>
+  </target> 
 
+  <!--========== test-sup ==========-->
+  <target name="test-sup" depends="make">
+    <java classname="nhaystack.test.NSupervisorClientTest">
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
   </target> 
 
 </project>
