@@ -314,13 +314,13 @@ public class NSimpleClientTest extends NTest
 //System.out.println(d);
 
         // do first sub
-        HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
+        HGrid sub = w.sub(new HIdentifier[] { a.id(), b.id() });
         verifyEq(sub.numRows(), 2);
         verifyEq(sub.row(0).dis(), a.dis());
         verifyEq(sub.row(1).dis(), b.dis());
 
         // now add c, d
-        sub = w.sub(new HRef[] { c.id(), d.id() }, false);
+        sub = w.sub(new HIdentifier[] { c.id(), d.id() }, false);
         verifyEq(sub.numRows(), 2);
         verifyEq(sub.row(0).dis(), c.dis());
         verifyEq(sub.row(1).dis(), d.dis());
@@ -345,7 +345,7 @@ public class NSimpleClientTest extends NTest
         verifyEq(poll.numRows(), 2);
 
         // remove d, and then poll refresh
-        w.unsub(new HRef[] { d.id() });
+        w.unsub(new HIdentifier[] { d.id() });
         poll = w.pollRefresh();
         verifyEq(poll.numRows(), 3);
 
@@ -358,7 +358,7 @@ public class NSimpleClientTest extends NTest
         // check bad id 
         w = client.watchOpen("Bogus Test");
         HRef badId = HRef.make("nhaystack_simple:c." + Base64.URI.encode("badBadBad"));
-        try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
+        try { w.sub(new HIdentifier[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
     }
 
 //////////////////////////////////////////////////////////////////////////

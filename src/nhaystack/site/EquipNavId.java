@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2012, J2 Innovations
-// Licensed under the Academic Free License version 3.0
+// Licensed under the Academi Free License version 3.0
 //
 // History:
 //   06 Feb 2013  Mike Jarmy  Creation

@@ -140,6 +140,18 @@ public class Cache
             (BControlPoint[]) arr.trim();
     }
 
+    /**
+      * Get the point, or return null
+      */
+    public BControlPoint getEquipPoint(EquipNavId equipNav, String pointDis)
+    {
+        BControlPoint[] points = getEquipPoints(equipNav);
+        for (int i = 0; i < points.length; i++)
+            if (pointDis.equals(points[i].getDisplayName(null)))
+                return points[i];
+        return null;
+    }
+
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////

@@ -70,7 +70,7 @@ public class NHWatch extends HWatch
      * The HGrid that is returned must contain metadata entries 
      * for 'watchId' and 'lease'.
      */
-    public synchronized HGrid sub(HRef[] ids, boolean checked)
+    public synchronized HGrid sub(HIdentifier[] ids, boolean checked)
     {
         HDict meta = new HDictBuilder()
             .add("watchId", HStr.make(id()))
@@ -80,7 +80,10 @@ public class NHWatch extends HWatch
         Array dictArr = new Array(HDict.class);
         for (int i = 0; i < ids.length; i++)
         {
-            HRef id = ids[i];
+            // we can assume this because onNavReadByUri will have
+            // already been called for us.
+            HRef id = (HRef) ids[i];
+
             BComponent comp = server.lookupComponent(id);
 
             // no such component -- treat 'checked' as if it were false, since
@@ -107,11 +110,14 @@ public class NHWatch extends HWatch
      * Remove a list of records from watch.  Silently ignore
      * any invalid ids.
      */
-    public synchronized void unsub(HRef[] ids)
+    public synchronized void unsub(HIdentifier[] ids)
     {
         for (int i = 0; i < ids.length; i++)
         {
-            HRef id = ids[i];
+            // we can assume this because onNavReadByUri will have
+            // already been called for us.
+            HRef id = (HRef) ids[i];
+
             BComponent comp = server.lookupComponent(id);
             if (comp != null)
             {

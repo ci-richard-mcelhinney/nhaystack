@@ -121,16 +121,20 @@ public class NHServer extends HServer
 
     /**
       * Look up the HDict representation of a BComponent 
-      * by its HRef id.
+      * by its id.
       *
       * Return null if the BComponent cannot be found,
       * or if it is not haystack-annotated.
       */
-    protected HDict onReadById(HRef id)
+    protected HDict onReadById(HIdentifier id)
     {
+        // we can assume this because onNavReadByUri will have
+        // already been called for us.
+        HRef ref = (HRef) id;
+
         try
         {
-            BComponent comp = lookupComponent(id);
+            BComponent comp = lookupComponent(ref);
             return (comp == null) ? null : createTags(comp);
         }
         catch (RuntimeException e)
@@ -555,8 +559,18 @@ public class NHServer extends HServer
      */
     protected HDict onNavReadByUri(HUri uri)
     {
-        // TODO
-        return null;
+        // e.g. "site:/Blacksburg/Transmogrifier/SineWave1"
+
+        if (!uri.val.startsWith("site:/")) return null;
+        String str = uri.val.substring("site:/".length());
+        String[] names = TextUtil.split(str, '/');
+        if (names.length != 3) return null;
+
+        BControlPoint point = cache.getEquipPoint(
+            EquipNavId.make(names[0], names[1]), 
+            names[2]);
+
+        return (point == null) ? null : createTags(point);
     }
 
 ////////////////////////////////////////////////////////////////

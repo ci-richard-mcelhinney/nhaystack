@@ -27,10 +27,11 @@ public class NSupervisorClientTest extends NTest
     public void test() throws Exception
     {
         verifyAuth();
-        verifyRead();
-        verifyHisRead();
-        verifyNav();
-        verifyWatches();
+//        verifyRead();
+//        verifyHisRead();
+//        verifyNav();
+//        verifyWatches();
+        verifyNavUri();
     }
 
     void verifyAuth() throws Exception
@@ -274,7 +275,7 @@ public class NSupervisorClientTest extends NTest
 //System.out.println(c);
 //System.out.println(d);
 
-        HGrid sub = w.sub(new HRef[] { a.id(), b.id(), c.id(), d.id() });
+        HGrid sub = w.sub(new HIdentifier[] { a.id(), b.id(), c.id(), d.id() });
         verifyEq(sub.numRows(), 4);
         verifyEq(sub.row(0).dis(), a.dis());
         verifyEq(sub.row(1).dis(), b.dis());
@@ -301,10 +302,8 @@ public class NSupervisorClientTest extends NTest
         verifyEq(poll.numRows(), 3);
 
         // remove a, and then poll changes
-        w.unsub(new HRef[] { a.id() });
+        w.unsub(new HIdentifier[] { a.id() });
         poll = w.pollChanges();
-//System.out.println("#############################");
-//poll.dump();
         verifyEq(poll.numRows(), 2);
 
         // close
@@ -312,6 +311,26 @@ public class NSupervisorClientTest extends NTest
         try { w.pollRefresh(); fail(); } catch (Exception e) { verifyException(e); }
         verifyEq(client.watch(w.id(), false), null);
         verifyEq(client.watches().length, 0);
+
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// NavUri
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyNavUri() throws Exception
+    {
+        HUri uri = HUri.make("site:/Blacksburg/Transmogrifier/SineWave1");
+        HDict dict = client.readById(uri);
+
+        HWatch w = client.watchOpen("NHaystack NavUri Test");
+        w.sub(new HIdentifier[] { uri });
+
+        Thread.sleep(2000); // wait for the sine waves to tick over
+        HGrid poll = w.pollChanges();
+        verifyEq(poll.numRows(), 1);
+
+        w.unsub(new HIdentifier[] { uri });
     }
 
 //////////////////////////////////////////////////////////////////////////
