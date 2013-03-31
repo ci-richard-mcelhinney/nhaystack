@@ -43,4 +43,10 @@ public abstract class NTest extends Test
             fail();
         }
     }
+
+    HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
+    HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
+    HNum numVal(HRow r) { return (HNum)r.get("val"); }
+
+    HStr localTz() { return HStr.make(HTimeZone.DEFAULT.name); }
 }

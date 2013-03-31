@@ -225,7 +225,20 @@ public class BNHaystackService extends BAbstractService
 
     public Type[] getServiceTypes() { return SERVICE_TYPES; }
 
-    public void serviceStarted() throws Exception { }
+    public void serviceStarted() throws Exception 
+    { 
+        // We need this here for when this service gets dropped into
+        // a running station.  However, this will fail at station start time.
+        // When that happens,  we'll ignore the error that it generates, and 
+        // rely on atSteadyState() to get us set up.
+        try
+        {
+            server.getCache().rebuild();
+        }
+        catch (Exception e)
+        {
+        }
+    }
 
     public void serviceStopped() throws Exception { }
 

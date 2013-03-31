@@ -95,10 +95,13 @@ public class HistoryStorehouse extends Storehouse
 
         // add id
         hdb.add("id", NHRef.make(cfg).getHRef());
-        String dis = cfg.getDisplayName(null);
+
+        String dis = cfg.getId().toString();
+        if (dis.startsWith("/")) dis = dis.substring(1);
+        dis = TextUtil.replace(dis, "/", "_");
+        hdb.add("dis", dis);
 
         // add misc other tags
-        if (dis != null) hdb.add("dis", dis);
         hdb.add("axType", cfg.getType().toString());
         hdb.add("axHistoryId", cfg.getId().toString());
 

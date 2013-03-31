@@ -27,10 +27,10 @@ public class NSupervisorClientTest extends NTest
     public void test() throws Exception
     {
         verifyAuth();
-//        verifyRead();
-//        verifyHisRead();
-//        verifyNav();
-//        verifyWatches();
+        verifyRead();
+        verifyHisRead();
+        verifyNav();
+        verifyWatches();
         verifyNavUri();
     }
 
@@ -83,7 +83,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1"));
         verifyEq(dict.get("unit"), HStr.make("°F"));
         verify(dict.has("point"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verify(dict.getDouble("curVal") == 0.0);
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
@@ -95,7 +95,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave2"));
         verifyEq(dict.get("unit"), HStr.make("psi"));
         verify(dict.has("point"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verify(dict.getDouble("curVal") == 0.0);
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
@@ -121,7 +121,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.has("his"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace2/SineWave2"));
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
         verifyEq(dict.get("unit"), HStr.make("psi"));
@@ -132,7 +132,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.has("his"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_sup/AuditHistory"));
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
@@ -144,7 +144,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.has("his"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_sup/LogHistory"));
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
@@ -156,7 +156,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.has("his"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/AuditHistory"));
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
@@ -168,7 +168,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.has("his"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/LogHistory"));
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
@@ -246,10 +246,6 @@ public class NSupervisorClientTest extends NTest
         try { client.read("axHistoryId==\"/nhaystack_jace1/SineWave1\""); } 
         catch(UnknownRecException e) { verifyException(e); }
     }
-
-    private HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
-    private HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
-    private HNum numVal(HRow r) { return (HNum)r.get("val"); }
 
 //////////////////////////////////////////////////////////////////////////
 // Watches

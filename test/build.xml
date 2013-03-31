@@ -69,4 +69,14 @@
     </java>
   </target> 
 
+  <!--========== test-his ==========-->
+  <target name="test-his" depends="make">
+    <java classname="nhaystack.test.NHisTest">
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
 </project>

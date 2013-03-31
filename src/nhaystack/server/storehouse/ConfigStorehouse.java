@@ -62,8 +62,7 @@ public class ConfigStorehouse extends Storehouse
             hdb.add("id", NHRef.make(comp).getHRef());
 
             // add misc other tags
-            String dis = comp.getDisplayName(null);
-            if (dis != null) hdb.add("dis", dis);
+            hdb.add("dis", comp.getDisplayName(null));
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
 
@@ -300,8 +299,7 @@ public class ConfigStorehouse extends Storehouse
         }
         else
         {
-            String dis = comp.getDisplayName(null);
-            if (dis != null) hdb.add("dis", dis);
+            hdb.add("dis", comp.getDisplayName(null));
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
         }

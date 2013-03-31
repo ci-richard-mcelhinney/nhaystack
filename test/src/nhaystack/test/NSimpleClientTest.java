@@ -29,13 +29,13 @@ public class NSimpleClientTest extends NTest
     public void test() throws Exception
     {
         verifyAuth();
-//        verifyAbout();
-//        verifyOps();
-//        verifyFormats();
-//        verifyRead();
+        verifyAbout();
+        verifyOps();
+        verifyFormats();
+        verifyRead();
         verifyWatches();
-//        verifyHisRead();
-//        verifyNav();
+        verifyHisRead();
+        verifyNav();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ public class NSimpleClientTest extends NTest
         verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave1"));
         verifyEq(dict.get("unit"), HStr.make("°F"));
         verify(dict.has("point"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verify(dict.has("cur"));
         double curVal = dict.getDouble("curVal");
         verifyEq(dict.get("curStatus"), HStr.make("ok"));
@@ -166,7 +166,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("cur"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/AuditHistory"));
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
@@ -178,7 +178,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("cur"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
@@ -190,7 +190,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("cur"));
         verify(dict.missing("curStatus"));
         verify(dict.missing("curVal"));
-        verifyEq(dict.get("tz"), HStr.make("New_York"));
+        verifyEq(dict.get("tz"), localTz());
         verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
         verify(dict.missing("hisInterpolate"));
         verifyEq(dict.get("unit"), HStr.make("psi"));
@@ -284,10 +284,6 @@ public class NSimpleClientTest extends NTest
 //
 //        verifyEq(numVal(his.row(0)).unit, "psi");
     }
-
-    private HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
-    private HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
-    private HNum numVal(HRow r) { return (HNum)r.get("val"); }
 
 //////////////////////////////////////////////////////////////////////////
 // Watches
