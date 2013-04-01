@@ -54,15 +54,16 @@ public class ConfigStorehouse extends Storehouse
             HDictBuilder hdb = new HDictBuilder();
 
             // add existing tags
-            BHDict btags = BHDict.findTagAnnotation(comp);
-            HDict tags = (btags == null) ?  HDict.EMPTY : btags.getDict();
+            HDict tags = BHDict.findTagAnnotation(comp);
             hdb.add(tags);
 
             // add id
             hdb.add("id", NHRef.make(comp).getHRef());
 
+            // add navName and dis
+            createNavTags(comp, tags, hdb);
+
             // add misc other tags
-            hdb.add("dis", comp.getDisplayName(null));
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
 
@@ -160,7 +161,7 @@ public class ConfigStorehouse extends Storehouse
                     BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
 
                     // try to look up  siteRef too
-                    HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
+                    HDict equipTags = BHDict.findTagAnnotation(equip);
                     if (equipTags.has("siteRef"))
                         hdb.add("siteRef", equipTags.get("siteRef"));
                 }
@@ -173,7 +174,7 @@ public class ConfigStorehouse extends Storehouse
                         hdb.add("equipRef", NHRef.make(equip).getHRef());
 
                         // try to look up  siteRef too
-                        HDict equipTags = BHDict.findTagAnnotation(equip).getDict();
+                        HDict equipTags = BHDict.findTagAnnotation(equip);
                         if (equipTags.has("siteRef"))
                             hdb.add("siteRef", equipTags.get("siteRef"));
                     }
@@ -193,7 +194,7 @@ public class ConfigStorehouse extends Storehouse
     {
         // Return true for components that have been 
         // annotated with a BHDict instance.
-        if (BHDict.findTagAnnotation(comp) != null)
+        if ((comp instanceof BHTagged) || !BHDict.findTagAnnotation(comp).isEmpty())
             return true;
 
         // Return true for BControlPoints.
@@ -278,6 +279,20 @@ public class ConfigStorehouse extends Storehouse
             if (remote == null) return null;
 
             return server.getCache().getControlPoint(remote);
+        }
+    }
+
+    public static void createNavTags(
+        BComponent comp, HDict tags, HDictBuilder hdb)
+    {
+        if (tags.has("navName"))
+        {
+            hdb.add("dis", BFormat.format(tags.getStr("navName"), comp));
+        }
+        else
+        {
+            hdb.add("navName", "%displayName%");
+            hdb.add("dis", BFormat.format("%displayName%", comp));
         }
     }
 

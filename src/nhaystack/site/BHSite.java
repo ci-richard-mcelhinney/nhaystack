@@ -14,6 +14,7 @@ import javax.baja.util.*;
 import haystack.*;
 import nhaystack.*;
 import nhaystack.res.*;
+import nhaystack.server.storehouse.*;
 import nhaystack.ui.*;
 
 /**
@@ -61,15 +62,15 @@ public class BHSite extends BHTagged
         HDictBuilder hdb = new HDictBuilder();
 
         // add annotated
-        hdb.add(getHaystack().getDict());
+        HDict tags = getHaystack().getDict();
+        hdb.add(tags);
 
         // add id and site
         hdb.add("id", NHRef.make(this).getHRef());
         hdb.add("site");
 
-        // add dis
-        hdb.add("dis", getDisplayName(null));
-//        hdb.add("navName", getDisplayName(null));
+        // add navName and dis
+        ConfigStorehouse.createNavTags(this, tags, hdb);
 
         // add misc other tags
         hdb.add("axType", getType().toString());

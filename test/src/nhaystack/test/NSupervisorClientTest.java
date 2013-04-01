@@ -84,7 +84,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("unit"), HStr.make("°F"));
         verify(dict.has("point"));
         verifyEq(dict.get("tz"), localTz());
-        verify(dict.getDouble("curVal") == 0.0);
+//        verify(dict.getDouble("curVal") == 0.0);
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
         dict = client.readById(HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~"));
@@ -96,7 +96,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("unit"), HStr.make("psi"));
         verify(dict.has("point"));
         verifyEq(dict.get("tz"), localTz());
-        verify(dict.getDouble("curVal") == 0.0);
+//        verify(dict.getDouble("curVal") == 0.0);
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
         dict = client.readById(HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~"));
@@ -108,7 +108,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("unit"), HStr.make("°F"));
         verify(dict.has("point"));
         verify(dict.missing("tz"));
-        verify(dict.getDouble("curVal") == 0.0);
+//        verify(dict.getDouble("curVal") == 0.0);
         verify(dict.missing("axHistoryRef"));
         verify(dict.missing("hisInterpolate"));
 
@@ -316,7 +316,7 @@ public class NSupervisorClientTest extends NTest
 
     void verifyNavUri() throws Exception
     {
-        HUri uri = HUri.make("site:/Blacksburg/Transmogrifier/SineWave1");
+        HUri uri = HUri.make("equip:/Blacksburg/Transmogrifier/SineWave1");
         HDict dict = client.readById(uri);
 
         HWatch w = client.watchOpen("NHaystack NavUri Test");

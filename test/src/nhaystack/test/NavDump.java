@@ -43,6 +43,8 @@ public class NavDump
 //            str = (HStr) row.get("dis", false);
 //            if (str != null) sb.append(" '" + str + "'");
 
+            sb.append(" dis:").append(row.get("dis"));
+
             str = (HStr) row.get("axSlotPath", false);
             if (str != null) sb.append(" " + str);
 

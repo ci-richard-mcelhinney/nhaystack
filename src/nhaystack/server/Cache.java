@@ -140,18 +140,6 @@ public class Cache
             (BControlPoint[]) arr.trim();
     }
 
-    /**
-      * Get the point, or return null
-      */
-    public BControlPoint getEquipPoint(EquipNavId equipNav, String pointDis)
-    {
-        BControlPoint[] points = getEquipPoints(equipNav);
-        for (int i = 0; i < points.length; i++)
-            if (pointDis.equals(points[i].getDisplayName(null)))
-                return points[i];
-        return null;
-    }
-
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
@@ -176,8 +164,7 @@ public class Cache
         while (iterator.hasNext())
         {
             BComponent comp = (BComponent) iterator.next();
-            BHDict btags = BHDict.findTagAnnotation(comp);
-            HDict tags = (btags == null) ? null : btags.getDict();
+            HDict tags = BHDict.findTagAnnotation(comp);
 
             // point
             if (comp instanceof BControlPoint)
@@ -192,7 +179,7 @@ public class Cache
                 }
 
                 // explicit equip
-                if (tags != null && tags.has("equipRef"))
+                if (tags.has("equipRef"))
                 {
                     HRef ref = tags.getRef("equipRef");
                     BComponent equip = server.lookupComponent(ref);
@@ -215,9 +202,11 @@ public class Cache
                 if (comp instanceof BHSite)
                 {
                     sitesArr.add(comp);
-                    siteNavs.put(
-                        SiteNavId.make(comp.getDisplayName(null)),
-                        comp);
+
+                    SiteNavId siteNav = SiteNavId.make(
+                        BFormat.format(navName(tags), comp));
+
+                    siteNavs.put(siteNav, comp);
                 }
                 else if (comp instanceof BHEquip)
                 {
@@ -228,7 +217,7 @@ public class Cache
             // implicit equip
             else
             {
-                if ((tags != null) && tags.has("equip"))
+                if (tags.has("equip"))
                 {
                     equipsArr.add(comp);
                     processEquip(comp);
@@ -264,26 +253,24 @@ public class Cache
 
     private void processEquip(BComponent equip)
     {
-        BHDict btags = BHDict.findTagAnnotation(equip);
-        if (btags != null)
+        HDict equipTags = BHDict.findTagAnnotation(equip);
+        if (equipTags.has("siteRef"))
         {
-            HDict tags = btags.getDict();
-            if (tags.has("siteRef"))
+            HRef ref = equipTags.getRef("siteRef");
+            BComponent site = server.lookupComponent(ref);
+            if (site != null)
             {
-                HRef ref = tags.getRef("siteRef");
-                BComponent site = server.lookupComponent(ref);
-                if (site != null)
-                {
-                    // add backwards reference
-                    addBackwardsSiteEquip(site, equip);
+                // add backwards reference
+                addBackwardsSiteEquip(site, equip);
 
-                    // save the equip nav too
-                    equipNavs.put(
-                        EquipNavId.make(
-                            site.getDisplayName(null),
-                            equip.getDisplayName(null)),
-                        equip);
-                }
+                // save the equip nav 
+                HDict siteTags = BHDict.findTagAnnotation(site);
+
+                EquipNavId equipNav = EquipNavId.make(
+                    BFormat.format(navName(siteTags), site),
+                    BFormat.format(navName(equipTags), equip));
+
+                equipNavs.put(equipNav, equip);
             }
         }
     }
@@ -321,12 +308,20 @@ public class Cache
         {
             if (parent == null) return null;
 
-            BHDict btags = BHDict.findTagAnnotation(parent);
-            if (btags != null && btags.getDict().has("equip"))
+            HDict tags = BHDict.findTagAnnotation(parent);
+            if (tags.has("equip"))
                 return parent;
 
             parent = (BComponent) parent.getParent();
         }
+    }
+
+    private static String navName(HDict tags)
+    {
+        if (tags.has("navName"))
+            return tags.getStr("navName");
+        else
+            return "%displayName%";
     }
 
 ////////////////////////////////////////////////////////////////

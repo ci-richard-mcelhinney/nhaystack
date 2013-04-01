@@ -66,12 +66,12 @@ public class NHServer extends HServer
 
             BModule baja = BComponent.TYPE.getModule();
             hd.add("productName",    "Niagara AX");
-            hd.add("productVersion", baja.getBajaVersion().toString());
+            hd.add("productVersion", baja.getVendorVersion().toString());
             hd.add("productUri",     HUri.make("http://www.tridium.com/"));
 
             BModule module = BNHaystackService.TYPE.getModule();
             hd.add("moduleName",    module.getModuleName());
-            hd.add("moduleVersion", module.getBajaVersion().toString());
+            hd.add("moduleVersion", module.getVendorVersion().toString());
             hd.add("moduleUri",     HUri.make("https://bitbucket.org/jasondbriggs/nhaystack"));
 
             return hd.toDict();
@@ -561,16 +561,26 @@ public class NHServer extends HServer
     {
         // e.g. "site:/Blacksburg/Transmogrifier/SineWave1"
 
-        if (!uri.val.startsWith("site:/")) return null;
-        String str = uri.val.substring("site:/".length());
+        if (!uri.val.startsWith("equip:/")) return null;
+        String str = uri.val.substring("equip:/".length());
         String[] names = TextUtil.split(str, '/');
         if (names.length != 3) return null;
 
-        BControlPoint point = cache.getEquipPoint(
-            EquipNavId.make(names[0], names[1]), 
-            names[2]);
+        String siteDis  = names[0];
+        String equipDis = names[1];
+        String pointDis = names[2];
 
-        return (point == null) ? null : createTags(point);
+        // TODO make this more efficient
+        BControlPoint[] points = cache.getEquipPoints(
+            EquipNavId.make(siteDis, equipDis));
+        for (int i = 0; i < points.length; i++)
+        {
+            BControlPoint point = points[i];
+            HDict tags = configStorehouse.createComponentTags(point);
+            if (tags.getStr("dis").equals(pointDis))
+                return tags;
+        }
+        return null;
     }
 
 ////////////////////////////////////////////////////////////////

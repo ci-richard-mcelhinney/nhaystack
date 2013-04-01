@@ -1,0 +1,34 @@
+<h1>NHaystack</h1>
+
+<p>NHaystack is an open-source Niagara AX module, hosted at
+<a href="https://bitbucket.org/jasondbriggs/nhaystack">https://bitbucket.org/jasondbriggs/nhaystack</a>,
+that serves up <a href="http://project-haystack.org">Project Haystack</a> data 
+directly from a Niagara AX station, via a RESTful protocol.</p>
+
+<p>The development of NHaystack has been funded by 
+<a href="http://www.j2inn.com">J2 Innovations</a>.  NHaystack is licensed under the
+<a href="http://opensource.org/licenses/AFL-3.0">Academic Free License ("AFL") v. 3.0</a>.</p>
+
+<h2>Status</h2>
+
+<p>NHaystack is currently in beta.  This means that the project is mostly complete,
+but there may be bugs.  As such, it is not ready yet for deployment in a
+production environment.</p>
+
+<h2>Getting Started</h2>
+
+<p>To get started, install nhaystack.jar into a station.  Open the nhaystack
+palette, and drag-and-drop the NHaystackService onto your /Services folder.</p>
+
+<p>This is all you need to do to get rolling.  Your station is now automatically
+serving up all the control:ControlPoint objects and Histories as haystack 
+<a href="http://project-haystack.org/tag/point">'point'</a> recs, 
+via the <a href="http://project-haystack.org/doc/Rest">Haystack REST Api</a>. 
+All of the tags that are defined as being associated with points, like 
+'kind', 'unit', 'tz', 'his', 'cur' etc are automatically generated for you.</p>
+
+<h2>How ControlPoints And Histories Are Served Up</h2>
+
+<h2>A Note on IDs</h2>
+
+<h2>How 'site' And 'equip' Work.</h2>

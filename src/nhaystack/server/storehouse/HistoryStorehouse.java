@@ -89,8 +89,7 @@ public class HistoryStorehouse extends Storehouse
         HDictBuilder hdb = new HDictBuilder();
 
         // add existing tags
-        BHDict btags = BHDict.findTagAnnotation(cfg);
-        HDict tags = (btags == null) ? HDict.EMPTY : btags.getDict();
+        HDict tags = BHDict.findTagAnnotation(cfg);
         hdb.add(tags);
 
         // add id
@@ -151,7 +150,7 @@ public class HistoryStorehouse extends Storehouse
     public boolean isVisibleHistory(BHistoryConfig cfg)
     {
         // annotated 
-        if (BHDict.findTagAnnotation(cfg) != null)
+        if (!BHDict.findTagAnnotation(cfg).isEmpty())
             return true;
 
         // show linked

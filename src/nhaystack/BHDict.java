@@ -62,6 +62,11 @@ public final class BHDict
 // BSimple
 ////////////////////////////////////////////////////////////////
 
+    public String toString(Context context)
+    {
+        return dict.toZinc();
+    }
+
     /**
       * Encode to ZINC format
       */
@@ -102,17 +107,18 @@ public final class BHDict
 
     /**
       * Return the explicitly annotated tags for the component, 
-      * or return null.
+      * or return an empty HDict.
       *
       * In order for the annotation to be recognized, it
       * must be stored in a property called 'haystack'.
       */
-    public static BHDict findTagAnnotation(BComponent comp)
+    public static HDict findTagAnnotation(BComponent comp)
     {
-        BValue val = comp.get("haystack");
-        if (val == null) return null;
+        BHDict dict = (BHDict) comp.get("haystack");
 
-        return (val instanceof BHDict) ? (BHDict) val : null;
+        return (dict == null) ? 
+            HDict.EMPTY :
+            dict.getDict();
     }
 
 ////////////////////////////////////////////////////////////////

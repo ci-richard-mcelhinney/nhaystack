@@ -13,6 +13,7 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.server.storehouse.*;
 
 /**
  *  BHEquip represents a Haystack 'equip' rec.
@@ -59,15 +60,15 @@ public class BHEquip extends BHTagged
         HDictBuilder hdb = new HDictBuilder();
 
         // add annotated
-        hdb.add(getHaystack().getDict());
+        HDict tags = getHaystack().getDict();
+        hdb.add(tags);
 
         // add id and equip
         hdb.add("id", NHRef.make(this).getHRef());
         hdb.add("equip");
 
-        // add dis
-        hdb.add("dis", getDisplayName(null));
-//        hdb.add("navName", getDisplayName(null));
+        // add navName and dis
+        ConfigStorehouse.createNavTags(this, tags, hdb);
 
         // add misc other tags
         hdb.add("axType", getType().toString());

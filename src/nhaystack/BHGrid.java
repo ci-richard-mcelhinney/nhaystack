@@ -97,25 +97,6 @@ public final class BHGrid
     }
 
 ////////////////////////////////////////////////////////////////
-// public
-////////////////////////////////////////////////////////////////
-
-    /**
-      * Return the explicitly annotated tags for the component, 
-      * or return null.
-      *
-      * In order for the annotation to be recognized, it
-      * must be stored in a property called 'haystack'.
-      */
-    public static BHGrid findTagAnnotation(BComponent comp)
-    {
-        BValue val = comp.get("haystack");
-        if (val == null) return null;
-
-        return (val instanceof BHGrid) ? (BHGrid) val : null;
-    }
-
-////////////////////////////////////////////////////////////////
 // Access
 ////////////////////////////////////////////////////////////////
 

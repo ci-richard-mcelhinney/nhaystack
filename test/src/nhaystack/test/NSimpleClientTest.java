@@ -143,6 +143,9 @@ public class NSimpleClientTest extends NTest
         verifyEq(dict.get("curStatus"), HStr.make("ok"));
         verify(curVal >= 0.0 && curVal <= 100.0);
 
+        verifyEq(dict.get("dis"), HStr.make("SineWave1"));
+        verifyEq(dict.get("navName"), HStr.make("%displayName%"));
+
         dict = client.readById(HRef.make("nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
         verify(dict.missing("foo"));

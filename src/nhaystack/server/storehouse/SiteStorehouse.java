@@ -52,12 +52,13 @@ public class SiteStorehouse extends Storehouse
             for (int i = 0; i < sites.length; i++)
             {
                 BComponent site = sites[i];
+                HDict tags = server.getConfigStorehouse().createComponentTags(site);
 
-                SiteNavId siteNav = SiteNavId.make(site.getDisplayName(null));
+                SiteNavId siteNav = SiteNavId.make(tags.getStr("dis"));
 
                 HDictBuilder hd = new HDictBuilder();
                 hd.add("navId", HStr.make(siteNav.getHRef().val));
-                hd.add(server.getConfigStorehouse().createComponentTags(site));
+                hd.add(tags);
 
                 dicts.add(hd.toDict());
             }
@@ -74,14 +75,15 @@ public class SiteStorehouse extends Storehouse
             for (int i = 0; i < equips.length; i++)
             {
                 BComponent equip = equips[i];
+                HDict tags = server.getConfigStorehouse().createComponentTags(equip);
 
                 EquipNavId equipNav = EquipNavId.make(
                     siteNav.getSiteName(),
-                    equip.getDisplayName(null));
+                    tags.getStr("dis"));
 
                 HDictBuilder hd = new HDictBuilder();
                 hd.add("navId", HStr.make(equipNav.getHRef().val));
-                hd.add(server.getConfigStorehouse().createComponentTags(equip));
+                hd.add(tags);
                 dicts.add(hd.toDict());
             }
         }
