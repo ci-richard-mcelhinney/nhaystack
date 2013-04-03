@@ -214,11 +214,6 @@ class Row
         else
         {
             NHRef nh = NHRef.make(ref);
-            if (!nh.getStationName().equals(session.getStationName()))
-                throw new BajaRuntimeException(
-                    "station name '" + nh.getStationName() + "' does not match " +
-                    "session station name '" + session.getStationName() + "'");
-
             if (nh.getSpace().equals(NHRef.COMPONENT))
             {
                 BOrd refOrd = BOrd.make("station:|" + nh.getPath());

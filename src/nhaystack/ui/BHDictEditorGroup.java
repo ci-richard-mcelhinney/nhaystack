@@ -78,6 +78,10 @@ public class BHDictEditorGroup extends BScrollPane
         Map essentialTags = asTagMap(all);
         essentialTags.keySet().removeAll(allPossibleAuto);
         essentialTags.keySet().retainAll(defaultEssentials.keySet());
+
+        // put navName in essentials too
+        essentialTags.put("navName", all.get("navName"));
+
         Iterator it = defaultEssentials.entrySet().iterator();
         while (it.hasNext())
         {
@@ -173,7 +177,7 @@ public class BHDictEditorGroup extends BScrollPane
     {
         try
         {
-            BHRef id = BHRef.make(NHRef.make(session.getStationName(), comp).getHRef());
+            BHRef id = BHRef.make(NHRef.make(comp).getHRef());
             return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
         }
         catch (Exception e)

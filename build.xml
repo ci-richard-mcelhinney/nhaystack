@@ -8,12 +8,12 @@
 -->
 
 <module
+    edition = "j2me"
     name = "nhaystack"
     bajaVersion="0"
     preferredSymbol = "nh"
     description = "Niagara Haystack"
     vendor = "Project Haystack"
-    edition = "j2me"
 >
 
     <!-- Dependencies -->

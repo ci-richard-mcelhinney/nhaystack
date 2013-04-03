@@ -48,34 +48,34 @@ public class NSupervisorClientTest extends NTest
         HGrid grid = client.readAll("point");
 
 //axType,kind,id,curStatus,dis,axSlotPath,unit,point,cur,curVal,his,axHistoryId,tz
-//"history:HistoryConfig",,@nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~,,,,,M,,,M,"/nhaystack_jace1/AuditHistory","New_York"
-//"history:HistoryConfig",,@nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5,,,,,M,,,M,"/nhaystack_jace1/LogHistory","New_York"
-//"history:HistoryConfig","Number",@nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~,,,,"psi",M,,,M,"/nhaystack_jace2/SineWave2","New_York"
-//"history:HistoryConfig",,@nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5,,,,,M,,,M,"/nhaystack_sup/AuditHistory","New_York"
-//"history:HistoryConfig",,@nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~,,,,,M,,,M,"/nhaystack_sup/LogHistory","New_York"
+//"history:HistoryConfig",,@h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~,,,,,M,,,M,"/nhaystack_jace1/AuditHistory","New_York"
+//"history:HistoryConfig",,@h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5,,,,,M,,,M,"/nhaystack_jace1/LogHistory","New_York"
+//"history:HistoryConfig","Number",@h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~,,,,"psi",M,,,M,"/nhaystack_jace2/SineWave2","New_York"
+//"history:HistoryConfig",,@h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5,,,,,M,,,M,"/nhaystack_sup/AuditHistory","New_York"
+//"history:HistoryConfig",,@h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~,,,,,M,,,M,"/nhaystack_sup/LogHistory","New_York"
 
         verifyEq(grid.numRows(), 8);
-        verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~"));
-        verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~"));
-        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~"));
-        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
-        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
-        verifyEq(grid.row(5).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
-        verifyEq(grid.row(6).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
-        verifyEq(grid.row(7).get("id"), HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
+        verifyEq(grid.row(0).get("id"), HRef.make("c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~"));
+        verifyEq(grid.row(1).get("id"), HRef.make("c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~"));
+        verifyEq(grid.row(2).get("id"), HRef.make("c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~"));
+        verifyEq(grid.row(3).get("id"), HRef.make("h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
+        verifyEq(grid.row(4).get("id"), HRef.make("h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
+        verifyEq(grid.row(5).get("id"), HRef.make("h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
+        verifyEq(grid.row(6).get("id"), HRef.make("h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
+        verifyEq(grid.row(7).get("id"), HRef.make("h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
 
 //axType,kind,id,curStatus,dis,axSlotPath,unit,point,cur,curVal,his,axHistoryId,tz
 //
-//"control:NumericPoint","Number",@nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~,
+//"control:NumericPoint","Number",@c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~,
 //"ok","SineWave1","slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1","¦F",M,M,26.0041¦F,,,
 //
-//"control:NumericPoint","Number",@nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~,
+//"control:NumericPoint","Number",@c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~,
 //"ok","SineWave2","slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave2","psi",M,M,26.1513psi,,,
 //
-//"control:NumericPoint","Number",@nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~,
+//"control:NumericPoint","Number",@c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~,
 //"ok","SineWave1","slot:/Drivers/NiagaraNetwork/nhaystack_jace2/points/SineWave1","¦F",M,M,0.8856374635655655¦F,,,
 
-        HDict dict = client.readById(HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~"));
+        HDict dict = client.readById(HRef.make("c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~"));
         verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.has("his"));
@@ -87,7 +87,7 @@ public class NSupervisorClientTest extends NTest
 //        verify(dict.getDouble("curVal") == 0.0);
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
-        dict = client.readById(HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~"));
+        dict = client.readById(HRef.make("c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMg~~"));
         verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.has("his"));
@@ -99,7 +99,7 @@ public class NSupervisorClientTest extends NTest
 //        verify(dict.getDouble("curVal") == 0.0);
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
-        dict = client.readById(HRef.make("nhaystack_sup:c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~"));
+        dict = client.readById(HRef.make("c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTIvcG9pbnRzL1NpbmVXYXZlMQ~~"));
         verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.missing("his"));
@@ -114,7 +114,7 @@ public class NSupervisorClientTest extends NTest
 
         ////////////////////////////////////////////////////////////////
 
-        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19qYWNlMi9TaW5lV2F2ZTI~"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.has("point"));
@@ -126,7 +126,7 @@ public class NSupervisorClientTest extends NTest
 //        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
         verifyEq(dict.get("unit"), HStr.make("psi"));
 
-        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verify(dict.missing("kind"));
         verify(dict.has("his"));
@@ -137,7 +137,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
 //        verifyEq(dict.get("kind"), HStr.make("Str")); // TODO
         verify(dict.has("point"));
@@ -149,7 +149,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19qYWNlMS9BdWRpdEhpc3Rvcnk~"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
 //        verifyEq(dict.get("kind"), HStr.make("Str")); // TODO
         verify(dict.has("point"));
@@ -161,7 +161,7 @@ public class NSupervisorClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-        dict = client.readById(HRef.make("nhaystack_sup:h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19qYWNlMS9Mb2dIaXN0b3J5"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
 //        verifyEq(dict.get("kind"), HStr.make("Str")); // TODO
         verify(dict.has("point"));

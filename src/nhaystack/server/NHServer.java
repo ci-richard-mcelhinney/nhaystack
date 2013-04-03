@@ -152,20 +152,18 @@ public class NHServer extends HServer
     {
         try
         {
-            String stationName = Sys.getStation().getStationName();
-
             // nav roots
             if (navId == null)
             {
                 Array dicts = new Array(HDict.class);
 
                 HDictBuilder hd = new HDictBuilder();
-                hd.add("navId", HStr.make(stationName + ":" + NHRef.COMPONENT));
+                hd.add("navId", HStr.make(NHRef.COMPONENT));
                 hd.add("dis", "ComponentSpace");
                 dicts.add(hd.toDict());
 
                 hd = new HDictBuilder();
-                hd.add("navId", HStr.make(stationName + ":" + NHRef.HISTORY));
+                hd.add("navId", HStr.make(NHRef.HISTORY));
                 hd.add("dis", "HistorySpace");
                 dicts.add(hd.toDict());
 
@@ -177,12 +175,12 @@ public class NHServer extends HServer
                 return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
             }
             // config nav
-            else if (navId.startsWith(stationName + ":" + NHRef.COMPONENT))
+            else if (navId.startsWith(NHRef.COMPONENT))
             {
                 return configStorehouse.onNav(navId);
             }
             // history nav
-            else if (navId.startsWith(stationName + ":" + NHRef.HISTORY))
+            else if (navId.startsWith(NHRef.HISTORY))
             {
                 return historyStorehouse.onNav(navId);
             }
@@ -613,10 +611,6 @@ public class NHServer extends HServer
     public BComponent lookupComponent(HRef id)
     {
         NHRef nh = NHRef.make(id);
-
-        // make sure station matches
-        if (!nh.getStationName().equals(Sys.getStation().getStationName()))
-            return null;
 
         // component space
         if (nh.getSpace().equals(NHRef.COMPONENT))

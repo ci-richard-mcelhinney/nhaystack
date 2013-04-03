@@ -211,13 +211,13 @@ public class ConfigStorehouse extends Storehouse
     public HGrid onNav(String navId)
     {
         // child of ComponentSpace root
-        if (navId.equals(Sys.getStation().getStationName() + ":c"))
+        if (navId.equals("c"))
         {
             BComponent root = (BComponent) BOrd.make("slot:/").get(service, null);
             return HGridBuilder.dictsToGrid(new HDict[] { makeNavResult(root) });
         }
         // ComponentSpace component
-        else if (navId.startsWith(Sys.getStation().getStationName() + ":c."))
+        else if (navId.startsWith("c."))
         {
             NHRef nh = NHRef.make(HRef.make(navId));
             BOrd ord = BOrd.make("station:|" + nh.getPath());

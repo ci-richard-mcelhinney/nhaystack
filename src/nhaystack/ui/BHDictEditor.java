@@ -298,8 +298,7 @@ public class BHDictEditor extends BEdgePane
                             throw new BajaRuntimeException(
                                 ord + " is not mounted.");
 
-                        NHRef nh = NHRef.make(
-                            editorGroup.session().getStationName(), comp);
+                        NHRef nh = NHRef.make(comp);
                         builder.add(name, nh.getHRef());
                     }
                     else if (query.getScheme().equals("history"))
@@ -309,8 +308,7 @@ public class BHDictEditor extends BEdgePane
 
                         BIHistory history = (BIHistory) obj;
                         BHistoryConfig cfg = history.getConfig();
-                        NHRef nh = NHRef.make(
-                            editorGroup.session().getStationName(), cfg);
+                        NHRef nh = NHRef.make(cfg);
                         builder.add(name, nh.getHRef());
                     }
                     else

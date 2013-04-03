@@ -32,13 +32,10 @@ Many of the tags that are defined as being associated with points, like
 
 ## tagging via haystack slot
 
-rebuild cache
-
 ## A Note on how 'id' tags are generated.
 
 ## How 'site' And 'equip' tags work.
 
-Say something about navMeta
 
 
 

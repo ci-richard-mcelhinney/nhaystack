@@ -114,20 +114,20 @@ public class NSimpleClientTest extends NTest
 
 //ver:"2.0"
 //axType,foo,kind,id,his,curStatus,dis,hisInterpolate,axSlotPath,unit,point,tz,cur,curVal,bar,axHistoryId
-//"kitControl:SineWave",M,"Number",  @nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~,M,"ok","SineWave1","cov","slot:/Foo/SineWave1","¦F",M,"New_York",M,60.5389¦F,M,
-//"kitControl:SineWave",,"Number",   @nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMg~~,,"ok","SineWave2",,"slot:/Foo/SineWave2","psi",M,,M,60.5389psi,,
-//"history:HistoryConfig",,,         @nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5,M,,,,,,M,"New_York",,,,"/nhaystack_simple/AuditHistory"
-//"history:HistoryConfig",,,         @nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~,M,,,,,,M,"New_York",,,,"/nhaystack_simple/LogHistory"
-//"history:HistoryConfig",,"Number", @nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz,M,,,,,"psi",M,"New_York",,,,"/nhaystack_simple/SineWave3"
+//"kitControl:SineWave",M,"Number",  @c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~,M,"ok","SineWave1","cov","slot:/Foo/SineWave1","¦F",M,"New_York",M,60.5389¦F,M,
+//"kitControl:SineWave",,"Number",   @c.c2xvdDovRm9vL1NpbmVXYXZlMg~~,,"ok","SineWave2",,"slot:/Foo/SineWave2","psi",M,,M,60.5389psi,,
+//"history:HistoryConfig",,,         @h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5,M,,,,,,M,"New_York",,,,"/nhaystack_simple/AuditHistory"
+//"history:HistoryConfig",,,         @h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~,M,,,,,,M,"New_York",,,,"/nhaystack_simple/LogHistory"
+//"history:HistoryConfig",,"Number", @h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz,M,,,,,"psi",M,"New_York",,,,"/nhaystack_simple/SineWave3"
 
         verifyEq(grid.numRows(), 5);
-        verifyEq(grid.row(0).get("id"), HRef.make("nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
-        verifyEq(grid.row(1).get("id"), HRef.make("nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
-        verifyEq(grid.row(2).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
-        verifyEq(grid.row(3).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
-        verifyEq(grid.row(4).get("id"), HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
+        verifyEq(grid.row(0).get("id"), HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
+        verifyEq(grid.row(1).get("id"), HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
+        verifyEq(grid.row(2).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        verifyEq(grid.row(3).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        verifyEq(grid.row(4).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
 
-        HDict dict = client.readById(HRef.make("nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
+        HDict dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
         verify(dict.has("foo"));
         verify(dict.has("bar"));
@@ -146,7 +146,7 @@ public class NSimpleClientTest extends NTest
         verifyEq(dict.get("dis"), HStr.make("SineWave1"));
         verifyEq(dict.get("navName"), HStr.make("%displayName%"));
 
-        dict = client.readById(HRef.make("nhaystack_simple:c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
+        dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
         verify(dict.missing("foo"));
         verify(dict.missing("bar"));
@@ -162,7 +162,7 @@ public class NSimpleClientTest extends NTest
         curVal = dict.getDouble("curVal");
         verify(curVal >= 0.0 && curVal <= 100.0);
 
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verify(dict.missing("kind"));
         verify(dict.has("his"));
@@ -174,7 +174,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verify(dict.missing("kind"));
         verify(dict.has("his"));
@@ -186,7 +186,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-        dict = client.readById(HRef.make("nhaystack_simple:h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
+        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
         verify(dict.has("his"));
@@ -198,7 +198,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verifyEq(dict.get("unit"), HStr.make("psi"));
 
-        try { client.readById(HRef.make("nhaystack_simple:c.Mg~~")); } catch(Exception e) { verifyException(e); }
+        try { client.readById(HRef.make("c.Mg~~")); } catch(Exception e) { verifyException(e); }
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -209,23 +209,23 @@ public class NSimpleClientTest extends NTest
     {
         HGrid grid = client.call("nav", HGrid.EMPTY);
         verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_simple:c"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("c"));
         verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("nhaystack_simple:h"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("h"));
         verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
         verifyEq(grid.row(2).get("navId"), HStr.make("site"));
         verifyEq(grid.row(2).get("dis"),   HStr.make("Sites"));
 
-        HGrid n = makeNavGrid(HStr.make("nhaystack_simple:h"));
+        HGrid n = makeNavGrid(HStr.make("h"));
         grid = client.call("nav", n);
 //grid.dump();
         verifyEq(grid.numRows(), 3);
 
-        n = makeNavGrid(HStr.make("nhaystack_simple:c"));
+        n = makeNavGrid(HStr.make("c"));
         grid = client.call("nav", n);
 //grid.dump();
         verifyEq(grid.numRows(), 1);
-        verifyEq(grid.row(0).get("navId"), HStr.make("nhaystack_simple:c.c2xvdDov"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("c.c2xvdDov"));
         traverseComponents((HStr) grid.row(0).get("navId"));
     }
 
@@ -356,7 +356,7 @@ public class NSimpleClientTest extends NTest
 
         // check bad id 
         w = client.watchOpen("Bogus Test");
-        HRef badId = HRef.make("nhaystack_simple:c." + Base64.URI.encode("badBadBad"));
+        HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
         try { w.sub(new HIdentifier[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
     }
 

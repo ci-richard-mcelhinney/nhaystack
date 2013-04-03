@@ -28,35 +28,25 @@ public class NHRef
     {
         String val = ref.val;
 
-        int colon = val.indexOf(":");
         int dot = val.indexOf(".");
-        if ((colon == -1) || (dot == -1) || (colon > dot))
+        if (dot == -1)
             throw new BajaRuntimeException(
                 "Could not parse HRef '" + ref + "'.");
 
-        String stationName = val.substring(0, colon);
-        String space       = val.substring(colon+1, dot);
-        String path        = Base64.URI.decodeUTF8(val.substring(dot+1));
+        String space = val.substring(0, dot);
+        String path  = Base64.URI.decodeUTF8(val.substring(dot+1));
 
         if (!(space.equals(COMPONENT) || space.equals(HISTORY)))
             throw new BajaRuntimeException(
                 "Could not parse HRef '" + ref + "'.");
 
-        return new NHRef(ref, stationName, space, path);
-    }
-
-    /**
-      * Convenience for <code>make(Sys.getStation().getStationName(), comp)</code>.
-      */
-    public static NHRef make(BComponent comp)
-    {
-        return make(Sys.getStation().getStationName(), comp);
+        return new NHRef(ref, space, path);
     }
 
     /**
       * Make an ID from a BComponent.  
       */
-    public static NHRef make(String stationName, BComponent comp)
+    public static NHRef make(BComponent comp)
     {
         // history space
         if (comp instanceof BHistoryConfig)
@@ -65,30 +55,29 @@ public class NHRef
             BHistoryId hid = cfg.getId();
             String path = Base64.URI.encodeUTF8(hid.toString());
 
-            return new NHRef(stationName, HISTORY, path);
+            return new NHRef(HISTORY, path);
         }
         // component space
         else
         {
             String path = Base64.URI.encodeUTF8(comp.getSlotPath().toString());
             
-            return new NHRef(stationName, COMPONENT, path);
+            return new NHRef(COMPONENT, path);
         }
     }
 
-    private NHRef(HRef ref, String stationName, String space, String path)
+    private NHRef(HRef ref, String space, String path)
     {
         this.ref         = ref;
-        this.stationName = stationName;
         this.space       = space;
         this.path      = path;
     }
 
-    private NHRef(String stationName, String space, String path)
+    private NHRef(String space, String path)
     {
         this(
-            HRef.make(stationName + ":" + space + "." + path),
-            stationName, space, path); 
+            HRef.make(space + "." + path),
+            space, path); 
     }
 
 ////////////////////////////////////////////////////////////////
@@ -99,7 +88,6 @@ public class NHRef
     {
         return "[NHRef " +
             "ref:" + ref + ", " +
-            "stationName:" + stationName + ", " +
             "space:" + space + ", " +
             "path:" + path + "]";
     }
@@ -120,16 +108,9 @@ public class NHRef
 ////////////////////////////////////////////////////////////////
 
     /**
-      * The ref is always <code>stationName + ":" + space + "." + path</code>.
+      * The ref is always <code>space + "." + path</code>.
       */
     public HRef getHRef() { return ref; }
-
-    /**
-      * The name of the station that the object resides in.  
-      * Standard AX practice is that station names must be
-      * unique within an entire system.
-      */
-    public String getStationName() { return stationName; }
 
     /**
       * The space is always either COMPONENT or HISTORY.
@@ -149,7 +130,6 @@ public class NHRef
     public static final String HISTORY   = "h";
 
     private final HRef ref;
-    private final String stationName;
     private final String space; 
     private final String path;
 }
