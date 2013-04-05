@@ -21,6 +21,7 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.res.*;
 import nhaystack.server.*;
 import nhaystack.site.*;
 
@@ -125,11 +126,11 @@ public class ConfigStorehouse extends Storehouse
                         }
                         else
                         {
-                            BUnit unit = findUnit(facets);
+                            Unit unit = findUnit(facets);
                             if (unit == null) 
                                 curVal = HNum.make(np.getNumeric());
                             else
-                                curVal = HNum.make(np.getNumeric(), unit.toString());
+                                curVal = HNum.make(np.getNumeric(), unit.symbol);
                         }
                         hdb.add("curVal", curVal);
                         hdb.add("curStatus", makeStatusString(point.getStatus()));
