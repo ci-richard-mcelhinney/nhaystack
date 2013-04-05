@@ -249,20 +249,20 @@ public class ConfigStorehouse extends Storehouse
         // local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
         {
-            BOrd[] ords = cfg.getSource().toArray();
-            if (ords.length != 1) new IllegalStateException(
-                "invalid Source: " + cfg.getSource());
-
             try
             {
-                BComponent source = (BComponent) ords[0].resolve(service, null).get();
-
-                // The source is not always a BHistoryExt.  E.g. for 
-                // LogHistory its the LogHistoryService.
-                if (source instanceof BHistoryExt)
+                BOrd[] ords = cfg.getSource().toArray();
+                if (ords.length == 1) 
                 {
-                    if (source.getParent() instanceof BControlPoint)
-                        return (BControlPoint) source.getParent();
+                    BComponent source = (BComponent) ords[0].resolve(service, null).get();
+
+                    // The source is not always a BHistoryExt.  E.g. for 
+                    // LogHistory its the LogHistoryService.
+                    if (source instanceof BHistoryExt)
+                    {
+                        if (source.getParent() instanceof BControlPoint)
+                            return (BControlPoint) source.getParent();
+                    }
                 }
             }
             catch (UnresolvedException e)
