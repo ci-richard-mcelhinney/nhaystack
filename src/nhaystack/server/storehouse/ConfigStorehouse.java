@@ -21,6 +21,7 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.res.*;
 import nhaystack.server.*;
 import nhaystack.site.*;
 
@@ -125,11 +126,11 @@ public class ConfigStorehouse extends Storehouse
                         }
                         else
                         {
-                            BUnit unit = findUnit(facets);
+                            Unit unit = findUnit(facets);
                             if (unit == null) 
                                 curVal = HNum.make(np.getNumeric());
                             else
-                                curVal = HNum.make(np.getNumeric(), unit.toString());
+                                curVal = HNum.make(np.getNumeric(), unit.symbol);
                         }
                         hdb.add("curVal", curVal);
                         hdb.add("curStatus", makeStatusString(point.getStatus()));
@@ -249,20 +250,20 @@ public class ConfigStorehouse extends Storehouse
         // local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
         {
-            BOrd[] ords = cfg.getSource().toArray();
-            if (ords.length != 1) new IllegalStateException(
-                "invalid Source: " + cfg.getSource());
-
             try
             {
-                BComponent source = (BComponent) ords[0].resolve(service, null).get();
-
-                // The source is not always a BHistoryExt.  E.g. for 
-                // LogHistory its the LogHistoryService.
-                if (source instanceof BHistoryExt)
+                BOrd[] ords = cfg.getSource().toArray();
+                if (ords.length == 1) 
                 {
-                    if (source.getParent() instanceof BControlPoint)
-                        return (BControlPoint) source.getParent();
+                    BComponent source = (BComponent) ords[0].resolve(service, null).get();
+
+                    // The source is not always a BHistoryExt.  E.g. for 
+                    // LogHistory its the LogHistoryService.
+                    if (source instanceof BHistoryExt)
+                    {
+                        if (source.getParent() instanceof BControlPoint)
+                            return (BControlPoint) source.getParent();
+                    }
                 }
             }
             catch (UnresolvedException e)

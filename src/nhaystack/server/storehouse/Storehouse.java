@@ -12,6 +12,7 @@ import javax.baja.timezone.*;
 import javax.baja.units.*;
 
 import haystack.*;
+import nhaystack.res.*;
 import nhaystack.server.*;
 
 /**
@@ -55,9 +56,9 @@ public abstract class Storehouse
 
                 if (!tags.has("unit"))
                 {
-                    BUnit unit = findUnit(facets);
+                    Unit unit = findUnit(facets);
                     if (unit != null) 
-                        hdb.add("unit", unit.toString());
+                        hdb.add("unit", unit.symbol);
                 }
 
                 break;
@@ -92,7 +93,7 @@ public abstract class Storehouse
         return HTimeZone.make(tzName, false);
     }
 
-    static BUnit findUnit(BFacets facets)
+    static Unit findUnit(BFacets facets)
     {
         if (facets == null) 
             return null;
@@ -105,7 +106,7 @@ public abstract class Storehouse
         if (conv != 0)
             unit = BUnitConversion.make(conv).getDesiredUnit(unit);
 
-        return unit;
+        return Resources.convertFromNiagaraUnit(unit);
     }
 
 ////////////////////////////////////////////////////////////////

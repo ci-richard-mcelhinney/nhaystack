@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.*;
 
 import javax.baja.sys.*;
+import javax.baja.units.*;
 import javax.baja.util.*;
 
 /**
@@ -35,8 +36,9 @@ public class Resources
 
     private static String[] timeZones;
 
-    private static Map quantityUnits; // <String,Array<Unit>>
-    private static Map symbolUnits;   // <String,Unit>
+    private static Map unitsByQuantity; // <String,Array<Unit>>
+    private static Map unitsBySymbol;   // <String,Unit>
+    private static Map unitsByLowerCaseName;   // <String,Unit>
     private static String[] quantities;
 
     private static String[] markerGroups = new String[] {
@@ -112,8 +114,9 @@ public class Resources
         InputStream in = Resources.class.getResourceAsStream(UNITS);
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        quantityUnits = new HashMap();
-        symbolUnits = new HashMap();
+        unitsByQuantity = new HashMap();
+        unitsBySymbol = new HashMap();
+        unitsByLowerCaseName = new HashMap();
 
         Array arr = new Array(String.class);
         String curQuant = null;
@@ -149,15 +152,18 @@ public class Resources
 
     private static void loadUnit(Unit unit)
     {
-        Array arr = (Array) quantityUnits.get(unit.quantity);
+        Array arr = (Array) unitsByQuantity.get(unit.quantity);
         if (arr == null)
-            quantityUnits.put(unit.quantity, arr = new Array(Unit.class));
+            unitsByQuantity.put(unit.quantity, arr = new Array(Unit.class));
         arr.add(unit);
 
-        if (symbolUnits.containsKey(unit.symbol))
+        if (unitsBySymbol.containsKey(unit.symbol))
             throw new BajaRuntimeException("Duplicate symbol: " + unit.symbol);
+        unitsBySymbol.put(unit.symbol, unit);
 
-        symbolUnits.put(unit.symbol, unit);
+        String name = unit.name.toLowerCase();
+        if (!unitsByLowerCaseName.containsKey(name))
+            unitsByLowerCaseName.put(name, unit);
     }
 
     private static void loadMarkerGroups() throws Exception
@@ -233,7 +239,7 @@ public class Resources
       */
     public static Unit[] getUnits(String quantity)
     {
-        Array arr = (Array) quantityUnits.get(quantity);
+        Array arr = (Array) unitsByQuantity.get(quantity);
         return (Unit[]) arr.trim();
     }
 
@@ -242,7 +248,7 @@ public class Resources
       */
     public static Unit[] getUnits(String quantity, String name)
     {
-        Array a1 = (Array) quantityUnits.get(quantity);
+        Array a1 = (Array) unitsByQuantity.get(quantity);
         Array a2 = new Array(Unit.class);
 
         for (int i = 0; i < a1.size(); i++)
@@ -260,7 +266,7 @@ public class Resources
       */
     public static Unit getSymbolUnit(String symbol)
     {
-        Unit unit = (Unit) symbolUnits.get(symbol);
+        Unit unit = (Unit) unitsBySymbol.get(symbol);
         if (unit == null)
             throw new BajaRuntimeException(
                 "Cannot find Unit for symbol '" + symbol + "'.");
@@ -286,4 +292,134 @@ public class Resources
             "Cannot find marker group '" + group + "'.");
         return (String[]) arr.trim();
     }
+
+    /**
+      * Get the Unit that corresponds to the given Niagara BUnit,
+      * or return null if no corresponding Unit can be found.
+      */
+    public static Unit convertFromNiagaraUnit(BUnit unit)
+    {
+        return (Unit) unitsByLowerCaseName.get(
+            TextUtil.replace(unit.getUnitName(), " ", "_").toLowerCase());
+    }
+
+////////////////////////////////////////////////////////////////
+// main
+////////////////////////////////////////////////////////////////
+
+    public static void main(String[] args) throws Exception
+    {
+        // print all the niagara unit names which cannot automatically
+        // be converted into haystack unit names.
+
+        System.out.println("--------------------------------------------");
+
+        UnitDatabase ud = UnitDatabase.getDefault();
+        UnitDatabase.Quantity[] quantities = ud.getQuantities();
+
+        for (int i = 0; i < quantities.length; i++)
+        {
+            UnitDatabase.Quantity q = quantities[i];
+            boolean headerPrinted = false;
+
+            BUnit[] units = q.getUnits();
+            for (int j = 0; j < units.length; j++)
+            {
+                BUnit u = units[j];
+
+                if (convertFromNiagaraUnit(u) == null)
+                {
+                    if (!headerPrinted)
+                    {
+                        System.out.println(q.getName());
+                        headerPrinted = true;
+                    }
+
+                    System.out.println("    " + u.getUnitName());
+                }
+            }
+        }
+    }
+
+// misc
+//     null
+// currency
+//     dollar
+//     franc
+//     lira
+//     peseta
+//     pounds
+//     rupee
+//     won
+//     yen
+// density
+//     grams per cubic meter
+//     milligrams per cubic meter
+//     micrograms per cubic meter
+// electric charge
+//     ampere hour
+//     milliampere hour
+// energy
+//     gigajoule
+//     decatherms
+// energy consumption
+//     watt hours per square meter
+//     watt hours per square foot
+//     megawatt hours per square meter
+//     megawatt hours per square foot
+//     btus per square foot
+//     kilobtus per square foot
+// enthalpy
+//     kilojoule per kilogram
+// enthalpy differential
+//     delta kilojoules per kilogram
+//     delta btus per pound
+// illuminance
+//     kilolux
+//     footcandles
+// information
+//     bit
+//     kilobit
+//     megabit
+//     gigabit
+//     terabit
+// information speed
+//     bits per second
+//     bytes per second
+//     kilobits per second
+//     kilobytes per second
+//     megabits per second
+//     megabytes per second
+//     gigabits per second
+//     gigabytes per second
+//     terabits per second
+//     terabytes per second
+// irradiance
+//     megawatts per square meter
+//     megawatts per square foot
+//     btus per hour per square foot
+// pressure
+//     pounds per square inch gauge
+//     torr
+// pressure differential
+//     pascal differential
+//     kilopascal differential
+//     bar differential
+//     atmosphere differential
+//     pounds per square inch differential
+//     centimeters of water differential
+//     inches of water differential
+//     millimeters of mercury differential
+//     centimeters of mercury differential
+//     inches of mercury differential
+//     hectopascal differential
+//     millibar differential
+//     torr differential
+// specific energy
+//     joules per kilogram se
+//     btus per pound
+// surface tension
+//     newtons per meter st
+// volumetric flow
+//     milliliters per minute
 }
