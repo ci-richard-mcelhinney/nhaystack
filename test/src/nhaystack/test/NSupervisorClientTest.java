@@ -331,17 +331,42 @@ public class NSupervisorClientTest extends NTest
 
     void verifyNavUri() throws Exception
     {
-//        HUri uri = HUri.make("equip:/Blacksburg/Transmogrifier/SineWave1");
-//        HDict dict = client.readById(uri);
-//
-//        HWatch w = client.watchOpen("NHaystack NavUri Test");
-//        w.sub(new HIdentifier[] { uri });
-//
-//        Thread.sleep(2000); // wait for the sine waves to tick over
-//        HGrid poll = w.pollChanges();
-//        verifyEq(poll.numRows(), 1);
-//
-//        w.unsub(new HIdentifier[] { uri });
+        HUri uri = HUri.make("site:/Blacksburg");
+        HDict tags = client.readById(uri);
+        verifyEq(tags.getStr("dis"), "Blacksburg");
+
+        uri = HUri.make("site:/Blacksburg/Transmogrifier");
+        tags = client.readById(uri);
+        verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier");
+
+        uri = HUri.make("site:/Blacksburg/Transmogrifier/SineWave1");
+        tags = client.readById(uri);
+        verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier SineWave1");
+
+        //////////////////////////////////
+
+        uri = HUri.make("site:/Blacksburg/");
+        tags = client.readById(uri);
+        verifyEq(tags.getStr("dis"), "Blacksburg");
+
+        uri = HUri.make("site:/Blacksburg/Transmogrifier/");
+        tags = client.readById(uri);
+        verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier");
+
+        uri = HUri.make("site:/Blacksburg/Transmogrifier/SineWave1/");
+        tags = client.readById(uri);
+        verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier SineWave1");
+
+        //////////////////////////////////
+
+        HWatch w = client.watchOpen("NHaystack NavUri Test");
+        w.sub(new HIdentifier[] { uri });
+
+        Thread.sleep(2000); // wait for the sine waves to tick over
+        HGrid poll = w.pollChanges();
+        verifyEq(poll.numRows(), 1);
+
+        w.unsub(new HIdentifier[] { uri });
     }
 
 //////////////////////////////////////////////////////////////////////////

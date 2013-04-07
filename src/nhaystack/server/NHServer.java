@@ -559,26 +559,51 @@ public class NHServer extends HServer
     {
         // e.g. "site:/Blacksburg/Transmogrifier/SineWave1"
 
-        if (!uri.val.startsWith("equip:/")) return null;
-        String str = uri.val.substring("equip:/".length());
-        String[] names = TextUtil.split(str, '/');
-        if (names.length != 3) return null;
+        if (!uri.val.startsWith("site:/")) return null;
+        String str = uri.val.substring("site:/".length());
+        if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
 
-        String siteDis  = names[0];
-        String equipDis = names[1];
-        String pointDis = names[2];
+        String[] navNames = TextUtil.split(str, '/');
 
-        // TODO make this more efficient
-        BControlPoint[] points = cache.getEquipPoints(
-            EquipNavId.make(siteDis, equipDis));
-        for (int i = 0; i < points.length; i++)
+        switch (navNames.length)
         {
-            BControlPoint point = points[i];
-            HDict tags = configStorehouse.createComponentTags(point);
-            if (tags.getStr("dis").equals(pointDis))
-                return tags;
+            // site
+            case 1:
+                BComponent comp = cache.getSite(
+                    SiteNavId.make(navNames[0]));
+                return (comp == null) ?
+                    null : 
+                    configStorehouse.createComponentTags(comp);
+
+            // equip
+            case 2:
+                comp = cache.getEquip(
+                    EquipNavId.make(navNames[0], navNames[1]));
+                return (comp == null) ?
+                    null : 
+                    configStorehouse.createComponentTags(comp);
+
+            // point
+            case 3:
+                String siteNav  = navNames[0];
+                String equipNav = navNames[1];
+                String pointNav = navNames[2];
+
+                // TODO make this more efficient
+                BControlPoint[] points = cache.getEquipPoints(
+                    EquipNavId.make(siteNav, equipNav));
+                for (int i = 0; i < points.length; i++)
+                {
+                    BControlPoint point = points[i];
+                    HDict tags = configStorehouse.createComponentTags(point);
+                    if (tags.getStr("navName").equals(pointNav))
+                        return tags;
+                }
+                return null;
+
+            // bad uri
+            default: return null;
         }
-        return null;
     }
 
 ////////////////////////////////////////////////////////////////

@@ -111,6 +111,26 @@ public class Cache
     }
 
     /**
+      * Get the site identified by the nav, or return null.
+      */
+    public BComponent getSite(SiteNavId siteNav)
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        return (BComponent) siteNavs.get(siteNav);
+    }
+
+    /**
+      * Get the equip identified by the nav, or return null.
+      */
+    public BComponent getEquip(EquipNavId equipNav)
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
+        return (BComponent) equipNavs.get(equipNav);
+    }
+
+    /**
       * Get all the equips associated with the given site.
       */
     public BComponent[] getSiteEquips(SiteNavId siteNav)
