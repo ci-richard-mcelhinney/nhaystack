@@ -8,6 +8,7 @@
 package nhaystack.server;
 
 import java.util.*;
+import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 import haystack.*;
@@ -22,10 +23,11 @@ public class NHWatch extends HWatch
     {
         this.server = server;
         this.dis = dis;
-
         this.watchId = BUuid.make().toString();
-
         this.leaseInterval = leaseInterval; 
+        this.open = true;
+
+        scheduleLeaseTimeout();
     }
 
     public String toString()
@@ -72,6 +74,10 @@ public class NHWatch extends HWatch
      */
     public synchronized HGrid sub(HIdentifier[] ids, boolean checked)
     {
+        if (!open) throw new BajaRuntimeException(
+            "Watch " + watchId + " is closed.");
+        scheduleLeaseTimeout();
+
         HDict meta = new HDictBuilder()
             .add("watchId", HStr.make(id()))
             .add("lease", lease())
@@ -112,6 +118,10 @@ public class NHWatch extends HWatch
      */
     public synchronized void unsub(HIdentifier[] ids)
     {
+        if (!open) throw new BajaRuntimeException(
+            "Watch " + watchId + " is closed.");
+        scheduleLeaseTimeout();
+
         for (int i = 0; i < ids.length; i++)
         {
             // we can assume this because onNavReadByUri will have
@@ -133,6 +143,10 @@ public class NHWatch extends HWatch
      */
     public synchronized HGrid pollChanges()
     {
+        if (!open) throw new BajaRuntimeException(
+            "Watch " + watchId + " is closed.");
+        scheduleLeaseTimeout();
+
         Array dictArr = new Array(HDict.class);
 
         Iterator itr = changedDicts.values().iterator();
@@ -150,6 +164,10 @@ public class NHWatch extends HWatch
      */
     public synchronized HGrid pollRefresh()
     {
+        if (!open) throw new BajaRuntimeException(
+            "Watch " + watchId + " is closed.");
+        scheduleLeaseTimeout();
+
         Array dictArr = new Array(HDict.class);
 
         Iterator itr = allDicts.keySet().iterator();
@@ -171,6 +189,11 @@ public class NHWatch extends HWatch
      */
     public synchronized void close()
     {
+        if (!open) throw new BajaRuntimeException(
+            "Watch " + watchId + " is closed.");
+        if (timeout != null) timeout.cancel();
+        open = false;
+
         subscriber.unsubscribeAll();
 
         allDicts.clear();
@@ -207,8 +230,30 @@ public class NHWatch extends HWatch
     }
 
 ////////////////////////////////////////////////////////////////
+// Timeout
+////////////////////////////////////////////////////////////////
+
+    private void scheduleLeaseTimeout()
+    {
+        if (timeout != null) timeout.cancel();
+
+        timer.schedule(timeout = new Timeout(), leaseInterval);
+    }
+
+    private class Timeout extends TimerTask
+    {
+        public void run()
+        {
+            LOG.warning("Watch " + watchId + " timed out.");
+            close();
+        }
+    }
+
+////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     // this is deep enough to get Cov callbacks on proxy extensions
     private static final int DEPTH = 2;
@@ -222,5 +267,9 @@ public class NHWatch extends HWatch
 
     private final HashMap allDicts     = new HashMap(); // comp -> dict
     private final HashMap changedDicts = new HashMap(); // comp -> dict
+
+    private boolean open;
+    private final Timer timer = new Timer();
+    private Timeout timeout = null;
 }
 
