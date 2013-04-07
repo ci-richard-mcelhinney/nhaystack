@@ -54,7 +54,7 @@ public class SiteStorehouse extends Storehouse
                 BComponent site = sites[i];
                 HDict tags = server.getConfigStorehouse().createComponentTags(site);
 
-                SiteNavId siteNav = SiteNavId.make(tags.getStr("dis"));
+                SiteNavId siteNav = SiteNavId.make(tags.getStr("navName"));
 
                 HDictBuilder hd = new HDictBuilder();
                 hd.add("navId", HStr.make(siteNav.getHRef().val));
@@ -79,7 +79,7 @@ public class SiteStorehouse extends Storehouse
 
                 EquipNavId equipNav = EquipNavId.make(
                     siteNav.getSiteName(),
-                    tags.getStr("dis"));
+                    tags.getStr("navName"));
 
                 HDictBuilder hd = new HDictBuilder();
                 hd.add("navId", HStr.make(equipNav.getHRef().val));

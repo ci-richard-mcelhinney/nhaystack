@@ -92,13 +92,16 @@ public class HistoryStorehouse extends Storehouse
         HDict tags = BHDict.findTagAnnotation(cfg);
         hdb.add(tags);
 
-        // add id
-        hdb.add("id", NHRef.make(cfg).getHRef());
-
+        // add dis
         String dis = cfg.getId().toString();
         if (dis.startsWith("/")) dis = dis.substring(1);
         dis = TextUtil.replace(dis, "/", "_");
         hdb.add("dis", dis);
+        hdb.add("navName", dis);
+
+        // add id
+        HRef ref = NHRef.make(cfg).getHRef();
+        hdb.add("id", HRef.make(ref.val, dis));
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());

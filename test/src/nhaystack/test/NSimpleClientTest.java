@@ -127,6 +127,12 @@ public class NSimpleClientTest extends NTest
         verifyEq(grid.row(3).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
         verifyEq(grid.row(4).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
 
+        verifyEq(grid.row(0).getRef("id").dis, "Foo_SineWave1");
+        verifyEq(grid.row(1).getRef("id").dis, "SineWave2");
+        verifyEq(grid.row(2).getRef("id").dis, "nhaystack_simple_AuditHistory");
+        verifyEq(grid.row(3).getRef("id").dis, "nhaystack_simple_LogHistory");
+        verifyEq(grid.row(4).getRef("id").dis, "nhaystack_simple_SineWave3");
+
         //////////////////////////////////////////
 
         HDict dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));

@@ -14,6 +14,7 @@ import javax.baja.util.*;
 import haystack.*;
 import nhaystack.*;
 import nhaystack.res.*;
+import nhaystack.server.*;
 import nhaystack.server.storehouse.*;
 import nhaystack.ui.*;
 
@@ -57,7 +58,7 @@ public class BHSite extends BHTagged
       * This will include the auto-generated tags, and
       * any other tags defined in the 'haystack' property.
       */
-    public HDict generateTags()
+    public HDict generateTags(NHServer server)
     {
         HDictBuilder hdb = new HDictBuilder();
 
@@ -65,12 +66,20 @@ public class BHSite extends BHTagged
         HDict tags = getHaystack().getDict();
         hdb.add(tags);
 
-        // add id and site
-        hdb.add("id", NHRef.make(this).getHRef());
-        hdb.add("site");
+        // navName
+        String navName = ConfigStorehouse.makeNavFormat(this, tags);
+        hdb.add("navName", navName);
 
-        // add navName and dis
-        ConfigStorehouse.createDisTags(this, tags, hdb);
+        // dis
+        String dis = navName; 
+        hdb.add("dis", dis);
+
+        // add id
+        HRef ref = NHRef.make(this).getHRef();
+        hdb.add("id", HRef.make(ref.val, dis));
+
+        // add site
+        hdb.add("site");
 
         // add misc other tags
         hdb.add("axType", getType().toString());

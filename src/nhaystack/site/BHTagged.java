@@ -12,6 +12,7 @@ import javax.baja.sys.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.server.*;
 
 /**
  * A BHTagged is a BComponent that is tagged
@@ -76,6 +77,6 @@ public abstract class BHTagged extends BComponent
       * This will include the auto-generated tags, and
       * any other tags defined in the 'haystack' property.
       */
-    public abstract HDict generateTags();
+    public abstract HDict generateTags(NHServer server);
 }
 

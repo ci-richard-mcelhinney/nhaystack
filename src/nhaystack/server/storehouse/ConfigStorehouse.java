@@ -48,7 +48,7 @@ public class ConfigStorehouse extends Storehouse
     {
         if (comp instanceof BHTagged)
         {
-            return ((BHTagged) comp).generateTags();
+            return ((BHTagged) comp).generateTags(server);
         }
         else
         {
@@ -58,11 +58,9 @@ public class ConfigStorehouse extends Storehouse
             HDict tags = BHDict.findTagAnnotation(comp);
             hdb.add(tags);
 
-            // add id
-            hdb.add("id", NHRef.make(comp).getHRef());
-
-            // add navName and dis
-            createDisTags(comp, tags, hdb);
+            // navName
+            String navName = makeNavFormat(comp, tags);
+            hdb.add("navName", navName);
 
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
@@ -70,120 +68,166 @@ public class ConfigStorehouse extends Storehouse
 
             // points get special treatment
             if (comp instanceof BControlPoint)
-            {
-                BControlPoint point = (BControlPoint) comp;
+                createPointTags((BControlPoint) comp, hdb, tags);
 
-                // ensure there is a point marker tag
-                hdb.add("point");
+            // dis
+            String dis = createDisTag(hdb, navName);
+            hdb.add("dis", dis);
 
-                // check if this point has a history
-                BHistoryConfig cfg = server.getHistoryStorehouse()
-                    .lookupHistoryFromPoint(point);
-                if (cfg != null)
-                {
-                    hdb.add("his");
-
-                    if (service.getShowLinkedHistories())
-                        hdb.add("axHistoryRef", NHRef.make(cfg).getHRef());
-
-                    // tz
-                    if (!tags.has("tz"))
-                    {
-                        HTimeZone tz = makeTimeZone(cfg.getTimeZone());
-                        hdb.add("tz", tz.name);
-                    }
-
-                    // hisInterpolate 
-                    if (!tags.has("hisInterpolate"))
-                    {
-                        BHistoryExt historyExt = service.lookupHistoryExt(point);
-                        if (historyExt != null && (historyExt instanceof BCovHistoryExt))
-                            hdb.add("hisInterpolate", "cov");
-                    }
-                }
-
-                // point kind tags
-                int pointKind = getControlPointKind(point);
-                BFacets facets = (BFacets) point.get("facets");
-                addPointKindTags(pointKind, facets, tags, hdb);
-
-                // cur, writable
-                hdb.add("cur");
-                if (point.isWritablePoint())
-                    hdb.add("writable");
-
-                // curVal, curStatus
-                switch(pointKind)
-                {
-                    case NUMERIC_KIND:
-                        BNumericPoint np = (BNumericPoint) point;
-
-                        HNum curVal = null;
-                        if (tags.has("unit"))
-                        {
-                            HVal unit = tags.get("unit");
-                            curVal = HNum.make(np.getNumeric(), unit.toString());
-                        }
-                        else
-                        {
-                            Unit unit = findUnit(facets);
-                            if (unit == null) 
-                                curVal = HNum.make(np.getNumeric());
-                            else
-                                curVal = HNum.make(np.getNumeric(), unit.symbol);
-                        }
-                        hdb.add("curVal", curVal);
-                        hdb.add("curStatus", makeStatusString(point.getStatus()));
-
-                        break;
-
-                    case BOOLEAN_KIND:
-                        BBooleanPoint bp = (BBooleanPoint) point;
-                        hdb.add("curVal",    HBool.make(bp.getBoolean()));
-                        hdb.add("curStatus", makeStatusString(point.getStatus()));
-                        break;
-
-                    case ENUM_KIND:
-                        BEnumPoint ep = (BEnumPoint) point;
-                        hdb.add("curVal",    HStr.make(ep.getEnum().toString()));
-                        hdb.add("curStatus", makeStatusString(point.getStatus()));
-                        break;
-
-                    case STRING_KIND:
-                        BStringPoint sp = (BStringPoint) point;
-                        hdb.add("curVal",    HStr.make(sp.getOut().getValue().toString()));
-                        hdb.add("curStatus", makeStatusString(point.getStatus()));
-                        break;
-                }
-
-                // the point is explicitly tagged with an equipRef
-                if (tags.has("equipRef"))
-                {
-                    BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
-
-                    // try to look up  siteRef too
-                    HDict equipTags = BHDict.findTagAnnotation(equip);
-                    if (equipTags.has("siteRef"))
-                        hdb.add("siteRef", equipTags.get("siteRef"));
-                }
-                // maybe we've cached an implicit equipRef
-                else
-                {
-                    BComponent equip = server.getCache().getImplicitEquip(point);
-                    if (equip != null)
-                    {
-                        hdb.add("equipRef", NHRef.make(equip).getHRef());
-
-                        // try to look up  siteRef too
-                        HDict equipTags = BHDict.findTagAnnotation(equip);
-                        if (equipTags.has("siteRef"))
-                            hdb.add("siteRef", equipTags.get("siteRef"));
-                    }
-                }
-            }
+            // add id
+            HRef ref = NHRef.make(comp).getHRef();
+            hdb.add("id", HRef.make(ref.val, dis));
 
             // done
             return hdb.toDict();
+        }
+    }
+
+    private String createDisTag(HDictBuilder tags, String navName)
+    {
+        String dis = navName;
+
+        if (tags.has("point"))
+        {
+            String equipNav = getRefNav(tags, "equipRef");
+            if (equipNav != null)
+            {
+                dis = equipNav + " " + navName;
+
+                String siteNav = getRefNav(tags, "siteRef");
+                if (siteNav != null)
+                    dis = siteNav + " " + equipNav + " " + navName;
+            }
+        }
+
+        return dis;
+    }
+
+    private String getRefNav(HDictBuilder tags, String tagName)
+    {
+        if (tags.has(tagName))
+        {
+            BComponent comp = server.lookupComponent((HRef) tags.get(tagName));
+            if (comp != null)
+            {
+                HDict compTags = BHDict.findTagAnnotation(comp);
+                return ConfigStorehouse.makeNavFormat(comp, compTags);
+            }
+        }
+        return null;
+    }
+
+    private void createPointTags(
+        BControlPoint point, 
+        HDictBuilder hdb,
+        HDict tags)
+    {
+        // ensure there is a point marker tag
+        hdb.add("point");
+
+        // check if this point has a history
+        BHistoryConfig cfg = server.getHistoryStorehouse()
+            .lookupHistoryFromPoint(point);
+        if (cfg != null)
+        {
+            hdb.add("his");
+
+            if (service.getShowLinkedHistories())
+                hdb.add("axHistoryRef", NHRef.make(cfg).getHRef());
+
+            // tz
+            if (!tags.has("tz"))
+            {
+                HTimeZone tz = makeTimeZone(cfg.getTimeZone());
+                hdb.add("tz", tz.name);
+            }
+
+            // hisInterpolate 
+            if (!tags.has("hisInterpolate"))
+            {
+                BHistoryExt historyExt = service.lookupHistoryExt(point);
+                if (historyExt != null && (historyExt instanceof BCovHistoryExt))
+                    hdb.add("hisInterpolate", "cov");
+            }
+        }
+
+        // point kind tags
+        int pointKind = getControlPointKind(point);
+        BFacets facets = (BFacets) point.get("facets");
+        addPointKindTags(pointKind, facets, tags, hdb);
+
+        // cur, writable
+        hdb.add("cur");
+        if (point.isWritablePoint())
+            hdb.add("writable");
+
+        // curVal, curStatus
+        switch(pointKind)
+        {
+            case NUMERIC_KIND:
+                BNumericPoint np = (BNumericPoint) point;
+
+                HNum curVal = null;
+                if (tags.has("unit"))
+                {
+                    HVal unit = tags.get("unit");
+                    curVal = HNum.make(np.getNumeric(), unit.toString());
+                }
+                else
+                {
+                    Unit unit = findUnit(facets);
+                    if (unit == null) 
+                        curVal = HNum.make(np.getNumeric());
+                    else
+                        curVal = HNum.make(np.getNumeric(), unit.symbol);
+                }
+                hdb.add("curVal", curVal);
+                hdb.add("curStatus", makeStatusString(point.getStatus()));
+
+                break;
+
+            case BOOLEAN_KIND:
+                BBooleanPoint bp = (BBooleanPoint) point;
+                hdb.add("curVal",    HBool.make(bp.getBoolean()));
+                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                break;
+
+            case ENUM_KIND:
+                BEnumPoint ep = (BEnumPoint) point;
+                hdb.add("curVal",    HStr.make(ep.getEnum().toString()));
+                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                break;
+
+            case STRING_KIND:
+                BStringPoint sp = (BStringPoint) point;
+                hdb.add("curVal",    HStr.make(sp.getOut().getValue().toString()));
+                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                break;
+        }
+
+        // the point is explicitly tagged with an equipRef
+        if (tags.has("equipRef"))
+        {
+            BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
+
+            // try to look up  siteRef too
+            HDict equipTags = BHDict.findTagAnnotation(equip);
+            if (equipTags.has("siteRef"))
+                hdb.add("siteRef", equipTags.get("siteRef"));
+        }
+        // maybe we've cached an implicit equipRef
+        else
+        {
+            BComponent equip = server.getCache().getImplicitEquip(point);
+            if (equip != null)
+            {
+                hdb.add("equipRef", NHRef.make(equip).getHRef());
+
+                // try to look up  siteRef too
+                HDict equipTags = BHDict.findTagAnnotation(equip);
+                if (equipTags.has("siteRef"))
+                    hdb.add("siteRef", equipTags.get("siteRef"));
+            }
         }
     }
 
@@ -283,16 +327,13 @@ public class ConfigStorehouse extends Storehouse
         }
     }
 
-    public static void createDisTags(
-        BComponent comp, HDict tags, HDictBuilder hdb)
+    public static String makeNavFormat(BComponent comp, HDict tags)
     {
         String format = tags.has("navNameFormat") ?
             tags.getStr("navNameFormat") :
             "%displayName%";
 
-        String dis = BFormat.format(format, comp);
-        hdb.add("dis", dis);
-        hdb.add("navName", dis);
+        return BFormat.format(format, comp);
     }
 
 ////////////////////////////////////////////////////////////////
