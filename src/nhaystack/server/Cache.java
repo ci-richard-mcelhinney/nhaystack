@@ -202,11 +202,10 @@ public class Cache
                 if (comp instanceof BHSite)
                 {
                     sitesArr.add(comp);
-
-                    SiteNavId siteNav = SiteNavId.make(
-                        BFormat.format(navName(tags), comp));
-
-                    siteNavs.put(siteNav, comp);
+                    siteNavs.put(
+                        SiteNavId.make(
+                            navName(comp, tags)),
+                        comp);
                 }
                 else if (comp instanceof BHEquip)
                 {
@@ -265,12 +264,11 @@ public class Cache
 
                 // save the equip nav 
                 HDict siteTags = BHDict.findTagAnnotation(site);
-
-                EquipNavId equipNav = EquipNavId.make(
-                    BFormat.format(navName(siteTags), site),
-                    BFormat.format(navName(equipTags), equip));
-
-                equipNavs.put(equipNav, equip);
+                equipNavs.put(
+                    EquipNavId.make(
+                        navName(site, siteTags),
+                        navName(equip, equipTags)),
+                    equip);
             }
         }
     }
@@ -316,12 +314,13 @@ public class Cache
         }
     }
 
-    private static String navName(HDict tags)
+    private static String navName(BComponent comp, HDict tags)
     {
-        if (tags.has("navName"))
-            return tags.getStr("navName");
-        else
-            return "%displayName%";
+        String format = tags.has("navNameFormat") ?
+            tags.getStr("navNameFormat") :
+            "%displayName%";
+
+        return BFormat.format(format, comp);
     }
 
 ////////////////////////////////////////////////////////////////

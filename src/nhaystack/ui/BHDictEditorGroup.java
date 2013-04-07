@@ -79,9 +79,6 @@ public class BHDictEditorGroup extends BScrollPane
         essentialTags.keySet().removeAll(allPossibleAuto);
         essentialTags.keySet().retainAll(defaultEssentials.keySet());
 
-        // put navName in essentials too
-        essentialTags.put("navName", all.get("navName"));
-
         Iterator it = defaultEssentials.entrySet().iterator();
         while (it.hasNext())
         {
@@ -223,7 +220,7 @@ public class BHDictEditorGroup extends BScrollPane
     private static final String[] AUTO_GEN_TAGS = new String[] {
             "axHistoryId", "axHistoryRef", "axPointRef", "axSlotPath", "axType",
             "cur", "curStatus", "curVal", "dis", "equip", "his", "hisInterpolate", 
-            "id", "kind", "point", "site", "tz", "unit" };
+            "id", "kind", "navName", "point", "site", "tz", "unit" };
 
     private BFoxProxySession session;
     private BNHaystackService service;

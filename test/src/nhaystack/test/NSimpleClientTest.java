@@ -127,6 +127,8 @@ public class NSimpleClientTest extends NTest
         verifyEq(grid.row(3).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
         verifyEq(grid.row(4).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
 
+        //////////////////////////////////////////
+
         HDict dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
         verify(dict.has("foo"));
@@ -143,8 +145,11 @@ public class NSimpleClientTest extends NTest
         verifyEq(dict.get("curStatus"), HStr.make("ok"));
         verify(curVal >= 0.0 && curVal <= 100.0);
 
-        verifyEq(dict.get("dis"), HStr.make("SineWave1"));
-        verifyEq(dict.get("navName"), HStr.make("%displayName%"));
+        verifyEq(dict.get("dis"), HStr.make("Foo_SineWave1"));
+        verifyEq(dict.get("navName"), HStr.make("Foo_SineWave1"));
+        verifyEq(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
+
+        //////////////////////////////////////////
 
         dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
@@ -161,6 +166,12 @@ public class NSimpleClientTest extends NTest
         verify(dict.has("cur"));
         curVal = dict.getDouble("curVal");
         verify(curVal >= 0.0 && curVal <= 100.0);
+
+        verifyEq(dict.get("dis"), HStr.make("SineWave2"));
+        verifyEq(dict.get("navName"), HStr.make("SineWave2"));
+        verify(dict.missing("navNameFormat"));
+
+        //////////////////////////////////////////
 
         dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
@@ -328,7 +339,7 @@ public class NSimpleClientTest extends NTest
         verify(client.watch(w.id()) == w);
         verifyEq(client.watches().length, 1);
         verify(client.watches()[0] == w);
-        verifyEq(w.lease().millis(), 60000L);
+        verifyEq(w.lease().millis(), 2L * 60 * 1000);
 
         // poll refresh
         HGrid poll = w.pollRefresh();

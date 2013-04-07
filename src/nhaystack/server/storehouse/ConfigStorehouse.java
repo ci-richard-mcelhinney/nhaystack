@@ -62,7 +62,7 @@ public class ConfigStorehouse extends Storehouse
             hdb.add("id", NHRef.make(comp).getHRef());
 
             // add navName and dis
-            createNavTags(comp, tags, hdb);
+            createDisTags(comp, tags, hdb);
 
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
@@ -283,18 +283,16 @@ public class ConfigStorehouse extends Storehouse
         }
     }
 
-    public static void createNavTags(
+    public static void createDisTags(
         BComponent comp, HDict tags, HDictBuilder hdb)
     {
-        if (tags.has("navName"))
-        {
-            hdb.add("dis", BFormat.format(tags.getStr("navName"), comp));
-        }
-        else
-        {
-            hdb.add("navName", "%displayName%");
-            hdb.add("dis", BFormat.format("%displayName%", comp));
-        }
+        String format = tags.has("navNameFormat") ?
+            tags.getStr("navNameFormat") :
+            "%displayName%";
+
+        String dis = BFormat.format(format, comp);
+        hdb.add("dis", dis);
+        hdb.add("navName", dis);
     }
 
 ////////////////////////////////////////////////////////////////

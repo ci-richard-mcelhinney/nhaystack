@@ -68,7 +68,7 @@ public class BHEquip extends BHTagged
         hdb.add("equip");
 
         // add navName and dis
-        ConfigStorehouse.createNavTags(this, tags, hdb);
+        ConfigStorehouse.createDisTags(this, tags, hdb);
 
         // add misc other tags
         hdb.add("axType", getType().toString());

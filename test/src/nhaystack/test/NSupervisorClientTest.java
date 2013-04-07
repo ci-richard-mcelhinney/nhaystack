@@ -282,7 +282,7 @@ public class NSupervisorClientTest extends NTest
         verify(client.watch(w.id()) == w);
         verifyEq(client.watches().length, 1);
         verify(client.watches()[0] == w);
-        verifyEq(w.lease().millis(), 60000L);
+        verifyEq(w.lease().millis(), 2L * 60 * 1000);
 
         // poll refresh
         HGrid poll = w.pollRefresh();
