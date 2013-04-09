@@ -16,3 +16,7 @@ under AFL 3.0, and hosted at:
 
     https://bitbucket.org/brianfrank/haystack-java
 
+This project uses an altered version of the stylesheet found at
+
+    http://kevinburke.bitbucket.org/markdowncss/markdown.css
+
