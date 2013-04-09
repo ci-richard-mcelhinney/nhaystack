@@ -7,7 +7,6 @@
 //
 package nhaystack.ui.view;
 
-import javax.baja.gx.*;
 import javax.baja.space.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;

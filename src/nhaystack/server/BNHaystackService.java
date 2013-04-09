@@ -8,8 +8,6 @@
 //
 package nhaystack.server;
 
-import java.util.*;
-
 import javax.baja.control.*;
 import javax.baja.driver.*;
 import javax.baja.history.*;
@@ -21,8 +19,6 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
-import nhaystack.collection.*;
-import nhaystack.site.*;
 
 /**
   * BNHaystackService makes an NHServer available.  

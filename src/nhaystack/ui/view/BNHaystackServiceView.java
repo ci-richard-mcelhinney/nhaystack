@@ -8,22 +8,11 @@
 package nhaystack.ui.view;
 
 import javax.baja.gx.*;
-import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
-import javax.baja.ui.enums.*;
-import javax.baja.ui.event.*;
-import javax.baja.ui.list.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
-import javax.baja.workbench.*;
-import javax.baja.workbench.fieldeditor.*;
 import javax.baja.workbench.view.*;
-
-import haystack.*;
-import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.server.*;
 
 /**
   * BNHaystackServiceView is a view on BNHaystackService

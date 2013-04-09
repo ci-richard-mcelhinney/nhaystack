@@ -9,13 +9,11 @@ package nhaystack.server.storehouse;
 
 import java.util.*;
 
-import javax.baja.control.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 
 import haystack.*;
 import nhaystack.collection.*;
-import nhaystack.server.*;
 
 /**
   * ConfigStorehouseIterator is an Iterator created by a ConfigStorehouse.

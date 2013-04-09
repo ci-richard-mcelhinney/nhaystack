@@ -10,7 +10,6 @@ package nhaystack.ui;
 
 import java.util.*;
 
-import javax.baja.fox.*;
 import javax.baja.gx.*;
 import javax.baja.history.*;
 import javax.baja.naming.*;
@@ -27,7 +26,6 @@ import haystack.*;
 import haystack.io.*;
 import nhaystack.*;
 import nhaystack.res.*;
-import nhaystack.server.*;
 
 /**
   * BHDictEditor is the editor for BHDicts.
