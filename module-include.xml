@@ -19,6 +19,10 @@
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
 
+    <type name="HEquip"  class="nhaystack.site.BHEquip"/>
+    <type name="HSite"   class="nhaystack.site.BHSite"/>
+    <type name="HTagged" class="nhaystack.site.BHTagged"/>
+
     <type name="GroupPane"        class="nhaystack.ui.BGroupPane"/>
     <type name="HDictDialog"      class="nhaystack.ui.BHDictDialog"/>
     <type name="HDictEditor"      class="nhaystack.ui.BHDictEditor"/>
@@ -32,8 +36,8 @@
     <type name="EquipRefFE" class="nhaystack.ui.BEquipRefFE"/>
     <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>
 
-    <type name="HEquip"  class="nhaystack.site.BHEquip"/>
-    <type name="HSite"   class="nhaystack.site.BHSite"/>
-    <type name="HTagged" class="nhaystack.site.BHTagged"/>
+    <type name="AddHaystackSlot"  class="nhaystack.ui.view.BAddHaystackSlot"/>
+    <type name="NHaystackServiceView"  class="nhaystack.ui.view.BNHaystackServiceView">
+        <agent><on type="nhaystack:NHaystackService"/></agent></type>
 
 </types>

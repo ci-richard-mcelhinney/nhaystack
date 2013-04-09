@@ -12,3 +12,4 @@ markerGroups=Markers:
 essentials=Essentials
 optional=Optional
 autoGen=Auto-Generated
+dragHere=Drag Components here to add a 'haystack' slot
