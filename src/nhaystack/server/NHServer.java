@@ -59,7 +59,11 @@ public class NHServer extends HServer
       */
     protected HDict onAbout()
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onAbout");
+
         try
+
         {
             HDictBuilder hd = new HDictBuilder();
 
@@ -90,8 +94,10 @@ public class NHServer extends HServer
         {
             long ticks = Clock.ticks();
             HGrid grid = super.onReadAll(filter, limit);
+
             if (LOG.isTraceOn())
                 LOG.trace("onReadAll " + (Clock.ticks()-ticks) + "ms.");
+
             return grid;
         }
         catch (RuntimeException e)
@@ -129,6 +135,9 @@ public class NHServer extends HServer
       */
     protected HDict onReadById(HIdentifier id)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onReadById " + id);
+
         // we can assume this because onNavReadByUri will have
         // already been called for us.
         HRef ref = (HRef) id;
@@ -151,6 +160,9 @@ public class NHServer extends HServer
       */
     protected HGrid onNav(String navId)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onNav " + navId);
+
         try
         {
             // nav roots
@@ -211,6 +223,9 @@ public class NHServer extends HServer
       */
     protected HWatch onWatchOpen(String dis)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onWatchOpen " + dis);
+
         try
         {
             NHWatch watch = new NHWatch(
@@ -233,6 +248,9 @@ public class NHServer extends HServer
       */
     protected HWatch[] onWatches()
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onWatches");
+
         try
         {
             HWatch[] arr = new HWatch[watches.size()];
@@ -254,6 +272,9 @@ public class NHServer extends HServer
       */
     protected HWatch onWatch(String id)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onWatch " + id);
+
         try
         {
             return (HWatch) watches.get(id);
@@ -270,6 +291,9 @@ public class NHServer extends HServer
       */
     protected HGrid onPointWriteArray(HDict rec)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onPointWriteArray " + rec);
+
         try
         {
             HVal[] vals = new HVal[17];
@@ -364,6 +388,10 @@ public class NHServer extends HServer
         String who, 
         HNum dur) // 'dur' will always be null
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onPointWrite " + 
+                rec + ", " + level + ", " + val + ", " + who + ", " + dur);
+
         try
         {
             BControlPoint point = (BControlPoint) lookupComponent(rec.id());
@@ -416,6 +444,9 @@ public class NHServer extends HServer
       */
     protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onHisRead " + rec + ", " + range);
+
         try
         {
             BHistoryConfig cfg = lookupHisRead(rec.id());
@@ -512,6 +543,9 @@ public class NHServer extends HServer
       */
     protected HGrid onInvokeAction(HDict rec, String actionName, HDict args)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onInvokeAction " + rec + ", " + actionName + ", " + args);
+
         try
         {
             BComponent comp = lookupComponent(rec.id());
@@ -561,6 +595,9 @@ public class NHServer extends HServer
      */
     protected HDict onNavReadByUri(HUri uri)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onNavReadByUri " + uri);
+
         // e.g. "/site/Blacksburg/Transmogrifier/SineWave1"
         if (!uri.val.startsWith("/site/")) return null;
         String str = uri.val.substring("/site/".length());
