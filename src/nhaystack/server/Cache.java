@@ -34,26 +34,33 @@ public class Cache
     /**
       * Rebuild the cache.
       */
-    public synchronized void rebuild()
+    synchronized void rebuild()
     {
-        long ticks = Clock.ticks();
-        if (initialized)
-        {
-            LOG.message("Begin cache rebuild.");
-            rebuildComponentCache();
-            rebuildHistoryCache();
-            LOG.message("End cache rebuild " + 
-                (Clock.ticks()-ticks) + "ms.");
-        }
-        else
-        {
-            LOG.message("Begin cache build.");
-            rebuildComponentCache();
-            rebuildHistoryCache();
+        long t0 = Clock.ticks();
+        LOG.message("Begin cache rebuild.");
+
+        rebuildComponentCache();
+        rebuildHistoryCache();
+
+        if (!initialized)
             initialized = true;
-            LOG.message("End cache build " + 
-                (Clock.ticks()-ticks) + "ms.");
+
+        numPoints = 0;
+        numEquips = 0;
+        numSites = 0;
+        Iterator it = server.iterator();
+        while (it.hasNext())
+        {
+            HDict tags = (HDict) it.next();
+            if (tags.has("point")) numPoints++;
+            else if (tags.has("equip")) numEquips++;
+            else if (tags.has("site")) numSites++;
         }
+        lastRebuildTime = BAbsTime.now();
+
+        long t1 = Clock.ticks();
+        LOG.message("End cache rebuild " + (t1-t0) + "ms.");
+        lastRebuildDuration = BRelTime.make(t1-t0);
     }
 
     /**
@@ -357,5 +364,11 @@ public class Cache
     private Map equipNavs = null; // EquipNavId -> BComponent
     private Map siteEquips  = null; // Handle -> Array<BComponent>
     private Map equipPoints = null; // Handle -> Array<BControlPoint>
+
+    int numPoints = 0;
+    int numEquips = 0;
+    int numSites = 0;
+    BRelTime lastRebuildDuration = BRelTime.DEFAULT;
+    BAbsTime lastRebuildTime = BAbsTime.DEFAULT;
 }
 

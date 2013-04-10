@@ -18,6 +18,7 @@
 
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
+    <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>
 
     <type name="HEquip"  class="nhaystack.site.BHEquip"/>
     <type name="HSite"   class="nhaystack.site.BHSite"/>

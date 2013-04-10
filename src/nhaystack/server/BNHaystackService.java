@@ -38,6 +38,8 @@ public class BNHaystackService extends BAbstractService
                 default{[ false ]} 
             servlet: BNHaystackServlet
                 default{[ new BNHaystackServlet() ]}
+            stats: BNHaystackStats
+                default{[ new BNHaystackStats() ]}
         }
         actions
         {
@@ -58,8 +60,8 @@ public class BNHaystackService extends BAbstractService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1548706824)1.0$ @*/
-/* Generated Sun Apr 07 10:28:58 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(3960567318)1.0$ @*/
+/* Generated Wed Apr 10 15:54:22 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -132,6 +134,29 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#servlet
    */
   public void setServlet(BNHaystackServlet v) { set(servlet,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "stats"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>stats</code> property.
+   * @see nhaystack.server.BNHaystackService#getStats
+   * @see nhaystack.server.BNHaystackService#setStats
+   */
+  public static final Property stats = newProperty(0, new BNHaystackStats(),null);
+  
+  /**
+   * Get the <code>stats</code> property.
+   * @see nhaystack.server.BNHaystackService#stats
+   */
+  public BNHaystackStats getStats() { return (BNHaystackStats)get(stats); }
+  
+  /**
+   * Set the <code>stats</code> property.
+   * @see nhaystack.server.BNHaystackService#stats
+   */
+  public void setStats(BNHaystackStats v) { set(stats,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"
@@ -229,7 +254,7 @@ public class BNHaystackService extends BAbstractService
         // rely on atSteadyState() to get us set up.
         try
         {
-            server.getCache().rebuild();
+            doRebuildCache();
         }
         catch (Exception e)
         {
@@ -240,7 +265,7 @@ public class BNHaystackService extends BAbstractService
 
     public void atSteadyState() throws Exception
     {
-        server.getCache().rebuild();
+        doRebuildCache();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -276,7 +301,18 @@ public class BNHaystackService extends BAbstractService
 
     public void doRebuildCache() throws Exception
     {
-        server.getCache().rebuild();
+        Cache cache = server.getCache();
+        synchronized(cache)
+        {
+            cache.rebuild();
+
+            BNHaystackStats stats = getStats();
+            stats.setNumPoints(cache.numPoints);
+            stats.setNumEquips(cache.numEquips);
+            stats.setNumSites(cache.numSites);
+            stats.setLastCacheRebuildDuration(cache.lastRebuildDuration);
+            stats.setLastCacheRebuildTime(cache.lastRebuildTime);
+        }
     }
 
 ////////////////////////////////////////////////////////////////
