@@ -43,13 +43,13 @@ public class NavDump
 //            str = (HStr) row.get("dis", false);
 //            if (str != null) sb.append(" '" + str + "'");
 
-            sb.append(" dis:").append(row.get("dis"));
+            sb.append(" '").append(row.get("dis")).append("'");
 
-            str = (HStr) row.get("axSlotPath", false);
-            if (str != null) sb.append(" " + str);
-
-            str = (HStr) row.get("axHistoryId", false);
-            if (str != null) sb.append(" " + str);
+//            str = (HStr) row.get("axSlotPath", false);
+//            if (str != null) sb.append(" " + str);
+//
+//            str = (HStr) row.get("axHistoryId", false);
+//            if (str != null) sb.append(" " + str);
 
             for (int j = 0; j < curDepth-1; j++)
                 System.out.print("    ");

@@ -21,6 +21,7 @@ import javax.baja.util.*;
 
 import haystack.*;
 import haystack.server.*;
+import haystack.util.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.storehouse.*;
@@ -157,35 +158,38 @@ public class NHServer extends HServer
             {
                 Array dicts = new Array(HDict.class);
 
-                HDictBuilder hd = new HDictBuilder();
-                hd.add("navId", HStr.make(NHRef.COMPONENT));
-                hd.add("dis", "ComponentSpace");
-                dicts.add(hd.toDict());
+                dicts.add(
+                    new HDictBuilder() 
+                        .add("navId", "/comp")
+                        .add("dis", "ComponentSpace")
+                        .toDict());
 
-                hd = new HDictBuilder();
-                hd.add("navId", HStr.make(NHRef.HISTORY));
-                hd.add("dis", "HistorySpace");
-                dicts.add(hd.toDict());
+                dicts.add(
+                    new HDictBuilder() 
+                        .add("navId", "/his")
+                        .add("dis", "HistorySpace")
+                        .toDict());
 
-                hd = new HDictBuilder();
-                hd.add("navId", HStr.make(SiteNavId.SITE));
-                hd.add("dis", "Sites");
-                dicts.add(hd.toDict());
+                dicts.add(
+                    new HDictBuilder() 
+                        .add("navId", "/site")
+                        .add("dis", "Site")
+                        .toDict());
 
                 return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
             }
             // config nav
-            else if (navId.startsWith(NHRef.COMPONENT))
+            else if (navId.startsWith("/comp"))
             {
                 return configStorehouse.onNav(navId);
             }
             // history nav
-            else if (navId.startsWith(NHRef.HISTORY))
+            else if (navId.startsWith("/his"))
             {
                 return historyStorehouse.onNav(navId);
             }
             // site nav
-            else if (navId.startsWith(SiteNavId.SITE) || navId.startsWith(EquipNavId.EQUIP))
+            else if (navId.startsWith("/site"))
             {
                 return siteStorehouse.onNav(navId);
             }
@@ -557,14 +561,12 @@ public class NHServer extends HServer
      */
     protected HDict onNavReadByUri(HUri uri)
     {
-        // e.g. "site:/Blacksburg/Transmogrifier/SineWave1"
-
-        if (!uri.val.startsWith("site:/")) return null;
-        String str = uri.val.substring("site:/".length());
+        // e.g. "/site/Blacksburg/Transmogrifier/SineWave1"
+        if (!uri.val.startsWith("/site/")) return null;
+        String str = uri.val.substring("/site/".length());
         if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
 
         String[] navNames = TextUtil.split(str, '/');
-
         switch (navNames.length)
         {
             // site
@@ -640,16 +642,15 @@ public class NHServer extends HServer
         // component space
         if (nh.getSpace().equals(NHRef.COMPONENT))
         {
-            // this might be null
-            BOrd ord = BOrd.make("station:|" + nh.getPath());
-            BComponent comp = (BComponent) ord.get(service, null);
+            BComponent comp = (BComponent) nh.getOrd().get(service, null);
             if (comp == null) return null;
             return configStorehouse.isVisibleComponent(comp) ? comp : null;
         }
         // history space
         else if (nh.getSpace().equals(NHRef.HISTORY))
         {
-            BHistoryId hid = BHistoryId.make(nh.getPath());
+            BHistoryId hid = BHistoryId.make(
+                Base64.URI.decodeUTF8(nh.getPath()));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();

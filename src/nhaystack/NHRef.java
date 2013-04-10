@@ -8,6 +8,7 @@
 package nhaystack;
 
 import javax.baja.history.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
 
 import haystack.*;
@@ -34,7 +35,7 @@ public class NHRef
                 "Could not parse HRef '" + ref + "'.");
 
         String space = val.substring(0, dot);
-        String path  = Base64.URI.decodeUTF8(val.substring(dot+1));
+        String path  = val.substring(dot+1);
 
         if (!(space.equals(COMPONENT) || space.equals(HISTORY)))
             throw new BajaRuntimeException(
@@ -68,9 +69,9 @@ public class NHRef
 
     private NHRef(HRef ref, String space, String path)
     {
-        this.ref         = ref;
-        this.space       = space;
-        this.path      = path;
+        this.ref   = ref;
+        this.space = space;
+        this.path  = path;
     }
 
     private NHRef(String space, String path)
@@ -118,9 +119,25 @@ public class NHRef
     public String getSpace() { return space; }
 
     /**
-      * The path identifies an object within its space.
+      * The Base64-encoded path identifies an object within its space.
       */
     public String getPath() { return path; }
+
+    /**
+      * Get the BOrd that this NHRef corresponds to.
+      */
+    public BOrd getOrd()
+    {
+        if (space.equals(NHRef.COMPONENT))
+        {
+            return BOrd.make("station:|" + Base64.URI.decodeUTF8(path));
+        }
+        else if (space.equals(NHRef.HISTORY))
+        {
+            return BOrd.make("history:" + Base64.URI.decodeUTF8(path));
+        }
+        else throw new IllegalStateException();
+    }
 
 ////////////////////////////////////////////////////////////////
 // Attributes

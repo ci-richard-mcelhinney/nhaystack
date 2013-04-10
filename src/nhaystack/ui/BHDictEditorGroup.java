@@ -212,7 +212,7 @@ public class BHDictEditorGroup extends BScrollPane
     private static final String[] AUTO_GEN_TAGS = new String[] {
             "axHistoryId", "axHistoryRef", "axPointRef", "axSlotPath", "axType",
             "cur", "curStatus", "curVal", "dis", "equip", "his", "hisInterpolate", 
-            "id", "kind", "navName", "point", "site", "tz", "unit" };
+            "id", "kind", "navName", "point", "site", "siteUri", "tz", "unit" };
 
     private BFoxProxySession session;
     private BNHaystackService service;

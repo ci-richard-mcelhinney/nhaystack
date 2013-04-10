@@ -72,6 +72,9 @@ public class BHSite extends BHTagged
         String dis = navName; 
         hdb.add("dis", dis);
 
+        // siteUri
+        hdb.add("siteUri", HUri.make("/site/" + navName).val);
+
         // add id
         HRef ref = NHRef.make(this).getHRef();
         hdb.add("id", HRef.make(ref.val, dis));

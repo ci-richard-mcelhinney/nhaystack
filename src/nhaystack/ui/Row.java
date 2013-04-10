@@ -206,26 +206,9 @@ class Row
         BFoxProxySession session = editor.group().session();
 
         // create ord
-        BOrd ord = null;
-        if (BHRef.make(ref).equals(BHRef.DEFAULT))
-        {
-            ord = BOrd.DEFAULT;
-        }
-        else
-        {
-            NHRef nh = NHRef.make(ref);
-            if (nh.getSpace().equals(NHRef.COMPONENT))
-            {
-                BOrd refOrd = BOrd.make("station:|" + nh.getPath());
-                BComponent comp = (BComponent) refOrd.resolve(session, null).get();
-                ord = comp.getSlotPathOrd();
-            }
-            else if (nh.getSpace().equals(NHRef.HISTORY))
-            {
-                ord = BOrd.make("history:" + nh.getPath());
-            }
-            else throw new IllegalStateException();
-        }
+        BOrd ord = (BHRef.make(ref).equals(BHRef.DEFAULT)) ?
+            BOrd.DEFAULT :
+            NHRef.make(ref).getOrd();
 
         // create field editor
         BWbFieldEditor fe = null;

@@ -68,8 +68,12 @@ public class BHEquip extends BHTagged
         hdb.add("navName", navName);
 
         // dis
-        String dis = createDisTag(server, tags, navName);
+        String dis = createDis(server, tags, navName);
         hdb.add("dis", dis);
+
+        // siteUri
+        HUri siteUri = createSiteUri(server, tags, navName);
+        if (siteUri != null) hdb.add("siteUri", siteUri.val);
 
         // add id
         HRef ref = NHRef.make(this).getHRef();
@@ -85,7 +89,7 @@ public class BHEquip extends BHTagged
         return hdb.toDict();
     }
 
-    private String createDisTag(NHServer server, HDict tags, String navName)
+    private String createDis(NHServer server, HDict tags, String navName)
     {
         String dis = navName;
 
@@ -103,6 +107,24 @@ public class BHEquip extends BHTagged
         }
 
         return dis;
+    }
+
+    private HUri createSiteUri(NHServer server, HDict tags, String navName)
+    {
+        // site
+        if (tags.has("siteRef"))
+        {
+            BComponent site = server.lookupComponent(tags.getRef("siteRef"));
+            if (site != null)
+            {
+                HDict siteTags = BHDict.findTagAnnotation(site);
+                String siteNavName = ConfigStorehouse.makeNavFormat(site, siteTags);
+
+                return HUri.make("/site/" + siteNavName + "/" + navName);
+            }
+        }
+
+        return null;
     }
 
     public BIcon getIcon() { return ICON; }

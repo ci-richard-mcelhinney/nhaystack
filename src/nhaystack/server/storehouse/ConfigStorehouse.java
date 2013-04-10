@@ -70,8 +70,12 @@ public class ConfigStorehouse extends Storehouse
                 createPointTags((BControlPoint) comp, hdb, tags);
 
             // dis
-            String dis = createDisTag(hdb, navName);
+            String dis = createDis(hdb, navName);
             hdb.add("dis", dis);
+
+            // uri
+            HUri siteUri = createSiteUri(hdb, navName);
+            if (siteUri != null) hdb.add("siteUri", siteUri.val);
 
             // add id
             HRef ref = NHRef.make(comp).getHRef();
@@ -82,7 +86,7 @@ public class ConfigStorehouse extends Storehouse
         }
     }
 
-    private String createDisTag(HDictBuilder tags, String navName)
+    private String createDis(HDictBuilder tags, String navName)
     {
         String dis = navName;
 
@@ -98,8 +102,36 @@ public class ConfigStorehouse extends Storehouse
                     dis = siteNav + " " + equipNav + " " + navName;
             }
         }
+        else if (tags.has("equip"))
+        {
+            String siteNav = getRefNav(tags, "siteRef");
+            if (siteNav != null)
+                dis = siteNav + " " + navName;
+        }
 
         return dis;
+    }
+
+    private HUri createSiteUri(HDictBuilder tags, String navName)
+    {
+        if (tags.has("point"))
+        {
+            String equipNav = getRefNav(tags, "equipRef");
+            if (equipNav != null)
+            {
+                String siteNav = getRefNav(tags, "siteRef");
+                if (siteNav != null)
+                    return HUri.make("/site/" + siteNav + "/" + equipNav + "/" + navName);
+            }
+        }
+        else if (tags.has("equip"))
+        {
+            String siteNav = getRefNav(tags, "siteRef");
+            if (siteNav != null)
+                return HUri.make("/site/" + siteNav + "/" + navName);
+        }
+
+        return null;
     }
 
     private String getRefNav(HDictBuilder tags, String tagName)
@@ -255,16 +287,22 @@ public class ConfigStorehouse extends Storehouse
     public HGrid onNav(String navId)
     {
         // child of ComponentSpace root
-        if (navId.equals("c"))
+        if (navId.equals("/comp"))
         {
-            BComponent root = (BComponent) BOrd.make("slot:/").get(service, null);
-            return HGridBuilder.dictsToGrid(new HDict[] { makeNavResult(root) });
+            BComponent root = (BComponent) 
+                BOrd.make("station:|slot:/").get(service, null);
+
+            BComponent kids[] = root.getChildComponents();
+            Array dicts = new Array(HDict.class);
+            for (int i = 0; i < kids.length; i++)
+                dicts.add(makeNavResult(kids[i]));
+            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
         // ComponentSpace component
-        else if (navId.startsWith("c."))
+        else if (navId.startsWith("/comp/"))
         {
-            NHRef nh = NHRef.make(HRef.make(navId));
-            BOrd ord = BOrd.make("station:|" + nh.getPath());
+            String slotPath = navId.substring("/comp/".length());
+            BOrd ord = BOrd.make("station:|slot:/" + slotPath);
             BComponent comp = (BComponent) ord.get(service, null);
 
             BComponent kids[] = comp.getChildComponents();
@@ -345,7 +383,13 @@ public class ConfigStorehouse extends Storehouse
 
         // add a navId, but only if this component is not a leaf
         if (comp.getChildComponents().length > 0)
-            hdb.add("navId", NHRef.make(comp).getHRef().val);
+        {
+            // always starts with "slot:/"
+            String slotPath = comp.getSlotPath().toString();
+            slotPath = slotPath.substring("slot:/".length());
+
+            hdb.add("navId", "/comp/" + slotPath);
+        }
 
         if (isVisibleComponent(comp))
         {
@@ -364,13 +408,10 @@ public class ConfigStorehouse extends Storehouse
     /**
       * Find the imported point that goes with an imported history, 
       * or return null.  
-      * <p>
-      * This method is rather inefficient.  When operating on histories
-      * in bulk, e.g. inside NHServer.iterator(), a different approach 
-      * should be used.
       */
     private BControlPoint lookupRemotePoint(
-        BHistoryConfig cfg, RemotePoint remote)
+        BHistoryConfig cfg, 
+        RemotePoint remote)
     {
         // look up the station
         BDeviceNetwork network = service.getNiagaraNetwork();

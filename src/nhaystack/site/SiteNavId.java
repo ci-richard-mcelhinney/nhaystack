@@ -16,29 +16,10 @@ import haystack.*;
   */
 public class SiteNavId
 {
-    public static SiteNavId make(HRef ref)
-    {
-        String val = ref.val;
-
-        int colon = val.indexOf(":");
-        if (colon == -1)
-            throw new BajaRuntimeException(
-                "Could not parse HRef '" + ref + "'.");
-
-        String realm    = val.substring(0, colon);
-        String siteName = val.substring(colon+1);
-
-        if (!realm.equals(SITE))
-            throw new BajaRuntimeException(
-                "Could not parse HRef '" + ref + "'.");
-
-        return new SiteNavId(ref, siteName);
-    }
-
     public static SiteNavId make(String siteName)
     {
         return new SiteNavId(
-            HRef.make(SITE + ":" + siteName),
+            HRef.make("/site/" + siteName),
             siteName);
     }
 
@@ -81,8 +62,6 @@ public class SiteNavId
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
-
-    public static final String SITE = "site";
 
     private final HRef ref;
     private final String siteName;

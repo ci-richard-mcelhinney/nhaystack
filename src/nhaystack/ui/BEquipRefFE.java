@@ -55,8 +55,8 @@ public class BEquipRefFE extends BWbFieldEditor
 
         for (int i = 0; i < grid.numRows(); i++)
         {
-            HStr slotPath = (HStr) grid.row(i).get("axSlotPath", true);
-            dropDown.getList().addItem(slotPath.val);
+            String slotPath = grid.row(i).getStr("axSlotPath");
+            dropDown.getList().addItem("station:|" + slotPath);
         }
 
         setContent(dropDown);

@@ -16,31 +16,10 @@ import haystack.*;
   */
 public class EquipNavId
 {
-    public static EquipNavId make(HRef ref)
-    {
-        String val = ref.val;
-
-        int colon = val.indexOf(":");
-        int dot = val.indexOf(".");
-        if ((colon == -1) || (dot == -1) || (colon > dot))
-            throw new BajaRuntimeException(
-                "Could not parse HRef '" + ref + "'.");
-
-        String realm     = val.substring(0, colon);
-        String siteName  = val.substring(colon+1, dot);
-        String equipName = val.substring(dot+1);
-
-        if (!realm.equals(EQUIP))
-            throw new BajaRuntimeException(
-                "Could not parse HRef '" + ref + "'.");
-
-        return new EquipNavId(ref, siteName, equipName);
-    }
-
     public static EquipNavId make(String siteName, String equipName)
     {
         return new EquipNavId(
-            HRef.make(EQUIP + ":" + siteName + "." + equipName),
+            HRef.make("/site/" + siteName + "/" + equipName),
             siteName,
             equipName);
     }
@@ -87,8 +66,6 @@ public class EquipNavId
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
-
-    public static final String EQUIP = "equip";
 
     private final HRef ref;
     private final String siteName;
