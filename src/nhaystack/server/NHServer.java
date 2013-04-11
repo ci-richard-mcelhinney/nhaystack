@@ -37,9 +37,10 @@ public class NHServer extends HServer
     {
         this.service = service;
 
-        this.configStorehouse  = new ConfigStorehouse(this);
+        this.compStorehouse = new ComponentStorehouse(this);
         this.historyStorehouse = new HistoryStorehouse(this);
-        this.siteStorehouse    = new SiteStorehouse(this);
+        this.nav = new Nav(this);
+        this.cache = new Cache(this);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -116,7 +117,7 @@ public class NHServer extends HServer
         try
         {
             return new CompositeIterator(new Iterator[] { 
-                configStorehouse.makeIterator(),
+                compStorehouse.makeIterator(),
                 historyStorehouse.makeIterator() });
         }
         catch (RuntimeException e)
@@ -165,51 +166,7 @@ public class NHServer extends HServer
 
         try
         {
-            // nav roots
-            if (navId == null)
-            {
-                Array dicts = new Array(HDict.class);
-
-                dicts.add(
-                    new HDictBuilder() 
-                        .add("navId", "/comp")
-                        .add("dis", "ComponentSpace")
-                        .toDict());
-
-                dicts.add(
-                    new HDictBuilder() 
-                        .add("navId", "/his")
-                        .add("dis", "HistorySpace")
-                        .toDict());
-
-                dicts.add(
-                    new HDictBuilder() 
-                        .add("navId", "/site")
-                        .add("dis", "Site")
-                        .toDict());
-
-                return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
-            }
-            // config nav
-            else if (navId.startsWith("/comp"))
-            {
-                return configStorehouse.onNav(navId);
-            }
-            // history nav
-            else if (navId.startsWith("/his"))
-            {
-                return historyStorehouse.onNav(navId);
-            }
-            // site nav
-            else if (navId.startsWith("/site"))
-            {
-                return siteStorehouse.onNav(navId);
-            }
-            // error
-            else
-            {
-                throw new IllegalStateException("Cannot lookup nav for " + navId);
-            }
+            return nav.onNav(navId);
         }
         catch (RuntimeException e)
         {
@@ -613,7 +570,7 @@ public class NHServer extends HServer
                     SiteNavId.make(navNames[0]));
 
                 return (comp == null) ?  null : 
-                    configStorehouse.createComponentTags(comp);
+                    compStorehouse.createComponentTags(comp);
 
             // equip
             case 2:
@@ -622,7 +579,7 @@ public class NHServer extends HServer
                     EquipNavId.make(navNames[0], navNames[1]));
 
                 return (comp == null) ?  null : 
-                    configStorehouse.createComponentTags(comp);
+                    compStorehouse.createComponentTags(comp);
 
             // point
             case 3:
@@ -632,7 +589,7 @@ public class NHServer extends HServer
                     navNames[2]);
 
                 return (comp == null) ?  null : 
-                    configStorehouse.createComponentTags(comp);
+                    compStorehouse.createComponentTags(comp);
 
             // bad uri
             default: return null;
@@ -657,7 +614,7 @@ public class NHServer extends HServer
         if (comp instanceof BHistoryConfig)
             return historyStorehouse.createHistoryTags((BHistoryConfig) comp);
         else
-            return configStorehouse.createComponentTags(comp);
+            return compStorehouse.createComponentTags(comp);
     }
 
     /**
@@ -675,7 +632,7 @@ public class NHServer extends HServer
         {
             BComponent comp = (BComponent) nh.getOrd().get(service, null);
             if (comp == null) return null;
-            return configStorehouse.isVisibleComponent(comp) ? comp : null;
+            return compStorehouse.isVisibleComponent(comp) ? comp : null;
         }
         // history space
         else if (nh.getSpace().equals(NHRef.HISTORY))
@@ -787,46 +744,14 @@ public class NHServer extends HServer
         return HGridBuilder.dictsToGrid(dicts);
     }
 
-//    void verifyLastWrite() throws Exception
-//    {
-//        HGrid grid = HGrid.EMPTY;
-//
-//        grid = NHServer.saveLastWriteToGrid(grid, 16, HNum.make(42.0), "admin");
-//        String str = HZincWriter.gridToString(grid);
-//        System.out.println(str);
-//        verify(str.equals(
-//            "ver:\"2.0\""     + "\n" +
-//            "val,who,level"   + "\n" +
-//            "42,\"admin\",16" + "\n"));
-//
-//        grid = NHServer.saveLastWriteToGrid(grid, 3, HNum.make(123.0), "foo");
-//        str = HZincWriter.gridToString(grid);
-//        System.out.println(str);
-//        verify(str.equals(
-//            "ver:\"2.0\""     + "\n" +
-//            "val,who,level"   + "\n" +
-//            "123,\"foo\",3"   + "\n" +
-//            "42,\"admin\",16" + "\n"));
-//
-//        grid = NHServer.saveLastWriteToGrid(grid, 3, HNum.make(333.0), "admin");
-//        str = HZincWriter.gridToString(grid);
-//        System.out.println(str);
-//        verify(str.equals(
-//            "ver:\"2.0\""     + "\n" +
-//            "val,who,level"   + "\n" +
-//            "333,\"admin\",3" + "\n" +
-//            "42,\"admin\",16" + "\n"));
-//    }
-
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
 
     public BNHaystackService getService() { return service; }
 
-    public ConfigStorehouse  getConfigStorehouse()  { return configStorehouse;  }
-    public HistoryStorehouse getHistoryStorehouse() { return historyStorehouse; }
-    public SiteStorehouse    getSiteStorehouse()    { return siteStorehouse;    }
+    public ComponentStorehouse getComponentStorehouse() { return compStorehouse;    }
+    public HistoryStorehouse   getHistoryStorehouse()   { return historyStorehouse; }
 
     public Cache getCache() { return cache; }
 
@@ -857,10 +782,9 @@ public class NHServer extends HServer
     private final HashMap watches = new HashMap();
 
     private final BNHaystackService service;
-    private final ConfigStorehouse  configStorehouse;
+    private final ComponentStorehouse compStorehouse;
     private final HistoryStorehouse historyStorehouse;
-    private final SiteStorehouse    siteStorehouse;
-
-    private final Cache cache = new Cache(this);
+    private final Nav nav;
+    private final Cache cache;
 }
 

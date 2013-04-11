@@ -7,6 +7,8 @@
 //
 package nhaystack.server.storehouse;
 
+import java.util.*;
+
 import javax.baja.sys.*;
 import javax.baja.timezone.*;
 import javax.baja.units.*;
@@ -17,9 +19,6 @@ import nhaystack.server.*;
 
 /**
   * A Storehouse is similar to a javax.baja.space.BSpace.
-  *
-  * However, not all Storehouses have a BSpace, and
-  * not all BSpaces have a Storehouse.
   */
 public abstract class Storehouse
 {
@@ -30,9 +29,9 @@ public abstract class Storehouse
     }
 
     /**
-      * Return navigation tree children for given navId. 
+      * Iteratate through all the objects managed by this Storehouse.
       */
-    public abstract HGrid onNav(String navId);
+    public abstract Iterator makeIterator();
 
 ////////////////////////////////////////////////////////////////
 // protected

@@ -283,7 +283,7 @@ public class BNHaystackService extends BAbstractService
 
         HDict[] dicts = new HDict[comps.length];
         for (int i = 0; i < comps.length; i++)
-            dicts[i] = server.getConfigStorehouse().createComponentTags(comps[i]);
+            dicts[i] = server.getComponentStorehouse().createComponentTags(comps[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
@@ -294,7 +294,7 @@ public class BNHaystackService extends BAbstractService
 
         HDict[] dicts = new HDict[comps.length];
         for (int i = 0; i < comps.length; i++)
-            dicts[i] = server.getConfigStorehouse().createComponentTags(comps[i]);
+            dicts[i] = server.getComponentStorehouse().createComponentTags(comps[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }

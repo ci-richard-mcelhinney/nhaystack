@@ -18,6 +18,7 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.collection.*;
 import nhaystack.server.*;
 
 /**
@@ -47,28 +48,11 @@ public class HistoryStorehouse extends Storehouse
     }
 
     /**
-      * Return navigation tree children for given navId. 
+      * Iterate through all the histories.
       */
-    public HGrid onNav(String navId)
+    public Iterator makeIterator()
     {
-        if (navId.equals("/his"))
-        {
-            Iterator itr = makeIterator();
-
-            Array dicts = new Array(HDict.class);
-            while (itr.hasNext())
-                dicts.add(itr.next());
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
-        }
-        else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
-    }
-
-    /**
-      * Iterator through all the histories.
-      */
-    public HistoryStorehouseIterator makeIterator()
-    {
-        return new HistoryStorehouseIterator(this);
+        return new HIterator();
     }
 
     /**
@@ -123,7 +107,7 @@ public class HistoryStorehouse extends Storehouse
         }
 
         // check if this history has a point
-        ConfigStorehouse cs = server.getConfigStorehouse();
+        ComponentStorehouse cs = server.getComponentStorehouse();
         BControlPoint point = cs.lookupPointFromHistory(cfg);
         if (point != null)
         {
@@ -157,7 +141,7 @@ public class HistoryStorehouse extends Storehouse
             return true;
 
         // make sure the history is not linked
-        ConfigStorehouse cs = server.getConfigStorehouse();
+        ComponentStorehouse cs = server.getComponentStorehouse();
         if (cs.lookupPointFromHistory(cfg) == null)
             return true;
 
@@ -188,6 +172,60 @@ public class HistoryStorehouse extends Storehouse
         else if (trendRecType.is(BStringTrendRecord.TYPE))  return STRING_KIND;
 
         else return UNKNOWN_KIND;
+    }
+
+////////////////////////////////////////////////////////////////
+// HIterator
+////////////////////////////////////////////////////////////////
+
+    class HIterator implements Iterator
+    {
+        HIterator()
+        {
+            this.iterator = new HistoryDbIterator(service.getHistoryDb());
+        }
+
+        public boolean hasNext() 
+        { 
+            if (!init)
+            {
+                init = true;
+                findNext();
+            }
+            return nextDict != null; 
+        }
+
+        public void remove() { throw new UnsupportedOperationException(); }
+
+        public Object next()
+        {
+            if (!init) throw new IllegalStateException();
+            if (nextDict == null) throw new IllegalStateException();
+
+            HDict dict = nextDict;
+            findNext();
+            return dict;
+        }
+
+        private void findNext()
+        {
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BHistoryConfig cfg = (BHistoryConfig) iterator.next();
+
+                if (isVisibleHistory(cfg))
+                {
+                    nextDict = createHistoryTags(cfg);
+                    break;
+                }
+            }
+        }
+
+        private final HistoryDbIterator iterator;
+
+        private boolean init = false;
+        private HDict nextDict;
     }
 
 ////////////////////////////////////////////////////////////////

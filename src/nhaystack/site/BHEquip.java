@@ -13,7 +13,6 @@ import javax.baja.sys.*;
 import haystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
-import nhaystack.server.storehouse.*;
 
 /**
  *  BHEquip represents a Haystack 'equip' rec.
@@ -64,7 +63,7 @@ public class BHEquip extends BHTagged
         hdb.add(tags);
 
         // navName
-        String navName = ConfigStorehouse.makeNavFormat(this, tags);
+        String navName = Nav.makeNavFormat(this, tags);
         hdb.add("navName", navName);
 
         // dis
@@ -100,7 +99,7 @@ public class BHEquip extends BHTagged
             if (site != null)
             {
                 HDict siteTags = BHDict.findTagAnnotation(site);
-                String siteNavName = ConfigStorehouse.makeNavFormat(site, siteTags);
+                String siteNavName = Nav.makeNavFormat(site, siteTags);
 
                 dis = siteNavName + " " + navName;
             }
@@ -118,7 +117,7 @@ public class BHEquip extends BHTagged
             if (site != null)
             {
                 HDict siteTags = BHDict.findTagAnnotation(site);
-                String siteNavName = ConfigStorehouse.makeNavFormat(site, siteTags);
+                String siteNavName = Nav.makeNavFormat(site, siteTags);
 
                 return HUri.make("/site/" + siteNavName + "/" + navName);
             }

@@ -65,7 +65,7 @@ public class BHSite extends BHTagged
         hdb.add(tags);
 
         // navName
-        String navName = ConfigStorehouse.makeNavFormat(this, tags);
+        String navName = Nav.makeNavFormat(this, tags);
         hdb.add("navName", navName);
 
         // dis

@@ -7,6 +7,8 @@
 //
 package nhaystack.server.storehouse;
 
+import java.util.*;
+
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
 import javax.baja.driver.*;
@@ -20,16 +22,17 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.collection.*;
 import nhaystack.res.*;
 import nhaystack.server.*;
 import nhaystack.site.*;
 
 /**
-  * ConfigStorehouse manages access to the BComponentSpace
+  * ComponentStorehouse manages access to the BComponentSpace
   */
-public class ConfigStorehouse extends Storehouse
+public class ComponentStorehouse extends Storehouse
 {
-    public ConfigStorehouse(NHServer server)
+    public ComponentStorehouse(NHServer server)
     {
         super(server);
     }
@@ -58,7 +61,7 @@ public class ConfigStorehouse extends Storehouse
             hdb.add(tags);
 
             // navName
-            String navName = makeNavFormat(comp, tags);
+            String navName = Nav.makeNavFormat(comp, tags);
             hdb.add("navName", navName);
 
             // add misc other tags
@@ -142,7 +145,7 @@ public class ConfigStorehouse extends Storehouse
             if (comp != null)
             {
                 HDict compTags = BHDict.findTagAnnotation(comp);
-                return ConfigStorehouse.makeNavFormat(comp, compTags);
+                return Nav.makeNavFormat(comp, compTags);
             }
         }
         return null;
@@ -282,44 +285,11 @@ public class ConfigStorehouse extends Storehouse
     }
 
     /**
-      * Return navigation tree children for given navId. 
+      * Iterate through all the points
       */
-    public HGrid onNav(String navId)
+    public Iterator makeIterator()
     {
-        // child of ComponentSpace root
-        if (navId.equals("/comp"))
-        {
-            BComponent root = (BComponent) 
-                BOrd.make("station:|slot:/").get(service, null);
-
-            BComponent kids[] = root.getChildComponents();
-            Array dicts = new Array(HDict.class);
-            for (int i = 0; i < kids.length; i++)
-                dicts.add(makeNavResult(kids[i]));
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
-        }
-        // ComponentSpace component
-        else if (navId.startsWith("/comp/"))
-        {
-            String slotPath = navId.substring("/comp/".length());
-            BOrd ord = BOrd.make("station:|slot:/" + slotPath);
-            BComponent comp = (BComponent) ord.get(service, null);
-
-            BComponent kids[] = comp.getChildComponents();
-            Array dicts = new Array(HDict.class);
-            for (int i = 0; i < kids.length; i++)
-                dicts.add(makeNavResult(kids[i]));
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
-        }
-        else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
-    }
-
-    /**
-      * Iterator through all the points
-      */
-    public ConfigStorehouseIterator makeIterator()
-    {
-        return new ConfigStorehouseIterator(this);
+        return new CIterator();
     }
 
     /**
@@ -364,46 +334,9 @@ public class ConfigStorehouse extends Storehouse
         }
     }
 
-    public static String makeNavFormat(BComponent comp, HDict tags)
-    {
-        String format = tags.has("navNameFormat") ?
-            tags.getStr("navNameFormat") :
-            "%displayName%";
-
-        return BFormat.format(format, comp);
-    }
-
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
-
-    private HDict makeNavResult(BComponent comp)
-    {
-        HDictBuilder hdb = new HDictBuilder();
-
-        // add a navId, but only if this component is not a leaf
-        if (comp.getChildComponents().length > 0)
-        {
-            // always starts with "slot:/"
-            String slotPath = comp.getSlotPath().toString();
-            slotPath = slotPath.substring("slot:/".length());
-
-            hdb.add("navId", "/comp/" + slotPath);
-        }
-
-        if (isVisibleComponent(comp))
-        {
-            hdb.add(createComponentTags(comp));
-        }
-        else
-        {
-            hdb.add("dis", comp.getDisplayName(null));
-            hdb.add("axType", comp.getType().toString());
-            hdb.add("axSlotPath", comp.getSlotPath().toString());
-        }
-
-        return hdb.toDict();
-    }
 
     /**
       * Find the imported point that goes with an imported history, 
@@ -470,6 +403,63 @@ public class ConfigStorehouse extends Storehouse
         if (status.isUnackedAlarm()) return "unackedAlarm";
 
         throw new IllegalStateException();
+    }
+
+////////////////////////////////////////////////////////////////
+// Iterator
+////////////////////////////////////////////////////////////////
+
+    class CIterator implements Iterator
+    {
+        CIterator()
+        {
+            this.iterator = new ComponentTreeIterator(
+                (BComponent) BOrd.make("slot:/").resolve(service, null).get());
+        }
+
+        public boolean hasNext() 
+        { 
+            if (!init)
+            {
+                init = true;
+                findNext();
+            }
+            return nextDict != null; 
+        }
+
+        public Object next()
+        {
+            if (!init) throw new IllegalStateException();
+            if (nextDict == null) throw new IllegalStateException();
+
+            HDict dict = nextDict;
+            findNext();
+            return dict;
+        }
+
+        public void remove() 
+        { 
+            throw new UnsupportedOperationException(); 
+        }
+
+        private void findNext()
+        {
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BComponent comp = (BComponent) iterator.next();
+
+                if (isVisibleComponent(comp))
+                {
+                    nextDict = createComponentTags(comp);
+                    break;
+                }
+            }
+        }
+
+        private final ComponentTreeIterator iterator;
+        private boolean init = false;
+        private HDict nextDict;
     }
 }
 

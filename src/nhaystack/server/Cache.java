@@ -18,7 +18,6 @@ import javax.baja.util.*;
 import haystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
-import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
 
 /**
@@ -195,8 +194,6 @@ public class Cache
         siteEquips  = new HashMap();
         equipPoints = new HashMap();
 
-        ConfigStorehouse storehouse = server.getConfigStorehouse();
-
         Array sitesArr = new Array(BComponent.class);
         Array equipsArr = new Array(BComponent.class);
 
@@ -318,7 +315,6 @@ public class Cache
     private void rebuildHistoryCache()
     {
         remoteToConfig = new HashMap();
-        HistoryStorehouse storehouse = server.getHistoryStorehouse();
 
         BIHistory[] histories = server.getService().getHistoryDb().getHistories(); 
         for (int i = 0; i < histories.length; i++)
