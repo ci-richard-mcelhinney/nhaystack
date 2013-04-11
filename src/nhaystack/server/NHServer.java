@@ -608,37 +608,31 @@ public class NHServer extends HServer
         {
             // site
             case 1:
-                BComponent comp = cache.getSite(
+
+                BComponent comp = cache.getNavSite(
                     SiteNavId.make(navNames[0]));
-                return (comp == null) ?
-                    null : 
+
+                return (comp == null) ?  null : 
                     configStorehouse.createComponentTags(comp);
 
             // equip
             case 2:
-                comp = cache.getEquip(
+
+                comp = cache.getNavEquip(
                     EquipNavId.make(navNames[0], navNames[1]));
-                return (comp == null) ?
-                    null : 
+
+                return (comp == null) ?  null : 
                     configStorehouse.createComponentTags(comp);
 
             // point
             case 3:
-                String siteNav  = navNames[0];
-                String equipNav = navNames[1];
-                String pointNav = navNames[2];
 
-                // TODO make this more efficient
-                BControlPoint[] points = cache.getEquipPoints(
-                    EquipNavId.make(siteNav, equipNav));
-                for (int i = 0; i < points.length; i++)
-                {
-                    BControlPoint point = points[i];
-                    HDict tags = configStorehouse.createComponentTags(point);
-                    if (tags.getStr("navName").equals(pointNav))
-                        return tags;
-                }
-                return null;
+                comp = cache.getNavPoint(
+                    EquipNavId.make(navNames[0], navNames[1]), 
+                    navNames[2]);
+
+                return (comp == null) ?  null : 
+                    configStorehouse.createComponentTags(comp);
 
             // bad uri
             default: return null;

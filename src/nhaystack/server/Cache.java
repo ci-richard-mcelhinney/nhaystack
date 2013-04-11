@@ -114,9 +114,9 @@ public class Cache
     }
 
     /**
-      * Get the site identified by the nav, or return null.
+      * Get the site identified by the navId, or return null.
       */
-    public BComponent getSite(SiteNavId siteNav)
+    public BComponent getNavSite(SiteNavId siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -124,9 +124,9 @@ public class Cache
     }
 
     /**
-      * Get the equip identified by the nav, or return null.
+      * Get the equip identified by the navId, or return null.
       */
-    public BComponent getEquip(EquipNavId equipNav)
+    public BComponent getNavEquip(EquipNavId equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -134,9 +134,9 @@ public class Cache
     }
 
     /**
-      * Get all the equips associated with the given site.
+      * Get all the equips associated with the given site navId.
       */
-    public BComponent[] getSiteEquips(SiteNavId siteNav)
+    public BComponent[] getNavSiteEquips(SiteNavId siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -149,9 +149,9 @@ public class Cache
     }
 
     /**
-      * Get all the points associated with the given equip.
+      * Get all the points associated with the given equip navId.
       */
-    public BControlPoint[] getEquipPoints(EquipNavId equipNav)
+    public BControlPoint[] getNavEquipPoints(EquipNavId equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -161,6 +161,25 @@ public class Cache
         return (arr == null) ?  
             new BControlPoint[0] : 
             (BControlPoint[]) arr.trim();
+    }
+
+    /**
+      * Get the site identified by the equip navId and point navName, or return null.
+      */
+    public BControlPoint getNavPoint(EquipNavId equipNav, String pointNav)
+    {
+        // TODO we may want to make this more efficient eventually.
+        BControlPoint[] points = getNavEquipPoints(equipNav);
+
+        for (int i = 0; i < points.length; i++)
+        {
+            BControlPoint point = points[i];
+            HDict tags = BHDict.findTagAnnotation(point);
+
+            if (navName(point, tags).equals(pointNav))
+                return point;
+        }
+        return null;
     }
 
 ////////////////////////////////////////////////////////////////

@@ -34,9 +34,6 @@ public class SiteStorehouse extends Storehouse
       */
     public HGrid onNav(String navId)
     {
-        /////////////////////////////////////////////
-        // find all sites
-
         if (navId.equals("/site"))
         {
             Array dicts = new Array(HDict.class);
@@ -58,9 +55,6 @@ public class SiteStorehouse extends Storehouse
 
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
-
-        /////////////////////////////////////////////
-        // find equips for a given site
 
         else if (navId.startsWith("/site/"))
         {
@@ -84,7 +78,7 @@ public class SiteStorehouse extends Storehouse
         Array dicts = new Array(HDict.class);
 
         SiteNavId siteNav = SiteNavId.make(siteName);
-        BComponent[] equips = server.getCache().getSiteEquips(siteNav);
+        BComponent[] equips = server.getCache().getNavSiteEquips(siteNav);
 
         for (int i = 0; i < equips.length; i++)
         {
@@ -109,7 +103,7 @@ public class SiteStorehouse extends Storehouse
         Array dicts = new Array(HDict.class);
 
         EquipNavId equipNav = EquipNavId.make(siteName, equipName);
-        BControlPoint[] points = server.getCache().getEquipPoints(equipNav);
+        BControlPoint[] points = server.getCache().getNavEquipPoints(equipNav);
 
         for (int i = 0; i < points.length; i++)
         {
