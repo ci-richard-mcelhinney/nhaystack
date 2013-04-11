@@ -134,7 +134,7 @@ public class NHServer extends HServer
       * Return null if the BComponent cannot be found,
       * or if it is not haystack-annotated.
       */
-    protected HDict onReadById(HIdentifier id)
+    protected HDict onReadById(HRef id)
     {
         if (LOG.isTraceOn())
             LOG.trace("onReadById " + id);

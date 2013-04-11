@@ -71,7 +71,7 @@ public class NHWatch extends HWatch
      * The HGrid that is returned must contain metadata entries 
      * for 'watchId' and 'lease'.
      */
-    public synchronized HGrid sub(HIdentifier[] ids, boolean checked)
+    public synchronized HGrid sub(HRef[] ids, boolean checked)
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
@@ -115,7 +115,7 @@ public class NHWatch extends HWatch
      * Remove a list of records from watch.  Silently ignore
      * any invalid ids.
      */
-    public synchronized void unsub(HIdentifier[] ids)
+    public synchronized void unsub(HRef[] ids)
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
