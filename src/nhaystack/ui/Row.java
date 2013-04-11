@@ -119,7 +119,7 @@ class Row
         else if (val instanceof HStr)    return "Str";
         else if (val instanceof HRef)    return "Ref";
         else if (val instanceof HBool)   return "Bool";
-//        else if (val instanceof HUri)      return "Uri";
+        else if (val instanceof HUri)      return "Str"; //"Uri";
 //        else if (val instanceof HBin)      return "Bin";
 //        else if (val instanceof HDate)     return "Date";
 //        else if (val instanceof HTime)     return "Time";
@@ -154,6 +154,10 @@ class Row
 
         else if (val instanceof HStr)
             return makeStrFE(name, (HStr) val);
+
+        // this is for siteUri, thus should always be readOnly
+        else if (val instanceof HUri)
+            return makeStrFE(name, HStr.make(((HUri) val).val));
 
         else if (val instanceof HRef)
             return makeRefFE(editor, name, (HRef) val);

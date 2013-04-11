@@ -75,7 +75,7 @@ public class ConfigStorehouse extends Storehouse
 
             // uri
             HUri siteUri = createSiteUri(hdb, navName);
-            if (siteUri != null) hdb.add("siteUri", siteUri.val);
+            if (siteUri != null) hdb.add("siteUri", siteUri);
 
             // add id
             HRef ref = NHRef.make(comp).getHRef();

@@ -73,7 +73,7 @@ public class BHEquip extends BHTagged
 
         // siteUri
         HUri siteUri = createSiteUri(server, tags, navName);
-        if (siteUri != null) hdb.add("siteUri", siteUri.val);
+        if (siteUri != null) hdb.add("siteUri", siteUri);
 
         // add id
         HRef ref = NHRef.make(this).getHRef();
