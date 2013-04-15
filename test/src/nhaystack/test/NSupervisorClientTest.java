@@ -232,6 +232,41 @@ public class NSupervisorClientTest extends NTest
 
         grid = client.call("nav", makeNavGrid(HStr.make("/site/Blacksburg/FluxCapacitor")));
         verifyEq(grid.numRows(), 0);
+
+//[/his] 'HistorySpace'
+//    [/his/nhaystack_jace1] 'nhaystack_jace1'
+//        [---] 'nhaystack_jace1_AuditHistory'
+//        [---] 'nhaystack_jace1_LogHistory'
+//    [/his/nhaystack_jace2] 'nhaystack_jace2'
+//        [---] 'nhaystack_jace2_SineWave2'
+//    [/his/nhaystack_sup] 'nhaystack_sup'
+//        [---] 'nhaystack_sup_AuditHistory'
+//        [---] 'nhaystack_sup_LogHistory'
+
+        grid = client.call("nav", makeNavGrid(HStr.make("/his")));
+        verifyEq(grid.numRows(), 3);
+        verifyEq(grid.row(0).get("navId"), HStr.make("/his/nhaystack_jace1"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("/his/nhaystack_jace2"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("/his/nhaystack_sup"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("/his/nhaystack_jace1")));
+        verifyEq(grid.numRows(), 2);
+        verify(grid.row(0).missing("navId"));
+        verify(grid.row(1).missing("navId"));
+        verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_jace1_AuditHistory"));
+        verifyEq(grid.row(1).get("dis"), HStr.make("nhaystack_jace1_LogHistory"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("/his/nhaystack_jace2")));
+        verifyEq(grid.numRows(), 1);
+        verify(grid.row(0).missing("navId"));
+        verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_jace2_SineWave2"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("/his/nhaystack_sup")));
+        verifyEq(grid.numRows(), 2);
+        verify(grid.row(0).missing("navId"));
+        verify(grid.row(1).missing("navId"));
+        verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_sup_AuditHistory"));
+        verifyEq(grid.row(1).get("dis"), HStr.make("nhaystack_sup_LogHistory"));
     }
 
 //////////////////////////////////////////////////////////////////////////

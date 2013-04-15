@@ -36,11 +36,10 @@ public class NHServer extends HServer
     public NHServer(BNHaystackService service)
     {
         this.service = service;
-
-        this.compStorehouse = new ComponentStorehouse(this);
-        this.historyStorehouse = new HistoryStorehouse(this);
-        this.nav = new Nav(this);
+        this.compStore = new ComponentStorehouse(this);
+        this.hisStore = new HistoryStorehouse(this);
         this.cache = new Cache(this);
+        this.nav = new Nav(service, compStore, hisStore, cache);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -117,8 +116,8 @@ public class NHServer extends HServer
         try
         {
             return new CompositeIterator(new Iterator[] { 
-                compStorehouse.makeIterator(),
-                historyStorehouse.makeIterator() });
+                compStore.makeIterator(),
+                hisStore.makeIterator() });
         }
         catch (RuntimeException e)
         {
@@ -570,7 +569,7 @@ public class NHServer extends HServer
                     SiteNavId.make(navNames[0]));
 
                 return (comp == null) ?  null : 
-                    compStorehouse.createComponentTags(comp);
+                    compStore.createComponentTags(comp);
 
             // equip
             case 2:
@@ -579,7 +578,7 @@ public class NHServer extends HServer
                     EquipNavId.make(navNames[0], navNames[1]));
 
                 return (comp == null) ?  null : 
-                    compStorehouse.createComponentTags(comp);
+                    compStore.createComponentTags(comp);
 
             // point
             case 3:
@@ -589,7 +588,7 @@ public class NHServer extends HServer
                     navNames[2]);
 
                 return (comp == null) ?  null : 
-                    compStorehouse.createComponentTags(comp);
+                    compStore.createComponentTags(comp);
 
             // bad uri
             default: return null;
@@ -612,9 +611,9 @@ public class NHServer extends HServer
     public HDict createTags(BComponent comp)
     {
         if (comp instanceof BHistoryConfig)
-            return historyStorehouse.createHistoryTags((BHistoryConfig) comp);
+            return hisStore.createHistoryTags((BHistoryConfig) comp);
         else
-            return compStorehouse.createComponentTags(comp);
+            return compStore.createComponentTags(comp);
     }
 
     /**
@@ -632,7 +631,7 @@ public class NHServer extends HServer
         {
             BComponent comp = (BComponent) nh.getOrd().get(service, null);
             if (comp == null) return null;
-            return compStorehouse.isVisibleComponent(comp) ? comp : null;
+            return compStore.isVisibleComponent(comp) ? comp : null;
         }
         // history space
         else if (nh.getSpace().equals(NHRef.HISTORY))
@@ -642,7 +641,7 @@ public class NHServer extends HServer
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();
-            return historyStorehouse.isVisibleHistory(cfg) ? cfg : null;
+            return hisStore.isVisibleHistory(cfg) ? cfg : null;
         }
         // invalid space
         else 
@@ -677,13 +676,13 @@ public class NHServer extends HServer
         if (comp instanceof BHistoryConfig)
         {
             BHistoryConfig cfg = (BHistoryConfig) comp;
-            return historyStorehouse.isVisibleHistory(cfg) ? 
+            return hisStore.isVisibleHistory(cfg) ? 
                 cfg : null;
         }
         // component space
         else if (comp instanceof BControlPoint)
         {
-            return historyStorehouse.lookupHistoryFromPoint((BControlPoint) comp);
+            return hisStore.lookupHistoryFromPoint((BControlPoint) comp);
         }
         else
         {
@@ -750,8 +749,8 @@ public class NHServer extends HServer
 
     public BNHaystackService getService() { return service; }
 
-    public ComponentStorehouse getComponentStorehouse() { return compStorehouse;    }
-    public HistoryStorehouse   getHistoryStorehouse()   { return historyStorehouse; }
+    public ComponentStorehouse getComponentStorehouse() { return compStore; }
+    public HistoryStorehouse   getHistoryStorehouse()   { return hisStore;  }
 
     public Cache getCache() { return cache; }
 
@@ -782,9 +781,9 @@ public class NHServer extends HServer
     private final HashMap watches = new HashMap();
 
     private final BNHaystackService service;
-    private final ComponentStorehouse compStorehouse;
-    private final HistoryStorehouse historyStorehouse;
-    private final Nav nav;
+    private final ComponentStorehouse compStore;
+    private final HistoryStorehouse hisStore;
     private final Cache cache;
+    private final Nav nav;
 }
 

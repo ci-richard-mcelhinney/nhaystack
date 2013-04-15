@@ -10,11 +10,13 @@ package nhaystack.server;
 import java.util.*;
 
 import javax.baja.control.*;
+import javax.baja.history.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
 import haystack.*;
+import nhaystack.collection.*;
 import nhaystack.server.*;
 import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
@@ -24,15 +26,22 @@ import nhaystack.site.*;
   */
 public class Nav
 {
-    public Nav(NHServer server)
+    Nav(
+        BNHaystackService service,
+        ComponentStorehouse compStore,
+        HistoryStorehouse hisStore,
+        Cache cache)
     {
-        this.server = server;
+        this.service = service;
+        this.compStore = compStore;
+        this.hisStore = hisStore;
+        this.cache = cache;
     }
 
     /**
       * Return navigation tree children for given navId. 
       */
-    public HGrid onNav(String navId)
+    HGrid onNav(String navId)
     {
         if (navId == null) return roots();
 
@@ -88,7 +97,7 @@ public class Nav
         if (navId.equals("/comp"))
         {
             BComponent root = (BComponent) 
-                BOrd.make("station:|slot:/").get(server.getService(), null);
+                BOrd.make("station:|slot:/").get(service, null);
 
             BComponent kids[] = root.getChildComponents();
             Array dicts = new Array(HDict.class);
@@ -101,7 +110,7 @@ public class Nav
         {
             String slotPath = navId.substring("/comp/".length());
             BOrd ord = BOrd.make("station:|slot:/" + slotPath);
-            BComponent comp = (BComponent) ord.get(server.getService(), null);
+            BComponent comp = (BComponent) ord.get(service, null);
 
             BComponent kids[] = comp.getChildComponents();
             Array dicts = new Array(HDict.class);
@@ -126,10 +135,9 @@ public class Nav
             hdb.add("navId", "/comp/" + slotPath);
         }
 
-        ComponentStorehouse cs = server.getComponentStorehouse();
-        if (cs.isVisibleComponent(comp))
+        if (compStore.isVisibleComponent(comp))
         {
-            hdb.add(cs.createComponentTags(comp));
+            hdb.add(compStore.createComponentTags(comp));
         }
         else
         {
@@ -143,15 +151,39 @@ public class Nav
 
     private HGrid onHisNav(String navId)
     {
+        // distinct station names
         if (navId.equals("/his"))
         {
-            Iterator itr = server.getHistoryStorehouse().makeIterator();
+            String[] stationNames = cache.getNavHistoryStationNames();
 
             Array dicts = new Array(HDict.class);
-            while (itr.hasNext())
-                dicts.add(itr.next());
+            for (int i = 0; i < stationNames.length; i++)
+            {
+                String stationName = stationNames[i];
+
+                HDictBuilder hd = new HDictBuilder();
+                hd.add("navId", "/his/" + stationName);
+                hd.add("dis", stationName);
+                hd.add("stationName", stationName);
+                dicts.add(hd.toDict());
+            }
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
+
+        // histories that go with station
+        else if (navId.startsWith("/his/"))
+        {
+            String stationName = navId.substring("/his/".length());
+            BHistoryConfig[] configs = cache.getNavHistories(stationName);
+
+            Array dicts = new Array(HDict.class);
+            for (int i = 0; i < configs.length; i++)
+            {
+                dicts.add(hisStore.createHistoryTags(configs[i]));
+            }
+            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        }
+
         else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
     }
 
@@ -161,11 +193,11 @@ public class Nav
         {
             Array dicts = new Array(HDict.class);
 
-            BComponent[] sites = server.getCache().getAllSites();
+            BComponent[] sites = cache.getAllSites();
             for (int i = 0; i < sites.length; i++)
             {
                 BComponent site = sites[i];
-                HDict tags = server.getComponentStorehouse().createComponentTags(site);
+                HDict tags = compStore.createComponentTags(site);
 
                 SiteNavId siteNav = SiteNavId.make(tags.getStr("navName"));
 
@@ -201,12 +233,12 @@ public class Nav
         Array dicts = new Array(HDict.class);
 
         SiteNavId siteNav = SiteNavId.make(siteName);
-        BComponent[] equips = server.getCache().getNavSiteEquips(siteNav);
+        BComponent[] equips = cache.getNavSiteEquips(siteNav);
 
         for (int i = 0; i < equips.length; i++)
         {
             BComponent equip = equips[i];
-            HDict tags = server.getComponentStorehouse().createComponentTags(equip);
+            HDict tags = compStore.createComponentTags(equip);
 
             EquipNavId equipNav = EquipNavId.make(
                 siteNav.getSiteName(),
@@ -226,14 +258,14 @@ public class Nav
         Array dicts = new Array(HDict.class);
 
         EquipNavId equipNav = EquipNavId.make(siteName, equipName);
-        BControlPoint[] points = server.getCache().getNavEquipPoints(equipNav);
+        BControlPoint[] points = cache.getNavEquipPoints(equipNav);
 
         for (int i = 0; i < points.length; i++)
         {
             BControlPoint point = points[i];
 
             HDictBuilder hd = new HDictBuilder();
-            hd.add(server.getComponentStorehouse().createComponentTags(point));
+            hd.add(compStore.createComponentTags(point));
             dicts.add(hd.toDict());
         }
 
@@ -244,6 +276,9 @@ public class Nav
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    final NHServer server;
+    final BNHaystackService service;
+    final Cache cache;
+    final ComponentStorehouse compStore;
+    final HistoryStorehouse hisStore;
 }
 

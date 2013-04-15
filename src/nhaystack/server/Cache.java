@@ -39,10 +39,14 @@ public class Cache
         LOG.message("Begin cache rebuild.");
 
         rebuildComponentCache();
-        rebuildHistoryCache();
+        rebuildHistoryCache_firstPass();
 
         if (!initialized)
             initialized = true;
+
+        // simplest way to avoid a chicken-and-egg problem
+        // when creating the nav history cache
+        rebuildHistoryCache_secondPass();
 
         numPoints = 0;
         numEquips = 0;
@@ -181,6 +185,29 @@ public class Cache
         return null;
     }
 
+    /**
+      * Get the stationNames for nav histories
+      */
+    public String[] getNavHistoryStationNames()
+    {
+        Array arr = new Array(String.class, navHistories.keySet());
+        return (String[]) arr.trim();
+    }
+
+    /**
+      * Get the nav histories for the given stationName
+      */
+    public BHistoryConfig[] getNavHistories(String stationName)
+    {
+        Array arr = (Array) navHistories.get(stationName);
+
+        if (arr == null) 
+            throw new BajaRuntimeException(
+                "No nav histories found for '" + stationName + "'");
+
+        return (BHistoryConfig[]) arr.trim();
+    }
+
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
@@ -312,9 +339,10 @@ public class Cache
         }
     }
 
-    private void rebuildHistoryCache()
+    private void rebuildHistoryCache_firstPass()
     {
         remoteToConfig = new HashMap();
+        navHistories = new TreeMap();
 
         BIHistory[] histories = server.getService().getHistoryDb().getHistories(); 
         for (int i = 0; i < histories.length; i++)
@@ -330,6 +358,25 @@ public class Cache
             RemotePoint remotePoint = RemotePoint.fromHistoryConfig(cfg);
             if (remotePoint != null)
                 remoteToConfig.put(remotePoint, cfg);
+        }
+    }
+
+    private void rebuildHistoryCache_secondPass()
+    {
+        Iterator itr = new HistoryDbIterator(server.getService().getHistoryDb());
+        while (itr.hasNext())
+        {
+            BHistoryConfig cfg = (BHistoryConfig) itr.next();
+
+            if (server.getHistoryStorehouse().isVisibleHistory(cfg))
+            {
+                String stationName = cfg.getId().getDeviceName();
+
+                Array arr = (Array) navHistories.get(stationName);
+                if (arr == null)
+                    navHistories.put(stationName, arr = new Array(BHistoryConfig.class));
+                arr.add(cfg);
+            }
         }
     }
 
@@ -370,7 +417,9 @@ public class Cache
     private final NHServer server;
     private boolean initialized = false;
 
-    private Map remoteToConfig  = null; // RemotePoint -> BHistoryConfig
+    private Map remoteToConfig = null; // RemotePoint -> BHistoryConfig
+    private Map navHistories = null;   // stationName -> Array<BHistoryConfig>
+
     private Map remoteToPoint   = null; // RemotePoint -> BControlPoint
     private BComponent[] sites  = null;
     private BComponent[] equips = null;

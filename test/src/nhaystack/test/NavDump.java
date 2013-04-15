@@ -29,7 +29,6 @@ public class NavDump
 
     private void dumpNav(HGrid navGrid, int curDepth)
     {
-//navGrid.dump();
         for (int i = 0; i < navGrid.numRows(); i++)
         {
             HRow row = navGrid.row(i);
@@ -40,16 +39,7 @@ public class NavDump
             if (str != null) sb.append("[" + str + "]");
             else sb.append("[---]");
 
-//            str = (HStr) row.get("dis", false);
-//            if (str != null) sb.append(" '" + str + "'");
-
             sb.append(" '").append(row.get("dis")).append("'");
-
-//            str = (HStr) row.get("axSlotPath", false);
-//            if (str != null) sb.append(" " + str);
-//
-//            str = (HStr) row.get("axHistoryId", false);
-//            if (str != null) sb.append(" " + str);
 
             for (int j = 0; j < curDepth-1; j++)
                 System.out.print("    ");

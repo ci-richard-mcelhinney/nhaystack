@@ -235,12 +235,15 @@ public class NSimpleClientTest extends NTest
 
         HGrid n = makeNavGrid(HStr.make("/his"));
         grid = client.call("nav", n);
-//grid.dump();
+        verifyEq(grid.numRows(), 1);
+        verifyEq(grid.row(0).get("navId"), HStr.make("/his/nhaystack_simple"));
+
+        n = makeNavGrid(HStr.make("/his/nhaystack_simple"));
+        grid = client.call("nav", n);
         verifyEq(grid.numRows(), 3);
 
         n = makeNavGrid(HStr.make("/comp"));
         grid = client.call("nav", n);
-//grid.dump();
         verifyEq(grid.numRows(), 3);
         verifyEq(grid.row(0).get("navId"), HStr.make("/comp/Services"));
         verifyEq(grid.row(1).get("navId"), HStr.make("/comp/Drivers"));
