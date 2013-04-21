@@ -359,6 +359,65 @@ public class HClient extends HProj
   }
 
 //////////////////////////////////////////////////////////////////////////
+// PointWrite
+//////////////////////////////////////////////////////////////////////////
+
+  /**
+    * Write to a given level of a writable point, and return the current status 
+    * of a writable point's priority array (see pointWriteArray()).
+    *
+    * @param id Ref identifier of writable point
+    * @param level Number from 1-17 for level to write
+    * @param val value to write or null to auto the level
+    * @param who optional username performing the write, otherwise user dis is used
+    * @param duration Number with duration unit if setting level 8
+    */
+  public HGrid pointWrite(
+    HIdentifier id, int level, String who,
+    HVal val, HNum dur)
+  {
+    HGridBuilder b = new HGridBuilder();
+    b.addCol("id");
+    b.addCol("level");
+    b.addCol("who");
+    b.addCol("val");
+    b.addCol("duration");
+
+    b.addRow(new HVal[] { 
+      id, 
+      HNum.make(level),
+      HStr.make(who),
+      val,
+      dur });
+
+    HGrid req = b.toGrid();
+    HGrid res = call("pointWrite", req);
+    return res;
+  }
+
+  /**
+    * Return the current status 
+    * of a point's priority array.
+    * The result is returned grid with following columns:
+    * <ul>
+    *   <li>level: number from 1 - 17 (17 is default)
+    *   <li>levelDis: human description of level
+    *   <li>val: current value at level or null
+    *   <li>who: who last controlled the value at this level
+    * </ul>
+    */
+  public HGrid pointWriteArray(HIdentifier id)
+  {
+    HGridBuilder b = new HGridBuilder();
+    b.addCol("id");
+    b.addRow(new HVal[] { id });
+
+    HGrid req = b.toGrid();
+    HGrid res = call("pointWrite", req);
+    return res;
+  }
+
+//////////////////////////////////////////////////////////////////////////
 // History
 //////////////////////////////////////////////////////////////////////////
 
