@@ -425,7 +425,7 @@ public class NHServer extends HServer
     protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
         if (LOG.isTraceOn())
-            LOG.trace("onHisRead " + rec + ", " + range);
+            LOG.trace("onHisRead " + rec.id() + ", " + range);
 
         try
         {
@@ -524,7 +524,7 @@ public class NHServer extends HServer
     protected HGrid onInvokeAction(HDict rec, String actionName, HDict args)
     {
         if (LOG.isTraceOn())
-            LOG.trace("onInvokeAction " + rec + ", " + actionName + ", " + args);
+            LOG.trace("onInvokeAction " + rec.id() + ", " + actionName + ", " + args);
 
         try
         {

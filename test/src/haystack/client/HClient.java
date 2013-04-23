@@ -430,7 +430,7 @@ public class HClient extends HProj
    * the history record.  Otherwise if a String is passed, it is resolved
    * relative to the history record's timezone.
    */
-  public HGrid hisRead(HRef id, Object range)
+  public HGrid hisRead(HIdentifier id, Object range)
   {
     HGridBuilder b = new HGridBuilder();
     b.addCol("id");
@@ -462,7 +462,7 @@ public class HClient extends HProj
   /**
    * Invoke a remote action using the "invokeAction" REST operation.
    */
-  public HGrid invokeAction(HRef id, String action, HDict args)
+  public HGrid invokeAction(HIdentifier id, String action, HDict args)
   {
     HDict meta = new HDictBuilder().add("id", id).add("action", action).toDict();
     HGrid req = HGridBuilder.dictsToGrid(meta, new HDict[] { args });

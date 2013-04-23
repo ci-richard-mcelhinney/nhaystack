@@ -91,8 +91,11 @@ public abstract class Types
       */
     public static BValue actionArgsToBaja(HDict args, Action action)
     {
+        // NOTE we can't use args.size(), because if args is an HRow,
+        // the size() can be non-zero even if args.iterator().hasNext() is false.
+
         // null
-        if (args == null || args.size() == 0)
+        if (args == null || !args.iterator().hasNext())
         {
             return null;
         }

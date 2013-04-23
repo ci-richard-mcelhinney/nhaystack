@@ -34,9 +34,10 @@ public class NSimpleClientTest extends NTest
         verifyFormats();
         verifyRead();
         verifyWatches();
-        verifyHisRead();
         verifyNav();
         verifyPointWrite();
+        verifyInvokeAction();
+        verifyHisRead();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,7 +63,7 @@ public class NSimpleClientTest extends NTest
         HDict r = client.about();
         verifyEq(r.getStr("haystackVersion"), "2.0");
         verifyEq(r.getStr("productName"), "Niagara AX");
-//        verifyEq(r.getStr("productVersion"), "3.6.47"); TODO
+//        verifyEq(r.getStr("productVersion"), "3.6.47"); 
         verifyEq(r.getStr("tz"), HTimeZone.DEFAULT.name);
     }
 
@@ -286,8 +287,8 @@ public class NSimpleClientTest extends NTest
     void verifyHisRead() throws Exception
     {
         HGrid grid = client.readAll("his");
-//grid.dump();
-        verifyEq(grid.numRows(), 4);
+grid.dump();
+        verifyEq(grid.numRows(), 5);
 
         ///////////////////////////////////////////////
 
@@ -318,12 +319,11 @@ public class NSimpleClientTest extends NTest
         his = client.hisRead(dict.id(), "today");
 
         verifyEq(his.meta().id(), dict.id());
-//        verify(his.numRows() > 0);
-//
-//        last = his.numRows()-1;
-//        verifyEq(ts(his.row(last)).date, HDate.today());
-//
-//        verifyEq(numVal(his.row(0)).unit, "psi");
+
+        ///////////////////////////////////////////////
+
+        client.hisRead(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"), "today");
+        client.hisRead(HUri.make("/site/Richmond/AHU1/NumericWritable"), "today");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -457,6 +457,77 @@ public class NSimpleClientTest extends NTest
         // just make sure this works with no level, etc
         grid = client.pointWriteArray(id);
     }
+
+//////////////////////////////////////////////////////////////////////////
+// Invoke Action
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyInvokeAction() throws Exception
+    {
+        doVerifyInvokeAction(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"));
+        doVerifyInvokeAction(HUri.make("/site/Richmond/AHU1/NumericWritable"));
+    }
+    
+    private void doVerifyInvokeAction(HIdentifier id)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("arg", HNum.make(333));
+        client.invokeAction(id, "emergencyOverride", hd.toDict());
+
+        HGrid grid = client.pointWriteArray(id);
+        verifyEq(grid.numRows(), 17);
+        for (int i = 0; i < 17; i++)
+        {
+            verifyEq(grid.row(i).getInt("level"), i+1);
+            switch(i+1)
+            {
+                case 1:
+                    verifyEq(grid.row(i).get("val"), HNum.make(333));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                case 10:
+                    verify(grid.row(i).missing("val"));
+                    verifyEq(grid.row(i).get("who"), HStr.make("admin"));
+                    break;
+                case 17:
+                    verifyEq(grid.row(i).get("val"), HNum.make(111));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                default:
+                    verify(grid.row(i).missing("val"));
+                    verify(grid.row(i).missing("who"));
+                    break;
+            }
+        }
+
+        client.invokeAction(id, "emergencyAuto", HDict.EMPTY);
+
+        grid = client.pointWriteArray(id);
+        verifyEq(grid.numRows(), 17);
+        for (int i = 0; i < 17; i++)
+        {
+            verifyEq(grid.row(i).getInt("level"), i+1);
+            switch(i+1)
+            {
+                case 10:
+                    verify(grid.row(i).missing("val"));
+                    verifyEq(grid.row(i).get("who"), HStr.make("admin"));
+                    break;
+                case 17:
+                    verifyEq(grid.row(i).get("val"), HNum.make(111));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                default:
+                    verify(grid.row(i).missing("val"));
+                    verify(grid.row(i).missing("who"));
+                    break;
+            }
+        }
+    }
+
+////////////////////////////////////////////////////////////////
+// main
+////////////////////////////////////////////////////////////////
 
     public static void main(String[] args)
     {

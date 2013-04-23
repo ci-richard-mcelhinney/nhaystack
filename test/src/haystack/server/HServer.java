@@ -286,7 +286,7 @@ public abstract class HServer extends HProj
    * the history record.  Otherwise if a String is passed, it is resolved
    * relative to the history record's timezone.
    */
-  public final HGrid hisRead(HRef id, Object range)
+  public final HGrid hisRead(HIdentifier id, Object range)
   {
     // lookup entity
     HDict rec = readById(id);
