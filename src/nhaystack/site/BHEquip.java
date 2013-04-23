@@ -119,7 +119,7 @@ public class BHEquip extends BHTagged
                 HDict siteTags = BHDict.findTagAnnotation(site);
                 String siteNavName = Nav.makeNavFormat(site, siteTags);
 
-                return HUri.make("/site/" + siteNavName + "/" + navName);
+                return HUri.make("sep:/" + siteNavName + "/" + navName);
             }
         }
 

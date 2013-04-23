@@ -112,18 +112,6 @@ public class NSimpleClientTest extends NTest
     {
         HGrid grid = client.readAll("id");
 
-//ver:"2.0"
-//axType,foo,kind,id,his,curStatus,dis,hisInterpolate,axSlotPath,navNameFormat,navName,unit,point,tz,cur,curVal,bar,equip,siteUri,siteRef,equipRef,writable,site,axHistoryId
-//"kitControl:SineWave",M,"Number",@c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~ "Foo_SineWave1",M,"ok","Foo_SineWave1","cov","slot:/Foo/SineWave1","%parent.displayName%_%displayName%","Foo_SineWave1","¦F",M,"New_York",M,0.6123109470504673¦F,M,
-//,,,,,,
-//"kitControl:SineWave",,"Number",@c.c2xvdDovRm9vL1NpbmVXYXZlMg~~ "SineWave2",,"ok","SineWave2",,"slot:/Foo/SineWave2",,"SineWave2","psi",M,,M,0.6123109470504673psi,,,,,,,,
-//"baja:Folder",,,@c.c2xvdDovQUhVMQ~~ "Richmond AHU1",,,"Richmond AHU1",,"slot:/AHU1",,"AHU1",,,,,,,M,`/site/Richmond/AHU1`,@c.c2xvdDovUmljaG1vbmQ~,,,,
-//"control:NumericWritable",,"Number",@c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~ "Richmond AHU1 NumericWritable",,"null","Richmond AHU1 NumericWritable",,"slot:/AHU1/NumericWritable",,"NumericWritable",,M,,M,0.0,,,`/site/Richmond/AHU1/NumericWritable`,@c.c2xvdDovUmljaG1vbmQ~,@c.c2xvdDovQUhVMQ~~,M,,
-//"nhaystack:HSite",,,@c.c2xvdDovUmljaG1vbmQ~ "Richmond",,,"Richmond",,"slot:/Richmond",,"Richmond",,,,,,,,`/site/Richmond`,,,,M,
-//"history:HistoryConfig",,,@h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5 "nhaystack_simple_AuditHistory",M,,"nhaystack_simple_AuditHistory",,,,"nhaystack_simple_AuditHistory",,M,"New_York",,,,,,,,,,"/nhaystack_simple/AuditHistory"
-//"history:HistoryConfig",,,@h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~ "nhaystack_simple_LogHistory",M,,"nhaystack_simple_LogHistory",,,,"nhaystack_simple_LogHistory",,M,"New_York",,,,,,,,,,"/nhaystack_simple/LogHistory"
-//"history:HistoryConfig",,"Number",@h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz "nhaystack_simple_SineWave3",M,,"nhaystack_simple_SineWave3",,,,"nhaystack_simple_SineWave3","psi",M,"New_York",,,,,,,,,,"/nhaystack_simple/SineWave3"
-
         verifyEq(grid.numRows(), 8);
         verifyEq(grid.row(0).get("id"), HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
         verifyEq(grid.row(1).get("id"), HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
@@ -139,9 +127,9 @@ public class NSimpleClientTest extends NTest
         verifyEq(grid.row(0).getRef("id").dis, "Foo_SineWave1");
         verifyEq(grid.row(1).getRef("id").dis, "SineWave2");
 
-        verifyEq(grid.row(2).get("siteUri"), HUri.make("/site/Richmond/AHU1"));
-        verifyEq(grid.row(3).get("siteUri"), HUri.make("/site/Richmond/AHU1/NumericWritable"));
-        verifyEq(grid.row(4).get("siteUri"), HUri.make("/site/Richmond"));
+        verifyEq(grid.row(2).get("siteUri"), HUri.make("sep:/Richmond/AHU1"));
+        verifyEq(grid.row(3).get("siteUri"), HUri.make("sep:/Richmond/AHU1/NumericWritable"));
+        verifyEq(grid.row(4).get("siteUri"), HUri.make("sep:/Richmond"));
 
         verifyEq(grid.row(5).getRef("id").dis, "nhaystack_simple_AuditHistory");
         verifyEq(grid.row(6).getRef("id").dis, "nhaystack_simple_LogHistory");
@@ -240,28 +228,28 @@ public class NSimpleClientTest extends NTest
     {
         HGrid grid = client.call("nav", HGrid.EMPTY);
         verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/comp"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("comp:/"));
         verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("/his"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("his:/"));
         verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("/site"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("sep:/"));
         verifyEq(grid.row(2).get("dis"),   HStr.make("Site"));
 
-        HGrid n = makeNavGrid(HStr.make("/his"));
+        HGrid n = makeNavGrid(HStr.make("his:/"));
         grid = client.call("nav", n);
         verifyEq(grid.numRows(), 1);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/his/nhaystack_simple"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("his:/nhaystack_simple"));
 
-        n = makeNavGrid(HStr.make("/his/nhaystack_simple"));
+        n = makeNavGrid(HStr.make("his:/nhaystack_simple"));
         grid = client.call("nav", n);
         verifyEq(grid.numRows(), 3);
 
-        n = makeNavGrid(HStr.make("/comp"));
+        n = makeNavGrid(HStr.make("comp:/"));
         grid = client.call("nav", n);
         verifyEq(grid.numRows(), 5);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/comp/Services"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("/comp/Drivers"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("/comp/Foo"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("comp:/Services"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("comp:/Drivers"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("comp:/Foo"));
 
         traverseComponents((HStr) grid.row(0).get("navId"));
         traverseComponents((HStr) grid.row(1).get("navId"));
@@ -323,7 +311,7 @@ grid.dump();
         ///////////////////////////////////////////////
 
         client.hisRead(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"), "today");
-        client.hisRead(HUri.make("/site/Richmond/AHU1/NumericWritable"), "today");
+        client.hisRead(HUri.make("sep:/Richmond/AHU1/NumericWritable"), "today");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -405,7 +393,7 @@ grid.dump();
     void verifyPointWrite() throws Exception
     {
         doVerifyPointWrite(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"));
-        doVerifyPointWrite(HUri.make("/site/Richmond/AHU1/NumericWritable"));
+        doVerifyPointWrite(HUri.make("sep:/Richmond/AHU1/NumericWritable"));
     }
     
     private void doVerifyPointWrite(HIdentifier id)
@@ -465,7 +453,7 @@ grid.dump();
     void verifyInvokeAction() throws Exception
     {
         doVerifyInvokeAction(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"));
-        doVerifyInvokeAction(HUri.make("/site/Richmond/AHU1/NumericWritable"));
+        doVerifyInvokeAction(HUri.make("sep:/Richmond/AHU1/NumericWritable"));
     }
     
     private void doVerifyInvokeAction(HIdentifier id)

@@ -124,14 +124,14 @@ public class ComponentStorehouse extends Storehouse
             {
                 String siteNav = getRefNav(tags, "siteRef");
                 if (siteNav != null)
-                    return HUri.make("/site/" + siteNav + "/" + equipNav + "/" + navName);
+                    return HUri.make("sep:/" + siteNav + "/" + equipNav + "/" + navName);
             }
         }
         else if (tags.has("equip"))
         {
             String siteNav = getRefNav(tags, "siteRef");
             if (siteNav != null)
-                return HUri.make("/site/" + siteNav + "/" + navName);
+                return HUri.make("sep:/" + siteNav + "/" + navName);
         }
 
         return null;

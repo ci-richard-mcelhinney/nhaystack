@@ -119,7 +119,7 @@ public class Cache
     /**
       * Get the site identified by the navId, or return null.
       */
-    public BComponent getNavSite(SiteNavId siteNav)
+    public BComponent getNavSite(String siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -129,7 +129,7 @@ public class Cache
     /**
       * Get the equip identified by the navId, or return null.
       */
-    public BComponent getNavEquip(EquipNavId equipNav)
+    public BComponent getNavEquip(String equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -139,7 +139,7 @@ public class Cache
     /**
       * Get all the equips associated with the given site navId.
       */
-    public BComponent[] getNavSiteEquips(SiteNavId siteNav)
+    public BComponent[] getNavSiteEquips(String siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -154,7 +154,7 @@ public class Cache
     /**
       * Get all the points associated with the given equip navId.
       */
-    public BControlPoint[] getNavEquipPoints(EquipNavId equipNav)
+    public BControlPoint[] getNavEquipPoints(String equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -169,7 +169,7 @@ public class Cache
     /**
       * Get the site identified by the equip navId and point navName, or return null.
       */
-    public BControlPoint getNavPoint(EquipNavId equipNav, String pointNav)
+    public BControlPoint getNavPoint(String equipNav, String pointNav)
     {
         // TODO we may want to make this more efficient eventually.
         BControlPoint[] points = getNavEquipPoints(equipNav);
@@ -269,7 +269,7 @@ public class Cache
                 {
                     sitesArr.add(comp);
                     siteNavs.put(
-                        SiteNavId.make(
+                        Nav.makeSiteNavId(
                             navName(comp, tags)),
                         comp);
                 }
@@ -331,7 +331,7 @@ public class Cache
                 // save the equip nav 
                 HDict siteTags = BHDict.findTagAnnotation(site);
                 equipNavs.put(
-                    EquipNavId.make(
+                    Nav.makeEquipNavId(
                         navName(site, siteTags),
                         navName(equip, equipTags)),
                     equip);
@@ -424,8 +424,8 @@ public class Cache
     private BComponent[] sites  = null;
     private BComponent[] equips = null;
     private Map implicitEquips  = null; // Handle -> BComponent
-    private Map siteNavs  = null; // SiteNavId -> BComponent
-    private Map equipNavs = null; // EquipNavId -> BComponent
+    private Map siteNavs  = null; // String -> BComponent
+    private Map equipNavs = null; // String -> BComponent
     private Map siteEquips  = null; // Handle -> Array<BComponent>
     private Map equipPoints = null; // Handle -> Array<BControlPoint>
 

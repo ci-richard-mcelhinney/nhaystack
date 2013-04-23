@@ -578,9 +578,9 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onNavReadByUri " + uri);
 
-        // e.g. "/site/Blacksburg/Transmogrifier/SineWave1"
-        if (!uri.val.startsWith("/site/")) return null;
-        String str = uri.val.substring("/site/".length());
+        // e.g. "sep:/Blacksburg/Transmogrifier/SineWave1"
+        if (!uri.val.startsWith("sep:/")) return null;
+        String str = uri.val.substring("sep:/".length());
         if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
 
         String[] navNames = TextUtil.split(str, '/');
@@ -590,7 +590,7 @@ public class NHServer extends HServer
             case 1:
 
                 BComponent comp = cache.getNavSite(
-                    SiteNavId.make(navNames[0]));
+                    Nav.makeSiteNavId(navNames[0]));
 
                 return (comp == null) ?  null : 
                     compStore.createComponentTags(comp);
@@ -599,7 +599,7 @@ public class NHServer extends HServer
             case 2:
 
                 comp = cache.getNavEquip(
-                    EquipNavId.make(navNames[0], navNames[1]));
+                    Nav.makeEquipNavId(navNames[0], navNames[1]));
 
                 return (comp == null) ?  null : 
                     compStore.createComponentTags(comp);
@@ -608,7 +608,7 @@ public class NHServer extends HServer
             case 3:
 
                 comp = cache.getNavPoint(
-                    EquipNavId.make(navNames[0], navNames[1]), 
+                    Nav.makeEquipNavId(navNames[0], navNames[1]), 
                     navNames[2]);
 
                 return (comp == null) ?  null : 
