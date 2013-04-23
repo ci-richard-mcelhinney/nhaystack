@@ -28,6 +28,7 @@
     <type name="HDictDialog"      class="nhaystack.ui.BHDictDialog"/>
     <type name="HDictEditor"      class="nhaystack.ui.BHDictEditor"/>
     <type name="HDictEditorGroup" class="nhaystack.ui.BHDictEditorGroup"/>
+    <type name="MarkerSet"        class="nhaystack.ui.BMarkerSet"/>
 
     <type name="HDictFE"     class="nhaystack.ui.BHDictFE">     <agent><on type="nhaystack:HDict"/>     </agent></type>
     <type name="HNumFE"      class="nhaystack.ui.BHNumFE">      <agent><on type="nhaystack:HNum"/>      </agent></type>

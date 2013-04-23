@@ -39,13 +39,12 @@ public class BHDictEditor extends BEdgePane
         {
             kindsModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]}
             namesModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]} 
-            markerGroupsModified()
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditor(703237734)1.0$ @*/
-/* Generated Sun Feb 10 06:48:00 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictEditor(982388845)1.0$ @*/
+/* Generated Tue Apr 23 17:53:08 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Action "kindsModified"
@@ -78,22 +77,6 @@ public class BHDictEditor extends BEdgePane
    * @see nhaystack.ui.BHDictEditor#namesModified
    */
   public void namesModified(BWidgetEvent event) { invoke(namesModified,event,null); }
-
-////////////////////////////////////////////////////////////////
-// Action "markerGroupsModified"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>markerGroupsModified</code> action.
-   * @see nhaystack.ui.BHDictEditor#markerGroupsModified()
-   */
-  public static final Action markerGroupsModified = newAction(0,null);
-  
-  /**
-   * Invoke the <code>markerGroupsModified</code> action.
-   * @see nhaystack.ui.BHDictEditor#markerGroupsModified
-   */
-  public void markerGroupsModified() { invoke(markerGroupsModified,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -131,75 +114,14 @@ public class BHDictEditor extends BEdgePane
 
         if (editorType == OPTIONAL)
         {
-            // marker groups
-            this.markerGroups = new BListDropDown();
-            this.markerGroupTags = new BListDropDown();
-            BGridPane mgGrid = new BGridPane(3); 
-            mgGrid.setHalign(BHalign.left);
-            mgGrid.setValign(BValign.top);
-            mgGrid.add(null, new BLabel(LEX.getText("markerGroups") + " ", BOLD));
-            mgGrid.add(null, markerGroups);
-            mgGrid.add(null, constrainMinWidth(markerGroupTags, 150));
-            BBorderPane mgBorder = new BBorderPane(mgGrid);
-            mgBorder.setPadding(BInsets.make(4));
-            setBottom(mgBorder);
-
-            loadMarkerGroups(origTags); // this might remove some tags!
+            BBorderPane border = new BBorderPane(new BButton(new AddMarkerSet()));
+            border.setPadding(BInsets.make(4));
+            BEdgePane ep = new BEdgePane();
+            ep.setLeft(border);
+            setBottom(ep);
         }
 
         loadMainGrid(origTags);
-    }
-
-    private static BConstrainedPane constrainMinWidth(BWidget widget, int minWidth)
-    {
-        BConstrainedPane cons = new BConstrainedPane(widget);
-        cons.setMinWidth(minWidth);
-        return cons;
-    }
-
-    /**
-      * set up the marker ui.
-      */
-    private void loadMarkerGroups(Map tagMap) // TreeMap<String,HVal>
-    {
-        // populate markerGroups
-        markerGroups.getList().addItem(NONE);
-        String[] mg = Resources.getMarkerGroups();
-        for (int i = 0; i < mg.length; i++)
-            markerGroups.getList().addItem(mg[i]);
-
-        // assumer that there are no groups in the tagMap
-        markerGroups.setSelectedIndex(0);
-        markerGroupTags.setEnabled(false);
-
-        // try to find a group in the tagMap
-        Set tagKeys = tagMap.keySet();
-        outerLoop: for (int i = 0; i < mg.length; i++)
-        {
-            String[] mt = Resources.getMarkerGroupTags(mg[i]);
-            for (int j = 0; j < mt.length; j++)
-            {
-                Set set = new HashSet(Arrays.asList(TextUtil.split(mt[j], ' ')));
-
-                // found a group!
-                if (tagKeys.containsAll(set))
-                {
-                    markerGroupTags.setEnabled(true);
-                    BList list = markerGroupTags.getList();
-                    for (int k = 0; k < mt.length; k++)
-                        list.addItem(mt[k]);
-
-                    markerGroups.setSelectedItem(mg[i]);
-                    markerGroupTags.setSelectedItem(mt[j]);
-
-                    tagKeys.removeAll(set);
-                    break outerLoop;
-                }
-            }
-        }
-
-        // done
-        linkTo(markerGroups, BDropDown.valueModified, markerGroupsModified);  
     }
 
     /**
@@ -324,19 +246,6 @@ public class BHDictEditor extends BEdgePane
             else throw new IllegalStateException();
         }
 
-        // from markerGroupTags
-        if (editorType == OPTIONAL)
-        {
-            String mg = (String) markerGroups.getSelectedItem();
-            if (!mg.equals(NONE))
-            {
-                String item = (String) markerGroupTags.getSelectedItem();
-                String[] markers = TextUtil.split(item, ' ');
-                for (int i = 0; i < markers.length; i++)
-                    builder.add(markers[i]);
-            }
-        }
-
         // encode to zinc and back just to be sure
         this.zinc = builder.toDict().toZinc();
         this.tags = BHDict.make(new HZincReader(zinc).readDict());
@@ -441,30 +350,6 @@ public class BHDictEditor extends BEdgePane
         throw new IllegalStateException();
     }
 
-    public void doMarkerGroupsModified()
-    {
-        markerGroupTags.setSelectedIndex(-1);
-        BList list = markerGroupTags.getList();
-        list.removeAllItems();
-
-        String mg = (String) markerGroups.getSelectedItem();
-        if (mg.equals(NONE))
-        {
-            markerGroupTags.setEnabled(false);
-        }
-        else
-        {
-            markerGroupTags.setEnabled(true);
-
-            String[] mt = Resources.getMarkerGroupTags(mg);
-            for (int i = 0; i < mt.length; i++)
-                list.addItem(mt[i]);
-            markerGroupTags.setSelectedItem(mt[0]);
-        }
-
-        relayoutAncestors(markerGroupTags, this);
-    }
-
 ////////////////////////////////////////////////////////////////
 // Commands
 ////////////////////////////////////////////////////////////////
@@ -524,6 +409,45 @@ public class BHDictEditor extends BEdgePane
         }
 
         private final int index;
+    }
+
+    class AddMarkerSet extends Command
+    {
+        public AddMarkerSet() { super(BHDictEditor.this, LEX, "addMarkerSet"); }
+
+        public CommandArtifact doInvoke()
+        {
+            BMarkerSet markerSet = new BMarkerSet();
+
+            int result = BDialog.open(
+                BHDictEditor.this, 
+                LEX.getText("addMarkerSet"),
+                markerSet, 
+                BDialog.OK_CANCEL);
+
+            if (result == BDialog.OK)
+            {
+                Set used = new HashSet();
+                for (int i = 0; i < rows.size(); i++)
+                {
+                    Row row = (Row) rows.get(i);
+                    used.add(row.names.getText());
+                }
+
+                String[] markers = markerSet.getMarkers();
+
+                for (int i = 0; i < markers.length; i++)
+                {
+                    if (!used.contains(markers[i]))
+                        rows.add(new Row(BHDictEditor.this, markers[i], HMarker.VAL));
+                }
+
+                fillMainGrid();
+                relayoutAncestors(mainGrid, BHDictEditor.this);
+            }
+
+            return null;
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -653,8 +577,6 @@ public class BHDictEditor extends BEdgePane
     private Array rows;
 
     private BGridPane mainGrid;
-    private BListDropDown markerGroups;
-    private BListDropDown markerGroupTags;
 
     private BHDict tags = null;
     private String zinc = null;
