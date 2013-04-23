@@ -71,6 +71,7 @@ public class RemotePoint
         // "pointId" slotPath on the matching imported 
         // proxy point (if there is one)
         BOrd[] ords = cfg.getSource().toArray();
+        if (ords.length == 0) return null; // misconfigured history
         String slotPath = ords[0].toString();
 
         // get rid of unneeded "station:" ordQuery
