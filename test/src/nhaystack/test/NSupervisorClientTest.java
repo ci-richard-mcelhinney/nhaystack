@@ -195,73 +195,73 @@ public class NSupervisorClientTest extends NTest
 
     void verifyNav() throws Exception
     {
-//[/site] 'Site'
-//    [/site/Blacksburg] 'Blacksburg'
-//        [/site/Blacksburg/nhaystack_jace1] 'Blacksburg nhaystack_jace1'
+//[sep:/] 'Site'
+//    [sep:/Blacksburg] 'Blacksburg'
+//        [sep:/Blacksburg/nhaystack_jace1] 'Blacksburg nhaystack_jace1'
 //            [---] 'Blacksburg nhaystack_jace1 SineWave1'
 //            [---] 'Blacksburg nhaystack_jace1 SineWave2'
-//        [/site/Blacksburg/Transmogrifier] 'Blacksburg Transmogrifier'
+//        [sep:/Blacksburg/Transmogrifier] 'Blacksburg Transmogrifier'
 //            [---] 'Blacksburg Transmogrifier SineWave1'
-//        [/site/Blacksburg/FluxCapacitor] 'Blacksburg FluxCapacitor'
+//        [sep:/Blacksburg/FluxCapacitor] 'Blacksburg FluxCapacitor'
 
-        HGrid grid = client.call("nav", makeNavGrid(HStr.make("/site")));
+        HGrid grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
         verifyEq(grid.numRows(), 1);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/site/Blacksburg"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Blacksburg"));
         verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/site/Blacksburg")));
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg")));
         verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/site/Blacksburg/nhaystack_jace1"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("/site/Blacksburg/Transmogrifier"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("/site/Blacksburg/FluxCapacitor"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Blacksburg/nhaystack_jace1"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("sep:/Blacksburg/Transmogrifier"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("sep:/Blacksburg/FluxCapacitor"));
         verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg nhaystack_jace1"));
         verifyEq(grid.row(1).get("dis"), HStr.make("Blacksburg Transmogrifier"));
         verifyEq(grid.row(2).get("dis"), HStr.make("Blacksburg FluxCapacitor"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/site/Blacksburg/nhaystack_jace1")));
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/nhaystack_jace1")));
         verifyEq(grid.numRows(), 2);
         verify(grid.row(0).missing("navId"));
         verify(grid.row(1).missing("navId"));
         verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg nhaystack_jace1 SineWave1"));
         verifyEq(grid.row(1).get("dis"), HStr.make("Blacksburg nhaystack_jace1 SineWave2"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/site/Blacksburg/Transmogrifier")));
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/Transmogrifier")));
         verifyEq(grid.numRows(), 1);
         verify(grid.row(0).missing("navId"));
         verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg Transmogrifier SineWave1"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/site/Blacksburg/FluxCapacitor")));
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/FluxCapacitor")));
         verifyEq(grid.numRows(), 0);
 
-//[/his] 'HistorySpace'
-//    [/his/nhaystack_jace1] 'nhaystack_jace1'
+//[his:/] 'HistorySpace'
+//    [his:/nhaystack_jace1] 'nhaystack_jace1'
 //        [---] 'nhaystack_jace1_AuditHistory'
 //        [---] 'nhaystack_jace1_LogHistory'
-//    [/his/nhaystack_jace2] 'nhaystack_jace2'
+//    [his:/nhaystack_jace2] 'nhaystack_jace2'
 //        [---] 'nhaystack_jace2_SineWave2'
-//    [/his/nhaystack_sup] 'nhaystack_sup'
+//    [his:/nhaystack_sup] 'nhaystack_sup'
 //        [---] 'nhaystack_sup_AuditHistory'
 //        [---] 'nhaystack_sup_LogHistory'
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/his")));
+        grid = client.call("nav", makeNavGrid(HStr.make("his:/")));
         verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/his/nhaystack_jace1"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("/his/nhaystack_jace2"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("/his/nhaystack_sup"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("his:/nhaystack_jace1"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("his:/nhaystack_jace2"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("his:/nhaystack_sup"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/his/nhaystack_jace1")));
+        grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_jace1")));
         verifyEq(grid.numRows(), 2);
         verify(grid.row(0).missing("navId"));
         verify(grid.row(1).missing("navId"));
         verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_jace1_AuditHistory"));
         verifyEq(grid.row(1).get("dis"), HStr.make("nhaystack_jace1_LogHistory"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/his/nhaystack_jace2")));
+        grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_jace2")));
         verifyEq(grid.numRows(), 1);
         verify(grid.row(0).missing("navId"));
         verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_jace2_SineWave2"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("/his/nhaystack_sup")));
+        grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_sup")));
         verifyEq(grid.numRows(), 2);
         verify(grid.row(0).missing("navId"));
         verify(grid.row(1).missing("navId"));
@@ -365,29 +365,29 @@ public class NSupervisorClientTest extends NTest
 
     void verifyNavUri() throws Exception
     {
-        HUri uri = HUri.make("/site/Blacksburg");
+        HUri uri = HUri.make("sep:/Blacksburg");
         HDict tags = client.readById(uri);
         verifyEq(tags.getStr("dis"), "Blacksburg");
 
-        uri = HUri.make("/site/Blacksburg/Transmogrifier");
+        uri = HUri.make("sep:/Blacksburg/Transmogrifier");
         tags = client.readById(uri);
         verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier");
 
-        uri = HUri.make("/site/Blacksburg/Transmogrifier/SineWave1");
+        uri = HUri.make("sep:/Blacksburg/Transmogrifier/SineWave1");
         tags = client.readById(uri);
         verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier SineWave1");
 
         //////////////////////////////////
 
-        uri = HUri.make("/site/Blacksburg/");
+        uri = HUri.make("sep:/Blacksburg/");
         tags = client.readById(uri);
         verifyEq(tags.getStr("dis"), "Blacksburg");
 
-        uri = HUri.make("/site/Blacksburg/Transmogrifier/");
+        uri = HUri.make("sep:/Blacksburg/Transmogrifier/");
         tags = client.readById(uri);
         verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier");
 
-        uri = HUri.make("/site/Blacksburg/Transmogrifier/SineWave1/");
+        uri = HUri.make("sep:/Blacksburg/Transmogrifier/SineWave1/");
         tags = client.readById(uri);
         verifyEq(tags.getStr("dis"), "Blacksburg Transmogrifier SineWave1");
 

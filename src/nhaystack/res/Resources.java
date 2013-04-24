@@ -41,10 +41,10 @@ public class Resources
     private static Map unitsByLowerCaseName;   // <String,Unit>
     private static String[] quantities;
 
-    private static String[] markerGroups = new String[] {
+    private static String[] markerSets = new String[] {
         "elecMeter", "vav", "heatExchanger", "coolingTower",
         "chillerPlant", "chiller", "ahu" };
-    private static Map markerGroupTags; // <String,Array<String>>
+    private static Map markerSetTags; // <String,Array<String>>
 
 ////////////////////////////////////////////////////////////////
 //  load
@@ -57,7 +57,7 @@ public class Resources
             loadTags();
             loadTimeZones();
             loadUnits();
-            loadMarkerGroups();
+            loadMarkerSets();
         }
         catch (Exception e)
         {
@@ -166,20 +166,20 @@ public class Resources
             unitsByLowerCaseName.put(name, unit);
     }
 
-    private static void loadMarkerGroups() throws Exception
+    private static void loadMarkerSets() throws Exception
     {
-        markerGroupTags = new HashMap();
+        markerSetTags = new HashMap();
 
-        markerGroupTags.put("elecMeter",     loadMarkerGroup(ELEC_METER));
-        markerGroupTags.put("vav",           loadMarkerGroup(VAV));
-        markerGroupTags.put("heatExchanger", loadMarkerGroup(HEAT_EXCHANGER));
-        markerGroupTags.put("coolingTower",  loadMarkerGroup(COOLING_TOWER));
-        markerGroupTags.put("chillerPlant",  loadMarkerGroup(CHILLER_PLANT));
-        markerGroupTags.put("chiller",       loadMarkerGroup(CHILLER));
-        markerGroupTags.put("ahu",           loadMarkerGroup(AHU));
+        markerSetTags.put("elecMeter",     loadMarkerSet(ELEC_METER));
+        markerSetTags.put("vav",           loadMarkerSet(VAV));
+        markerSetTags.put("heatExchanger", loadMarkerSet(HEAT_EXCHANGER));
+        markerSetTags.put("coolingTower",  loadMarkerSet(COOLING_TOWER));
+        markerSetTags.put("chillerPlant",  loadMarkerSet(CHILLER_PLANT));
+        markerSetTags.put("chiller",       loadMarkerSet(CHILLER));
+        markerSetTags.put("ahu",           loadMarkerSet(AHU));
     }
 
-    private static Array loadMarkerGroup(String resourcePath) throws Exception
+    private static Array loadMarkerSet(String resourcePath) throws Exception
     {
         InputStream in = Resources.class.getResourceAsStream(resourcePath);
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
@@ -274,20 +274,20 @@ public class Resources
     }
 
     /**
-      * Get the names of all the Marker Groups.
+      * Get the names of all the Marker Sets.
       */
-    public static String[] getMarkerGroups()
+    public static String[] getMarkerSets()
     {
-        return markerGroups;
+        return markerSets;
     }
 
     /**
       * Get the space-delimited list of the tags
-      * associated with the given Marker Group name.
+      * associated with the given Marker Set name.
       */
-    public static String[] getMarkerGroupTags(String group)
+    public static String[] getMarkerSetTags(String group)
     {
-        Array arr = (Array) markerGroupTags.get(group);
+        Array arr = (Array) markerSetTags.get(group);
         if (arr == null) throw new BajaRuntimeException(
             "Cannot find marker group '" + group + "'.");
         return (String[]) arr.trim();

@@ -1,6 +1,8 @@
 haystackTags=Haystack Tags
 cannotSaveTags=Cannot Save Tags
 addTag=Add Tag
+addMarkerSet.label=Add Set of Markers
+addMarkerSet.icon=module://nhaystack/nhaystack/icons/tag_add.png
 type=Type
 name=Name
 value=Value
@@ -8,7 +10,6 @@ ok=OK
 cancel=Cancel
 none=-- none --
 unit=Unit
-markerGroups=Markers:
 essentials=Essentials
 optional=Optional
 autoGen=Auto-Generated

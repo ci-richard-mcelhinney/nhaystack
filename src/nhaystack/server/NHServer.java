@@ -228,9 +228,6 @@ public class NHServer extends HServer
       */
     protected HWatch onWatch(String id)
     {
-        if (LOG.isTraceOn())
-            LOG.trace("onWatch " + id);
-
         try
         {
             return (HWatch) watches.get(id);
@@ -248,84 +245,85 @@ public class NHServer extends HServer
     protected HGrid onPointWriteArray(HDict rec)
     {
         if (LOG.isTraceOn())
-            LOG.trace("onPointWriteArray " + rec);
+            LOG.trace("onPointWriteArray " + rec.id());
 
         try
         {
             HVal[] vals = new HVal[17];
+
             BControlPoint point = (BControlPoint) lookupComponent(rec.id());
 
+            // Numeric
             if (point instanceof BNumericWritable)
             {
                 BNumericWritable nw = (BNumericWritable) point;
-                vals[  0] = HNum.make(nw.getIn1().getValue());
-                vals[  1] = HNum.make(nw.getIn2().getValue());
-                vals[  2] = HNum.make(nw.getIn3().getValue());
-                vals[  3] = HNum.make(nw.getIn4().getValue());
-                vals[  4] = HNum.make(nw.getIn5().getValue());
-                vals[  5] = HNum.make(nw.getIn6().getValue());
-                vals[  6] = HNum.make(nw.getIn7().getValue());
-                vals[  7] = HNum.make(nw.getIn8().getValue());
-                vals[  8] = HNum.make(nw.getIn9().getValue());
-                vals[  9] = HNum.make(nw.getIn10().getValue());
-                vals[ 10] = HNum.make(nw.getIn11().getValue());
-                vals[ 11] = HNum.make(nw.getIn12().getValue());
-                vals[ 12] = HNum.make(nw.getIn13().getValue());
-                vals[ 13] = HNum.make(nw.getIn14().getValue());
-                vals[ 14] = HNum.make(nw.getIn15().getValue());
-                vals[ 15] = HNum.make(nw.getIn16().getValue());
-                vals[ 16] = HNum.make(nw.getFallback().getValue());
+                for (int i = 0; i < 16; i++)
+                {
+                    BStatusNumeric sn = (BStatusNumeric) nw.get("in" + (i+1));
+                    if (!sn.getStatus().isNull())
+                        vals[i] = HNum.make(sn.getValue());
+                }
+                BStatusNumeric sn = (BStatusNumeric) nw.getFallback();
+                if (!sn.getStatus().isNull())
+                    vals[16] = HNum.make(sn.getValue());
             }
+            // Boolean
             else if (point instanceof BBooleanWritable)
             {
                 BBooleanWritable bw = (BBooleanWritable) point;
-                vals[  0] = HBool.make(bw.getIn1().getValue());
-                vals[  1] = HBool.make(bw.getIn2().getValue());
-                vals[  2] = HBool.make(bw.getIn3().getValue());
-                vals[  3] = HBool.make(bw.getIn4().getValue());
-                vals[  4] = HBool.make(bw.getIn5().getValue());
-                vals[  5] = HBool.make(bw.getIn6().getValue());
-                vals[  6] = HBool.make(bw.getIn7().getValue());
-                vals[  7] = HBool.make(bw.getIn8().getValue());
-                vals[  8] = HBool.make(bw.getIn9().getValue());
-                vals[  9] = HBool.make(bw.getIn10().getValue());
-                vals[ 10] = HBool.make(bw.getIn11().getValue());
-                vals[ 11] = HBool.make(bw.getIn12().getValue());
-                vals[ 12] = HBool.make(bw.getIn13().getValue());
-                vals[ 13] = HBool.make(bw.getIn14().getValue());
-                vals[ 14] = HBool.make(bw.getIn15().getValue());
-                vals[ 15] = HBool.make(bw.getIn16().getValue());
-                vals[ 16] = HBool.make(bw.getFallback().getValue());
+                for (int i = 0; i < 16; i++)
+                {
+                    BStatusBoolean sb = (BStatusBoolean) bw.get("in" + (i+1));
+                    if (!sb.getStatus().isNull())
+                        vals[i] = HBool.make(sb.getValue());
+                }
+                BStatusBoolean sb = (BStatusBoolean) bw.getFallback();
+                if (!sb.getStatus().isNull())
+                    vals[16] = HBool.make(sb.getValue());
             }
+            // Enum
             else if (point instanceof BEnumWritable)
             {
                 BEnumWritable ew = (BEnumWritable) point;
-                vals[  0] = HStr.make(ew.getIn1().getValue().getTag());
-                vals[  1] = HStr.make(ew.getIn2().getValue().getTag());
-                vals[  2] = HStr.make(ew.getIn3().getValue().getTag());
-                vals[  3] = HStr.make(ew.getIn4().getValue().getTag());
-                vals[  4] = HStr.make(ew.getIn5().getValue().getTag());
-                vals[  5] = HStr.make(ew.getIn6().getValue().getTag());
-                vals[  6] = HStr.make(ew.getIn7().getValue().getTag());
-                vals[  7] = HStr.make(ew.getIn8().getValue().getTag());
-                vals[  8] = HStr.make(ew.getIn9().getValue().getTag());
-                vals[  9] = HStr.make(ew.getIn10().getValue().getTag());
-                vals[ 10] = HStr.make(ew.getIn11().getValue().getTag());
-                vals[ 11] = HStr.make(ew.getIn12().getValue().getTag());
-                vals[ 12] = HStr.make(ew.getIn13().getValue().getTag());
-                vals[ 13] = HStr.make(ew.getIn14().getValue().getTag());
-                vals[ 14] = HStr.make(ew.getIn15().getValue().getTag());
-                vals[ 15] = HStr.make(ew.getIn16().getValue().getTag());
-                vals[ 16] = HStr.make(ew.getFallback().getValue().getTag());
+                for (int i = 0; i < 16; i++)
+                {
+                    BStatusEnum se = (BStatusEnum) ew.get("in" + (i+1));
+                    if (!se.getStatus().isNull())
+                        vals[i] = HStr.make(se.getValue().getTag());
+                }
+                BStatusEnum se = (BStatusEnum) ew.getFallback();
+                if (!se.getStatus().isNull())
+                    vals[16] = HStr.make(se.getValue().getTag());
             }
             else throw new IllegalStateException();
 
-            //level: number from 1 - 17 (17 is default)
-            //levelDis: human description of level
-            //val: current value at level or null
-            //who: who last controlled the value at this level
+            //////////////////////////////////////////////
 
-            throw new IllegalStateException(); // TODO
+            // Return priority array for writable point identified by id.
+            // The grid contains 17 rows with following columns:
+            //   - level: number from 1 - 17 (17 is default)
+            //   - levelDis: human description of level
+            //   - val: current value at level or null
+            //   - who: who last controlled the value at this level
+
+            Map lastWrite = getLastWrite(point);
+            HDict[] result = new HDict[17];
+            for (int i = 0; i < 17; i++)
+            {
+                HDictBuilder hd = new HDictBuilder();
+                HNum level = HNum.make(i+1);
+                hd.add("level", level);
+                hd.add("levelDis", "level " + (i+1)); // TODO
+                if (vals[i] != null)
+                    hd.add("val", vals[i]);
+
+                HDict lw = (HDict) lastWrite.get(level);
+                if (lw != null)
+                    hd.add("who", lw.getStr("who"));
+
+                result[i] = hd.toDict();
+            }
+            return HGridBuilder.dictsToGrid(result);
         }
         catch (RuntimeException e)
         {
@@ -342,11 +340,14 @@ public class NHServer extends HServer
         int level, 
         HVal val, 
         String who, 
-        HNum dur) // 'dur' will always be null
+        HNum dur) // ignore this for now
     {
         if (LOG.isTraceOn())
             LOG.trace("onPointWrite " + 
-                rec + ", " + level + ", " + val + ", " + who + ", " + dur);
+              "id:   "  + rec.id()   + ", " +
+              "level: " + level + ", " +
+              "val:   " + val   + ", " +
+              "who:   " + who);
 
         try
         {
@@ -354,35 +355,58 @@ public class NHServer extends HServer
 
             if (point instanceof BNumericWritable)
             {
-                HNum num = (HNum) val;
                 BNumericWritable nw = (BNumericWritable) point;
                 BStatusNumeric sn = nw.getLevel(BPriorityLevel.make(level));
-                sn.setValue(num.val);
-                sn.setStatus(BStatus.ok);
 
-                saveLastWrite(point, level, val, who);
+                if (val == null)
+                {
+                    sn.setStatus(BStatus.nullStatus);
+                }
+                else
+                {
+                    HNum num = (HNum) val;
+                    sn.setValue(num.val);
+                    sn.setStatus(BStatus.ok);
+                }
+
+                saveLastWrite(point, level, who);
             }
             else if (point instanceof BBooleanWritable)
             {
-                HBool bool = (HBool) val;
                 BBooleanWritable bw = (BBooleanWritable) point;
                 BStatusBoolean sb = bw.getLevel(BPriorityLevel.make(level));
-                sb.setValue(bool.val);
-                sb.setStatus(BStatus.ok);
 
-                saveLastWrite(point, level, val, who);
+                if (val == null)
+                {
+                    sb.setStatus(BStatus.nullStatus);
+                }
+                else
+                {
+                    HBool bool = (HBool) val;
+                    sb.setValue(bool.val);
+                    sb.setStatus(BStatus.ok);
+                }
+
+                saveLastWrite(point, level, who);
             }
             else if (point instanceof BEnumWritable)
             {
-                HStr str = (HStr) val;
                 BEnumWritable ew = (BEnumWritable) point;
                 BStatusEnum se = ew.getLevel(BPriorityLevel.make(level));
 
-                BEnumRange range = (BEnumRange) point.getFacets().get(BFacets.RANGE);
-                se.setValue(range.get(str.val));
-                se.setStatus(BStatus.ok);
+                if (val == null)
+                {
+                    se.setStatus(BStatus.nullStatus);
+                }
+                else
+                {
+                    HStr str = (HStr) val;
+                    BEnumRange range = (BEnumRange) point.getFacets().get(BFacets.RANGE);
+                    se.setValue(range.get(str.val));
+                    se.setStatus(BStatus.ok);
+                }
 
-                saveLastWrite(point, level, val, who);
+                saveLastWrite(point, level, who);
             }
             else
                 throw new IllegalStateException("Cannot write to " + point.getType());
@@ -401,7 +425,7 @@ public class NHServer extends HServer
     protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
         if (LOG.isTraceOn())
-            LOG.trace("onHisRead " + rec + ", " + range);
+            LOG.trace("onHisRead " + rec.id() + ", " + range);
 
         try
         {
@@ -500,7 +524,7 @@ public class NHServer extends HServer
     protected HGrid onInvokeAction(HDict rec, String actionName, HDict args)
     {
         if (LOG.isTraceOn())
-            LOG.trace("onInvokeAction " + rec + ", " + actionName + ", " + args);
+            LOG.trace("onInvokeAction " + rec.id() + ", " + actionName + ", " + args);
 
         try
         {
@@ -554,9 +578,9 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onNavReadByUri " + uri);
 
-        // e.g. "/site/Blacksburg/Transmogrifier/SineWave1"
-        if (!uri.val.startsWith("/site/")) return null;
-        String str = uri.val.substring("/site/".length());
+        // e.g. "sep:/Blacksburg/Transmogrifier/SineWave1"
+        if (!uri.val.startsWith("sep:/")) return null;
+        String str = uri.val.substring("sep:/".length());
         if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
 
         String[] navNames = TextUtil.split(str, '/');
@@ -566,7 +590,7 @@ public class NHServer extends HServer
             case 1:
 
                 BComponent comp = cache.getNavSite(
-                    SiteNavId.make(navNames[0]));
+                    Nav.makeSiteNavId(navNames[0]));
 
                 return (comp == null) ?  null : 
                     compStore.createComponentTags(comp);
@@ -575,7 +599,7 @@ public class NHServer extends HServer
             case 2:
 
                 comp = cache.getNavEquip(
-                    EquipNavId.make(navNames[0], navNames[1]));
+                    Nav.makeEquipNavId(navNames[0], navNames[1]));
 
                 return (comp == null) ?  null : 
                     compStore.createComponentTags(comp);
@@ -584,7 +608,7 @@ public class NHServer extends HServer
             case 3:
 
                 comp = cache.getNavPoint(
-                    EquipNavId.make(navNames[0], navNames[1]), 
+                    Nav.makeEquipNavId(navNames[0], navNames[1]), 
                     navNames[2]);
 
                 return (comp == null) ?  null : 
@@ -694,13 +718,13 @@ public class NHServer extends HServer
     /**
       * save the last point write to a BHGrid slot.
       */
-    private static void saveLastWrite(BControlPoint point, int level, HVal val, String who)
+    private static void saveLastWrite(BControlPoint point, int level, String who)
     {
         BHGrid oldGrid = (BHGrid) point.get(LAST_WRITE);
 
         if (oldGrid == null)
         {
-            HGrid grid = saveLastWriteToGrid(HGrid.EMPTY, level, val, who);
+            HGrid grid = saveLastWriteToGrid(HGrid.EMPTY, level, who);
             point.add(
                 LAST_WRITE, 
                 BHGrid.make(grid),
@@ -708,14 +732,35 @@ public class NHServer extends HServer
         }
         else
         {
-            HGrid newGrid = saveLastWriteToGrid(oldGrid.getGrid(), level, val, who);
+            HGrid grid = saveLastWriteToGrid(oldGrid.getGrid(), level, who);
             point.set(
                 LAST_WRITE, 
-                BHGrid.make(newGrid));
+                BHGrid.make(grid));
         }
     }
 
-    private static HGrid saveLastWriteToGrid(HGrid grid, int level, HVal val, String who)
+    /**
+      * get the last write
+      */
+    private static Map getLastWrite(BControlPoint point)
+    {
+        Map map = new HashMap();
+
+        BHGrid bgrid = (BHGrid) point.get(LAST_WRITE);
+        if (bgrid != null) 
+        {
+            HGrid grid = bgrid.getGrid();
+            for (int i = 0; i < grid.numRows(); i++)
+            {
+                HDict row = grid.row(i);
+                map.put(row.get("level"), row);
+            }
+        }
+
+        return map;
+    }
+
+    private static HGrid saveLastWriteToGrid(HGrid grid, int level, String who)
     {
         // store rows by level
         Map map = new HashMap();
@@ -729,7 +774,6 @@ public class NHServer extends HServer
         HNum hlevel = HNum.make(level);
         HDictBuilder db = new HDictBuilder();
         db.add("level", hlevel);
-        db.add("val", val);
         db.add("who", HStr.make(who));
         map.put(hlevel, db.toDict());
 

@@ -38,20 +38,9 @@ public class Nav
         this.cache = cache;
     }
 
-    /**
-      * Return navigation tree children for given navId. 
-      */
-    HGrid onNav(String navId)
-    {
-        if (navId == null) return roots();
-
-        else if (navId.startsWith("/comp")) return onCompNav(navId);
-        else if (navId.startsWith("/his"))  return onHisNav(navId);
-        else if (navId.startsWith("/site")) return onSiteNav(navId);
-
-        else
-            throw new IllegalStateException("Cannot lookup nav for " + navId);
-    }
+////////////////////////////////////////////////////////////////
+// public
+////////////////////////////////////////////////////////////////
 
     public static String makeNavFormat(BComponent comp, HDict tags)
     {
@@ -60,6 +49,35 @@ public class Nav
             "%displayName%";
 
         return BFormat.format(format, comp);
+    }
+
+    public static String makeSiteNavId(String siteName)
+    {
+        return "sep:/" + siteName;
+    }
+
+    public static String makeEquipNavId(String siteNavId, String equipName)
+    {
+        return siteNavId + "/" + equipName;
+    }
+
+////////////////////////////////////////////////////////////////
+// internal
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Return navigation tree children for given navId. 
+      */
+    HGrid onNav(String navId)
+    {
+        if (navId == null) return roots();
+
+        else if (navId.startsWith("comp:/")) return onCompNav(navId);
+        else if (navId.startsWith("his:/"))  return onHisNav(navId);
+        else if (navId.startsWith("sep:/")) return onSiteNav(navId);
+
+        else
+            throw new IllegalStateException("Cannot lookup nav for " + navId);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -72,19 +90,19 @@ public class Nav
 
         dicts.add(
             new HDictBuilder() 
-            .add("navId", "/comp")
+            .add("navId", "comp:/")
             .add("dis", "ComponentSpace")
             .toDict());
 
         dicts.add(
             new HDictBuilder() 
-            .add("navId", "/his")
+            .add("navId", "his:/")
             .add("dis", "HistorySpace")
             .toDict());
 
         dicts.add(
             new HDictBuilder() 
-            .add("navId", "/site")
+            .add("navId", "sep:/")
             .add("dis", "Site")
             .toDict());
 
@@ -94,7 +112,7 @@ public class Nav
     private HGrid onCompNav(String navId)
     {
         // child of ComponentSpace root
-        if (navId.equals("/comp"))
+        if (navId.equals("comp:/"))
         {
             BComponent root = (BComponent) 
                 BOrd.make("station:|slot:/").get(service, null);
@@ -106,9 +124,9 @@ public class Nav
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
         // ComponentSpace component
-        else if (navId.startsWith("/comp/"))
+        else if (navId.startsWith("comp:/"))
         {
-            String slotPath = navId.substring("/comp/".length());
+            String slotPath = navId.substring("comp:/".length());
             BOrd ord = BOrd.make("station:|slot:/" + slotPath);
             BComponent comp = (BComponent) ord.get(service, null);
 
@@ -132,7 +150,7 @@ public class Nav
             String slotPath = comp.getSlotPath().toString();
             slotPath = slotPath.substring("slot:/".length());
 
-            hdb.add("navId", "/comp/" + slotPath);
+            hdb.add("navId", "comp:/" + slotPath);
         }
 
         if (compStore.isVisibleComponent(comp))
@@ -152,7 +170,7 @@ public class Nav
     private HGrid onHisNav(String navId)
     {
         // distinct station names
-        if (navId.equals("/his"))
+        if (navId.equals("his:/"))
         {
             String[] stationNames = cache.getNavHistoryStationNames();
 
@@ -162,7 +180,7 @@ public class Nav
                 String stationName = stationNames[i];
 
                 HDictBuilder hd = new HDictBuilder();
-                hd.add("navId", "/his/" + stationName);
+                hd.add("navId", "his:/" + stationName);
                 hd.add("dis", stationName);
                 hd.add("stationName", stationName);
                 dicts.add(hd.toDict());
@@ -171,9 +189,9 @@ public class Nav
         }
 
         // histories that go with station
-        else if (navId.startsWith("/his/"))
+        else if (navId.startsWith("his:/"))
         {
-            String stationName = navId.substring("/his/".length());
+            String stationName = navId.substring("his:/".length());
             BHistoryConfig[] configs = cache.getNavHistories(stationName);
 
             Array dicts = new Array(HDict.class);
@@ -189,7 +207,7 @@ public class Nav
 
     private HGrid onSiteNav(String navId)
     {
-        if (navId.equals("/site"))
+        if (navId.equals("sep:/"))
         {
             Array dicts = new Array(HDict.class);
 
@@ -199,10 +217,10 @@ public class Nav
                 BComponent site = sites[i];
                 HDict tags = compStore.createComponentTags(site);
 
-                SiteNavId siteNav = SiteNavId.make(tags.getStr("navName"));
+                String siteNav = makeSiteNavId(tags.getStr("navName"));
 
                 HDictBuilder hd = new HDictBuilder();
-                hd.add("navId", HStr.make(siteNav.getHRef().val));
+                hd.add("navId", HStr.make(siteNav));
                 hd.add(tags);
 
                 dicts.add(hd.toDict());
@@ -211,9 +229,9 @@ public class Nav
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
 
-        else if (navId.startsWith("/site/"))
+        else if (navId.startsWith("sep:/"))
         {
-            String str = navId.substring("/site/".length());
+            String str = navId.substring("sep:/".length());
 
             String[] navNames = TextUtil.split(str, '/');
             switch (navNames.length)
@@ -232,7 +250,7 @@ public class Nav
     {
         Array dicts = new Array(HDict.class);
 
-        SiteNavId siteNav = SiteNavId.make(siteName);
+        String siteNav = makeSiteNavId(siteName);
         BComponent[] equips = cache.getNavSiteEquips(siteNav);
 
         for (int i = 0; i < equips.length; i++)
@@ -240,12 +258,11 @@ public class Nav
             BComponent equip = equips[i];
             HDict tags = compStore.createComponentTags(equip);
 
-            EquipNavId equipNav = EquipNavId.make(
-                siteNav.getSiteName(),
-                tags.getStr("navName"));
+            String equipNav = makeEquipNavId(
+                siteNav, tags.getStr("navName"));
 
             HDictBuilder hd = new HDictBuilder();
-            hd.add("navId", HStr.make(equipNav.getHRef().val));
+            hd.add("navId", HStr.make(equipNav));
             hd.add(tags);
             dicts.add(hd.toDict());
         }
@@ -257,7 +274,7 @@ public class Nav
     {
         Array dicts = new Array(HDict.class);
 
-        EquipNavId equipNav = EquipNavId.make(siteName, equipName);
+        String equipNav = makeEquipNavId(siteName, equipName);
         BControlPoint[] points = cache.getNavEquipPoints(equipNav);
 
         for (int i = 0; i < points.length; i++)

@@ -34,8 +34,10 @@ public class NSimpleClientTest extends NTest
         verifyFormats();
         verifyRead();
         verifyWatches();
-        verifyHisRead();
         verifyNav();
+        verifyPointWrite();
+        verifyInvokeAction();
+        verifyHisRead();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +63,7 @@ public class NSimpleClientTest extends NTest
         HDict r = client.about();
         verifyEq(r.getStr("haystackVersion"), "2.0");
         verifyEq(r.getStr("productName"), "Niagara AX");
-//        verifyEq(r.getStr("productVersion"), "3.6.47"); TODO
+//        verifyEq(r.getStr("productVersion"), "3.6.47"); 
         verifyEq(r.getStr("tz"), HTimeZone.DEFAULT.name);
     }
 
@@ -110,28 +112,28 @@ public class NSimpleClientTest extends NTest
     {
         HGrid grid = client.readAll("id");
 
-//grid.dump();
-
-//ver:"2.0"
-//axType,foo,kind,id,his,curStatus,dis,hisInterpolate,axSlotPath,unit,point,tz,cur,curVal,bar,axHistoryId
-//"kitControl:SineWave",M,"Number",  @c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~,M,"ok","SineWave1","cov","slot:/Foo/SineWave1","¦F",M,"New_York",M,60.5389¦F,M,
-//"kitControl:SineWave",,"Number",   @c.c2xvdDovRm9vL1NpbmVXYXZlMg~~,,"ok","SineWave2",,"slot:/Foo/SineWave2","psi",M,,M,60.5389psi,,
-//"history:HistoryConfig",,,         @h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5,M,,,,,,M,"New_York",,,,"/nhaystack_simple/AuditHistory"
-//"history:HistoryConfig",,,         @h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~,M,,,,,,M,"New_York",,,,"/nhaystack_simple/LogHistory"
-//"history:HistoryConfig",,"Number", @h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz,M,,,,,"psi",M,"New_York",,,,"/nhaystack_simple/SineWave3"
-
-        verifyEq(grid.numRows(), 5);
+        verifyEq(grid.numRows(), 8);
         verifyEq(grid.row(0).get("id"), HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
         verifyEq(grid.row(1).get("id"), HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
-        verifyEq(grid.row(2).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
-        verifyEq(grid.row(3).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
-        verifyEq(grid.row(4).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
+
+        verifyEq(grid.row(2).get("id"), HRef.make("c.c2xvdDovQUhVMQ~~"));
+        verifyEq(grid.row(3).get("id"), HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"));
+        verifyEq(grid.row(4).get("id"), HRef.make("c.c2xvdDovUmljaG1vbmQ~"));
+
+        verifyEq(grid.row(5).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        verifyEq(grid.row(6).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        verifyEq(grid.row(7).get("id"), HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
 
         verifyEq(grid.row(0).getRef("id").dis, "Foo_SineWave1");
         verifyEq(grid.row(1).getRef("id").dis, "SineWave2");
-        verifyEq(grid.row(2).getRef("id").dis, "nhaystack_simple_AuditHistory");
-        verifyEq(grid.row(3).getRef("id").dis, "nhaystack_simple_LogHistory");
-        verifyEq(grid.row(4).getRef("id").dis, "nhaystack_simple_SineWave3");
+
+        verifyEq(grid.row(2).get("siteUri"), HUri.make("sep:/Richmond/AHU1"));
+        verifyEq(grid.row(3).get("siteUri"), HUri.make("sep:/Richmond/AHU1/NumericWritable"));
+        verifyEq(grid.row(4).get("siteUri"), HUri.make("sep:/Richmond"));
+
+        verifyEq(grid.row(5).getRef("id").dis, "nhaystack_simple_AuditHistory");
+        verifyEq(grid.row(6).getRef("id").dis, "nhaystack_simple_LogHistory");
+        verifyEq(grid.row(7).getRef("id").dis, "nhaystack_simple_SineWave3");
 
         //////////////////////////////////////////
 
@@ -226,28 +228,28 @@ public class NSimpleClientTest extends NTest
     {
         HGrid grid = client.call("nav", HGrid.EMPTY);
         verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/comp"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("comp:/"));
         verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("/his"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("his:/"));
         verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("/site"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("sep:/"));
         verifyEq(grid.row(2).get("dis"),   HStr.make("Site"));
 
-        HGrid n = makeNavGrid(HStr.make("/his"));
+        HGrid n = makeNavGrid(HStr.make("his:/"));
         grid = client.call("nav", n);
         verifyEq(grid.numRows(), 1);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/his/nhaystack_simple"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("his:/nhaystack_simple"));
 
-        n = makeNavGrid(HStr.make("/his/nhaystack_simple"));
+        n = makeNavGrid(HStr.make("his:/nhaystack_simple"));
         grid = client.call("nav", n);
         verifyEq(grid.numRows(), 3);
 
-        n = makeNavGrid(HStr.make("/comp"));
+        n = makeNavGrid(HStr.make("comp:/"));
         grid = client.call("nav", n);
-        verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("/comp/Services"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("/comp/Drivers"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("/comp/Foo"));
+        verifyEq(grid.numRows(), 5);
+        verifyEq(grid.row(0).get("navId"), HStr.make("comp:/Services"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("comp:/Drivers"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("comp:/Foo"));
 
         traverseComponents((HStr) grid.row(0).get("navId"));
         traverseComponents((HStr) grid.row(1).get("navId"));
@@ -273,8 +275,8 @@ public class NSimpleClientTest extends NTest
     void verifyHisRead() throws Exception
     {
         HGrid grid = client.readAll("his");
-//grid.dump();
-        verifyEq(grid.numRows(), 4);
+grid.dump();
+        verifyEq(grid.numRows(), 5);
 
         ///////////////////////////////////////////////
 
@@ -305,12 +307,11 @@ public class NSimpleClientTest extends NTest
         his = client.hisRead(dict.id(), "today");
 
         verifyEq(his.meta().id(), dict.id());
-//        verify(his.numRows() > 0);
-//
-//        last = his.numRows()-1;
-//        verifyEq(ts(his.row(last)).date, HDate.today());
-//
-//        verifyEq(numVal(his.row(0)).unit, "psi");
+
+        ///////////////////////////////////////////////
+
+        client.hisRead(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"), "today");
+        client.hisRead(HUri.make("sep:/Richmond/AHU1/NumericWritable"), "today");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -386,8 +387,135 @@ public class NSimpleClientTest extends NTest
     }
 
 //////////////////////////////////////////////////////////////////////////
-// Main
+// Point Write
 //////////////////////////////////////////////////////////////////////////
+
+    void verifyPointWrite() throws Exception
+    {
+        doVerifyPointWrite(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"));
+        doVerifyPointWrite(HUri.make("sep:/Richmond/AHU1/NumericWritable"));
+    }
+    
+    private void doVerifyPointWrite(HIdentifier id)
+    {
+        HGrid grid = client.pointWrite(id, 10, "admin", HNum.make(222), null);
+        verifyEq(grid.numRows(), 17);
+        for (int i = 0; i < 17; i++)
+        {
+            verifyEq(grid.row(i).getInt("level"), i+1);
+            switch(i+1)
+            {
+                case 10:
+                    verifyEq(grid.row(i).get("val"), HNum.make(222));
+                    verifyEq(grid.row(i).get("who"), HStr.make("admin"));
+                    break;
+                case 17:
+                    verifyEq(grid.row(i).get("val"), HNum.make(111));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                default:
+                    verify(grid.row(i).missing("val"));
+                    verify(grid.row(i).missing("who"));
+                    break;
+            }
+        }
+
+        grid = client.pointWrite(id, 10, "admin", null, null);
+        verifyEq(grid.numRows(), 17);
+        for (int i = 0; i < 17; i++)
+        {
+            verifyEq(grid.row(i).getInt("level"), i+1);
+            switch(i+1)
+            {
+                case 10:
+                    verify(grid.row(i).missing("val"));
+                    verifyEq(grid.row(i).get("who"), HStr.make("admin"));
+                    break;
+                case 17:
+                    verifyEq(grid.row(i).get("val"), HNum.make(111));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                default:
+                    verify(grid.row(i).missing("val"));
+                    verify(grid.row(i).missing("who"));
+                    break;
+            }
+        }
+
+        // just make sure this works with no level, etc
+        grid = client.pointWriteArray(id);
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// Invoke Action
+//////////////////////////////////////////////////////////////////////////
+
+    void verifyInvokeAction() throws Exception
+    {
+        doVerifyInvokeAction(HRef.make("c.c2xvdDovQUhVMS9OdW1lcmljV3JpdGFibGU~"));
+        doVerifyInvokeAction(HUri.make("sep:/Richmond/AHU1/NumericWritable"));
+    }
+    
+    private void doVerifyInvokeAction(HIdentifier id)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("arg", HNum.make(333));
+        client.invokeAction(id, "emergencyOverride", hd.toDict());
+
+        HGrid grid = client.pointWriteArray(id);
+        verifyEq(grid.numRows(), 17);
+        for (int i = 0; i < 17; i++)
+        {
+            verifyEq(grid.row(i).getInt("level"), i+1);
+            switch(i+1)
+            {
+                case 1:
+                    verifyEq(grid.row(i).get("val"), HNum.make(333));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                case 10:
+                    verify(grid.row(i).missing("val"));
+                    verifyEq(grid.row(i).get("who"), HStr.make("admin"));
+                    break;
+                case 17:
+                    verifyEq(grid.row(i).get("val"), HNum.make(111));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                default:
+                    verify(grid.row(i).missing("val"));
+                    verify(grid.row(i).missing("who"));
+                    break;
+            }
+        }
+
+        client.invokeAction(id, "emergencyAuto", HDict.EMPTY);
+
+        grid = client.pointWriteArray(id);
+        verifyEq(grid.numRows(), 17);
+        for (int i = 0; i < 17; i++)
+        {
+            verifyEq(grid.row(i).getInt("level"), i+1);
+            switch(i+1)
+            {
+                case 10:
+                    verify(grid.row(i).missing("val"));
+                    verifyEq(grid.row(i).get("who"), HStr.make("admin"));
+                    break;
+                case 17:
+                    verifyEq(grid.row(i).get("val"), HNum.make(111));
+                    verify(grid.row(i).missing("who"));
+                    break;
+                default:
+                    verify(grid.row(i).missing("val"));
+                    verify(grid.row(i).missing("who"));
+                    break;
+            }
+        }
+    }
+
+////////////////////////////////////////////////////////////////
+// main
+////////////////////////////////////////////////////////////////
 
     public static void main(String[] args)
     {

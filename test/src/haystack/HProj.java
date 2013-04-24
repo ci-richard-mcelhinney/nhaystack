@@ -185,7 +185,7 @@ public abstract class HProj
    * the history record.  Otherwise if a String is passed, it is resolved
    * relative to the history record's timezone.
    */
-  public abstract HGrid hisRead(HRef id, Object range);
+  public abstract HGrid hisRead(HIdentifier id, Object range);
 
   /**
    * Write a set of history time-series data to the given point record.
