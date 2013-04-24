@@ -56,12 +56,15 @@ public class BNHaystackService extends BAbstractService
             rebuildCache()
                 -- Rebuild the internal cache
                 flags { operator }
+            removeBrokenRefs()
+                -- Remove all the invalid refs
+                flags { operator }
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(3960567318)1.0$ @*/
-/* Generated Wed Apr 10 15:54:22 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(3598115309)1.0$ @*/
+/* Generated Wed Apr 24 13:27:11 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -227,6 +230,23 @@ public class BNHaystackService extends BAbstractService
   public void rebuildCache() { invoke(rebuildCache,null,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "removeBrokenRefs"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>removeBrokenRefs</code> action.
+   * Remove all the invalid refs
+   * @see nhaystack.server.BNHaystackService#removeBrokenRefs()
+   */
+  public static final Action removeBrokenRefs = newAction(Flags.OPERATOR,null);
+  
+  /**
+   * Invoke the <code>removeBrokenRefs</code> action.
+   * @see nhaystack.server.BNHaystackService#removeBrokenRefs
+   */
+  public void removeBrokenRefs() { invoke(removeBrokenRefs,null,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -312,6 +332,15 @@ public class BNHaystackService extends BAbstractService
             stats.setNumSites(cache.numSites);
             stats.setLastCacheRebuildDuration(cache.lastRebuildDuration);
             stats.setLastCacheRebuildTime(cache.lastRebuildTime);
+        }
+    }
+
+    public void doRemoveBrokenRefs() throws Exception
+    {
+        Cache cache = server.getCache();
+        synchronized(cache)
+        {
+            server.removeBrokenRefs();
         }
     }
 

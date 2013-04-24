@@ -683,6 +683,66 @@ public class NHServer extends HServer
         watches.remove(watchId);
     }
 
+    void removeBrokenRefs() 
+    {
+        Iterator compItr = new ComponentTreeIterator(
+            (BComponent) BOrd.make("slot:/").resolve(service, null).get());
+
+        // check every component
+        while (compItr.hasNext())
+        {
+            BComponent comp = (BComponent) compItr.next();
+            HDict tags = BHDict.findTagAnnotation(comp);
+
+            // check if any of the tags are a broken ref
+            Set brokenRefs = null;
+            Iterator tagItr = tags.iterator();
+            while (tagItr.hasNext())
+            {
+                Map.Entry e = (Map.Entry) tagItr.next();
+                String name = (String) e.getKey();
+                HVal val = (HVal) e.getValue();
+
+                if (val instanceof HRef)
+                {
+                    // try to resolve the ref
+                    try
+                    {
+                        lookupComponent((HRef) val);
+                    }
+                    // failed!
+                    catch (UnresolvedException ue)
+                    {
+                        LOG.message(
+                            "broken ref '" + name + "' found in " + 
+                            comp.getSlotPath());
+
+                        if (brokenRefs == null)
+                            brokenRefs = new HashSet();
+                        brokenRefs.add(name);
+                    }
+                }
+            }
+
+            // at least one broken ref was found
+            if (brokenRefs != null)
+            {
+                HDictBuilder hdb = new HDictBuilder();
+                tagItr = tags.iterator();
+                while (tagItr.hasNext())
+                {
+                    Map.Entry e = (Map.Entry) tagItr.next();
+                    String name = (String) e.getKey();
+                    HVal val = (HVal) e.getValue();
+
+                    if (!brokenRefs.contains(name))
+                        hdb.add(name, val);
+                }
+                comp.set("haystack", BHDict.make(hdb.toDict()));
+            }
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
