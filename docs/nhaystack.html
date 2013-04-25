@@ -5,7 +5,7 @@
 <p>NHaystack is an open-source <a href="http://www.niagaraax.com/">Niagara AX</a> module
 that serves up <a href="http://project-haystack.org">Project Haystack</a> data 
 directly from a Niagara AX station, via a 
-<a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful</a> protocol.</p>
+<a href="http://project-haystack.org/doc/Rest">RESTful</a> protocol.</p>
 
 <p>NHaystack is licensed under the
 <a href="http://opensource.org/licenses/AFL-3.0">Academic Free License ("AFL") v. 3.0</a>.
@@ -36,17 +36,19 @@ etc. are automatically generated for you.</p>
 
 <h3>2. How point recs are generated</h3>
 
-<p>In Haystack, a <a href="http://project-haystack.org/tag/point">point</a> <a href="http://project-haystack.org/doc/TagModel#entities">rec</a> can have a <a href="http://project-haystack.org/tag/cur">cur</a> tag,
+<p>In Niagara AX, ControlPoints and Histories exist in separate namespaces. In <br />
+AX, there is one object in the station database which represents the <a href="http://project-haystack.org/tag/point">point</a>,
+(including its current value, actions to command it, and so forth), and a 
+different object to represent its historical log of timestamp/value pairs. </p>
+
+<p>However, in Haystack, a <a href="http://project-haystack.org/tag/point">point</a> <a href="http://project-haystack.org/doc/TagModel#entities">rec</a> can have both a <a href="http://project-haystack.org/tag/cur">cur</a> tag,
 which indicates the <a href="http://project-haystack.org/tag/point">point</a> has capability for subscription to its real-time 
 current value, and it can have a <a href="http://project-haystack.org/tag/his">his</a> tag, which indicates that a 
 <a href="http://project-haystack.org/tag/point">point</a> is historized with a history log of timestamp/value pairs.</p>
 
-<p>This is rather different than how ControlPoints and Histories work in AX. In 
-AX, there is one object in the station database which represents the <a href="http://project-haystack.org/tag/point">point</a>,
-(including its current value, actions to command it, and so forth), and a 
-different object to represent its historical log of timestamp/value pairs. 
-NHaystack automatically maps these two objects together so that only one 
-Haystack <a href="http://project-haystack.org/doc/TagModel#entities">rec</a> is generated, with both a <a href="http://project-haystack.org/tag/cur">cur</a> tag and a 
+<p>NHaystack handles this mismatch by unifiying the AX namespaces.
+NHaystackService automatically maps ControlPoints and Histories together 
+so that only one Haystack <a href="http://project-haystack.org/doc/TagModel#entities">rec</a> is generated, with both a <a href="http://project-haystack.org/tag/cur">cur</a> tag and a 
 <a href="http://project-haystack.org/tag/his">his</a> tag.  If only one of the objects is present, then either 
 the <a href="http://project-haystack.org/tag/cur">cur</a> tag or this <a href="http://project-haystack.org/tag/his">his</a> tag is generated, but not both.  Lets 
 look at a couple of examples showing how this works.  </p>
@@ -244,7 +246,7 @@ one Device.  </p>
 
 <p>This is a very powerful feature of nhaystack because it allows us to get 
 away completely from the network-centric view of the world that one finds
-in a station.  Instead, you can choose points from any number of Devices and 
+in an AX Station.  Instead, you can choose points from any number of Devices and 
 add them to an <a href="http://project-haystack.org/tag/equip">equip</a>.  In addition, the points on a given Device may be
 mapped into any number of <a href="http://project-haystack.org/tag/equip">equips</a>.</p>
 
@@ -338,5 +340,19 @@ our station will look like this:</p>
 
 <p>What we see here is that an explictly-tagged <a href="http://project-haystack.org/tag/equipRef">equipRef</a> always trumps
 an implicit <a href="http://project-haystack.org/tag/equip">equip</a> tag.</p>
+
+<h4>4.5 Fixing broken refs</h4>
+
+<p>Occasionally when you are working on setting up the relationships between
+<a href="http://project-haystack.org/doc/TagModel#entities">recs</a> in a station,
+you will delete a Component that has other Components referencing it.  For instance,
+in the example in 4.4, there are three <a href="http://project-haystack.org/tag/equip">equips</a> referencing a <a href="http://project-haystack.org/tag/site">site</a>.
+If you delete the <a href="http://project-haystack.org/tag/site">site</a>, the <a href="http://project-haystack.org/tag/siteRef">siteRef</a> tags on the 3 <a href="http://project-haystack.org/tag/equip">equips</a>
+will be broken.</p>
+
+<p>To fix this problem, their is an action on NHaystackService called <code>removeBrokenRefs</code>
+that you can invoke.  This action deletes all of the refs in the station
+that do not point to a valid <a href="http://project-haystack.org/doc/TagModel#entities">rec</a>.  Each time a broken ref is deleted, 
+a message is also generated in the station log telling you which Component was fixed.</p>
 
 <!-- links ----------------------->

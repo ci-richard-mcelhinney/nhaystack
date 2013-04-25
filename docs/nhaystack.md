@@ -5,7 +5,7 @@
 NHaystack is an open-source [Niagara AX](http://www.niagaraax.com/) module
 that serves up [Project Haystack](http://project-haystack.org) data 
 directly from a Niagara AX station, via a 
-[RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) protocol.
+[RESTful](http://project-haystack.org/doc/Rest) protocol.
 
 NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
@@ -36,17 +36,19 @@ etc. are automatically generated for you.
 
 ### 2. How point recs are generated
 
-In Haystack, a [point][point] [rec][rec] can have a [cur][cur] tag,
+In Niagara AX, ControlPoints and Histories exist in separate namespaces. In  
+AX, there is one object in the station database which represents the [point][point],
+(including its current value, actions to command it, and so forth), and a 
+different object to represent its historical log of timestamp/value pairs. 
+
+However, in Haystack, a [point][point] [rec][rec] can have both a [cur][cur] tag,
 which indicates the [point][point] has capability for subscription to its real-time 
 current value, and it can have a [his][his] tag, which indicates that a 
 [point][point] is historized with a history log of timestamp/value pairs.
 
-This is rather different than how ControlPoints and Histories work in AX. In 
-AX, there is one object in the station database which represents the [point][point],
-(including its current value, actions to command it, and so forth), and a 
-different object to represent its historical log of timestamp/value pairs. 
-NHaystack automatically maps these two objects together so that only one 
-Haystack [rec][rec] is generated, with both a [cur][cur] tag and a 
+NHaystack handles this mismatch by unifiying the AX namespaces.
+NHaystackService automatically maps ControlPoints and Histories together 
+so that only one Haystack [rec][rec] is generated, with both a [cur][cur] tag and a 
 [his][his] tag.  If only one of the objects is present, then either 
 the [cur][cur] tag or this [his][his] tag is generated, but not both.  Lets 
 look at a couple of examples showing how this works.  
@@ -325,6 +327,20 @@ our station will look like this:
 
 What we see here is that an explictly-tagged [equipRef][equipRef] always trumps
 an implicit [equip][equip] tag.
+
+#### 4.5 Fixing broken refs
+
+Occasionally when you are working on setting up the relationships between
+[recs][rec] in a station,
+you will delete a Component that has other Components referencing it.  For instance,
+in the example in 4.4, there are three [equips][equip] referencing a [site][site].
+If you delete the [site][site], the [siteRef][siteRef] tags on the 3 [equips][equip]
+will be broken.
+
+To fix this problem, their is an action on NHaystackService called `removeBrokenRefs`
+that you can invoke.  This action deletes all of the refs in the station
+that do not point to a valid [rec][rec].  Each time a broken ref is deleted, 
+a message is also generated in the station log telling you which Component was fixed.
 
 <!-- links ----------------------->
 
