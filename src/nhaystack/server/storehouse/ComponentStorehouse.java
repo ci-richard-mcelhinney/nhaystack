@@ -239,6 +239,35 @@ public class ComponentStorehouse extends Storehouse
                 break;
         }
 
+        // actions
+        switch(pointKind)
+        {
+            case NUMERIC_KIND:
+            case ENUM_KIND:
+            case STRING_KIND:
+                hdb.add("actions", HStr.make(
+                    "ver:\"2.0\"\n" + 
+                    "dis,expr\n" + 
+                    "\"Manual Set\",\"pointOverride(\\$self, \\$val, \\$duration)\"\n" + 
+                    "\"Manual Auto\",\"pointAuto(\\$self)\"\n" + 
+                    "\"Emergency Set\",\"pointEmergencyOverride(\\$self, \\$val)\"\n" + 
+                    "\"Emergency Auto\",\"pointEmergencyAuto(\\$self)\""
+                ));
+
+                break;
+
+            case BOOLEAN_KIND:
+                hdb.add("actions", HStr.make(
+                    "ver:\"2.0\"\n" + 
+                    "dis,expr\n" + 
+                    "\"Manual On\",\"pointOverride(\\$self, true, \\$duration)\"\n" + 
+                    "\"Manual Off\",\"pointOverride(\\$self, false, \\$duration)\"\n" + 
+                    "\"Manual Auto\",\"pointAuto(\\$self)\""
+                ));
+
+                break;
+        }
+
         // the point is explicitly tagged with an equipRef
         if (tags.has("equipRef"))
         {
