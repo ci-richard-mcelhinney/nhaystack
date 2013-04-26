@@ -8,9 +8,12 @@
 
 package nhaystack.ui;
 
+import java.util.*;
+
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
+import javax.baja.ui.list.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
@@ -47,21 +50,50 @@ public class BEquipRefFE extends BWbFieldEditor
     {
         this.dropDown = new BListDropDown();
 
-        dropDown.getList().addItem(LEX.getText("none"));
-
-        // populate the list by fetching all the equips from the server
-        HGrid grid = ((BHGrid) group.service().invoke(
+        // fetch all the equips from the server
+        HGrid equipsGrid = ((BHGrid) group.service().invoke(
             BNHaystackService.fetchEquips, null)).getGrid();
 
-        for (int i = 0; i < grid.numRows(); i++)
+        // see if we are currently explicitly tagged
+        String implicitEquip = findImplicitEquip(group.component(), equipsGrid);
+
+        // if we can't find an implicit candidate, then add a 'NONE' equip
+        if (implicitEquip == null)
+            dropDown.getList().addItem(LEX.getText("none"));
+
+        // add the equips
+        for (int i = 0; i < equipsGrid.numRows(); i++)
         {
-            String slotPath = grid.row(i).getStr("axSlotPath");
-            dropDown.getList().addItem("station:|" + slotPath);
+            String slotPath = equipsGrid.row(i).getStr("axSlotPath");
+
+            if (implicitEquip != null && slotPath.equals(implicitEquip))
+                dropDown.getList().addItem(
+                    LEX.getText("autoFind") + ": " +
+                    "station:|" + slotPath);
+            else
+                dropDown.getList().addItem(
+                    LEX.getText("explicit") + ": " +
+                    "station:|" + slotPath);
         }
 
         setContent(dropDown);
 
         linkTo(dropDown, BDropDown.valueModified, setModified);  
+    }
+
+    private static String findImplicitEquip(BComponent comp, HGrid equipsGrid)
+    {
+        String compSlotPath = comp.getSlotPath().toString();
+        for (int i = 0; i < equipsGrid.numRows(); i++)
+        {
+            String slotPath = equipsGrid.row(i).getStr("axSlotPath");
+            int n = slotPath.lastIndexOf("/");
+            String parentSlotPath = slotPath.substring(0, n);
+            
+            if (compSlotPath.startsWith(parentSlotPath))
+                return slotPath;
+        }
+        return null;
     }
 
     protected void doSetReadonly(boolean readonly)
@@ -73,18 +105,51 @@ public class BEquipRefFE extends BWbFieldEditor
     {
         BOrd ord = (BOrd) value;
 
+        // this must always be "none"
         if (ord.equals(BOrd.DEFAULT))
+        {
             dropDown.setSelectedIndex(0);
+        }
         else
-            dropDown.setSelectedItem(ord.toString());
+        {
+            String ordStr = ord.toString();
+
+            boolean found = false;
+            BList list = dropDown.getList();
+            for (int i = 0; i < list.getItemCount(); i++)
+            {
+                String item = (String) list.getItem(i);
+                if (item.endsWith(ordStr))
+                {
+                    dropDown.setSelectedIndex(i);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) throw new IllegalStateException(
+                "Cannot find equip matching " + ordStr);
+        }
     }
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
         String str = (String) dropDown.getSelectedItem();
 
-        return (str.equals(LEX.getText("none"))) ?
-            BOrd.DEFAULT : BOrd.make(str);
+        if (str.equals(LEX.getText("none")))
+        {
+            return BOrd.DEFAULT;
+        }
+        else if (str.startsWith(LEX.getText("autoFind")))
+        {
+            return BOrd.DEFAULT;
+        }
+        else
+        {
+            String prefix = LEX.getText("explicit") + ": ";
+            str = str.substring(prefix.length());
+            return BOrd.make(str);
+        }
     }
 
 ////////////////////////////////////////////////////////////////

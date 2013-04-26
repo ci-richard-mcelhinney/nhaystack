@@ -1,3 +1,6 @@
 syntax: glob
 
 libJar
+javadoc
+test/jars
+test/staging

@@ -16,6 +16,7 @@ import javax.baja.sys.*;
 import javax.baja.util.*;
 
 import haystack.*;
+import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.*;
 import nhaystack.server.storehouse.*;
@@ -211,10 +212,10 @@ public class Nav
         {
             Array dicts = new Array(HDict.class);
 
-            BComponent[] sites = cache.getAllSites();
+            BHSite[] sites = cache.getAllSites();
             for (int i = 0; i < sites.length; i++)
             {
-                BComponent site = sites[i];
+                BHSite site = sites[i];
                 HDict tags = compStore.createComponentTags(site);
 
                 String siteNav = makeSiteNavId(tags.getStr("navName"));
@@ -280,6 +281,10 @@ public class Nav
         for (int i = 0; i < points.length; i++)
         {
             BControlPoint point = points[i];
+
+            // skip points that are not annotated
+            if (BHDict.findTagAnnotation(point).equals(HDict.EMPTY))
+                continue;
 
             HDictBuilder hd = new HDictBuilder();
             hd.add(compStore.createComponentTags(point));

@@ -89,7 +89,7 @@ public class Cache
     /**
       * Get everything that is tagged as 'site'
       */
-    public BComponent[] getAllSites()
+    public BHSite[] getAllSites()
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -99,7 +99,7 @@ public class Cache
     /**
       * Get everything that is tagged as 'equip'
       */
-    public BComponent[] getAllEquips()
+    public BHEquip[] getAllEquips()
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -109,46 +109,46 @@ public class Cache
     /**
       * Return the implicit 'equip' for the point, or null.
       */
-    public BComponent getImplicitEquip(BControlPoint point)
+    public BHEquip getImplicitEquip(BControlPoint point)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
-        return (BComponent) implicitEquips.get(point.getHandle());
+        return (BHEquip) implicitEquips.get(point.getHandle());
     }
 
     /**
       * Get the site identified by the navId, or return null.
       */
-    public BComponent getNavSite(String siteNav)
+    public BHSite getNavSite(String siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
-        return (BComponent) siteNavs.get(siteNav);
+        return (BHSite) siteNavs.get(siteNav);
     }
 
     /**
       * Get the equip identified by the navId, or return null.
       */
-    public BComponent getNavEquip(String equipNav)
+    public BHEquip getNavEquip(String equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
-        return (BComponent) equipNavs.get(equipNav);
+        return (BHEquip) equipNavs.get(equipNav);
     }
 
     /**
       * Get all the equips associated with the given site navId.
       */
-    public BComponent[] getNavSiteEquips(String siteNav)
+    public BHEquip[] getNavSiteEquips(String siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
-        BComponent site = (BComponent) siteNavs.get(siteNav);
+        BHSite site = (BHSite) siteNavs.get(siteNav);
 
         Array arr = (Array) siteEquips.get(site.getHandle());
         return (arr == null) ?  
-            new BComponent[0] : 
-            (BComponent[]) arr.trim();
+            new BHEquip[0] : 
+            (BHEquip[]) arr.trim();
     }
 
     /**
@@ -158,7 +158,7 @@ public class Cache
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
-        BComponent equip = (BComponent) equipNavs.get(equipNav);
+        BHEquip equip = (BHEquip) equipNavs.get(equipNav);
 
         Array arr = (Array) equipPoints.get(equip.getHandle());
         return (arr == null) ?  
@@ -221,8 +221,8 @@ public class Cache
         siteEquips  = new HashMap();
         equipPoints = new HashMap();
 
-        Array sitesArr = new Array(BComponent.class);
-        Array equipsArr = new Array(BComponent.class);
+        Array sitesArr = new Array(BHSite.class);
+        Array equipsArr = new Array(BHEquip.class);
 
         Iterator iterator = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
@@ -248,13 +248,13 @@ public class Cache
                 if (tags.has("equipRef"))
                 {
                     HRef ref = tags.getRef("equipRef");
-                    BComponent equip = server.lookupComponent(ref);
+                    BHEquip equip = (BHEquip) server.lookupComponent(ref);
                     addBackwardsEquipPoint(equip, point);
                 }
                 // implicit equip
                 else
                 {
-                    BComponent equip = findImplicitEquip(point);
+                    BHEquip equip = findImplicitEquip(point);
                     if (equip != null)
                     {
                         addBackwardsEquipPoint(equip, point);
@@ -276,28 +276,19 @@ public class Cache
                 else if (comp instanceof BHEquip)
                 {
                     equipsArr.add(comp);
-                    processEquip(comp);
-                }
-            }
-            // implicit equip
-            else
-            {
-                if (tags.has("equip"))
-                {
-                    equipsArr.add(comp);
-                    processEquip(comp);
+                    processEquip((BHEquip) comp);
                 }
             }
         }
 
-        sites  = (BComponent[]) sitesArr.trim();
-        equips = (BComponent[]) equipsArr.trim();
+        sites  = (BHSite[]) sitesArr.trim();
+        equips = (BHEquip[]) equipsArr.trim();
     }
 
     /**
       * This will save a reference to the point from its equip.
       */
-    private void addBackwardsEquipPoint(BComponent equip, BControlPoint point)
+    private void addBackwardsEquipPoint(BHEquip equip, BControlPoint point)
     {
         Array arr = (Array) equipPoints.get(equip.getHandle());
         if (arr == null)
@@ -308,21 +299,21 @@ public class Cache
     /**
       * This will save a reference to the equip from its site.
       */
-    private void addBackwardsSiteEquip(BComponent site, BComponent equip)
+    private void addBackwardsSiteEquip(BHSite site, BHEquip equip)
     {
         Array arr = (Array) siteEquips.get(site.getHandle());
         if (arr == null)
-            siteEquips.put(site.getHandle(), arr = new Array(BComponent.class));
+            siteEquips.put(site.getHandle(), arr = new Array(BHEquip.class));
         arr.add(equip);
     }
 
-    private void processEquip(BComponent equip)
+    private void processEquip(BHEquip equip)
     {
         HDict equipTags = BHDict.findTagAnnotation(equip);
         if (equipTags.has("siteRef"))
         {
             HRef ref = equipTags.getRef("siteRef");
-            BComponent site = server.lookupComponent(ref);
+            BHSite site = (BHSite) server.lookupComponent(ref);
             if (site != null)
             {
                 // add backwards reference
@@ -383,17 +374,26 @@ public class Cache
     /**
       * Find a parent device that has a BHEquip child
       */
-    private BComponent findImplicitEquip(BControlPoint point)
+    private BHEquip findImplicitEquip(BControlPoint point)
     {
-        BComponent parent = (BComponent) point.getParent();
+        // TODO: figure out a more efficient way to do this.
+        // Right now we end up walking up to the root for
+        // every point that isn't tagged.
 
+        BComponent parent = (BComponent) point.getParent();
         while (true)
         {
             if (parent == null) return null;
 
-            HDict tags = BHDict.findTagAnnotation(parent);
-            if (tags.has("equip"))
-                return parent;
+            BHEquip[] equips = (BHEquip[]) parent.getChildren(BHEquip.class);
+
+            if (equips.length > 0)
+            {
+                if (equips.length > 1)
+                    LOG.warning(
+                        parent.getSlotPath() + " has more than one equip.");
+                return equips[0];
+            }
 
             parent = (BComponent) parent.getParent();
         }
@@ -418,16 +418,17 @@ public class Cache
     private boolean initialized = false;
 
     private Map remoteToConfig = null; // RemotePoint -> BHistoryConfig
-    private Map navHistories = null;   // stationName -> Array<BHistoryConfig>
+    private Map remoteToPoint  = null; // RemotePoint -> BControlPoint
+    private Map navHistories   = null; // stationName -> Array<BHistoryConfig>
 
-    private Map remoteToPoint   = null; // RemotePoint -> BControlPoint
-    private BComponent[] sites  = null;
-    private BComponent[] equips = null;
-    private Map implicitEquips  = null; // Handle -> BComponent
-    private Map siteNavs  = null; // String -> BComponent
-    private Map equipNavs = null; // String -> BComponent
-    private Map siteEquips  = null; // Handle -> Array<BComponent>
-    private Map equipPoints = null; // Handle -> Array<BControlPoint>
+    private BHSite[]  sites  = null;
+    private BHEquip[] equips = null;
+
+    private Map implicitEquips = null; // Handle -> BHEquip
+    private Map siteNavs       = null; // String -> BHSite
+    private Map equipNavs      = null; // String -> BHEquip
+    private Map siteEquips     = null; // Handle -> Array<BHEquip>
+    private Map equipPoints    = null; // Handle -> Array<BControlPoint>
 
     int numPoints = 0;
     int numEquips = 0;

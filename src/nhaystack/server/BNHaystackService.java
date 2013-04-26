@@ -19,6 +19,7 @@ import javax.baja.util.*;
 
 import haystack.*;
 import nhaystack.*;
+import nhaystack.site.*;
 
 /**
   * BNHaystackService makes an NHServer available.  
@@ -299,22 +300,22 @@ public class BNHaystackService extends BAbstractService
 
     public BHGrid doFetchSites() throws Exception
     {
-        BComponent[] comps = server.getCache().getAllSites();
+        BHSite[] sites = server.getCache().getAllSites();
 
-        HDict[] dicts = new HDict[comps.length];
-        for (int i = 0; i < comps.length; i++)
-            dicts[i] = server.getComponentStorehouse().createComponentTags(comps[i]);
+        HDict[] dicts = new HDict[sites.length];
+        for (int i = 0; i < sites.length; i++)
+            dicts[i] = server.getComponentStorehouse().createComponentTags(sites[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
 
     public BHGrid doFetchEquips() throws Exception
     {
-        BComponent[] comps = server.getCache().getAllEquips();
+        BHEquip[] equips = server.getCache().getAllEquips();
 
-        HDict[] dicts = new HDict[comps.length];
-        for (int i = 0; i < comps.length; i++)
-            dicts[i] = server.getComponentStorehouse().createComponentTags(comps[i]);
+        HDict[] dicts = new HDict[equips.length];
+        for (int i = 0; i < equips.length; i++)
+            dicts[i] = server.getComponentStorehouse().createComponentTags(equips[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }

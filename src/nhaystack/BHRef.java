@@ -111,7 +111,7 @@ public final class BHRef
 //////////////////////////////////////////////////////////////// 
 
     /** * The default is HRef.make("null"). */
-    public static final BHRef DEFAULT = new BHRef(HRef.make("null"));
+    public static final BHRef DEFAULT = new BHRef(HRef.nullRef);
 
     public Type getType() { return TYPE; }
     public static final Type TYPE = Sys.loadType(BHRef.class);

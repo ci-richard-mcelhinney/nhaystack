@@ -64,21 +64,6 @@ public class NSupervisorClientTest extends NTest
         verifyEq(grid.row(6).get("id"), HRef.make("h.L25oYXlzdGFja19zdXAvQXVkaXRIaXN0b3J5"));
         verifyEq(grid.row(7).get("id"), HRef.make("h.L25oYXlzdGFja19zdXAvTG9nSGlzdG9yeQ~~"));
 
-        grid = client.readAll("id");
-        verify(grid.numRows() == 12);
-        verifyEq(grid.row( 0).getRef("id").dis, "Blacksburg nhaystack_jace1");
-        verifyEq(grid.row( 1).getRef("id").dis, "Blacksburg nhaystack_jace1 SineWave1");
-        verifyEq(grid.row( 2).getRef("id").dis, "Blacksburg nhaystack_jace1 SineWave2");
-        verifyEq(grid.row( 3).getRef("id").dis, "Blacksburg Transmogrifier SineWave1");
-        verifyEq(grid.row( 4).getRef("id").dis, "Blacksburg");
-        verifyEq(grid.row( 5).getRef("id").dis, "Blacksburg Transmogrifier");
-        verifyEq(grid.row( 6).getRef("id").dis, "Blacksburg FluxCapacitor");
-        verifyEq(grid.row( 7).getRef("id").dis, "nhaystack_jace1_AuditHistory");
-        verifyEq(grid.row( 8).getRef("id").dis, "nhaystack_jace1_LogHistory");
-        verifyEq(grid.row( 9).getRef("id").dis, "nhaystack_jace2_SineWave2");
-        verifyEq(grid.row(10).getRef("id").dis, "nhaystack_sup_AuditHistory");
-        verifyEq(grid.row(11).getRef("id").dis, "nhaystack_sup_LogHistory");
-
 //axType,kind,id,curStatus,dis,axSlotPath,unit,point,cur,curVal,his,axHistoryId,tz
 //
 //"control:NumericPoint","Number",@c.c2xvdDovRHJpdmVycy9OaWFnYXJhTmV0d29yay9uaGF5c3RhY2tfamFjZTEvcG9pbnRzL1NpbmVXYXZlMQ~~,

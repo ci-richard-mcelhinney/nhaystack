@@ -8,11 +8,14 @@
 
 package nhaystack.ui;
 
+import java.util.*;
+
 import javax.baja.fox.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.list.*;
+import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
 import haystack.*;
@@ -60,6 +63,15 @@ class Row
         BList list = names.getList();
         list.removeAllItems();
         String[] tags = Resources.getKindTags(kind);
+
+        // smuggle navNameFormat into the dropdown
+        if (kind.equals("Str"))
+        {
+            Array arr = new Array(tags);
+            arr.add("navNameFormat");
+            tags = (String[]) arr.sort().trim();
+        }
+
         for (int i = 0; i < tags.length; i++)
         {
             if (tags[i].equals("id")) continue;
@@ -205,7 +217,8 @@ class Row
         }
     }
 
-    private static BWbFieldEditor makeRefFE(BHDictEditor editor, String name, HRef ref)
+    private static BWbFieldEditor makeRefFE(
+        BHDictEditor editor, String name, HRef ref)
     {
         BFoxProxySession session = editor.group().session();
 
