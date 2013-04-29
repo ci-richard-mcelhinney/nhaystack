@@ -1,5 +1,5 @@
 
-## ![NHaystack](tag.png) NHaystack
+## NHaystack
 
 NHaystack is an open-source [Niagara AX](http://www.niagaraax.com/) module
 that serves up [Project Haystack](http://project-haystack.org) data 
@@ -8,9 +8,6 @@ directly from a Niagara AX station, via a
 
 NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
-
-NHaystack is hosted at
-[https://bitbucket.org/jasondbriggs/nhaystack](https://bitbucket.org/jasondbriggs/nhaystack).
 
 The development of NHaystack has been funded by 
 [J2 Innovations](http://www.j2inn.com).  
