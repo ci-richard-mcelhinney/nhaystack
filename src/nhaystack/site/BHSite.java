@@ -95,7 +95,7 @@ public class BHSite extends BHTagged
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/site.png");
+    public static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/site.png");
 
     private static final String SQUARE_FOOT = Resources.getUnits("area", "square_foot")[0].symbol;
 

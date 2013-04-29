@@ -132,7 +132,7 @@ public class BHEquip extends BHTagged
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/equip.png");
+    public static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/equip.png");
 
     private static final HDict ESSENTIALS;
     static

@@ -7,6 +7,7 @@
 //
 package nhaystack.server;
 
+import java.io.*;
 import java.util.*;
 
 import javax.baja.control.*;
@@ -14,6 +15,7 @@ import javax.baja.history.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
+import javax.baja.xml.*;
 
 import haystack.*;
 import nhaystack.*;
@@ -62,23 +64,113 @@ public class Nav
         return siteNavId + "/" + equipName;
     }
 
-////////////////////////////////////////////////////////////////
-// internal
-////////////////////////////////////////////////////////////////
-
     /**
       * Return navigation tree children for given navId. 
       */
-    HGrid onNav(String navId)
+    public HGrid onNav(String navId)
     {
         if (navId == null) return roots();
 
         else if (navId.startsWith("comp:/")) return onCompNav(navId);
         else if (navId.startsWith("his:/"))  return onHisNav(navId);
-        else if (navId.startsWith("sep:/")) return onSiteNav(navId);
+        else if (navId.startsWith("sep:/")) return onSepNav(navId);
 
         else
             throw new IllegalStateException("Cannot lookup nav for " + navId);
+    }
+
+    /**
+      * Fetch the site-equip-point nav tree in xml format
+      */
+    public String fetchSepNav() throws Exception
+    {
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        XWriter out = new XWriter(bout);
+
+        BHSite[] sites = cache.getAllSites();
+        if (sites.length == 0)
+        {
+            out.w("<sepNav/>").nl();
+        }
+        else
+        {
+            out.w("<sepNav>").nl();
+            for (int i = 0; i < sites.length; i++)
+            {
+                HDict siteTags = compStore.createComponentTags(sites[i]);
+                String siteName = siteTags.getStr("navName");
+
+                BComponent[] equips = cache.getNavSiteEquips(makeSiteNavId(siteName));
+                if (equips.length == 0)
+                {
+                    out.indent(1)
+                        .w("<site ")
+                        .attr("navName", siteTags.getStr("navName"))
+                        .w("/>").nl();
+                }
+                else
+                {
+                    out.indent(1)
+                        .w("<site ")
+                        .attr("navName", siteTags.getStr("navName"))
+                        .w(">").nl();
+
+                    for (int j = 0; j < equips.length; j++)
+                    {
+                        HDict equipTags = compStore.createComponentTags(equips[j]);
+                        String equipName = equipTags.getStr("navName");
+
+                        BControlPoint[] points = cache.getNavEquipPoints(
+                            makeEquipNavId(siteName, equipName));
+                        points = annotatedPoints(points);
+
+                        if (points.length == 0)
+                        {
+                            out.indent(2)
+                                .w("<equip ")
+                                .attr("navName", equipTags.getStr("navName"))
+                                .w("/>").nl();
+                        }
+                        else
+                        {
+                            out.indent(2)
+                                .w("<equip ")
+                                .attr("navName", equipTags.getStr("navName"))
+                                .w(">").nl();
+
+                            for (int k = 0; k < points.length; k++)
+                            {
+                                HDict pointTags = compStore.createComponentTags(points[k]);
+                                out.indent(3)
+                                    .w("<point ")
+                                    .attr("navName", pointTags.getStr("navName")).w(" ")
+                                    .attr("axType", pointTags.getStr("axType"))
+                                    .w("/>").nl();
+                            }
+                            out.indent(2).w("</equip>").nl();
+                        }
+                    }
+                    out.indent(1).w("</site>").nl();
+                }
+
+            }
+            out.w("</sepNav>").nl();
+        }
+
+        out.close();
+
+        return new String(bout.toByteArray());
+    }
+
+    private BControlPoint[] annotatedPoints(BControlPoint[] points)
+    {
+        Array arr = new Array(BControlPoint.class);
+
+        for (int i = 0; i < points.length; i++)
+            if (!BHDict.findTagAnnotation(points[i]).equals(HDict.EMPTY))
+                arr.add(points[i]);
+
+        return (BControlPoint[]) arr.trim();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -206,7 +298,7 @@ public class Nav
         else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
     }
 
-    private HGrid onSiteNav(String navId)
+    private HGrid onSepNav(String navId)
     {
         if (navId.equals("sep:/"))
         {

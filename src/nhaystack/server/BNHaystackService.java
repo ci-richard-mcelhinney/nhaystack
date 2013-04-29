@@ -48,11 +48,18 @@ public class BNHaystackService extends BAbstractService
                 -- Lookup an entity record by it's unique identifier.
                 flags { operator, hidden }
                 default {[ BHRef.DEFAULT ]}
+            readAll(filter: BString): BHGrid
+                -- Query every entity record that matches given filter.
+                flags { operator, hidden }
+                default {[ BString.DEFAULT ]}
             fetchSites(): BHGrid
                 -- fetch all the records that are tagged as 'site'.
                 flags { operator, hidden }
             fetchEquips(): BHGrid
                 -- fetch all the records that are tagged as 'equip'.
+                flags { operator, hidden }
+            fetchSepNav(): BString
+                -- fetch the site-equip-point nav tree in xml format
                 flags { operator, hidden }
             rebuildCache()
                 -- Rebuild the internal cache
@@ -64,8 +71,8 @@ public class BNHaystackService extends BAbstractService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(3598115309)1.0$ @*/
-/* Generated Wed Apr 24 13:27:11 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1207068001)1.0$ @*/
+/* Generated Sun Apr 28 10:34:33 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -180,6 +187,23 @@ public class BNHaystackService extends BAbstractService
   public BHDict readById(BHRef id) { return (BHDict)invoke(readById,id,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "readAll"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>readAll</code> action.
+   * Query every entity record that matches given filter.
+   * @see nhaystack.server.BNHaystackService#readAll()
+   */
+  public static final Action readAll = newAction(Flags.OPERATOR|Flags.HIDDEN,BString.DEFAULT,null);
+  
+  /**
+   * Invoke the <code>readAll</code> action.
+   * @see nhaystack.server.BNHaystackService#readAll
+   */
+  public BHGrid readAll(BString filter) { return (BHGrid)invoke(readAll,filter,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "fetchSites"
 ////////////////////////////////////////////////////////////////
   
@@ -212,6 +236,23 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#fetchEquips
    */
   public BHGrid fetchEquips() { return (BHGrid)invoke(fetchEquips,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "fetchSepNav"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>fetchSepNav</code> action.
+   * fetch the site-equip-point nav tree in xml format
+   * @see nhaystack.server.BNHaystackService#fetchSepNav()
+   */
+  public static final Action fetchSepNav = newAction(Flags.OPERATOR|Flags.HIDDEN,null);
+  
+  /**
+   * Invoke the <code>fetchSepNav</code> action.
+   * @see nhaystack.server.BNHaystackService#fetchSepNav
+   */
+  public BString fetchSepNav() { return (BString)invoke(fetchSepNav,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "rebuildCache"
@@ -298,6 +339,11 @@ public class BNHaystackService extends BAbstractService
         return BHDict.make(server.readById(id.getRef()));
     }
 
+    public BHGrid doReadAll(BString filter) throws Exception
+    {
+        return BHGrid.make(server.readAll(filter.getString()));
+    }
+
     public BHGrid doFetchSites() throws Exception
     {
         BHSite[] sites = server.getCache().getAllSites();
@@ -318,6 +364,11 @@ public class BNHaystackService extends BAbstractService
             dicts[i] = server.getComponentStorehouse().createComponentTags(equips[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
+    }
+
+    public BString doFetchSepNav() throws Exception
+    {
+        return BString.make(server.getNav().fetchSepNav());
     }
 
     public void doRebuildCache() throws Exception
