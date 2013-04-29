@@ -589,30 +589,30 @@ public class NHServer extends HServer
             // site
             case 1:
 
-                BComponent comp = cache.getNavSite(
+                BHSite site = cache.getNavSite(
                     Nav.makeSiteNavId(navNames[0]));
 
-                return (comp == null) ?  null : 
-                    compStore.createComponentTags(comp);
+                return (site == null) ?  null : 
+                    compStore.createComponentTags(site);
 
             // equip
             case 2:
 
-                comp = cache.getNavEquip(
+                BHEquip equip = cache.getNavEquip(
                     Nav.makeEquipNavId(navNames[0], navNames[1]));
 
-                return (comp == null) ?  null : 
-                    compStore.createComponentTags(comp);
+                return (equip == null) ?  null : 
+                    compStore.createComponentTags(equip);
 
             // point
             case 3:
 
-                comp = cache.getNavPoint(
+                BControlPoint point = cache.getNavPoint(
                     Nav.makeEquipNavId(navNames[0], navNames[1]), 
                     navNames[2]);
 
-                return (comp == null) ?  null : 
-                    compStore.createComponentTags(comp);
+                return (point == null) ?  null : 
+                    compStore.createComponentTags(point);
 
             // bad uri
             default: return null;
@@ -713,7 +713,7 @@ public class NHServer extends HServer
                     // failed!
                     catch (UnresolvedException ue)
                     {
-                        LOG.message(
+                        LOG.warning(
                             "broken ref '" + name + "' found in " + 
                             comp.getSlotPath());
 
@@ -857,6 +857,8 @@ public class NHServer extends HServer
     public HistoryStorehouse   getHistoryStorehouse()   { return hisStore;  }
 
     public Cache getCache() { return cache; }
+
+    public Nav getNav() { return nav; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 

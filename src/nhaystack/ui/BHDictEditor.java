@@ -91,11 +91,12 @@ public class BHDictEditor extends BEdgePane
 
     public BHDictEditor(
         BHDictEditorGroup editorGroup, 
-        Map origTags, 
-        int editorType)
+        int editorType,
+        Map origTags)
     {
         this.editorGroup = editorGroup;
         this.editorType = editorType;
+        this.origTags = origTags;
 
         // main grid
         this.mainGrid = new BGridPane(4);
@@ -121,16 +122,16 @@ public class BHDictEditor extends BEdgePane
             setBottom(ep);
         }
 
-        loadMainGrid(origTags);
+        loadMainGrid();
     }
 
     /**
       * Set up the mainGrid
       */
-    private void loadMainGrid(Map tagMap) // TreeMap<String,HVal>
+    private void loadMainGrid()
     {
         this.rows = new Array(Row.class);
-        Iterator it = tagMap.entrySet().iterator();
+        Iterator it = origTags.entrySet().iterator();
         while (it.hasNext())
         {
             Map.Entry entry = (Map.Entry) it.next();
@@ -171,6 +172,8 @@ public class BHDictEditor extends BEdgePane
                     "Name '" + name + "' is used more than once.");
             used.add(name);
 
+            ///////////////////////////////////////////////////////////////////
+
             // add to builder
             if (kind.equals("Marker"))
             {
@@ -201,6 +204,15 @@ public class BHDictEditor extends BEdgePane
             }
             else if (kind.equals("Ref"))
             {
+                // For equipRefs, if the field editor hasn't been modified,
+                // then auto-generated implicit equipRefs shouldn't be saved 
+                if (name.equals("equipRef") && !row.fe.isModified())
+                {
+                    HDict anno = BHDict.findTagAnnotation(group().component());
+                    if (!anno.has("equipRef"))
+                        continue;
+                }
+
                 BOrd ord = (BOrd) row.fe.saveValue();
 
                 // if its a null ord, just don't add anything to the builder
@@ -439,7 +451,8 @@ public class BHDictEditor extends BEdgePane
                 for (int i = 0; i < markers.length; i++)
                 {
                     if (!used.contains(markers[i]))
-                        rows.add(new Row(BHDictEditor.this, markers[i], HMarker.VAL));
+                        rows.add(new Row(
+                            BHDictEditor.this, markers[i], HMarker.VAL));
                 }
 
                 fillMainGrid();
@@ -573,6 +586,7 @@ public class BHDictEditor extends BEdgePane
 
     private BHDictEditorGroup editorGroup;
     private int editorType;
+    private Map origTags;
 
     private Array rows;
 

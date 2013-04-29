@@ -8,9 +8,15 @@ name=Name
 value=Value
 ok=OK
 cancel=Cancel
-none=-- none --
+none=-- NONE --
+autoFind=AUTO FIND
+explicit=EXPLICIT
 unit=Unit
 essentials=Essentials
 optional=Optional
 autoGen=Auto-Generated
 dragHere=Drag Components here to add a 'haystack' slot
+noSites=(there are no Sites)
+filter=Filter:
+siteEquipPoint=Site-Equip-Point Hierarchy:
+

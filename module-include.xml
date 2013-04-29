@@ -39,6 +39,8 @@
     <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>
 
     <type name="AddHaystackSlot"  class="nhaystack.ui.view.BAddHaystackSlot"/>
+    <type name="NHaystackQueryView"  class="nhaystack.ui.view.BNHaystackQueryView">
+        <agent><on type="nhaystack:NHaystackService"/></agent></type>
     <type name="NHaystackServiceView"  class="nhaystack.ui.view.BNHaystackServiceView">
         <agent><on type="nhaystack:NHaystackService"/></agent></type>
 
