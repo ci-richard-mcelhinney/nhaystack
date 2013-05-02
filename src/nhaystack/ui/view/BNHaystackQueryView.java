@@ -16,6 +16,7 @@ import javax.baja.ui.event.*;
 import javax.baja.ui.options.*;
 import javax.baja.ui.pane.*;
 import javax.baja.ui.table.*;
+import javax.baja.ui.util.*;
 import javax.baja.util.*;
 import javax.baja.workbench.view.*;
 import javax.baja.xml.*;
@@ -72,8 +73,8 @@ public class BNHaystackQueryView extends BWbView
     {
         this.filterMru = new BMruTextDropDown(MRU);
         this.table = new BTable();
-        this.table.setCellRenderer(
-            new GridCellRenderer());
+        this.table.setCellRenderer(new GridCellRenderer());
+        this.title = new BTitlePane("0 recs", table);
 
         BEdgePane ep1 = new BEdgePane();
         ep1.setLeft(new BLabel(LEX.getText("filter") + "  ", BOLD));
@@ -82,12 +83,9 @@ public class BNHaystackQueryView extends BWbView
         BBorderPane bp = new BBorderPane(ep1);
         bp.setPadding(BInsets.make(0, 0, 4, 0));
 
-        BScrollPane sp = new BScrollPane();
-        sp.setContent(table);
-
         BEdgePane ep2 = new BEdgePane();
         ep2.setTop(bp);
-        ep2.setCenter(sp);
+        ep2.setCenter(title); 
 
         setContent(ep2);
 
@@ -113,6 +111,9 @@ public class BNHaystackQueryView extends BWbView
 
             table.setModel(new GridModel(grid));
             table.relayout();
+
+            title.setTitle(grid.numRows() + " recs");
+            title.relayout();
         }
         finally
         {
@@ -169,6 +170,7 @@ public class BNHaystackQueryView extends BWbView
     private static String MRU = "nhaystack_filter";
  
     private final BMruTextDropDown filterMru;
+    private final BTitlePane title;
     private final BTable table;
     private BNHaystackService service;
 }
