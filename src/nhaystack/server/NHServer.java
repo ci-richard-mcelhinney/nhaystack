@@ -17,6 +17,7 @@ import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
+import javax.baja.timezone.*;
 import javax.baja.util.*;
 
 import haystack.*;
@@ -670,6 +671,46 @@ public class NHServer extends HServer
         // invalid space
         else 
         {
+            return null;
+        }
+    }
+
+    /**
+      * Make an HTimeZone from a BTimeZone.
+      * <p>
+      * If the BTimeZone does not correspond to a standard HTimeZone,
+      * then this method uses of the timeZoneAliases stored on the
+      * BNHaystackService to attempt to perform a custom mapping.
+      */
+    public HTimeZone makeTimeZone(BTimeZone timeZone)
+    {
+        String tzName = timeZone.getId();
+
+        // lop off the region, e.g. "America" 
+        int n = tzName.indexOf("/");
+        if (n != -1) 
+        {
+            String region = tzName.substring(0, n);
+            if (BHTimeZone.TZ_REGIONS.contains(region))
+                tzName = tzName.substring(n+1);
+        }
+
+        try
+        {
+            return HTimeZone.make(tzName);
+        }
+        catch (Exception e)
+        {
+            // look through the aliases
+            BTimeZoneAlias[] aliases = service.getTimeZoneAliases().getAliases();
+            for (int i = 0; i < aliases.length; i++)
+            {
+                if (aliases[i].getAxTimeZoneId().equals(timeZone.getId()))
+                    return aliases[i].getHaystackTimeZone().getTimeZone();
+            }
+
+            // cannot create timezone tag
+            LOG.error("Cannot create tz tag: " + e.getMessage());
             return null;
         }
     }

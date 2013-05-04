@@ -1,4 +1,3 @@
-
 ## NHaystack
 
 NHaystack is an open-source [Niagara AX](http://www.niagaraax.com/) module
@@ -361,7 +360,9 @@ this:
                 NumericWritable
                 EnumWritable
 
-#### 4.5 Fixing broken refs
+### 5. Keeping your data set consistent
+
+#### 5.1 Fixing broken refs
 
 Occasionally when you are working on setting up the relationships between
 recs in a station, you will delete a Component that has other Components 
@@ -375,10 +376,44 @@ in the station that do not reference a valid rec.  Each time a broken ref is
 deleted, a message is also generated in the station log telling you which 
 Component was fixed.
 
-<!-- links ----------------------->
+In a future version of NHaystack, there will be a view on NHaystackService
+that will make it easier for you to find the broken refs and fix them.
+
+#### 5.2 Using TimeZone Aliases
+
+Sometimes an AX TimeZone (a.k.a BTimeZone) do not map cleanly into a 
+Haystack TimeZone (a.k.a HTimeZone).  This happens when the BTimeZone uses
+an offset-style TimeZone ID, like "GMT-5:00", rather than a valid 
+[Olson](https://en.wikipedia.org/wiki/Tz_database) 
+ID, like "America/New_York".  When this occurs, you will see errors in your log 
+output that look like this:
+
+    ERROR [11:59:01 04-May-13 GMT-05:00][nhaystack] Cannot create tz tag: Unknown tz: GMT-05:00
+
+In cases like this, NHaystack simply omits the `tz` tag for the historized
+`point` in question.
+
+However, NHaystack also allows you to  provide a custom mapping that overcomes 
+this problem, via the "timeZoneAliases" folder on your BHaystackService.  Go to 
+the nhaystack palette in Workbench, drag a "timeZoneAlias" onto the 
+"timeZoneAliases" folder, and configure it so that the bogus AX TimeZone ID, 
+like "GMT-5:00", is mapped onto a proper HTimezone, such as 
+"America/New_York".  Now when NHaystack is attempting to generate the `tz` tag, 
+it will know how to proceed when it encounters non-Olson timezones.
+
+In a future version of NHaystack, there will be a view on NHaystackService
+that will help you find which timezones are invalid in your dataset, but for 
+now you must go through your log output, find the "Cannot create tz tag"
+error messages, and copy-and-paste the offending TimeZone ID into a 
+timeZoneAlias that maps onto the 'real' HTimezone.
+
+Note that if the machine that you are running Workbench from is mis-configured,
+it will provide a default HTimeZone of the form "Etc/GMT-5" in your 
+timeZoneAlias.  You should not use the HTimeZones from the "Etc" 
+region unless you are really sure of what you are doing.  Instead, always use 
+the proper geographic region-and-timezone, like "America/New_York".
 
 [rec]: http://project-haystack.org/doc/TagModel#entities
 [structure]: http://project-haystack.org/doc/Structure
 [hisRead]: http://project-haystack.org/doc/Ops#hisRead
-
 

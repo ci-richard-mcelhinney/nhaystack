@@ -13,5 +13,8 @@
  <!-- /equip -->
  <p n="equip" h="5" t="nh:HEquip">
  </p>
+ <!-- /timeZoneAlias -->
+ <p n="timeZoneAlias" h="6" t="nh:TimeZoneAlias">
+ </p>
 </p>
 </bajaObjectGraph>

@@ -172,8 +172,8 @@ public class ComponentStorehouse extends Storehouse
             // tz
             if (!tags.has("tz"))
             {
-                HTimeZone tz = makeTimeZone(cfg.getTimeZone());
-                hdb.add("tz", tz.name);
+                HTimeZone tz = server.makeTimeZone(cfg.getTimeZone());
+                if (tz != null) hdb.add("tz", tz.name);
             }
 
             // hisInterpolate 

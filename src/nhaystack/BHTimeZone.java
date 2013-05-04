@@ -9,6 +9,8 @@
 package nhaystack;
 
 import java.io.*;
+import java.util.*;
+
 import javax.baja.sys.*;
 
 import haystack.*;
@@ -89,6 +91,23 @@ public final class BHTimeZone
 
     public Type getType() { return TYPE; }
     public static final Type TYPE = Sys.loadType(BHTimeZone.class);
+
+    public static final Set TZ_REGIONS;
+    static
+    {
+        TZ_REGIONS = new HashSet(Arrays.asList(
+            new String[] {
+              "Africa",     
+              "America",    
+              "Antarctica", 
+              "Asia",       
+              "Atlantic",   
+              "Australia",  
+              "Etc",        
+              "Europe",     
+              "Indian",     
+              "Pacific" }));
+    }
 
     private final HTimeZone timeZone;
 }

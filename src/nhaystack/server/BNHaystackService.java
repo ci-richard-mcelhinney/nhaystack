@@ -41,6 +41,8 @@ public class BNHaystackService extends BAbstractService
                 default{[ new BNHaystackServlet() ]}
             stats: BNHaystackStats
                 default{[ new BNHaystackStats() ]}
+            timeZoneAliases: BTimeZoneAliasFolder
+                default{[ new BTimeZoneAliasFolder() ]}
         }
         actions
         {
@@ -71,8 +73,8 @@ public class BNHaystackService extends BAbstractService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1207068001)1.0$ @*/
-/* Generated Sun Apr 28 10:34:33 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(2575023297)1.0$ @*/
+/* Generated Sat May 04 11:48:21 GMT-05:00 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -168,6 +170,29 @@ public class BNHaystackService extends BAbstractService
    * @see nhaystack.server.BNHaystackService#stats
    */
   public void setStats(BNHaystackStats v) { set(stats,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "timeZoneAliases"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>timeZoneAliases</code> property.
+   * @see nhaystack.server.BNHaystackService#getTimeZoneAliases
+   * @see nhaystack.server.BNHaystackService#setTimeZoneAliases
+   */
+  public static final Property timeZoneAliases = newProperty(0, new BTimeZoneAliasFolder(),null);
+  
+  /**
+   * Get the <code>timeZoneAliases</code> property.
+   * @see nhaystack.server.BNHaystackService#timeZoneAliases
+   */
+  public BTimeZoneAliasFolder getTimeZoneAliases() { return (BTimeZoneAliasFolder)get(timeZoneAliases); }
+  
+  /**
+   * Set the <code>timeZoneAliases</code> property.
+   * @see nhaystack.server.BNHaystackService#timeZoneAliases
+   */
+  public void setTimeZoneAliases(BTimeZoneAliasFolder v) { set(timeZoneAliases,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"

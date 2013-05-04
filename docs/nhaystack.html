@@ -323,7 +323,7 @@ numbers of <code>equipRef</code> tags without having to visit every <code>point<
 
 <p>By the way, the reason that we added the <code>navNameFormat</code> to the <code>equip</code> was so
 that it would show up in our nav tree as "AHU1", rather than "my_equip". By
-default the <code>navName</code> of any object is just its AX display name, but you
+default the <code>navName</code> of any object is just its AX displayName, but you
 can rig the nav tree so that alternate names are used. This is important 
 because you must always ensure that all the children of a nav tree item
 have a unique <code>navName</code>.</p>
@@ -378,7 +378,9 @@ Site-Equip-Point Nav Tree:
             EnumWritable
 </code></pre>
 
-<h4>4.5 Fixing broken refs</h4>
+<h3>5. Keeping your data set consistent</h3>
+
+<h4>5.1 Fixing broken refs</h4>
 
 <p>Occasionally when you are working on setting up the relationships between
 recs in a station, you will delete a Component that has other Components 
@@ -392,4 +394,40 @@ in the station that do not reference a valid rec.  Each time a broken ref is
 deleted, a message is also generated in the station log telling you which 
 Component was fixed.</p>
 
-<!-- links ----------------------->
+<p>In a future version of NHaystack, there will be a view on NHaystackService
+that will make it easier for you to find the broken refs and fix them.</p>
+
+<h4>5.2 Using TimeZone Aliases</h4>
+
+<p>Sometimes an AX TimeZone (a.k.a BTimeZone) do not map cleanly into a 
+Haystack TimeZone (a.k.a HTimeZone).  This happens when the BTimeZone uses
+an offset-style TimeZone ID, like "GMT-5:00", rather than a valid 
+<a href="https://en.wikipedia.org/wiki/Tz_database">Olson</a> 
+ID, like "America/New_York".  When this occurs, you will see errors in your log 
+output that look like this:</p>
+
+<pre><code>ERROR [11:59:01 04-May-13 GMT-05:00][nhaystack] Cannot create tz tag: Unknown tz: GMT-05:00
+</code></pre>
+
+<p>In cases like this, NHaystack simply omits the <code>tz</code> tag for the historized
+<code>point</code> in question.</p>
+
+<p>However, NHaystack also allows you to  provide a custom mapping that overcomes 
+this problem, via the "timeZoneAliases" folder on your BHaystackService.  Go to 
+the nhaystack palette in Workbench, drag a "timeZoneAlias" onto the 
+"timeZoneAliases" folder, and configure it so that the bogus AX TimeZone ID, 
+like "GMT-5:00", is mapped onto a proper HTimezone, such as 
+"America/New_York".  Now when NHaystack is attempting to generate the <code>tz</code> tag, 
+it will know how to proceed when it encounters non-Olson timezones.</p>
+
+<p>In a future version of NHaystack, there will be a view on NHaystackService
+that will help you find which timezones are invalid in your dataset, but for 
+now you must go through your log output, find the "Cannot create tz tag"
+error messages, and copy-and-paste the offending TimeZone ID into a 
+timeZoneAlias that maps onto the 'real' HTimezone.</p>
+
+<p>Note that if the machine that you are running Workbench from is mis-configured,
+it will provide a default HTimeZone of the form "Etc/GMT-5" in your 
+timeZoneAlias.  You should not use the HTimeZones from the "Etc" 
+region unless you are really sure of what you are doing.  Instead, always use 
+the proper geographic region-and-timezone, like "America/New_York".</p>

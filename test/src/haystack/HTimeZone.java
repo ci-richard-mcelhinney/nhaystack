@@ -167,7 +167,37 @@ public final class HTimeZone
       }
 
       // if we still don't have a default, try to use Java's
-      if (def == null) def = HTimeZone.make(TimeZone.getDefault());
+      if (def == null) 
+      {
+          try
+          {
+              def = HTimeZone.make(TimeZone.getDefault());
+          }
+          // If Java's default timezone is invalid, then check if the 
+          // default timezone is of the form "GMT[+,-]hh:00".  If so, then 
+          // set the default timezone to "GMT[+,-]h".
+          catch (RuntimeException e)
+          {
+            if (e.getMessage().startsWith("Invalid Java timezone: GMT"))
+            {
+              String javaId = TimeZone.getDefault().getID();
+              if (javaId.startsWith("GMT") && javaId.endsWith(":00"))
+              {
+                javaId = javaId.substring(0, javaId.length() - ":00".length());
+
+                // remove leading 0
+                if (javaId.startsWith("GMT-0"))
+                  javaId = "GMT-" + javaId.substring("GMT-0".length());
+                else if (javaId.startsWith("GMT+0"))
+                  javaId = "GMT+" + javaId.substring("GMT+0".length());
+
+                def = HTimeZone.make(javaId);
+              }
+              else throw e;
+            }
+            else throw e;
+          }
+      }
     }
     catch (Exception e)
     {

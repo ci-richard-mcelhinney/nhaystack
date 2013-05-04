@@ -9,8 +9,8 @@ package nhaystack.server.storehouse;
 
 import java.util.*;
 
+import javax.baja.log.*;
 import javax.baja.sys.*;
-import javax.baja.timezone.*;
 import javax.baja.units.*;
 
 import haystack.*;
@@ -81,17 +81,6 @@ public abstract class Storehouse
         }
     }
 
-    static HTimeZone makeTimeZone(BTimeZone timeZone)
-    {
-        String tzName = timeZone.getId();
-
-        // lop off the continent, e.g. "America" 
-        int n = tzName.indexOf("/");
-        if (n != -1) tzName = tzName.substring(n+1);
-
-        return HTimeZone.make(tzName, false);
-    }
-
     static Unit findUnit(BFacets facets)
     {
         if (facets == null) 
@@ -144,6 +133,8 @@ public abstract class Storehouse
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     // point kinds
     static final int UNKNOWN_KIND = -1;

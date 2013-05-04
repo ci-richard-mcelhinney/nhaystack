@@ -93,8 +93,8 @@ public class HistoryStorehouse extends Storehouse
         // time zone
         if (!tags.has("tz"))
         {
-            HTimeZone tz = makeTimeZone(cfg.getTimeZone());
-            hdb.add("tz", tz.name);
+            HTimeZone tz = server.makeTimeZone(cfg.getTimeZone());
+            if (tz != null) hdb.add("tz", tz.name);
         }
 
         // point kind tags
