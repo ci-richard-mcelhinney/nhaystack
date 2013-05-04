@@ -126,7 +126,10 @@ calorie,cal
 therm
 tons_refrigeration_hour,tonrefh
 megajoule,MJ
+gigajoule,GJ
 newton_meter,Nm
+cubic_meters_natural_gas,m³_gas
+cubic_feet_natural_gas,ft³_gas
 
 -- apparent energy --
 volt_ampere_hour,VAh
@@ -263,6 +266,9 @@ horsepower,hp
 foot_pounds_per_second,ftlbs/sec
 tons_refrigeration,tonref
 kilobtus_per_hour,kBTU/h
+joules_per_hour,J/h
+kilojoules_per_hour,kJ/h
+megajoules_per_hour,MJ/h
 
 -- power by area --
 watts_per_square_meter,W/m²

@@ -24,6 +24,11 @@ cool,Marker
 cooling,Marker
 coolingCapacity,Number
 coolingTower,Marker
+cur,Marker
+curDis,Str
+curErr,Str
+curStatus,Str
+curVal,Obj
 current,Marker
 damper,Marker
 delta,Marker
@@ -35,6 +40,7 @@ efficiency,Marker
 elecMeter,Marker
 elecMeterLoad,Ref
 entering,Marker
+enum,Str
 equip,Marker
 equipRef,Ref
 evaporator,Marker
@@ -51,9 +57,9 @@ gasMeter,Marker
 gasMeterLoad,Ref
 geoAddr,Str
 geoCity,Str
+geoCoord,Coord
 geoCountry,Str
-geoLat,Number
-geoLon,Number
+geoCounty,Str
 geoPostalCode,Str
 geoState,Str
 geoStreet,Str
@@ -62,6 +68,10 @@ heatExchanger,Marker
 heatWheel,Marker
 heating,Marker
 his,Marker
+hisErr,Str
+hisInterpolate,Str
+hisStatus,Str
+hisTotalized,Marker
 hotDeck,Marker
 humidifier,Marker
 humidity,Marker
@@ -113,4 +123,9 @@ weather,Marker
 weatherCond,Number
 weatherPoint,Marker
 weatherRef,Ref
+writable,Marker
+writeErr,Str
+writeLevel,Number
+writeStatus,Str
+writeVal,Obj
 zone,Marker

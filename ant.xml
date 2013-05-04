@@ -6,7 +6,7 @@
     05 Feb 2013    Mike Jarmy    Creation
 -->
 
-<project default="javadoc" basedir=".">
+<project default="download" basedir=".">
 
   <target name="javadoc">
     <delete dir="javadoc"/>    
@@ -24,6 +24,22 @@
       </fileset>
 
     </javadoc>
+  </target>
+
+  <target name="download">
+
+    <get src="http://project-haystack.org/download/tags.csv"  dest="src/nhaystack/res/tags.csv"  />
+    <get src="http://project-haystack.org/download/tz.txt"    dest="src/nhaystack/res/tz.txt"    />
+    <get src="http://project-haystack.org/download/units.txt" dest="src/nhaystack/res/units.txt" />
+
+    <get src="http://project-haystack.org/download/equip-points/ahu"           dest="src/nhaystack/res/equip-points/ahu.txt"           />
+    <get src="http://project-haystack.org/download/equip-points/chiller"       dest="src/nhaystack/res/equip-points/chiller.txt"       />
+    <get src="http://project-haystack.org/download/equip-points/chillerPlant"  dest="src/nhaystack/res/equip-points/chillerPlant.txt"  />
+    <get src="http://project-haystack.org/download/equip-points/coolingTower"  dest="src/nhaystack/res/equip-points/coolingTower.txt"  />
+    <get src="http://project-haystack.org/download/equip-points/elecMeter"     dest="src/nhaystack/res/equip-points/elecMeter.txt"     />
+    <get src="http://project-haystack.org/download/equip-points/heatExchanger" dest="src/nhaystack/res/equip-points/heatExchanger.txt" />
+    <get src="http://project-haystack.org/download/equip-points/vav"           dest="src/nhaystack/res/equip-points/vav.txt"           />
+
   </target>
 
 </project>

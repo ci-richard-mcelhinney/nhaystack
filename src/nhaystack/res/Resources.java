@@ -297,10 +297,20 @@ public class Resources
       * Get the Unit that corresponds to the given Niagara BUnit,
       * or return null if no corresponding Unit can be found.
       */
-    public static Unit convertFromNiagaraUnit(BUnit unit)
+    public static Unit convertFromNiagaraUnit(BUnit bunit)
     {
-        return (Unit) unitsByLowerCaseName.get(
-            TextUtil.replace(unit.getUnitName(), " ", "_").toLowerCase());
+        Unit unit = (Unit) unitsByLowerCaseName.get(
+            TextUtil.replace(bunit.getUnitName(), " ", "_").toLowerCase());
+
+        if (unit != null) return unit;
+
+        if (bunit.getUnitName().equals("dollar")) return getSymbolUnit("$");
+        if (bunit.getUnitName().equals("pounds")) return getSymbolUnit("GBP");
+        if (bunit.getUnitName().equals("rupee"))  return getSymbolUnit("INR");
+        if (bunit.getUnitName().equals("won"))    return getSymbolUnit("KRW");
+        if (bunit.getUnitName().equals("yen"))    return getSymbolUnit("JPY");
+
+        return null;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -344,14 +354,9 @@ public class Resources
 // misc
 //     null
 // currency
-//     dollar
 //     franc
 //     lira
 //     peseta
-//     pounds
-//     rupee
-//     won
-//     yen
 // density
 //     grams per cubic meter
 //     milligrams per cubic meter
@@ -360,7 +365,6 @@ public class Resources
 //     ampere hour
 //     milliampere hour
 // energy
-//     gigajoule
 //     decatherms
 // energy consumption
 //     watt hours per square meter
@@ -401,20 +405,6 @@ public class Resources
 // pressure
 //     pounds per square inch gauge
 //     torr
-// pressure differential
-//     pascal differential
-//     kilopascal differential
-//     bar differential
-//     atmosphere differential
-//     pounds per square inch differential
-//     centimeters of water differential
-//     inches of water differential
-//     millimeters of mercury differential
-//     centimeters of mercury differential
-//     inches of mercury differential
-//     hectopascal differential
-//     millibar differential
-//     torr differential
 // specific energy
 //     joules per kilogram se
 //     btus per pound
