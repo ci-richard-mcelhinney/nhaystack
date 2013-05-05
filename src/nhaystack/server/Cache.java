@@ -38,14 +38,18 @@ public class Cache
         long t0 = Clock.ticks();
         LOG.message("Begin cache rebuild.");
 
+        LOG.trace("rebuildComponentCache"); 
         rebuildComponentCache();
+
+        LOG.trace("rebuildHistoryCache_firstPass"); 
         rebuildHistoryCache_firstPass();
 
         if (!initialized)
             initialized = true;
 
-        // simplest way to avoid a chicken-and-egg problem
+        // this is simplest way to avoid a chicken-and-egg problem
         // when creating the nav history cache
+        LOG.trace("rebuildHistoryCache_secondPass"); 
         rebuildHistoryCache_secondPass();
 
         numPoints = 0;
@@ -209,7 +213,7 @@ public class Cache
     }
 
 ////////////////////////////////////////////////////////////////
-// private
+// private -- component space
 ////////////////////////////////////////////////////////////////
 
     private void rebuildComponentCache()
@@ -224,6 +228,7 @@ public class Cache
         Array sitesArr = new Array(BHSite.class);
         Array equipsArr = new Array(BHEquip.class);
 
+        BHEquip curImplicitEquip = null;
         Iterator iterator = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
 
@@ -231,6 +236,11 @@ public class Cache
         {
             BComponent comp = (BComponent) iterator.next();
             HDict tags = BHDict.findTagAnnotation(comp);
+
+            // implicit equip 
+            Cursor cursor = comp.getProperties();
+            if (cursor.next(BHEquip.class))
+                curImplicitEquip = (BHEquip) cursor.get();
 
             // point
             if (comp instanceof BControlPoint)
@@ -249,16 +259,15 @@ public class Cache
                 {
                     HRef ref = tags.getRef("equipRef");
                     BHEquip equip = (BHEquip) server.lookupComponent(ref);
-                    addBackwardsEquipPoint(equip, point);
+                    addEquipRef(equip, point);
                 }
                 // implicit equip
                 else
                 {
-                    BHEquip equip = findImplicitEquip(point);
-                    if (equip != null)
+                    if (curImplicitEquip != null)
                     {
-                        addBackwardsEquipPoint(equip, point);
-                        implicitEquips.put(point.getHandle(), equip);
+                        addEquipRef(curImplicitEquip, point);
+                        implicitEquips.put(point.getHandle(), curImplicitEquip);
                     }
                 }
             }
@@ -288,7 +297,7 @@ public class Cache
     /**
       * This will save a reference to the point from its equip.
       */
-    private void addBackwardsEquipPoint(BHEquip equip, BControlPoint point)
+    private void addEquipRef(BHEquip equip, BControlPoint point)
     {
         Array arr = (Array) equipPoints.get(equip.getHandle());
         if (arr == null)
@@ -299,7 +308,7 @@ public class Cache
     /**
       * This will save a reference to the equip from its site.
       */
-    private void addBackwardsSiteEquip(BHSite site, BHEquip equip)
+    private void addPointRef(BHSite site, BHEquip equip)
     {
         Array arr = (Array) siteEquips.get(site.getHandle());
         if (arr == null)
@@ -317,7 +326,7 @@ public class Cache
             if (site != null)
             {
                 // add backwards reference
-                addBackwardsSiteEquip(site, equip);
+                addPointRef(site, equip);
 
                 // save the equip nav 
                 HDict siteTags = BHDict.findTagAnnotation(site);
@@ -329,6 +338,10 @@ public class Cache
             }
         }
     }
+
+////////////////////////////////////////////////////////////////
+// private -- history space
+////////////////////////////////////////////////////////////////
 
     private void rebuildHistoryCache_firstPass()
     {
@@ -371,33 +384,9 @@ public class Cache
         }
     }
 
-    /**
-      * Find a parent device that has a BHEquip child
-      */
-    private BHEquip findImplicitEquip(BControlPoint point)
-    {
-        // TODO: figure out a more efficient way to do this.
-        // Right now we end up walking up to the root for
-        // every point that isn't tagged.
-
-        BComponent parent = (BComponent) point.getParent();
-        while (true)
-        {
-            if (parent == null) return null;
-
-            BHEquip[] equips = (BHEquip[]) parent.getChildren(BHEquip.class);
-
-            if (equips.length > 0)
-            {
-                if (equips.length > 1)
-                    LOG.warning(
-                        parent.getSlotPath() + " has more than one equip.");
-                return equips[0];
-            }
-
-            parent = (BComponent) parent.getParent();
-        }
-    }
+////////////////////////////////////////////////////////////////
+// private -- util
+////////////////////////////////////////////////////////////////
 
     private static String navName(BComponent comp, HDict tags)
     {
