@@ -19,6 +19,7 @@
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
     <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>
+    <type name="NHaystackWorker"  class="nhaystack.server.BNHaystackWorker"/>
     <type name="TimeZoneAlias"       class="nhaystack.server.BTimeZoneAlias"/>
     <type name="TimeZoneAliasFolder" class="nhaystack.server.BTimeZoneAliasFolder"/>
 

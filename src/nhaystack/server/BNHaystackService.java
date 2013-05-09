@@ -43,6 +43,8 @@ public class BNHaystackService extends BAbstractService
                 default{[ new BNHaystackStats() ]}
             timeZoneAliases: BTimeZoneAliasFolder
                 default{[ new BTimeZoneAliasFolder() ]}
+            worker: BNHaystackWorker
+                default{[ new BNHaystackWorker() ]}
         }
         actions
         {
@@ -65,16 +67,16 @@ public class BNHaystackService extends BAbstractService
                 flags { operator, hidden }
             rebuildCache()
                 -- Rebuild the internal cache
-                flags { operator }
+                flags { operator, async }
             removeBrokenRefs()
                 -- Remove all the invalid refs
-                flags { operator }
+                flags { operator, async }
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(2575023297)1.0$ @*/
-/* Generated Sat May 04 11:48:21 GMT-05:00 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1896496331)1.0$ @*/
+/* Generated Thu May 09 15:49:25 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -195,6 +197,29 @@ public class BNHaystackService extends BAbstractService
   public void setTimeZoneAliases(BTimeZoneAliasFolder v) { set(timeZoneAliases,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "worker"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>worker</code> property.
+   * @see nhaystack.server.BNHaystackService#getWorker
+   * @see nhaystack.server.BNHaystackService#setWorker
+   */
+  public static final Property worker = newProperty(0, new BNHaystackWorker(),null);
+  
+  /**
+   * Get the <code>worker</code> property.
+   * @see nhaystack.server.BNHaystackService#worker
+   */
+  public BNHaystackWorker getWorker() { return (BNHaystackWorker)get(worker); }
+  
+  /**
+   * Set the <code>worker</code> property.
+   * @see nhaystack.server.BNHaystackService#worker
+   */
+  public void setWorker(BNHaystackWorker v) { set(worker,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "readById"
 ////////////////////////////////////////////////////////////////
   
@@ -288,7 +313,7 @@ public class BNHaystackService extends BAbstractService
    * Rebuild the internal cache
    * @see nhaystack.server.BNHaystackService#rebuildCache()
    */
-  public static final Action rebuildCache = newAction(Flags.OPERATOR,null);
+  public static final Action rebuildCache = newAction(Flags.OPERATOR|Flags.ASYNC,null);
   
   /**
    * Invoke the <code>rebuildCache</code> action.
@@ -305,7 +330,7 @@ public class BNHaystackService extends BAbstractService
    * Remove all the invalid refs
    * @see nhaystack.server.BNHaystackService#removeBrokenRefs()
    */
-  public static final Action removeBrokenRefs = newAction(Flags.OPERATOR,null);
+  public static final Action removeBrokenRefs = newAction(Flags.OPERATOR|Flags.ASYNC,null);
   
   /**
    * Invoke the <code>removeBrokenRefs</code> action.
@@ -341,7 +366,7 @@ public class BNHaystackService extends BAbstractService
         // rely on atSteadyState() to get us set up.
         try
         {
-            doRebuildCache();
+            rebuildCache();
         }
         catch (Exception e)
         {
@@ -352,24 +377,24 @@ public class BNHaystackService extends BAbstractService
 
     public void atSteadyState() throws Exception
     {
-        doRebuildCache();
+        rebuildCache();
     }
 
 ////////////////////////////////////////////////////////////////
 // Actions
 ////////////////////////////////////////////////////////////////
 
-    public BHDict doReadById(BHRef id) throws Exception
+    public BHDict doReadById(BHRef id) 
     {
         return BHDict.make(server.readById(id.getRef()));
     }
 
-    public BHGrid doReadAll(BString filter) throws Exception
+    public BHGrid doReadAll(BString filter)
     {
         return BHGrid.make(server.readAll(filter.getString()));
     }
 
-    public BHGrid doFetchSites() throws Exception
+    public BHGrid doFetchSites() 
     {
         BHSite[] sites = server.getCache().getAllSites();
 
@@ -380,7 +405,7 @@ public class BNHaystackService extends BAbstractService
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
 
-    public BHGrid doFetchEquips() throws Exception
+    public BHGrid doFetchEquips()
     {
         BHEquip[] equips = server.getCache().getAllEquips();
 
@@ -391,12 +416,46 @@ public class BNHaystackService extends BAbstractService
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
 
-    public BString doFetchSepNav() throws Exception
+    public BString doFetchSepNav()
     {
-        return BString.make(server.getNav().fetchSepNav());
+        try
+        {
+            return BString.make(server.getNav().fetchSepNav());
+        }
+        catch (Exception e)
+        {
+            throw new BajaRuntimeException(e);
+        }
     }
 
-    public void doRebuildCache() throws Exception
+////////////////////////////////////////////////////////////////
+// async
+////////////////////////////////////////////////////////////////
+
+    public IFuture post(Action action, BValue arg, Context cx)
+    {             
+        if (action == rebuildCache)
+        {
+            getWorker().enqueue(
+                new Runnable() { 
+                    public void run() { 
+                        doRebuildCache(); }});
+            return null;
+        }
+        else if (action == removeBrokenRefs)
+        {
+            getWorker().enqueue(
+                new Runnable() { 
+                    public void run() { 
+                        doRemoveBrokenRefs(); }});
+            return null;
+        }
+
+        else return super.post(action, arg, cx);
+    }     
+
+
+    public void doRebuildCache() 
     {
         Cache cache = server.getCache();
         synchronized(cache)
@@ -412,7 +471,7 @@ public class BNHaystackService extends BAbstractService
         }
     }
 
-    public void doRemoveBrokenRefs() throws Exception
+    public void doRemoveBrokenRefs() 
     {
         Cache cache = server.getCache();
         synchronized(cache)

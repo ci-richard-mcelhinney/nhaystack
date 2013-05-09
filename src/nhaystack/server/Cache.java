@@ -259,14 +259,14 @@ public class Cache
                 {
                     HRef ref = tags.getRef("equipRef");
                     BHEquip equip = (BHEquip) server.lookupComponent(ref);
-                    addEquipRef(equip, point);
+                    addPointToEquip(equip, point);
                 }
                 // implicit equip
                 else
                 {
                     if (curImplicitEquip != null)
                     {
-                        addEquipRef(curImplicitEquip, point);
+                        addPointToEquip(curImplicitEquip, point);
                         implicitEquips.put(point.getHandle(), curImplicitEquip);
                     }
                 }
@@ -297,7 +297,7 @@ public class Cache
     /**
       * This will save a reference to the point from its equip.
       */
-    private void addEquipRef(BHEquip equip, BControlPoint point)
+    private void addPointToEquip(BHEquip equip, BControlPoint point)
     {
         Array arr = (Array) equipPoints.get(equip.getHandle());
         if (arr == null)
@@ -308,7 +308,7 @@ public class Cache
     /**
       * This will save a reference to the equip from its site.
       */
-    private void addPointRef(BHSite site, BHEquip equip)
+    private void addEquipToSite(BHSite site, BHEquip equip)
     {
         Array arr = (Array) siteEquips.get(site.getHandle());
         if (arr == null)
@@ -325,8 +325,7 @@ public class Cache
             BHSite site = (BHSite) server.lookupComponent(ref);
             if (site != null)
             {
-                // add backwards reference
-                addPointRef(site, equip);
+                addEquipToSite(site, equip);
 
                 // save the equip nav 
                 HDict siteTags = BHDict.findTagAnnotation(site);
