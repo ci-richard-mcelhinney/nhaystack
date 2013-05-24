@@ -71,7 +71,7 @@ public class Nav
     {
         if (navId == null) return roots();
 
-        else if (navId.startsWith("comp:/")) return onCompNav(navId);
+        else if (navId.startsWith("slot:/")) return onCompNav(navId);
         else if (navId.startsWith("his:/"))  return onHisNav(navId);
         else if (navId.startsWith("sep:/")) return onSepNav(navId);
 
@@ -183,7 +183,7 @@ public class Nav
 
         dicts.add(
             new HDictBuilder() 
-            .add("navId", "comp:/")
+            .add("navId", "slot:/")
             .add("dis", "ComponentSpace")
             .toDict());
 
@@ -205,7 +205,7 @@ public class Nav
     private HGrid onCompNav(String navId)
     {
         // child of ComponentSpace root
-        if (navId.equals("comp:/"))
+        if (navId.equals("slot:/"))
         {
             BComponent root = (BComponent) 
                 BOrd.make("station:|slot:/").get(service, null);
@@ -217,9 +217,9 @@ public class Nav
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
         // ComponentSpace component
-        else if (navId.startsWith("comp:/"))
+        else if (navId.startsWith("slot:/"))
         {
-            String slotPath = navId.substring("comp:/".length());
+            String slotPath = navId.substring("slot:/".length());
             BOrd ord = BOrd.make("station:|slot:/" + slotPath);
             BComponent comp = (BComponent) ord.get(service, null);
 
@@ -239,11 +239,7 @@ public class Nav
         // add a navId, but only if this component is not a leaf
         if (comp.getChildComponents().length > 0)
         {
-            // always starts with "slot:/"
-            String slotPath = comp.getSlotPath().toString();
-            slotPath = slotPath.substring("slot:/".length());
-
-            hdb.add("navId", "comp:/" + slotPath);
+            hdb.add("navId", comp.getSlotPath().toString());
         }
 
         if (compStore.isVisibleComponent(comp))
