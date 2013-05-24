@@ -380,6 +380,7 @@ public class Nav
 
             HDictBuilder hd = new HDictBuilder();
             hd.add(compStore.createComponentTags(point));
+            hd.add("refTypeOverride", HStr.make("Uri"));
             dicts.add(hd.toDict());
         }
 
@@ -395,4 +396,3 @@ public class Nav
     final ComponentStorehouse compStore;
     final HistoryStorehouse hisStore;
 }
-
