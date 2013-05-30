@@ -302,7 +302,10 @@ public class ComponentStorehouse extends Storehouse
     {
         // Return true for components that have been 
         // annotated with a BHDict instance.
-        if ((comp instanceof BHTagged) || !BHDict.findTagAnnotation(comp).isEmpty())
+        if (comp instanceof BHTagged) 
+            return true;
+
+        if (comp.get("haystack") != null) 
             return true;
 
         // Return true for BControlPoints.
