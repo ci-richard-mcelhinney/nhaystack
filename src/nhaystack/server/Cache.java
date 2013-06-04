@@ -182,6 +182,8 @@ public class Cache
         {
             BControlPoint point = points[i];
             HDict tags = BHDict.findTagAnnotation(point);
+            if (tags == null) 
+                tags = HDict.EMPTY;
 
             if (navName(point, tags).equals(pointNav))
                 return point;
@@ -246,6 +248,9 @@ public class Cache
             if (comp instanceof BControlPoint)
             {
                 BControlPoint point = (BControlPoint) comp;
+
+                // BControlPoints always have tags generated
+                if (tags == null) tags = HDict.EMPTY;
 
                 // save remote point 
                 if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 

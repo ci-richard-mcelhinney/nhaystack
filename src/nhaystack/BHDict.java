@@ -107,18 +107,19 @@ public final class BHDict
 
     /**
       * Return the explicitly annotated tags for the component, 
-      * or return an empty HDict.
+      * or return null.
       *
       * In order for the annotation to be recognized, it
       * must be stored in a property called 'haystack'.
       */
     public static HDict findTagAnnotation(BComponent comp)
     {
-        BHDict dict = (BHDict) comp.get("haystack");
+        BValue val = comp.get("haystack");
+        if (val == null) return null;
+        if (!(val instanceof BHDict)) return null;
 
-        return (dict == null) ? 
-            HDict.EMPTY :
-            dict.getDict();
+        BHDict dict = (BHDict) comp.get("haystack");
+        return dict.getDict();
     }
 
 ////////////////////////////////////////////////////////////////

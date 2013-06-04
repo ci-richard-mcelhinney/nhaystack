@@ -70,6 +70,8 @@ public class HistoryStorehouse extends Storehouse
 
         // add existing tags
         HDict tags = BHDict.findTagAnnotation(cfg);
+        if (tags == null) 
+            tags = HDict.EMPTY;
         hdb.add(tags);
 
         // add dis
@@ -133,7 +135,8 @@ public class HistoryStorehouse extends Storehouse
     public boolean isVisibleHistory(BHistoryConfig cfg)
     {
         // annotated 
-        if (!BHDict.findTagAnnotation(cfg).isEmpty())
+        HDict dict = BHDict.findTagAnnotation(cfg);
+        if (dict != null && !dict.isEmpty())
             return true;
 
         // show linked

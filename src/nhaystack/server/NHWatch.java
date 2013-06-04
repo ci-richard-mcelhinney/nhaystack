@@ -89,22 +89,30 @@ public class NHWatch extends HWatch
             // already been called for us.
             HRef id = (HRef) ids[i];
 
-            BComponent comp = server.lookupComponent(id);
-
-            // no such component -- treat 'checked' as if it were false, since
-            // 'checked' is handled on the client side.
-            if (comp == null)
+            try
             {
-                dictArr.add(null);
+                BComponent comp = server.lookupComponent(id);
+
+                // no such component -- treat 'checked' as if it were false, since
+                // 'checked' is handled on the client side.
+                if (comp == null)
+                {
+                    dictArr.add(null);
+                }
+                // found
+                else
+                {
+                    subscriber.subscribe(comp, DEPTH);
+
+                    HDict dict = server.createTags(comp);
+                    dictArr.add(dict);
+                    allDicts.put(comp, dict);
+                }
             }
-            // found
-            else
+            catch (Exception e)
             {
-                subscriber.subscribe(comp, DEPTH);
-
-                HDict dict = server.createTags(comp);
-                dictArr.add(dict);
-                allDicts.put(comp, dict);
+                LOG.warning("Could not subscribe to " + id + ": " + e.getMessage());
+                dictArr.add(null);
             }
         }
 

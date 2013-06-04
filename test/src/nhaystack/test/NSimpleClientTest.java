@@ -226,7 +226,7 @@ public class NSimpleClientTest extends NTest
     {
         HGrid grid = client.call("nav", HGrid.EMPTY);
         verifyEq(grid.numRows(), 3);
-        verifyEq(grid.row(0).get("navId"), HStr.make("comp:/"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("slot:/"));
         verifyEq(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
         verifyEq(grid.row(1).get("navId"), HStr.make("his:/"));
         verifyEq(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
@@ -243,15 +243,15 @@ public class NSimpleClientTest extends NTest
 //        verifyEq(grid.numRows(), 3);
         verifyEq(grid.numRows(), 2);
 
-        n = makeNavGrid(HStr.make("comp:/"));
+        n = makeNavGrid(HStr.make("slot:/"));
         grid = client.call("nav", n);
         verifyEq(grid.numRows(), 6);
-        verifyEq(grid.row(0).get("navId"), HStr.make("comp:/Services"));
-        verifyEq(grid.row(1).get("navId"), HStr.make("comp:/Drivers"));
-        verifyEq(grid.row(2).get("navId"), HStr.make("comp:/Foo"));
-        verifyEq(grid.row(3).get("navId"), HStr.make("comp:/Richmond"));
-        verifyEq(grid.row(4).get("navId"), HStr.make("comp:/AHU2"));
-        verifyEq(grid.row(5).get("navId"), HStr.make("comp:/AHU3"));
+        verifyEq(grid.row(0).get("navId"), HStr.make("slot:/Services"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
+        verifyEq(grid.row(2).get("navId"), HStr.make("slot:/Foo"));
+        verifyEq(grid.row(3).get("navId"), HStr.make("slot:/Richmond"));
+        verifyEq(grid.row(4).get("navId"), HStr.make("slot:/AHU2"));
+        verifyEq(grid.row(5).get("navId"), HStr.make("slot:/AHU3"));
 
         traverseComponents((HStr) grid.row(0).get("navId"));
         traverseComponents((HStr) grid.row(1).get("navId"));
