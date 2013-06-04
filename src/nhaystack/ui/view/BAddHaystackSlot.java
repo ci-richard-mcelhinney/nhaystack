@@ -69,8 +69,8 @@ public class BAddHaystackSlot extends BTextEditor
                 BComponent comp = (BComponent) obj;
                 view.registerForComponentEvents(comp, 1);
 
-                BHDict dict = (BHDict) comp.get("haystack");
-                if (dict == null)
+                BValue haystack = comp.get("haystack");
+                if (haystack == null)
                     comp.add("haystack", BHDict.DEFAULT);
             }
         }

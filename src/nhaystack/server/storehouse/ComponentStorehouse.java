@@ -58,6 +58,8 @@ public class ComponentStorehouse extends Storehouse
 
             // add existing tags
             HDict tags = BHDict.findTagAnnotation(comp);
+            if (tags == null) 
+                tags = HDict.EMPTY;
             hdb.add(tags);
 
             // navName
@@ -305,11 +307,13 @@ public class ComponentStorehouse extends Storehouse
         if (comp instanceof BHTagged) 
             return true;
 
-        if (comp.get("haystack") != null) 
-            return true;
-
         // Return true for BControlPoints.
         if (comp instanceof BControlPoint)
+            return true;
+
+        // Return true for components that are annotated with a BHDict.
+        BValue haystack = comp.get("haystack");
+        if ((haystack != null) && (haystack instanceof BHDict))
             return true;
 
         // nope

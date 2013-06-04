@@ -167,8 +167,12 @@ public class Nav
         Array arr = new Array(BControlPoint.class);
 
         for (int i = 0; i < points.length; i++)
-            if (!BHDict.findTagAnnotation(points[i]).equals(HDict.EMPTY))
+        {
+            HDict dict = BHDict.findTagAnnotation(points[i]);
+
+            if (dict != null && !dict.equals(HDict.EMPTY))
                 arr.add(points[i]);
+        }
 
         return (BControlPoint[]) arr.trim();
     }
@@ -371,7 +375,8 @@ public class Nav
             BControlPoint point = points[i];
 
             // skip points that are not annotated
-            if (BHDict.findTagAnnotation(point).equals(HDict.EMPTY))
+            HDict dict = BHDict.findTagAnnotation(point);
+            if (dict == null || dict.equals(HDict.EMPTY))
                 continue;
 
             HDictBuilder hd = new HDictBuilder();

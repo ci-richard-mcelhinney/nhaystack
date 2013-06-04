@@ -734,6 +734,7 @@ public class NHServer extends HServer
         {
             BComponent comp = (BComponent) compItr.next();
             HDict tags = BHDict.findTagAnnotation(comp);
+            if (tags == null) continue;
 
             // check if any of the tags are a broken ref
             Set brokenRefs = null;

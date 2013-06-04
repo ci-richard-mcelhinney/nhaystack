@@ -209,7 +209,7 @@ public class BHDictEditor extends BEdgePane
                 if (name.equals("equipRef") && !row.fe.isModified())
                 {
                     HDict anno = BHDict.findTagAnnotation(group().component());
-                    if (!anno.has("equipRef"))
+                    if (anno == null || !anno.has("equipRef"))
                         continue;
                 }
 
