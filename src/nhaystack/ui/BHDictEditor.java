@@ -549,8 +549,6 @@ public class BHDictEditor extends BEdgePane
 // static attribs
 ////////////////////////////////////////////////////////////////
 
-    private static final BOrd NH_SERVICE = BOrd.make("station:|slot:/Services/NHaystackService");
-
     private static final Lexicon LEX = Lexicon.make("nhaystack");
     private static final String NONE = LEX.getText("none");
     private static BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);

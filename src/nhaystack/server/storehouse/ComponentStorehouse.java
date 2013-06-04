@@ -48,14 +48,14 @@ public class ComponentStorehouse extends Storehouse
       */
     public HDict createComponentTags(BComponent comp)
     {
+        HDictBuilder hdb = new HDictBuilder();
+
         if (comp instanceof BHTagged)
         {
-            return ((BHTagged) comp).generateTags(server);
+            hdb.add(((BHTagged) comp).generateTags(server));
         }
         else
         {
-            HDictBuilder hdb = new HDictBuilder();
-
             // add existing tags
             HDict tags = BHDict.findTagAnnotation(comp);
             if (tags == null) 
@@ -85,10 +85,13 @@ public class ComponentStorehouse extends Storehouse
             // add id
             HRef ref = NHRef.make(comp).getHRef();
             hdb.add("id", HRef.make(ref.val, dis));
-
-            // done
-            return hdb.toDict();
         }
+
+        // add custom tags
+        hdb.add(server.createCustomTags(comp));
+
+        // done
+        return hdb.toDict();
     }
 
     private String createDis(HDictBuilder tags, String navName)

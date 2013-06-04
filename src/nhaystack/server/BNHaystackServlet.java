@@ -96,17 +96,14 @@ public class BNHaystackServlet extends BWebServlet
 // NServlet
 ////////////////////////////////////////////////////////////////
 
-    private static class NServlet extends HServlet
+    private class NServlet extends HServlet
     {
         public HServer db()
         {        
             if (db == null)
             {
-                // in practice this will be the parent BNHaystackService,
-                // but theoretically it doesn't have to be 
-                BNHaystackService service = (BNHaystackService)
-                    Sys.getService(BNHaystackService.TYPE);
-
+                BNHaystackService service = (BNHaystackService) 
+                    BNHaystackServlet.this.getParent();
                 db = service.getHaystackServer();
             }
             return db;

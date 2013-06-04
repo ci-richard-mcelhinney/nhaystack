@@ -125,6 +125,9 @@ public class HistoryStorehouse extends Storehouse
             }
         }
 
+        // add custom tags
+        hdb.add(server.createCustomTags(cfg));
+
         // done
         return hdb.toDict();
     }

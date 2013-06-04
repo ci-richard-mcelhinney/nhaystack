@@ -9,6 +9,7 @@
 package nhaystack.ui;
 
 import javax.baja.gx.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.enums.*;
@@ -18,6 +19,7 @@ import javax.baja.workbench.fieldeditor.*;
 import javax.baja.workbench.view.*;
 
 import nhaystack.*;
+import nhaystack.server.*;
 
 /**
   * BHDictFE displays a BHDict, and allows editing via a BHDictEditor.
@@ -67,6 +69,9 @@ public class BHDictFE extends BWbFieldEditor
     {
         tags = (BHDict) value;
         textField.setText(tags.encodeToString());
+
+        this.comp = (BComponent) findParentView().getCurrentValue();
+        this.service = findService();
     }
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
@@ -89,7 +94,7 @@ public class BHDictFE extends BWbFieldEditor
 
     private void edit()
     {
-        BHDictEditorGroup edGroup = new BHDictEditorGroup(findParentComponent());
+        BHDictEditorGroup edGroup = new BHDictEditorGroup(service, comp);
 
         BHDictDialog dialog = BHDictDialog.make(this, edGroup);
         dialog.setBoundsCenteredOnOwner();
@@ -105,20 +110,31 @@ public class BHDictFE extends BWbFieldEditor
         }
     }
 
-    private BComponent findParentComponent()
+    private BWbComponentView findParentView()
     {
         BWidget widget = getParentWidget();
         while (widget != null)
         {
             if (widget instanceof BWbComponentView) 
-            {
-                BWbComponentView view = (BWbComponentView) widget;
-                return (BComponent) view.getCurrentValue();
-            }
+                return (BWbComponentView) widget;
+
             widget = widget.getParentWidget();
         }
         throw new IllegalStateException(
             "Cannot find parent BWbComponentView");
+    }
+
+    private BNHaystackService findService()
+    {
+        BOrd ord = BOrd.make("station:|slot:/Services");
+        BServiceContainer services = (BServiceContainer) ord.get(comp, null);
+
+        subscriber.subscribe(services, 2);
+        BNHaystackService service = 
+            ((BNHaystackService[]) services.getChildren(BNHaystackService.class))[0];
+        subscriber.unsubscribe(services);
+
+        return service;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -134,4 +150,10 @@ public class BHDictFE extends BWbFieldEditor
     private final BButton button;
 
     private BHDict tags;
+
+    private BComponent comp;
+    private BNHaystackService service;
+
+    private Subscriber subscriber = new Subscriber() 
+        { public void event(BComponentEvent event) {} };
 }
