@@ -9,6 +9,9 @@ package nhaystack.server.storehouse;
 
 import java.util.*;
 
+import javax.baja.control.*;
+import javax.baja.history.*;
+import javax.baja.history.ext.*;
 import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.units.*;
@@ -36,6 +39,28 @@ public abstract class Storehouse
 ////////////////////////////////////////////////////////////////
 // protected
 ////////////////////////////////////////////////////////////////
+
+    /**
+      * Return the BHistoryExt for the point, if there is one.
+      * Returns null if the BHistoryExt has never been enabled.
+      */
+    protected BHistoryExt lookupHistoryExt(BControlPoint point)
+    {
+        Cursor cursor = point.getProperties();
+        if (cursor.next(BHistoryExt.class))
+        {
+            BHistoryExt ext = (BHistoryExt) cursor.get();
+
+            // Return null if the extension has never been enabled.
+            BHistoryConfig config = ext.getHistoryConfig();
+            if (service.getHistoryDb().getHistory(config.getId()) == null)
+                return null;
+
+            return ext;
+        }
+
+        return null;
+    }
 
     /**
       * add the 'kind' tag, along with an associated tags 

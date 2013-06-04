@@ -181,7 +181,7 @@ public class ComponentStorehouse extends Storehouse
             // hisInterpolate 
             if (!tags.has("hisInterpolate"))
             {
-                BHistoryExt historyExt = service.lookupHistoryExt(point);
+                BHistoryExt historyExt = lookupHistoryExt(point);
                 if (historyExt != null && (historyExt instanceof BCovHistoryExt))
                     hdb.add("hisInterpolate", "cov");
             }
@@ -451,21 +451,16 @@ public class ComponentStorehouse extends Storehouse
         {
             this.iterator = new ComponentTreeIterator(
                 (BComponent) BOrd.make("slot:/").resolve(service, null).get());
+            findNext();
         }
 
         public boolean hasNext() 
         { 
-            if (!init)
-            {
-                init = true;
-                findNext();
-            }
             return nextDict != null; 
         }
 
         public Object next()
         {
-            if (!init) throw new IllegalStateException();
             if (nextDict == null) throw new IllegalStateException();
 
             HDict dict = nextDict;
@@ -494,7 +489,6 @@ public class ComponentStorehouse extends Storehouse
         }
 
         private final ComponentTreeIterator iterator;
-        private boolean init = false;
         private HDict nextDict;
     }
 }

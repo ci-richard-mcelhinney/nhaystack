@@ -245,7 +245,7 @@ public class NSimpleClientTest extends NTest
 
         n = makeNavGrid(HStr.make("slot:/"));
         grid = client.call("nav", n);
-        verifyEq(grid.numRows(), 6);
+        verifyEq(grid.numRows(), 7);
         verifyEq(grid.row(0).get("navId"), HStr.make("slot:/Services"));
         verifyEq(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
         verifyEq(grid.row(2).get("navId"), HStr.make("slot:/Foo"));

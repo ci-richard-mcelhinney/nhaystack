@@ -8,11 +8,8 @@
 //
 package nhaystack.server;
 
-import javax.baja.control.*;
 import javax.baja.driver.*;
-import javax.baja.history.*;
 import javax.baja.history.db.*;
-import javax.baja.history.ext.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -505,28 +502,6 @@ public class BNHaystackService extends BAbstractService
                 NIAGARA_NETWORK.resolve(this, null).get();
 
         return niagaraNetwork;
-    }
-
-    /**
-      * Return the BHistoryExt for the point, if there is one.
-      * Returns null if the BHistoryExt has never been enabled.
-      */
-    public BHistoryExt lookupHistoryExt(BControlPoint point)
-    {
-        Cursor cursor = point.getProperties();
-        if (cursor.next(BHistoryExt.class))
-        {
-            BHistoryExt ext = (BHistoryExt) cursor.get();
-
-            // Return null if the extension has never been enabled.
-            BHistoryConfig config = ext.getHistoryConfig();
-            if (getHistoryDb().getHistory(config.getId()) == null)
-                return null;
-
-            return ext;
-        }
-
-        return null;
     }
 
 ////////////////////////////////////////////////////////////////

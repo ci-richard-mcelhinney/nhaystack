@@ -37,7 +37,7 @@ public class HistoryStorehouse extends Storehouse
     public BHistoryConfig lookupHistoryFromPoint(BControlPoint point)
     {
         // local history
-        BHistoryExt historyExt = service.lookupHistoryExt(point);
+        BHistoryExt historyExt = lookupHistoryExt(point);
         if (historyExt != null) return historyExt.getHistoryConfig();
 
         // look for history that goes with a proxied point (if any)
@@ -119,7 +119,7 @@ public class HistoryStorehouse extends Storehouse
             // hisInterpolate 
             if (!tags.has("hisInterpolate"))
             {
-                BHistoryExt historyExt = service.lookupHistoryExt(point);
+                BHistoryExt historyExt = lookupHistoryExt(point);
                 if (historyExt != null && (historyExt instanceof BCovHistoryExt))
                     hdb.add("hisInterpolate", "cov");
             }
@@ -186,15 +186,11 @@ public class HistoryStorehouse extends Storehouse
         HIterator()
         {
             this.iterator = new HistoryDbIterator(service.getHistoryDb());
+            findNext();
         }
 
         public boolean hasNext() 
         { 
-            if (!init)
-            {
-                init = true;
-                findNext();
-            }
             return nextDict != null; 
         }
 
@@ -202,7 +198,6 @@ public class HistoryStorehouse extends Storehouse
 
         public Object next()
         {
-            if (!init) throw new IllegalStateException();
             if (nextDict == null) throw new IllegalStateException();
 
             HDict dict = nextDict;
@@ -227,7 +222,6 @@ public class HistoryStorehouse extends Storehouse
 
         private final HistoryDbIterator iterator;
 
-        private boolean init = false;
         private HDict nextDict;
     }
 
