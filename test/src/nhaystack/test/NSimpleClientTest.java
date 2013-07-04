@@ -38,6 +38,7 @@ public class NSimpleClientTest extends NTest
         verifyPointWrite();
         verifyInvokeAction();
         verifyHisRead();
+        verifyFilter();
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -559,6 +560,18 @@ public class NSimpleClientTest extends NTest
                     break;
             }
         }
+    }
+
+////////////////////////////////////////////////////////////////
+// filter
+////////////////////////////////////////////////////////////////
+
+    void verifyFilter() throws Exception
+    {
+        HGrid grid = client.readAll("point and equipRef->navName == \"AHU1\"");
+        verifyEq(grid.numRows(), 2);
+        verifyEq(grid.row(0).get("axSlotPath"), HStr.make("slot:/AHU2/BooleanWritable"));
+        verifyEq(grid.row(1).get("axSlotPath"), HStr.make("slot:/AHU3/BooleanWritable"));
     }
 
 ////////////////////////////////////////////////////////////////
