@@ -8,7 +8,7 @@
 package haystack;
 
 import java.text.DecimalFormat;
-import haystack.io.HZincReader;
+import org.projecthaystack.io.HZincReader;
 
 /**
  * HCoord models a geographic coordinate as latitude and longitude

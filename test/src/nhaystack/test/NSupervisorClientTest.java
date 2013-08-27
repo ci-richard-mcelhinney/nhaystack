@@ -7,10 +7,10 @@
 //
 package nhaystack.test;
 
-import haystack.*;
-import haystack.io.*;
-import haystack.client.*;
-import haystack.test.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
+import org.projecthaystack.client.*;
+import org.projecthaystack.test.*;
 
 /**
  * NSupervisorClientTest -- this test uses nhaystack_sup

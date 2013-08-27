@@ -9,7 +9,7 @@ package haystack.io;
 
 import java.io.*;
 import java.util.*;
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HZincWriter is used to write grids in the Zinc format

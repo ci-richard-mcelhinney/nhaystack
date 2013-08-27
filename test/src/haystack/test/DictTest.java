@@ -8,8 +8,8 @@
 package haystack.test;
 
 import java.util.*;
-import haystack.*;
-import haystack.io.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 
 /**
  * DictTest tests the HDict class

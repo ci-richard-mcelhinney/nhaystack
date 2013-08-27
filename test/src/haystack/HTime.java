@@ -8,7 +8,7 @@
 package haystack;
 
 import java.util.Calendar;
-import haystack.io.HZincReader;
+import org.projecthaystack.io.HZincReader;
 
 /**
  * HTime models a time of day tag value.

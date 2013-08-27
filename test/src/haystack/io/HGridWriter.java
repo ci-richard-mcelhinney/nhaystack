@@ -7,7 +7,7 @@
 //
 package haystack.io;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HGridWriter is base class for writing grids to an output stream.

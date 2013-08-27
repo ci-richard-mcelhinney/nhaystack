@@ -7,7 +7,7 @@
 //
 package haystack.client;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * CallException base class for exceptions thrown HClient.call.

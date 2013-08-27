@@ -17,7 +17,7 @@ import javax.baja.sys.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
 import nhaystack.site.*;

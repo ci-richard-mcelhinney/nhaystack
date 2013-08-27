@@ -8,9 +8,9 @@
 package nhaystack.test;
 
 import java.lang.reflect.*;
-import haystack.*;
-import haystack.client.*;
-import haystack.test.*;
+import org.projecthaystack.*;
+import org.projecthaystack.client.*;
+import org.projecthaystack.test.*;
 
 /**
  * Simple test harness to avoid pulling in dependencies.

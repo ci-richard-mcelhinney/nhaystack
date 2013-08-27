@@ -10,8 +10,8 @@ package haystack.server;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import haystack.*;
-import haystack.io.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 
 /**
  * HStdOps defines the standard operations available.

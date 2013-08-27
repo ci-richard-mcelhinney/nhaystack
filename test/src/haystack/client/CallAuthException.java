@@ -7,7 +7,7 @@
 //
 package haystack.client;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * CallAuthException indicates authentication with server failed

@@ -7,9 +7,9 @@
 //
 package haystack.test;
 
-import haystack.*;
-import haystack.io.*;
-import haystack.client.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
+import org.projecthaystack.client.*;
 
 /**
  * ClientTest -- this test requires an instance of SkySpark

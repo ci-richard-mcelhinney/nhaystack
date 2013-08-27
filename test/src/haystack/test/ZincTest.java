@@ -7,8 +7,8 @@
 //
 package haystack.test;
 
-import haystack.*;
-import haystack.io.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 
 /**
  * ZincTest tests the zinc reader/writer

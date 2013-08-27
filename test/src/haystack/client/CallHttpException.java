@@ -7,7 +7,7 @@
 //
 package haystack.client;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * CallHttpException is thrown by HClient when communication

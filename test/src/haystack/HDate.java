@@ -8,7 +8,7 @@
 package haystack;
 
 import java.util.Calendar;
-import haystack.io.HZincReader;
+import org.projecthaystack.io.HZincReader;
 
 /**
  * HDate models a date (day in year) tag value.

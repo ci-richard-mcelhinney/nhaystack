@@ -7,7 +7,7 @@
 //
 package haystack.client;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * CallErrException is thrown then a HClient.call returns a

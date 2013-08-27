@@ -7,7 +7,7 @@
 //
 package haystack;
 
-import haystack.io.HZincReader;
+import org.projecthaystack.io.HZincReader;
 
 /**
  * HDateTimeRange models a starting and ending timestamp

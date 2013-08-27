@@ -13,7 +13,7 @@ import java.util.*;
 
 import javax.baja.sys.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  *  BHTimeZone wraps a Haystack Timezone.

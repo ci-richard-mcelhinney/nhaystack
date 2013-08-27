@@ -7,11 +7,11 @@
 //
 package nhaystack.test;
 
-import haystack.*;
-import haystack.io.*;
-import haystack.client.*;
-import haystack.test.*;
-import haystack.util.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
+import org.projecthaystack.client.*;
+import org.projecthaystack.test.*;
+import org.projecthaystack.util.*;
 import nhaystack.*;
 
 /**

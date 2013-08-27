@@ -8,7 +8,7 @@
 package haystack.server;
 
 import java.util.*;
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HServer is the interface between HServlet and a database of

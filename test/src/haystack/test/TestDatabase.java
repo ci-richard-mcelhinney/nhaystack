@@ -9,8 +9,8 @@ package haystack.test;
 
 import java.net.*;
 import java.util.*;
-import haystack.*;
-import haystack.server.*;
+import org.projecthaystack.*;
+import org.projecthaystack.server.*;
 
 /**
  * TestDatabase provides a simple implementation of

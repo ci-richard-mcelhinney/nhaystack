@@ -14,8 +14,8 @@ import java.util.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
-import haystack.*;
-import haystack.io.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 
 /**
  * HProj is the common interface for HClient and HServer to provide

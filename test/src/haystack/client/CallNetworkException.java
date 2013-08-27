@@ -7,7 +7,7 @@
 //
 package haystack.client;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * CallNetworkException is thrown by HClient when there is a network I/O

@@ -10,7 +10,7 @@ package nhaystack.site;
 
 import javax.baja.sys.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.res.*;
 import nhaystack.server.*;

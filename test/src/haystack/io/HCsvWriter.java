@@ -9,7 +9,7 @@ package haystack.io;
 
 import java.io.*;
 import java.util.*;
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HCsvWriter is used to write grids in comma separated values

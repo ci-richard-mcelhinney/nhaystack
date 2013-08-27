@@ -7,7 +7,7 @@
 //
 package haystack.test;
 
-import haystack.*;
+import org.projecthaystack.*;
 import java.util.*;
 
 /**

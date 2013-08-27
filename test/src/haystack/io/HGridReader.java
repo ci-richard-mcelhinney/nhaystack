@@ -7,7 +7,7 @@
 //
 package haystack.io;
 
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HGridReader is base class for reading grids from an input stream.

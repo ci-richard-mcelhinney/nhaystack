@@ -11,8 +11,8 @@ import java.io.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import haystack.*;
-import haystack.io.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 
 /**
  * HOp is the base class for server side operations exposed by the REST API.

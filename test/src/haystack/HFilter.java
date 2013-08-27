@@ -8,7 +8,7 @@
 package haystack;
 
 import java.util.*;
-import haystack.io.HZincReader;
+import org.projecthaystack.io.HZincReader;
 
 /**
  * HFilter models a parsed tag query string.

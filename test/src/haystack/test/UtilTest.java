@@ -8,7 +8,7 @@
 package haystack.test;
 
 import java.util.*;
-import haystack.util.*;
+import org.projecthaystack.util.*;
 
 /**
  * UtilTest tests the Base64 encoder

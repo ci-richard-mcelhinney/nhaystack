@@ -20,9 +20,9 @@ import javax.baja.sys.*;
 import javax.baja.timezone.*;
 import javax.baja.util.*;
 
-import haystack.*;
-import haystack.server.*;
-import haystack.util.*;
+import org.projecthaystack.*;
+import org.projecthaystack.server.*;
+import org.projecthaystack.util.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.storehouse.*;

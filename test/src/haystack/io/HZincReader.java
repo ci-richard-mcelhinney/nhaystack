@@ -10,7 +10,7 @@ package haystack.io;
 
 import java.io.*;
 import java.util.*;
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HZincReader reads grids using the Zinc format.

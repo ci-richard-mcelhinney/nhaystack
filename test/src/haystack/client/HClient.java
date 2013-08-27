@@ -14,9 +14,9 @@ import java.util.*;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 import java.security.*;
-import haystack.*;
-import haystack.io.*;
-import haystack.util.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
+import org.projecthaystack.util.*;
 
 /**
  * HClient manages a logical connection to a HTTP REST haystack server.

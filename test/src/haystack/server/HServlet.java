@@ -12,7 +12,7 @@ import java.net.*;
 import java.util.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
  * HServlet implements the haystack HTTP REST API for

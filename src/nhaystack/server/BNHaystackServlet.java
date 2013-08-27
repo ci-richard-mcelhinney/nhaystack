@@ -13,7 +13,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.baja.sys.*;
 import javax.baja.web.*;
-import haystack.server.*;
+import org.projecthaystack.server.*;
 
 /**
   * BNHaystackServlet relays GET and POST requests 

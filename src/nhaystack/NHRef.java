@@ -11,8 +11,8 @@ import javax.baja.history.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 
-import haystack.*;
-import haystack.util.*;
+import org.projecthaystack.*;
+import org.projecthaystack.util.*;
 
 /**
   * NHRef uniquely identifies an object by its 
