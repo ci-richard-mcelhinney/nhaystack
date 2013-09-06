@@ -2,19 +2,57 @@
 
 <h2><img src="tag.png" alt="NHaystack" title="" /> NHaystack</h2>
 
-<p>NHaystack is an open-source <a href="http://www.niagaraax.com/">Niagara AX</a> module
-that serves up <a href="http://project-haystack.org">Project Haystack</a> data 
-directly from a Niagara AX station, via a 
-<a href="http://project-haystack.org/doc/Rest">RESTful</a> protocol.</p>
+<p>NHaystack is an open-source <a href="http://www.niagaraax.com/">Niagara AX</a> module 
+that enables Niagara stations (JACE and WebSupervisor) to serve data 
+in the <a href="http://project-haystack.org">Project Haystack</a> format, via a 
+<a href="http://project-haystack.org/doc/Rest">RESTful</a> protocol.  Using NHaystack, 
+external applications receive data that includes essential meta data (tags) 
+to describe the meaning of the data. </p>
+
+<p>NHaystack automatically generates standard tags for all the ControlPoints in 
+your system.  This feature allows for connecting immediately to the Niagara 
+Station via Haystack once the NHaystack module has been installed, without 
+requiring any further configuration.  It makes discovering the points in your 
+station as easy as issuing a simple query.</p>
+
+<p>NHaystack also streamlines the process of adding user-specified Haystack tags
+to Niagara systems by providing a GUI tool that allows users to add the tags 
+directly to Niagara components. Once tags have been defined, the data 
+associated with the Niagara components, including the tags, are available over 
+the Rest communications interface. This combination of the tagging tool and the 
+Haystack protocol “engine” reduces the effort involved in connecting Niagara 
+data to external software applications.</p>
 
 <p>NHaystack is licensed under the
 <a href="http://opensource.org/licenses/AFL-3.0">Academic Free License ("AFL") v. 3.0</a>.</p>
 
-<p>NHaystack is hosted at
-<a href="https://bitbucket.org/jasondbriggs/nhaystack">https://bitbucket.org/jasondbriggs/nhaystack</a>.</p>
-
 <p>The development of NHaystack has been funded by 
 <a href="http://www.j2inn.com">J2 Innovations</a>.  </p>
+
+<h3>Benefits</h3>
+
+<ul>
+<li>The ability to include meta data tags as part of Niagara data structures 
+allows external applications to automatically interpret the meaning of data 
+acquired from a Niagara system.</li>
+<li>The Haystack HTTP protocol is efficient and includes features coalesce 
+requests to minimize network traffic and message size.</li>
+<li>The NHaystack module includes extensive features under the covers to unify 
+real time and historical data structures in Niagara, which greatly simplifies 
+access to data, and presentation in third party applications.</li>
+<li>The Haystack HTTP protocol tightly defines the relationship between client 
+and server machines, allowing for third-parties to integrate easily with your 
+equipment and data.</li>
+</ul>
+
+<h3>Key Features</h3>
+
+<ul>
+<li>Provides drop-in support for the Haystack protocol on an AX system.</li>
+<li>Unifies the Component and History namespaces</li>
+<li>Allows for arbitrary queries of the station based on Haystack tags</li>
+<li>Makes it easy to create a Site-Equip-Point Hierarchy view of your system.</li>
+</ul>
 
 <h3>1. Getting started</h3>
 
