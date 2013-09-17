@@ -10,8 +10,8 @@ package nhaystack.test;
 import java.io.*;
 import java.util.*;
 
-import haystack.*;
-import haystack.client.*;
+import org.projecthaystack.*;
+import org.projecthaystack.client.*;
 
 public class NavDump
 {

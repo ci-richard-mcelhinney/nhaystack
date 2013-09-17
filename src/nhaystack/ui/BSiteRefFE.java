@@ -14,7 +14,7 @@ import javax.baja.ui.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
 
@@ -56,7 +56,7 @@ public class BSiteRefFE extends BWbFieldEditor
         for (int i = 0; i < grid.numRows(); i++)
         {
             String slotPath = grid.row(i).getStr("axSlotPath");
-            dropDown.getList().addItem("station:|" + slotPath);
+            dropDown.getList().addItem(slotPath);
         }
 
         setContent(dropDown);
@@ -73,18 +73,28 @@ public class BSiteRefFE extends BWbFieldEditor
     {
         BOrd ord = (BOrd) value;
 
+        String slotPath = ord.toString();
+        if (slotPath.startsWith("station:|"))
+            slotPath = slotPath.substring("station:|".length());
+
         if (ord.equals(BOrd.DEFAULT))
             dropDown.setSelectedIndex(0);
         else
-            dropDown.setSelectedItem(ord.toString());
+            dropDown.setSelectedItem(slotPath);
     }
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
         String str = (String) dropDown.getSelectedItem();
 
-        return (str.equals(LEX.getText("none"))) ?
-            BOrd.DEFAULT : BOrd.make(str);
+        if (str.equals(LEX.getText("none")))
+        {
+            return BOrd.DEFAULT;
+        }
+        else
+        {
+            return BOrd.make("station:|" + str);
+        }
     }
 
 ////////////////////////////////////////////////////////////////

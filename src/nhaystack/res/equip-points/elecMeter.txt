@@ -1,4 +1,4 @@
-kw  sensor
+kw sensor
 kwh sensor
 current sensor
 current phase sensor

@@ -18,7 +18,7 @@ import javax.baja.ui.pane.*;
 import javax.baja.workbench.*;
 import javax.baja.workbench.fieldeditor.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.res.*;
 

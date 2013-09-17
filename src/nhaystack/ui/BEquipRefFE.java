@@ -17,7 +17,7 @@ import javax.baja.ui.list.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
 
@@ -69,11 +69,9 @@ public class BEquipRefFE extends BWbFieldEditor
             if (implicitEquip != null && slotPath.equals(implicitEquip))
                 dropDown.getList().addItem(
                     LEX.getText("autoFind") + ": " +
-                    "station:|" + slotPath);
+                    slotPath);
             else
-                dropDown.getList().addItem(
-                    LEX.getText("explicit") + ": " +
-                    "station:|" + slotPath);
+                dropDown.getList().addItem(slotPath);
         }
 
         setContent(dropDown);
@@ -112,14 +110,16 @@ public class BEquipRefFE extends BWbFieldEditor
         }
         else
         {
-            String ordStr = ord.toString();
+            String slotPath = ord.toString();
+            if (slotPath.startsWith("station:|"))
+                slotPath = slotPath.substring("station:|".length());
 
             boolean found = false;
             BList list = dropDown.getList();
             for (int i = 0; i < list.getItemCount(); i++)
             {
                 String item = (String) list.getItem(i);
-                if (item.endsWith(ordStr))
+                if (item.endsWith(slotPath))
                 {
                     dropDown.setSelectedIndex(i);
                     found = true;
@@ -128,7 +128,7 @@ public class BEquipRefFE extends BWbFieldEditor
             }
 
             if (!found) throw new IllegalStateException(
-                "Cannot find equip matching " + ordStr);
+                "Cannot find equip matching " + slotPath);
         }
     }
 
@@ -146,9 +146,7 @@ public class BEquipRefFE extends BWbFieldEditor
         }
         else
         {
-            String prefix = LEX.getText("explicit") + ": ";
-            str = str.substring(prefix.length());
-            return BOrd.make(str);
+            return BOrd.make("station:|" + str);
         }
     }
 

@@ -1,15 +1,52 @@
 ## NHaystack
 
-NHaystack is an open-source [Niagara AX](http://www.niagaraax.com/) module
-that serves up [Project Haystack](http://project-haystack.org) data 
-directly from a Niagara AX station, via a 
-[RESTful](http://project-haystack.org/doc/Rest) protocol.
+NHaystack is an open-source [Niagara AX](http://www.niagaraax.com/) module 
+that enables Niagara stations (JACE and WebSupervisor) to serve data 
+in the [Project Haystack](http://project-haystack.org) format, via a 
+[RESTful](http://project-haystack.org/doc/Rest) protocol.  Using NHaystack, 
+external applications receive data that includes essential meta data (tags) 
+to describe the meaning of the data. 
+
+NHaystack automatically generates standard tags for all the ControlPoints in 
+your system.  This feature allows for connecting immediately to the Niagara 
+Station via Haystack once the NHaystack module has been installed, without 
+requiring any further configuration.  It makes discovering the points in your 
+station as easy as issuing a simple query.
+
+NHaystack also streamlines the process of adding user-specified Haystack tags
+to Niagara systems by providing a GUI tool that allows users to add the tags 
+directly to Niagara components. Once tags have been defined, the data 
+associated with the Niagara components, including the tags, are available over 
+the Rest communications interface. This combination of the tagging tool and the 
+Haystack protocol "engine" reduces the effort involved in connecting Niagara 
+data to external software applications.
 
 NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
 
 The development of NHaystack has been funded by 
 [J2 Innovations](http://www.j2inn.com).  
+
+###Benefits
+
+* The ability to include meta data tags as part of Niagara data structures 
+allows external applications to automatically interpret the meaning of data 
+acquired from a Niagara system.
+* The Haystack HTTP protocol is efficient and includes features coalesce 
+requests to minimize network traffic and message size.
+* The NHaystack module includes extensive features under the covers to unify 
+real time and historical data structures in Niagara, which greatly simplifies 
+access to data, and presentation in third party applications.
+* The Haystack HTTP protocol tightly defines the relationship between client 
+and server machines, allowing for third-parties to integrate easily with your 
+equipment and data.
+
+###Key Features
+
+* Provides drop-in support for the Haystack protocol on an AX system.
+* Unifies the Component and History namespaces
+* Allows for arbitrary queries of the station based on Haystack tags
+* Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
 
 ### 1. Getting started
 
@@ -412,6 +449,50 @@ it will provide a default HTimeZone of the form "Etc/GMT-5" in your
 timeZoneAlias.  You should not use the HTimeZones from the "Etc" 
 region unless you are really sure of what you are doing.  Instead, always use 
 the proper geographic region-and-timezone, like "America/New_York".
+
+### 6. How IDs are generated
+
+Each haystack rec must have an ID that uniquely identifies the object that the
+rec models.
+
+By default, nhaystack generates IDs based on the slotPath of components (or the
+history ID for histories that are not associate with a point).  E.g:
+
+    slot:/Foo/SineWave1 --> C.Foo.SineWave1
+
+    history:/nhaystack_simple/AuditHistory --> H.nhaystack_simple.AuditHistory
+
+In the above example, the "C" prefix stands for the ComponentSpace, and the "H"
+stands for the HistorySpace.
+
+Note that IDs are bi-directionally encoded -- you can always recreate the 
+slotPath from an ID and vice-versa.
+
+Special characters in the slotPath are handled by replacing the "$" character 
+with a "~" character.  The sole exception to this rule is that "$20", which
+represents a single " " character, is replaced with a dash, "-", to improve the 
+readability of the IDS.  E.g:
+
+    slot:/Foo/Sine$2fWave1 --> C.Foo.Sine~2fWave1
+    slot:/Foo/Sine$20Wave1 --> C.Foo.Sine-Wave1
+
+If there is a site-equip-point hierarchy created in the station, then nhaystack
+will use that to generate the ID rather than the slotPath.  E.g. if the 
+SineWave in the first example was tagged up with an equip and a site, then 
+its generated ID might look something like this:
+
+    slot:/Foo/SineWave1 --> S.Carytown.AHU1.SineWave1
+
+In this case, there are actually two IDs that can be used to resolve the rec --
+the slotPath version, and the Site-Equip-Point version.
+
+Note that older versions of nhaystack used a Base64 encoding of the slot path,
+which looks something like this:
+
+    c.c2xvdDovRm9vL1NpbmVXYXZlMg~~
+    h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5
+
+Nhaystack no longer generates IDs with this form, but it can resolve them.
 
 [rec]: http://project-haystack.org/doc/TagModel#entities
 [structure]: http://project-haystack.org/doc/Structure

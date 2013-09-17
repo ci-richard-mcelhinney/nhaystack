@@ -17,7 +17,7 @@ import javax.baja.sys.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
 import nhaystack.site.*;
@@ -160,13 +160,14 @@ public class BHDictEditorGroup extends BScrollPane
 ////////////////////////////////////////////////////////////////
 
     /**
-      * Fetch all the tags that were generated for the current compenent.
+      * Fetch all the tags that were generated for the current component.
       */
     private HDict fetchTagsFromServer()
     {
         try
         {
-            BHRef id = BHRef.make(NHRef.make(comp).getHRef());
+            NHRef ref = NHServer.makeSlotPathRef(comp);
+            BHRef id = BHRef.make(ref.getHRef());
             return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
         }
         catch (Exception e)

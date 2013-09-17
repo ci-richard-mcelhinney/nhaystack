@@ -18,9 +18,10 @@ import javax.baja.ui.list.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.res.*;
+import nhaystack.server.*;
 
 class Row
 {
@@ -167,9 +168,9 @@ class Row
         else if (val instanceof HStr)
             return makeStrFE(name, (HStr) val);
 
-        // this is for siteUri, thus should always be readOnly
-        else if (val instanceof HUri)
-            return makeStrFE(name, HStr.make(((HUri) val).val));
+//        // this is for siteUri, thus should always be readOnly
+//        else if (val instanceof HUri)
+//            return makeStrFE(name, HStr.make(((HUri) val).val));
 
         else if (val instanceof HRef)
             return makeRefFE(editor, name, (HRef) val);
@@ -223,9 +224,15 @@ class Row
         BFoxProxySession session = editor.group().session();
 
         // create ord
-        BOrd ord = (BHRef.make(ref).equals(BHRef.DEFAULT)) ?
-            BOrd.DEFAULT :
-            NHRef.make(ref).getOrd();
+        BOrd ord = BOrd.DEFAULT;
+
+        if (!(BHRef.make(ref).equals(BHRef.DEFAULT)))
+        {
+            HDict dict = ((BHDict) editor.group().service().invoke(
+                BNHaystackService.readById, BHRef.make(ref))).getDict();
+
+            ord = BOrd.make("station:|" + dict.getStr("axSlotPath"));
+        }
 
         // create field editor
         BWbFieldEditor fe = null;

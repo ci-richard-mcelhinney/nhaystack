@@ -11,7 +11,7 @@ import java.util.*;
 import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
-import haystack.*;
+import org.projecthaystack.*;
 
 /**
   * NHWatch manages leased components

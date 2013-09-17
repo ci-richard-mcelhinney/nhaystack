@@ -33,7 +33,9 @@
       includeantruntime="false">
       <compilerarg value="-Xlint:deprecation"/>
       <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="lib/servlet.jar" />
+        <pathelement location="../ext/haystack.jar" />
       </classpath>
     </javac>
 
@@ -54,6 +56,7 @@
   <target name="test-simple" depends="make">
     <java classname="nhaystack.test.NSimpleClientTest">
       <classpath>
+        <pathelement location="../ext/haystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />
       </classpath>
     </java>
@@ -63,6 +66,7 @@
   <target name="test-sup" depends="make">
     <java classname="nhaystack.test.NSupervisorClientTest">
       <classpath>
+        <pathelement location="../ext/haystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />
       </classpath>
     </java>
@@ -72,6 +76,19 @@
   <target name="test-his" depends="make">
     <java classname="nhaystack.test.NHisTest">
       <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-util ==========-->
+  <target name="test-util" depends="make">
+    <java classname="nhaystack.test.NUtilTest">
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/baja.jar" />
+        <pathelement location="${env.NIAGARA_AX}/modules/oro.jar" />
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />
       </classpath>
     </java>

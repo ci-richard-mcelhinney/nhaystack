@@ -15,7 +15,7 @@ import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.site.*;
@@ -185,7 +185,7 @@ public class Cache
             if (tags == null) 
                 tags = HDict.EMPTY;
 
-            if (navName(point, tags).equals(pointNav))
+            if (Nav.makeNavName(point, tags).equals(pointNav))
                 return point;
         }
         return null;
@@ -284,7 +284,7 @@ public class Cache
                     sitesArr.add(comp);
                     siteNavs.put(
                         Nav.makeSiteNavId(
-                            navName(comp, tags)),
+                            Nav.makeNavName(comp, tags)),
                         comp);
                 }
                 else if (comp instanceof BHEquip)
@@ -336,8 +336,8 @@ public class Cache
                 HDict siteTags = BHDict.findTagAnnotation(site);
                 equipNavs.put(
                     Nav.makeEquipNavId(
-                        navName(site, siteTags),
-                        navName(equip, equipTags)),
+                        Nav.makeNavName(site, siteTags),
+                        Nav.makeNavName(equip, equipTags)),
                     equip);
             }
         }
@@ -386,19 +386,6 @@ public class Cache
                 arr.add(cfg);
             }
         }
-    }
-
-////////////////////////////////////////////////////////////////
-// private -- util
-////////////////////////////////////////////////////////////////
-
-    private static String navName(BComponent comp, HDict tags)
-    {
-        String format = tags.has("navNameFormat") ?
-            tags.getStr("navNameFormat") :
-            "%displayName%";
-
-        return BFormat.format(format, comp);
     }
 
 ////////////////////////////////////////////////////////////////

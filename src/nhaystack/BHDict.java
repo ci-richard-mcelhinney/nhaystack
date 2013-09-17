@@ -9,8 +9,8 @@ package nhaystack;
 
 import java.io.*;
 import javax.baja.sys.*;
-import haystack.*;
-import haystack.io.*;
+import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 
 /**
  *  BHDict wraps a Haystack HDict

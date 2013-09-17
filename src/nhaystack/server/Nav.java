@@ -17,12 +17,13 @@ import javax.baja.sys.*;
 import javax.baja.util.*;
 import javax.baja.xml.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.*;
 import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
+import nhaystack.util.*;
 
 /**
   * Nav manages the nav trees
@@ -45,23 +46,41 @@ public class Nav
 // public
 ////////////////////////////////////////////////////////////////
 
-    public static String makeNavFormat(BComponent comp, HDict tags)
+    public static String makeNavName(BComponent comp, HDict tags)
     {
         String format = tags.has("navNameFormat") ?
             tags.getStr("navNameFormat") :
             "%displayName%";
 
-        return BFormat.format(format, comp);
+        String navName = BFormat.format(format, comp);
+        navName = com.tridium.util.EscUtil.slot.escape(navName);
+
+        return PathUtil.fromNiagaraPath(navName);
     }
 
-    public static String makeSiteNavId(String siteName)
+    public static String makeSiteNavId(String siteNav)
     {
-        return "sep:/" + siteName;
+        return "sep:/" + siteNav;
     }
 
-    public static String makeEquipNavId(String siteNavId, String equipName)
+    public static String makeEquipNavId(String siteNav, String equipNav)
     {
-        return siteNavId + "/" + equipName;
+        return siteNav + "/" + equipNav;
+    }
+
+    public static BControlPoint[] annotatedPoints(BControlPoint[] points)
+    {
+        Array arr = new Array(BControlPoint.class);
+
+        for (int i = 0; i < points.length; i++)
+        {
+            HDict dict = BHDict.findTagAnnotation(points[i]);
+
+            if (dict != null && !dict.equals(HDict.EMPTY))
+                arr.add(points[i]);
+        }
+
+        return (BControlPoint[]) arr.trim();
     }
 
     /**
@@ -160,21 +179,6 @@ public class Nav
         out.close();
 
         return new String(bout.toByteArray());
-    }
-
-    private BControlPoint[] annotatedPoints(BControlPoint[] points)
-    {
-        Array arr = new Array(BControlPoint.class);
-
-        for (int i = 0; i < points.length; i++)
-        {
-            HDict dict = BHDict.findTagAnnotation(points[i]);
-
-            if (dict != null && !dict.equals(HDict.EMPTY))
-                arr.add(points[i]);
-        }
-
-        return (BControlPoint[]) arr.trim();
     }
 
 ////////////////////////////////////////////////////////////////

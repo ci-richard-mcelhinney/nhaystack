@@ -16,7 +16,7 @@ import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.*;
@@ -82,7 +82,7 @@ public class HistoryStorehouse extends Storehouse
         hdb.add("navName", dis);
 
         // add id
-        HRef ref = NHRef.make(cfg).getHRef();
+        HRef ref = server.makeComponentRef(cfg).getHRef();
         hdb.add("id", HRef.make(ref.val, dis));
 
         // add misc other tags
@@ -114,7 +114,7 @@ public class HistoryStorehouse extends Storehouse
         if (point != null)
         {
             // add point ref
-            hdb.add("axPointRef", NHRef.make(point).getHRef());
+            hdb.add("axPointRef", server.makeComponentRef(point).getHRef());
 
             // hisInterpolate 
             if (!tags.has("hisInterpolate"))

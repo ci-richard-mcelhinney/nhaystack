@@ -10,7 +10,7 @@ package nhaystack.site;
 
 import javax.baja.sys.*;
 
-import haystack.*;
+import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.server.*;
 
@@ -24,12 +24,37 @@ public class BHEquip extends BHTagged
     {
         properties
         {
+            haystack:  BHDict 
+                default{[ BHDict.make("navNameFormat:\"%parent.displayName%\"") ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHEquip(3108637456)1.0$ @*/
-/* Generated Fri Mar 29 12:39:07 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.site.BHEquip(1762613286)1.0$ @*/
+/* Generated Tue Sep 03 09:48:31 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+
+////////////////////////////////////////////////////////////////
+// Property "haystack"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>haystack</code> property.
+   * @see nhaystack.site.BHEquip#getHaystack
+   * @see nhaystack.site.BHEquip#setHaystack
+   */
+  public static final Property haystack = newProperty(0, BHDict.make("navNameFormat:\"%parent.displayName%\""),null);
+  
+  /**
+   * Get the <code>haystack</code> property.
+   * @see nhaystack.site.BHEquip#haystack
+   */
+  public BHDict getHaystack() { return (BHDict)get(haystack); }
+  
+  /**
+   * Set the <code>haystack</code> property.
+   * @see nhaystack.site.BHEquip#haystack
+   */
+  public void setHaystack(BHDict v) { set(haystack,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -63,19 +88,19 @@ public class BHEquip extends BHTagged
         hdb.add(tags);
 
         // navName
-        String navName = Nav.makeNavFormat(this, tags);
+        String navName = Nav.makeNavName(this, tags);
         hdb.add("navName", navName);
 
         // dis
         String dis = createDis(server, tags, navName);
         hdb.add("dis", dis);
 
-        // siteUri
-        HUri siteUri = createSiteUri(server, tags, navName);
-        if (siteUri != null) hdb.add("siteUri", siteUri);
+//        // siteUri
+//        HUri siteUri = createSiteUri(server, tags, navName);
+//        if (siteUri != null) hdb.add("siteUri", siteUri);
 
         // add id
-        HRef ref = NHRef.make(this).getHRef();
+        HRef ref = server.makeComponentRef(this).getHRef();
         hdb.add("id", HRef.make(ref.val, dis));
 
         // add equip
@@ -99,7 +124,7 @@ public class BHEquip extends BHTagged
             if (site != null)
             {
                 HDict siteTags = BHDict.findTagAnnotation(site);
-                String siteNavName = Nav.makeNavFormat(site, siteTags);
+                String siteNavName = Nav.makeNavName(site, siteTags);
 
                 dis = siteNavName + " " + navName;
             }
@@ -117,7 +142,7 @@ public class BHEquip extends BHTagged
             if (site != null)
             {
                 HDict siteTags = BHDict.findTagAnnotation(site);
-                String siteNavName = Nav.makeNavFormat(site, siteTags);
+                String siteNavName = Nav.makeNavName(site, siteTags);
 
                 return HUri.make("sep:/" + siteNavName + "/" + navName);
             }

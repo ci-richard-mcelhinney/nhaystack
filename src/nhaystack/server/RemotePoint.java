@@ -42,6 +42,9 @@ public class RemotePoint
         if (slotPath.startsWith("station:|"))   
             slotPath = slotPath.substring("station:|".length());
 
+        // make sure its a valid slot path
+        if (!slotPath.startsWith("slot:")) return null;
+
         // Find the ancestor NiagaraStation
         BDevice device = findParentDevice(point);
         if (device == null) return null;
@@ -96,7 +99,8 @@ public class RemotePoint
     private RemotePoint(String stationName, String slotPathStr)
     {
         if (!slotPathStr.startsWith("slot:"))
-            throw new IllegalStateException();
+            throw new IllegalStateException(
+                "Unexpected slot path value: '" + slotPathStr + "'");
 
         this.stationName = stationName;
         this.slotPath = new SlotPath("slot", slotPathStr.substring("slot:".length()));
