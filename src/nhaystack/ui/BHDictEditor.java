@@ -26,6 +26,8 @@ import org.projecthaystack.*;
 import org.projecthaystack.io.*;
 import nhaystack.*;
 import nhaystack.res.*;
+import nhaystack.server.*;
+import nhaystack.util.*;
 
 /**
   * BHDictEditor is the editor for BHDicts.
@@ -223,26 +225,27 @@ public class BHDictEditor extends BEdgePane
 
                     if (query.getScheme().equals("slot"))
                     {
-                        BObject obj = BOrd.make("station:|" + ord).resolve(
-                                editorGroup.session(), null).get();
-                        BComponent comp = (BComponent) obj;
+                        BComponent comp = (BComponent) 
+                            ord.resolve(editorGroup.session(), null).get();
                         if (!comp.isMounted())
                             throw new BajaRuntimeException(
                                 ord + " is not mounted.");
 
-                        NHRef nh = NHRef.make(comp);
-                        builder.add(name, nh.getHRef());
+                        NHRef ref = NHServer.makeSlotPathRef(comp);
+                        builder.add(name, ref.getHRef());
                     }
-                    else if (query.getScheme().equals("history"))
-                    {
-                        BObject obj = ord.resolve(
-                            editorGroup.session(), null).get();
 
-                        BIHistory history = (BIHistory) obj;
-                        BHistoryConfig cfg = history.getConfig();
-                        NHRef nh = NHRef.make(cfg);
-                        builder.add(name, nh.getHRef());
-                    }
+//                    else if (query.getScheme().equals("history"))
+//                    {
+//                        BObject obj = ord.resolve(
+//                            editorGroup.session(), null).get();
+//
+//                        BIHistory history = (BIHistory) obj;
+//                        BHistoryConfig cfg = history.getConfig();
+//
+//                        NHRef nh = NHRef.make(cfg);
+//                        builder.add(name, nh.getHRef());
+//                    }
                     else
                     {
                         throw new BajaRuntimeException(

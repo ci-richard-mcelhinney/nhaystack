@@ -27,6 +27,7 @@ import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
+import nhaystack.util.*;
 
 /**
   * NHServer is responsible for serving up 
@@ -139,13 +140,9 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onReadById " + id);
 
-        // we can assume this because onNavReadByUri will have
-        // already been called for us.
-        HRef ref = (HRef) id;
-
         try
         {
-            BComponent comp = lookupComponent(ref);
+            BComponent comp = lookupComponent(id);
             return (comp == null) ? null : createTags(comp);
         }
         catch (RuntimeException e)
@@ -579,45 +576,10 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onNavReadByUri " + uri);
 
-        // e.g. "sep:/Blacksburg/Transmogrifier/SineWave1"
-        if (!uri.val.startsWith("sep:/")) return null;
-        String str = uri.val.substring("sep:/".length());
-        if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
+        BComponent comp = lookupComponentByUri(uri);
 
-        String[] navNames = TextUtil.split(str, '/');
-        switch (navNames.length)
-        {
-            // site
-            case 1:
-
-                BHSite site = cache.getNavSite(
-                    Nav.makeSiteNavId(navNames[0]));
-
-                return (site == null) ?  null : 
-                    compStore.createComponentTags(site);
-
-            // equip
-            case 2:
-
-                BHEquip equip = cache.getNavEquip(
-                    Nav.makeEquipNavId(navNames[0], navNames[1]));
-
-                return (equip == null) ?  null : 
-                    compStore.createComponentTags(equip);
-
-            // point
-            case 3:
-
-                BControlPoint point = cache.getNavPoint(
-                    Nav.makeEquipNavId(navNames[0], navNames[1]), 
-                    navNames[2]);
-
-                return (point == null) ?  null : 
-                    compStore.createComponentTags(point);
-
-            // bad uri
-            default: return null;
-        }
+        return (comp == null) ?  null : 
+            compStore.createComponentTags(comp);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -673,27 +635,194 @@ public class NHServer extends HServer
         NHRef nh = NHRef.make(id);
 
         // component space
-        if (nh.getSpace().equals(NHRef.COMPONENT))
+        if (nh.getSpace().equals(NHRef.COMP) ||
+            nh.getSpace().equals(NHRef.COMP_BASE64))
         {
-            BComponent comp = (BComponent) nh.getOrd().get(service, null);
+            BOrd ord = BOrd.make("station:|" + 
+                (nh.getSpace().equals(NHRef.COMP) ? 
+                    "slot:" + PathUtil.toNiagaraPath(nh.getPath()) : 
+                    Base64.URI.decodeUTF8(nh.getPath())));
+
+            BComponent comp = (BComponent) ord.get(service, null);
             if (comp == null) return null;
             return compStore.isVisibleComponent(comp) ? comp : null;
         }
         // history space
-        else if (nh.getSpace().equals(NHRef.HISTORY))
+        else if (
+            nh.getSpace().equals(NHRef.HIS_BASE64) ||
+            nh.getSpace().equals(NHRef.HIS))
         {
             BHistoryId hid = BHistoryId.make(
-                Base64.URI.decodeUTF8(nh.getPath()));
+                nh.getSpace().equals(NHRef.HIS) ? 
+                    "/" + PathUtil.toNiagaraPath(nh.getPath()) :
+                    Base64.URI.decodeUTF8(nh.getPath()));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             BHistoryConfig cfg = history.getConfig();
             return hisStore.isVisibleHistory(cfg) ? cfg : null;
+        }
+        // sep space
+        else if (nh.getSpace().equals(NHRef.SEP))
+        {
+            return lookupComponentByUri(HUri.make(
+                "sep:/" + TextUtil.replace(nh.getPath(), ".", "/")));
         }
         // invalid space
         else 
         {
             return null;
         }
+    }
+
+    /**
+      * Look up a component by its URI, or return null.
+      */
+    public BComponent lookupComponentByUri(HUri uri)
+    {
+        if (!uri.val.startsWith("sep:/")) return null;
+        String str = uri.val.substring("sep:/".length());
+        if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
+
+        String[] navNames = TextUtil.split(str, '/');
+//        for (int i = 0; i < navNames.length; i++)
+//            navNames[i] = com.tridium.util.EscUtil.slot.unescape(navNames[i]);
+
+        switch (navNames.length)
+        {
+            case 1: return cache.getNavSite  (Nav.makeSiteNavId  (navNames[0]));
+            case 2: return cache.getNavEquip (Nav.makeEquipNavId (navNames[0], navNames[1]));
+            case 3: return cache.getNavPoint (Nav.makeEquipNavId (navNames[0], navNames[1]), navNames[2]);
+
+            // bad uri
+            default: return null;
+        }
+    }
+
+    /**
+      * Make an ID from a BComponent.  
+      */
+    public NHRef makeComponentRef(BComponent comp)
+    {
+        // history space
+        if (comp instanceof BHistoryConfig)
+        {
+            BHistoryConfig cfg = (BHistoryConfig) comp;
+            return makeHistoryRef(cfg);
+        }
+        // component space
+        else
+        {
+            NHRef sepRef = makeComponentSepRef(comp);
+            if (sepRef != null) return sepRef;
+
+            return makeSlotPathRef(comp);
+        }
+    }
+
+    public static NHRef makeSlotPathRef(BComponent comp)
+    {
+        String path = comp.getSlotPath().toString();
+        path = removePrefix(path, "slot:/");
+        path = PathUtil.fromNiagaraPath(path);
+
+        return NHRef.make(NHRef.COMP, path);
+    }
+
+    public static NHRef makeHistoryRef(BHistoryConfig cfg)
+    {
+        String path = cfg.getId().toString();
+        path = removePrefix(path, "/");
+        path = PathUtil.fromNiagaraPath(path);
+
+        return NHRef.make(NHRef.HIS, path);
+    }
+
+    private static String removePrefix(String path, String prefix)
+    {
+        if (!path.startsWith(prefix))
+            throw new IllegalStateException(
+                "'" + path + "' does not start with '" + prefix + "'");
+
+        return path.substring(prefix.length());
+    }
+
+    public static NHRef makeSepRef(String[] navPath)
+    {
+        return NHRef.make(
+            NHRef.SEP, 
+            PathUtil.fromNiagaraPath(
+                TextUtil.join(navPath, '/')));
+    }
+
+    /**
+      * Make a SEP-style ref
+      */
+    private NHRef makeComponentSepRef(BComponent comp)
+    {
+        if (comp instanceof BHSite)
+        {
+            BHSite site = (BHSite) comp;
+            HDict siteTags = site.getHaystack().getDict();
+
+            String navName = Nav.makeNavName(site, siteTags);
+
+            return makeSepRef(new String[] { navName });
+        }
+        else if (comp instanceof BHEquip) 
+        {
+            String[] equipNavPath = makeEquipNavPath((BHEquip) comp);
+            if (equipNavPath != null) 
+                return makeSepRef(equipNavPath);
+        }
+        else if (comp instanceof BControlPoint) 
+        {
+            BControlPoint point = (BControlPoint) comp;
+            HDict pointTags = BHDict.findTagAnnotation(point);
+
+            BHEquip equip = ((pointTags != null) && pointTags.has("equipRef")) ?
+                (BHEquip) lookupComponent(pointTags.getRef("equipRef")) :
+                cache.getImplicitEquip(point);
+
+            if (equip != null)
+            {
+                String[] equipNavPath = makeEquipNavPath(equip);
+                if (equipNavPath != null)
+                {
+                    // this can happen on an unannotated point with an implicit equip
+                    if (pointTags == null) pointTags = HDict.EMPTY;
+
+                    String navName = Nav.makeNavName(point, pointTags);
+                    return makeSepRef(
+                        new String[] {
+                            equipNavPath[0], 
+                            equipNavPath[1], 
+                            navName });
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+      * Make a SEP-style ref for an equip
+      */
+    private String[] makeEquipNavPath(BHEquip equip)
+    {
+        HDict equipTags = equip.getHaystack().getDict();
+
+        if ((equipTags != null) && equipTags.has("siteRef"))
+        {
+            BHSite site = (BHSite) lookupComponent((HRef) equipTags.get("siteRef"));
+            if (site != null)
+            {
+                HDict siteTags = BHDict.findTagAnnotation(site);
+                String siteNav = Nav.makeNavName(site, siteTags);
+                String navName = Nav.makeNavName(equip, equipTags);
+                return new String[] { siteNav, navName };
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -953,7 +1082,7 @@ public class NHServer extends HServer
         "axSlotPath", "axType",         "cur",          "curStatus",
         "curVal",     "dis",            "enum",         "equip",
         "his",        "hisInterpolate", "id",           "kind",
-        "navName",    "point",          "site",         "siteUri",
+        "navName",    "point",          "site",         /*"siteUri",*/
         "tz",         "unit",           "writable"      };
 
     private final HashMap watches = new HashMap();

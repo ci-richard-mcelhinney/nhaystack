@@ -115,28 +115,45 @@ public class NSimpleClientTest extends NTest
         verifyEq(grid.numRows(), 16);
 
 //        for (int i = 0; i < grid.numRows(); i++)
-//            System.out.println(i + ", " + grid.row(i).get("siteUri", false));
+//            System.out.println(i + ", " + grid.row(i).get("id"));
 
-        verifyEq(grid.row( 0).get("siteUri", false), null);
-        verifyEq(grid.row( 1).get("siteUri", false), null);
-        verifyEq(grid.row( 2).get("siteUri", false), HUri.make("sep:/Richmond"));
-        verifyEq(grid.row( 3).get("siteUri", false), HUri.make("sep:/Richmond/AHU1"));
-        verifyEq(grid.row( 4).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/NumericWritable"));
-        verifyEq(grid.row( 5).get("siteUri", false), HUri.make("sep:/Richmond/AHU1/AHU2_BooleanWritable"));
-        verifyEq(grid.row( 6).get("siteUri", false), HUri.make("sep:/Richmond/AHU2"));
-        verifyEq(grid.row( 7).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/EnumWritable"));
-        verifyEq(grid.row( 8).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/NumericWritable1"));
-        verifyEq(grid.row( 9).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/NumericWritable"));
-        verifyEq(grid.row(10).get("siteUri", false), HUri.make("sep:/Richmond/AHU1/AHU3_BooleanWritable"));
-        verifyEq(grid.row(11).get("siteUri", false), HUri.make("sep:/Richmond/AHU3"));
-        verifyEq(grid.row(12).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/EnumWritable"));
-        verifyEq(grid.row(13).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/NumericWritable1"));
-        verifyEq(grid.row(14).get("siteUri", false), null);
-        verifyEq(grid.row(15).get("siteUri", false), null);
+        verifyEq(grid.row( 0).getRef("id"), HRef.make("C.Foo.SineWave1"));
+        verifyEq(grid.row( 1).getRef("id"), HRef.make("C.Foo.Sine-Wave2~2fabc"));
+        verifyEq(grid.row( 2).getRef("id"), HRef.make("S.Richmond"));
+        verifyEq(grid.row( 3).getRef("id"), HRef.make("S.Richmond.AHU1"));
+        verifyEq(grid.row( 4).getRef("id"), HRef.make("S.Richmond.AHU2.NumericWritable"));
+        verifyEq(grid.row( 5).getRef("id"), HRef.make("S.Richmond.AHU1.AHU2_BooleanWritable"));
+        verifyEq(grid.row( 6).getRef("id"), HRef.make("S.Richmond.AHU2"));
+        verifyEq(grid.row( 7).getRef("id"), HRef.make("S.Richmond.AHU2.EnumWritable"));
+        verifyEq(grid.row( 8).getRef("id"), HRef.make("S.Richmond.AHU2.NumericWritable1"));
+        verifyEq(grid.row( 9).getRef("id"), HRef.make("S.Richmond.AHU3.NumericWritable"));
+        verifyEq(grid.row(10).getRef("id"), HRef.make("S.Richmond.AHU1.AHU3_BooleanWritable"));
+        verifyEq(grid.row(11).getRef("id"), HRef.make("S.Richmond.AHU3"));
+        verifyEq(grid.row(12).getRef("id"), HRef.make("S.Richmond.AHU3.EnumWritable"));
+        verifyEq(grid.row(13).getRef("id"), HRef.make("S.Richmond.AHU3.NumericWritable1"));
+        verifyEq(grid.row(14).getRef("id"), HRef.make("H.nhaystack_simple.AuditHistory"));
+        verifyEq(grid.row(15).getRef("id"), HRef.make("H.nhaystack_simple.LogHistory"));
+
+//        verifyEq(grid.row( 0).get("siteUri", false), null);
+//        verifyEq(grid.row( 1).get("siteUri", false), null);
+//        verifyEq(grid.row( 2).get("siteUri", false), HUri.make("sep:/Richmond"));
+//        verifyEq(grid.row( 3).get("siteUri", false), HUri.make("sep:/Richmond/AHU1"));
+//        verifyEq(grid.row( 4).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/NumericWritable"));
+//        verifyEq(grid.row( 5).get("siteUri", false), HUri.make("sep:/Richmond/AHU1/AHU2_BooleanWritable"));
+//        verifyEq(grid.row( 6).get("siteUri", false), HUri.make("sep:/Richmond/AHU2"));
+//        verifyEq(grid.row( 7).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/EnumWritable"));
+//        verifyEq(grid.row( 8).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/NumericWritable1"));
+//        verifyEq(grid.row( 9).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/NumericWritable"));
+//        verifyEq(grid.row(10).get("siteUri", false), HUri.make("sep:/Richmond/AHU1/AHU3_BooleanWritable"));
+//        verifyEq(grid.row(11).get("siteUri", false), HUri.make("sep:/Richmond/AHU3"));
+//        verifyEq(grid.row(12).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/EnumWritable"));
+//        verifyEq(grid.row(13).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/NumericWritable1"));
+//        verifyEq(grid.row(14).get("siteUri", false), null);
+//        verifyEq(grid.row(15).get("siteUri", false), null);
 
         //////////////////////////////////////////
 
-        HDict dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMQ~~"));
+        HDict dict = client.readById(HRef.make("C.Foo.SineWave1"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
         verify(dict.has("foo"));
         verify(dict.has("bar"));
@@ -158,29 +175,33 @@ public class NSimpleClientTest extends NTest
 
         //////////////////////////////////////////
 
-        dict = client.readById(HRef.make("c.c2xvdDovRm9vL1NpbmVXYXZlMg~~"));
+        dict = client.readById(HRef.make("C.Foo.Sine-Wave2~2fabc"));
         verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
         verify(dict.missing("foo"));
         verify(dict.missing("bar"));
         verifyEq(dict.get("kind"), HStr.make("Number"));
-        verify(dict.missing("his"));
+        verify(dict.has("his"));
         verifyEq(dict.get("curStatus"), HStr.make("ok"));
-        verify(dict.missing("hisInterpolate"));
-        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave2"));
+        verify(dict.has("hisInterpolate"));
+        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/Sine$20Wave2$2fabc"));
         verifyEq(dict.get("unit"), HStr.make("psi"));
         verify(dict.has("point"));
-        verify(dict.missing("tz"));
+        verify(dict.has("tz"));
         verify(dict.has("cur"));
         curVal = dict.getDouble("curVal");
         verify(curVal >= 0.0 && curVal <= 100.0);
 
-        verifyEq(dict.get("dis"), HStr.make("SineWave2"));
-        verifyEq(dict.get("navName"), HStr.make("SineWave2"));
+        verifyEq(dict.get("dis"), HStr.make("Sine-Wave2~2fabc"));
+        verifyEq(dict.get("navName"), HStr.make("Sine-Wave2~2fabc"));
         verify(dict.missing("navNameFormat"));
 
         //////////////////////////////////////////
 
-        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5"));
+        dict = client.readById(HRef.make("S.Richmond.AHU2.NumericWritable"));
+
+        //////////////////////////////////////////
+
+        dict = client.readById(HRef.make("H.nhaystack_simple.AuditHistory"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verify(dict.missing("kind"));
         verify(dict.has("his"));
@@ -192,7 +213,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvTG9nSGlzdG9yeQ~~"));
+        dict = client.readById(HRef.make("H.nhaystack_simple.LogHistory"));
         verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
         verify(dict.missing("kind"));
         verify(dict.has("his"));
@@ -204,17 +225,17 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-//        dict = client.readById(HRef.make("h.L25oYXlzdGFja19zaW1wbGUvU2luZVdhdmUz"));
-//        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//        verifyEq(dict.get("kind"), HStr.make("Number"));
-//        verify(dict.has("his"));
-//        verify(dict.missing("cur"));
-//        verify(dict.missing("curStatus"));
-//        verify(dict.missing("curVal"));
-//        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
-//        verify(dict.missing("hisInterpolate"));
-//        verifyEq(dict.get("unit"), HStr.make("psi"));
+        //        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave3"));
+        //        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+        //        verifyEq(dict.get("kind"), HStr.make("Number"));
+        //        verify(dict.has("his"));
+        //        verify(dict.missing("cur"));
+        //        verify(dict.missing("curStatus"));
+        //        verify(dict.missing("curVal"));
+        //        verifyEq(dict.get("tz"), localTz());
+        //        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
+        //        verify(dict.missing("hisInterpolate"));
+        //        verifyEq(dict.get("unit"), HStr.make("psi"));
 
         try { client.readById(HRef.make("c.Mg~~")); } catch(Exception e) { verifyException(e); }
     }
@@ -324,8 +345,7 @@ public class NSimpleClientTest extends NTest
     void verifyHisRead() throws Exception
     {
         HGrid grid = client.readAll("his");
-//        verifyEq(grid.numRows(), 5);
-        verifyEq(grid.numRows(), 4);
+        verifyEq(grid.numRows(), 5);
 
         ///////////////////////////////////////////////
 
@@ -359,8 +379,8 @@ public class NSimpleClientTest extends NTest
 
         ///////////////////////////////////////////////
 
-        client.hisRead(HRef.make("c.c2xvdDovQUhVMi9OdW1lcmljV3JpdGFibGU~"), "today");
-        client.hisRead(HUri.make("sep:/Richmond/AHU2/NumericWritable"), "today");
+        client.hisRead(HRef.make("C.AHU2.NumericWritable"), "today");
+        client.hisRead(HRef.make("S.Richmond.AHU2.NumericWritable"), "today");
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -388,13 +408,13 @@ public class NSimpleClientTest extends NTest
 //System.out.println(d);
 
         // do first sub
-        HGrid sub = w.sub(new HIdentifier[] { a.id(), b.id() });
+        HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
         verifyEq(sub.numRows(), 2);
         verifyEq(sub.row(0).dis(), a.dis());
         verifyEq(sub.row(1).dis(), b.dis());
 
         // now add c, d
-        sub = w.sub(new HIdentifier[] { c.id(), d.id() }, false);
+        sub = w.sub(new HRef[] { c.id(), d.id() }, false);
         verifyEq(sub.numRows(), 2);
         verifyEq(sub.row(0).dis(), c.dis());
         verifyEq(sub.row(1).dis(), d.dis());
@@ -419,7 +439,7 @@ public class NSimpleClientTest extends NTest
         verifyEq(poll.numRows(), 2);
 
         // remove d, and then poll refresh
-        w.unsub(new HIdentifier[] { d.id() });
+        w.unsub(new HRef[] { d.id() });
         poll = w.pollRefresh();
         verifyEq(poll.numRows(), 3);
 
@@ -432,7 +452,7 @@ public class NSimpleClientTest extends NTest
         // check bad id 
         w = client.watchOpen("Bogus Test");
         HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
-        try { w.sub(new HIdentifier[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
+        try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
     }
 
 //////////////////////////////////////////////////////////////////////////
@@ -441,11 +461,11 @@ public class NSimpleClientTest extends NTest
 
     void verifyPointWrite() throws Exception
     {
-        doVerifyPointWrite(HRef.make("c.c2xvdDovQUhVMi9OdW1lcmljV3JpdGFibGU~"));
-        doVerifyPointWrite(HUri.make("sep:/Richmond/AHU2/NumericWritable"));
+        doVerifyPointWrite(HRef.make("C.AHU2.NumericWritable"));
+        doVerifyPointWrite(HRef.make("S.Richmond.AHU2.NumericWritable"));
     }
     
-    private void doVerifyPointWrite(HIdentifier id)
+    private void doVerifyPointWrite(HRef id)
     {
         HGrid grid = client.pointWrite(id, 10, "admin", HNum.make(222), null);
         verifyEq(grid.numRows(), 17);
@@ -501,11 +521,11 @@ public class NSimpleClientTest extends NTest
 
     void verifyInvokeAction() throws Exception
     {
-        doVerifyInvokeAction(HRef.make("c.c2xvdDovQUhVMi9OdW1lcmljV3JpdGFibGU~"));
-        doVerifyInvokeAction(HUri.make("sep:/Richmond/AHU2/NumericWritable"));
+        doVerifyInvokeAction(HRef.make("C.AHU2.NumericWritable"));
+        doVerifyInvokeAction(HRef.make("S.Richmond.AHU2.NumericWritable"));
     }
     
-    private void doVerifyInvokeAction(HIdentifier id)
+    private void doVerifyInvokeAction(HRef id)
     {
         HDictBuilder hd = new HDictBuilder();
         hd.add("arg", HNum.make(333));

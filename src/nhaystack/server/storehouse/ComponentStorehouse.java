@@ -63,7 +63,7 @@ public class ComponentStorehouse extends Storehouse
             hdb.add(tags);
 
             // navName
-            String navName = Nav.makeNavFormat(comp, tags);
+            String navName = Nav.makeNavName(comp, tags);
             hdb.add("navName", navName);
 
             // add misc other tags
@@ -78,12 +78,12 @@ public class ComponentStorehouse extends Storehouse
             String dis = createDis(hdb, navName);
             hdb.add("dis", dis);
 
-            // uri
-            HUri siteUri = createSiteUri(hdb, navName);
-            if (siteUri != null) hdb.add("siteUri", siteUri);
+//            // uri
+//            HUri siteUri = createSiteUri(hdb, navName);
+//            if (siteUri != null) hdb.add("siteUri", siteUri);
 
             // add id
-            HRef ref = NHRef.make(comp).getHRef();
+            HRef ref = server.makeComponentRef(comp).getHRef();
             hdb.add("id", HRef.make(ref.val, dis));
         }
 
@@ -150,7 +150,7 @@ public class ComponentStorehouse extends Storehouse
             if (comp != null)
             {
                 HDict compTags = BHDict.findTagAnnotation(comp);
-                return Nav.makeNavFormat(comp, compTags);
+                return Nav.makeNavName(comp, compTags);
             }
         }
         return null;
@@ -172,7 +172,7 @@ public class ComponentStorehouse extends Storehouse
             hdb.add("his");
 
             if (service.getShowLinkedHistories())
-                hdb.add("axHistoryRef", NHRef.make(cfg).getHRef());
+                hdb.add("axHistoryRef", server.makeComponentRef(cfg).getHRef());
 
             // tz
             if (!tags.has("tz"))
@@ -289,7 +289,7 @@ public class ComponentStorehouse extends Storehouse
             BComponent equip = server.getCache().getImplicitEquip(point);
             if (equip != null)
             {
-                hdb.add("equipRef", NHRef.make(equip).getHRef());
+                hdb.add("equipRef", server.makeComponentRef(equip).getHRef());
 
                 // try to look up  siteRef too
                 HDict equipTags = BHDict.findTagAnnotation(equip);

@@ -452,6 +452,50 @@ timeZoneAlias.  You should not use the HTimeZones from the "Etc"
 region unless you are really sure of what you are doing.  Instead, always use 
 the proper geographic region-and-timezone, like "America/New_York".
 
+### 6. How IDs are generated
+
+Each haystack rec must have an ID that uniquely identifies the object that the
+rec models.
+
+By default, nhaystack generates IDs based on the slotPath of components (or the
+history ID for histories that are not associate with a point).  E.g:
+
+    slot:/Foo/SineWave1 --> C.Foo.SineWave1
+
+    history:/nhaystack_simple/AuditHistory --> H.nhaystack_simple.AuditHistory
+
+In the above example, the "C" prefix stands for the ComponentSpace, and the "H"
+stands for the HistorySpace.
+
+Note that IDs are bi-directionally encoded -- you can always recreate the 
+slotPath from an ID and vice-versa.
+
+Special characters in the slotPath are handled by replacing the "$" character 
+with a "~" character.  The sole exception to this rule is that "$20", which
+represents a single " " character, is replaced with a dash, "-", to improve the 
+readability of the IDS.  E.g:
+
+    slot:/Foo/Sine$2fWave1 --> C.Foo.Sine~2fWave1
+    slot:/Foo/Sine$20Wave1 --> C.Foo.Sine-Wave1
+
+If there is a site-equip-point hierarchy created in the station, then nhaystack
+will use that to generate the ID rather than the slotPath.  E.g. if the 
+SineWave in the first example was tagged up with an equip and a site, then 
+its generated ID might look something like this:
+
+    slot:/Foo/SineWave1 --> S.Carytown.AHU1.SineWave1
+
+In this case, there are actually two IDs that can be used to resolve the rec --
+the slotPath version, and the Site-Equip-Point version.
+
+Note that older versions of nhaystack used a Base64 encoding of the slot path,
+which looks something like this:
+
+    c.c2xvdDovRm9vL1NpbmVXYXZlMg~~
+    h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5
+
+Nhaystack no longer generates IDs with this form, but it can resolve them.
+
 [rec]: http://project-haystack.org/doc/TagModel#entities
 [structure]: http://project-haystack.org/doc/Structure
 [hisRead]: http://project-haystack.org/doc/Ops#hisRead

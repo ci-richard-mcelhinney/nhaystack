@@ -7,12 +7,9 @@
 //
 package nhaystack;
 
-import javax.baja.history.*;
-import javax.baja.naming.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
-import org.projecthaystack.util.*;
 
 /**
   * NHRef uniquely identifies an object by its 
@@ -37,48 +34,35 @@ public class NHRef
         String space = val.substring(0, dot);
         String path  = val.substring(dot+1);
 
-        if (!(space.equals(COMPONENT) || space.equals(HISTORY)))
-            throw new BajaRuntimeException(
-                "Could not parse HRef '" + ref + "'.");
-
-        return new NHRef(ref, space, path);
+        return make(space, path);
     }
 
     /**
-      * Make an ID from a BComponent.  
+      * Make an ID from an HRef.
       */
-    public static NHRef make(BComponent comp)
+    public static NHRef make(String space, String path)
     {
-        // history space
-        if (comp instanceof BHistoryConfig)
+        if (!(space.equals(COMP) || 
+              space.equals(HIS) ||
+              space.equals(COMP_BASE64) || 
+              space.equals(HIS_BASE64) ||
+              space.equals(SEP)))
         {
-            BHistoryConfig cfg = (BHistoryConfig) comp;
-            BHistoryId hid = cfg.getId();
-            String path = Base64.URI.encodeUTF8(hid.toString());
+            throw new BajaRuntimeException(
+                "Invalid space: '" + space + "'");
+        }
 
-            return new NHRef(HISTORY, path);
-        }
-        // component space
-        else
-        {
-            String path = Base64.URI.encodeUTF8(comp.getSlotPath().toString());
-            
-            return new NHRef(COMPONENT, path);
-        }
+        return new NHRef(space, path);
     }
 
-    private NHRef(HRef ref, String space, String path)
-    {
-        this.ref   = ref;
-        this.space = space;
-        this.path  = path;
-    }
-
+    /**
+      * Constructor
+      */
     private NHRef(String space, String path)
     {
-        this(
-            HRef.make(space + "." + path),
-            space, path); 
+        this.ref   = HRef.make(space + "." + path);
+        this.space = space;
+        this.path  = path;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -114,37 +98,26 @@ public class NHRef
     public HRef getHRef() { return ref; }
 
     /**
-      * The space is always either COMPONENT or HISTORY.
+      * The space is always one of COMP, HIS, or SEP (or sometimes COMP_BASE64 or HIS_BASE64).
       */
     public String getSpace() { return space; }
 
     /**
-      * The Base64-encoded path identifies an object within its space.
+      * The path identifies an object within its space.
       */
     public String getPath() { return path; }
-
-    /**
-      * Get the BOrd that this NHRef corresponds to.
-      */
-    public BOrd getOrd()
-    {
-        if (space.equals(NHRef.COMPONENT))
-        {
-            return BOrd.make("station:|" + Base64.URI.decodeUTF8(path));
-        }
-        else if (space.equals(NHRef.HISTORY))
-        {
-            return BOrd.make("history:" + Base64.URI.decodeUTF8(path));
-        }
-        else throw new IllegalStateException();
-    }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    public static final String COMPONENT = "c";
-    public static final String HISTORY   = "h";
+    public static final String COMP = "C";
+    public static final String HIS  = "H";
+    public static final String SEP  = "S";
+
+    // for backwards compatibility
+    public static final String COMP_BASE64 = "c";
+    public static final String HIS_BASE64  = "h";
 
     private final HRef ref;
     private final String space; 

@@ -51,34 +51,3 @@ public abstract class NTest extends Test
     HStr localTz() { return HStr.make(HTimeZone.DEFAULT.name); }
 }
 
-//    void verifyLastWrite() throws Exception
-//    {
-//        HGrid grid = HGrid.EMPTY;
-//
-//        grid = NHServer.saveLastWriteToGrid(grid, 16, HNum.make(42.0), "admin");
-//        String str = HZincWriter.gridToString(grid);
-//        System.out.println(str);
-//        verify(str.equals(
-//            "ver:\"2.0\""     + "\n" +
-//            "val,who,level"   + "\n" +
-//            "42,\"admin\",16" + "\n"));
-//
-//        grid = NHServer.saveLastWriteToGrid(grid, 3, HNum.make(123.0), "foo");
-//        str = HZincWriter.gridToString(grid);
-//        System.out.println(str);
-//        verify(str.equals(
-//            "ver:\"2.0\""     + "\n" +
-//            "val,who,level"   + "\n" +
-//            "123,\"foo\",3"   + "\n" +
-//            "42,\"admin\",16" + "\n"));
-//
-//        grid = NHServer.saveLastWriteToGrid(grid, 3, HNum.make(333.0), "admin");
-//        str = HZincWriter.gridToString(grid);
-//        System.out.println(str);
-//        verify(str.equals(
-//            "ver:\"2.0\""     + "\n" +
-//            "val,who,level"   + "\n" +
-//            "333,\"admin\",3" + "\n" +
-//            "42,\"admin\",16" + "\n"));
-//    }
-

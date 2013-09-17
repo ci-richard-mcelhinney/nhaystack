@@ -469,3 +469,51 @@ it will provide a default HTimeZone of the form "Etc/GMT-5" in your
 timeZoneAlias.  You should not use the HTimeZones from the "Etc" 
 region unless you are really sure of what you are doing.  Instead, always use 
 the proper geographic region-and-timezone, like "America/New_York".</p>
+
+<h3>6. How IDs are generated</h3>
+
+<p>Each haystack rec must have an ID that uniquely identifies the object that the
+rec models.</p>
+
+<p>By default, nhaystack generates IDs based on the slotPath of components (or the
+history ID for histories that are not associate with a point).  E.g:</p>
+
+<pre><code>slot:/Foo/SineWave1 --&gt; C.Foo.SineWave1
+
+history:/nhaystack_simple/AuditHistory --&gt; H.nhaystack_simple.AuditHistory
+</code></pre>
+
+<p>In the above example, the "C" prefix stands for the ComponentSpace, and the "H"
+stands for the HistorySpace.</p>
+
+<p>Note that IDs are bi-directionally encoded -- you can always recreate the 
+slotPath from an ID and vice-versa.</p>
+
+<p>Special characters in the slotPath are handled by replacing the "$" character 
+with a "~" character.  The sole exception to this rule is that "$20", which
+represents a single " " character, is replaced with a dash, "-", to improve the 
+readability of the IDS.  E.g:</p>
+
+<pre><code>slot:/Foo/Sine$2fWave1 --&gt; C.Foo.Sine~2fWave1
+slot:/Foo/Sine$20Wave1 --&gt; C.Foo.Sine-Wave1
+</code></pre>
+
+<p>If there is a site-equip-point hierarchy created in the station, then nhaystack
+will use that to generate the ID rather than the slotPath.  E.g. if the 
+SineWave in the first example was tagged up with an equip and a site, then 
+its generated ID might look something like this:</p>
+
+<pre><code>slot:/Foo/SineWave1 --&gt; S.Carytown.AHU1.SineWave1
+</code></pre>
+
+<p>In this case, there are actually two IDs that can be used to resolve the rec --
+the slotPath version, and the Site-Equip-Point version.</p>
+
+<p>Note that older versions of nhaystack used a Base64 encoding of the slot path,
+which looks something like this:</p>
+
+<pre><code>c.c2xvdDovRm9vL1NpbmVXYXZlMg~~
+h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5
+</code></pre>
+
+<p>Nhaystack no longer generates IDs with this form, but it can resolve them.</p>

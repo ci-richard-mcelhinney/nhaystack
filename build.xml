@@ -40,6 +40,7 @@
     <package name="nhaystack.server.storehouse" doc="true"/>
     <package name="nhaystack.ui"                doc="true"/>
     <package name="nhaystack.ui.view"           doc="true"/>
+    <package name="nhaystack.util"              doc="true"/>
 
     <!-- Resources -->
     <resources name="nhaystack/res/*.csv" />
