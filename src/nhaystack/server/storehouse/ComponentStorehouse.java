@@ -256,7 +256,7 @@ public class ComponentStorehouse extends Storehouse
                     "\"Manual Set\",\"pointOverride(\\$self, \\$val, \\$duration)\"\n" + 
                     "\"Manual Auto\",\"pointAuto(\\$self)\"\n" + 
                     "\"Emergency Set\",\"pointEmergencyOverride(\\$self, \\$val)\"\n" + 
-                    "\"Emergency Auto\",\"pointEmergencyAuto(\\$self)\""
+                    "\"Emergency Auto\",\"pointEmergencyAuto(\\$self)\"\n"
                 ));
 
                 break;
@@ -267,7 +267,7 @@ public class ComponentStorehouse extends Storehouse
                     "dis,expr\n" + 
                     "\"Manual On\",\"pointOverride(\\$self, true, \\$duration)\"\n" + 
                     "\"Manual Off\",\"pointOverride(\\$self, false, \\$duration)\"\n" + 
-                    "\"Manual Auto\",\"pointAuto(\\$self)\""
+                    "\"Manual Auto\",\"pointAuto(\\$self)\"\n"
                 ));
 
                 break;
