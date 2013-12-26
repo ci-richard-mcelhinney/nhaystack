@@ -420,14 +420,14 @@ public class NHServer extends HServer
       * Read the history for the given BComponent.
       * The items wil be exclusive of start and inclusive of end time.
       */
-    protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
+    public HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
         if (LOG.isTraceOn())
             LOG.trace("onHisRead " + rec.id() + ", " + range);
 
         try
         {
-            BHistoryConfig cfg = lookupHisRead(rec.id());
+            BHistoryConfig cfg = lookupHistoryConfig(rec.id());
             if (cfg == null) return new HHisItem[0];
 
             HStr unit = (HStr) rec.get("unit", false);
@@ -865,6 +865,34 @@ public class NHServer extends HServer
         }
     }
 
+    public BHistoryConfig lookupHistoryConfig(HRef id)
+    {
+        BComponent comp = lookupComponent(id);
+        if (comp == null)
+        {
+            LOG.error("lookup failed for '" + id + "'");
+            return null;
+        }
+
+        // history space
+        if (comp instanceof BHistoryConfig)
+        {
+            BHistoryConfig cfg = (BHistoryConfig) comp;
+            return hisStore.isVisibleHistory(cfg) ? 
+                cfg : null;
+        }
+        // component space
+        else if (comp instanceof BControlPoint)
+        {
+            return hisStore.lookupHistoryFromPoint((BControlPoint) comp);
+        }
+        else
+        {
+            LOG.error("cannot find history for for '" + id + "'");
+            return null;
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // package-scope
 ////////////////////////////////////////////////////////////////
@@ -942,34 +970,6 @@ public class NHServer extends HServer
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
-
-    private BHistoryConfig lookupHisRead(HRef id)
-    {
-        BComponent comp = lookupComponent(id);
-        if (comp == null)
-        {
-            LOG.error("lookup failed for '" + id + "'");
-            return null;
-        }
-
-        // history space
-        if (comp instanceof BHistoryConfig)
-        {
-            BHistoryConfig cfg = (BHistoryConfig) comp;
-            return hisStore.isVisibleHistory(cfg) ? 
-                cfg : null;
-        }
-        // component space
-        else if (comp instanceof BControlPoint)
-        {
-            return hisStore.lookupHistoryFromPoint((BControlPoint) comp);
-        }
-        else
-        {
-            LOG.error("cannot find history for for '" + id + "'");
-            return null;
-        }
-    }
 
     /**
       * save the last point write to a BHGrid slot.
