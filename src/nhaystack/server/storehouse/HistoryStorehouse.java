@@ -107,6 +107,11 @@ public class HistoryStorehouse extends Storehouse
             BFacets facets = (BFacets) cfg.get("valueFacets");
             addPointKindTags(pointKind, facets, tags, hdb);
         }
+        // if its not a BTrendRecord, just say that the kind is Str
+        else
+        {
+            if (!tags.has("kind")) hdb.add("kind", "Str");
+        }
 
         // check if this history has a point
         ComponentStorehouse cs = server.getComponentStorehouse();
