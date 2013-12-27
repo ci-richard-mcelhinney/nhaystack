@@ -19,7 +19,6 @@
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
     <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>
-    <type name="NHaystackWorker"  class="nhaystack.server.BNHaystackWorker"/>
     <type name="TimeZoneAlias"       class="nhaystack.server.BTimeZoneAlias"/>
     <type name="TimeZoneAliasFolder" class="nhaystack.server.BTimeZoneAliasFolder"/>
 
@@ -46,5 +45,8 @@
         <agent><on type="nhaystack:NHaystackService"/></agent></type>
     <type name="NHaystackServiceView"  class="nhaystack.ui.view.BNHaystackServiceView">
         <agent><on type="nhaystack:NHaystackService"/></agent></type>
+
+    <type name="INHaystackWorkerParent" class="nhaystack.worker.BINHaystackWorkerParent"/>
+    <type name="NHaystackWorker"        class="nhaystack.worker.BNHaystackWorker"/>
 
 </types>

@@ -10,18 +10,22 @@ package nhaystack.server;
 
 import javax.baja.driver.*;
 import javax.baja.history.db.*;
+import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;
+import nhaystack.worker.*;
 import nhaystack.site.*;
 
 /**
   * BNHaystackService makes an NHServer available.  
   */
-public class BNHaystackService extends BAbstractService
+public class BNHaystackService 
+    extends BAbstractService
+    implements BINHaystackWorkerParent
 {
     /*-
     class BNHaystackService
@@ -463,27 +467,42 @@ public class BNHaystackService extends BAbstractService
 // async
 ////////////////////////////////////////////////////////////////
 
-    public IFuture post(Action action, BValue arg, Context cx)
+    public IFuture post(Action action, BValue value, Context cx)
     {             
-        if (action == rebuildCache)
+        if ((action == rebuildCache) || (action == removeBrokenRefs))
         {
-            getWorker().enqueue(
-                new Runnable() { 
-                    public void run() { 
-                        doRebuildCache(); }});
-            return null;
+            return postAsyncChore(
+                new WorkerInvocation(
+                    getWorker(),
+                    action.getName(),
+                    new Invocation(this, action, value, cx)));
         }
-        else if (action == removeBrokenRefs)
+
+        else return super.post(action, value, cx);
+    }     
+
+    public final IFuture postAsyncChore(WorkerChore chore)
+    {
+        if (!isRunning()) return null;
+
+        if (!getEnabled())
         {
-            getWorker().enqueue(
-                new Runnable() { 
-                    public void run() { 
-                        doRemoveBrokenRefs(); }});
+            if (LOG.isTraceOn())
+                LOG.trace(getSlotPath() + " disabled: " + chore);
             return null;
         }
 
-        else return super.post(action, arg, cx);
-    }     
+        try
+        {
+            getWorker().enqueueChore(chore);
+            return null;
+        }
+        catch (Exception e)
+        {
+            LOG.error(getSlotPath() + " Cannot post async: " + e.getMessage());
+            return null;
+        }
+    }
 
     public void doRebuildCache() 
     {
@@ -549,6 +568,8 @@ public class BNHaystackService extends BAbstractService
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");

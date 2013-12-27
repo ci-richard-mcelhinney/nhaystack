@@ -876,6 +876,8 @@ public class NHServer extends HServer
 
     void removeBrokenRefs() 
     {
+        if (LOG.isTraceOn()) LOG.trace("BEGIN removeBrokenRefs"); 
+
         Iterator compItr = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(service, null).get());
 
@@ -933,6 +935,8 @@ public class NHServer extends HServer
                 comp.set("haystack", BHDict.make(hdb.toDict()));
             }
         }
+
+        if (LOG.isTraceOn()) LOG.trace("END removeBrokenRefs"); 
     }
 
 ////////////////////////////////////////////////////////////////
