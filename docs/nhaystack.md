@@ -422,7 +422,7 @@ that will make it easier for you to find the broken refs and fix them.
 
 Sometimes an AX TimeZone (a.k.a BTimeZone) do not map cleanly into a 
 Haystack TimeZone (a.k.a HTimeZone).  This happens when the BTimeZone uses
-an offset-style TimeZone ID, like "GMT-5:00", rather than a valid 
+an offset-style TimeZone ID, like "GMT-05:00", rather than a valid 
 [Olson](https://en.wikipedia.org/wiki/Tz_database) 
 ID, like "America/New_York".  When this occurs, you will see errors in your log 
 output that look like this:
@@ -436,7 +436,7 @@ However, NHaystack also allows you to  provide a custom mapping that overcomes
 this problem, via the "timeZoneAliases" folder on your BHaystackService.  Go to 
 the nhaystack palette in Workbench, drag a "timeZoneAlias" onto the 
 "timeZoneAliases" folder, and configure it so that the bogus AX TimeZone ID, 
-like "GMT-5:00", is mapped onto a proper HTimezone, such as 
+like "GMT-05:00", is mapped onto a proper HTimezone, such as 
 "America/New_York".  Now when NHaystack is attempting to generate the `tz` tag, 
 it will know how to proceed when it encounters non-Olson timezones.
 
