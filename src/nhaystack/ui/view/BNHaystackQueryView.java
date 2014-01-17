@@ -123,22 +123,60 @@ public class BNHaystackQueryView extends BWbView
 
     class GridModel extends TableModel
     {
-        GridModel(HGrid grid) { this.grid = grid; }
+        GridModel(HGrid grid) 
+        { 
+            this.grid = grid; 
+
+            // sort columns by id first, then alphabetically
+            IndexName[] indexNames = new IndexName[grid.numCols()];
+            for (int i = 0; i < grid.numCols(); i++)
+                indexNames[i] = new IndexName(i, grid.col(i).name());
+
+            Arrays.sort(indexNames, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    IndexName c1 = (IndexName) o1;
+                    IndexName c2 = (IndexName) o2;
+
+                    if (c1.name.equals("id")) return -1;
+                    else if (c2.name.equals("id")) return 1;
+                    else return (c1.name.compareTo(c2.name));
+            }});
+
+            this.columnIndex = new int[indexNames.length];
+            for (int i = 0; i < indexNames.length; i++)
+                columnIndex[i] = indexNames[i].index;
+        }
 
         public int getRowCount() { return grid.numRows(); }
 
         public int getColumnCount() { return grid.numCols(); }
 
-        public String getColumnName(int col) { return grid.col(col).name(); }
+        public String getColumnName(int col) 
+        { 
+            return grid.col(columnIndex[col]).name(); 
+        }
 
         public Object getValueAt(int row, int col)
         {
-            HVal val = grid.row(row).get(grid.col(col), false);
+            HVal val = grid.row(row).get(grid.col(columnIndex[col]), false);
             if (val == null) return "";
             else return val;
         }
 
         private final HGrid grid;
+        private final int[] columnIndex;
+    }
+
+    static class IndexName
+    {
+        IndexName(int index, String name)
+        {
+            this.index = index;
+            this.name = name;
+        }
+
+        private final int index;
+        private final String name;
     }
 
     class GridCellRenderer extends TableCellRenderer
