@@ -68,21 +68,6 @@ public class Nav
         return siteNav + "/" + equipNav;
     }
 
-    public static BControlPoint[] annotatedPoints(BControlPoint[] points)
-    {
-        Array arr = new Array(BControlPoint.class);
-
-        for (int i = 0; i < points.length; i++)
-        {
-            HDict dict = BHDict.findTagAnnotation(points[i]);
-
-            if (dict != null && !dict.equals(HDict.EMPTY))
-                arr.add(points[i]);
-        }
-
-        return (BControlPoint[]) arr.trim();
-    }
-
     /**
       * Return navigation tree children for given navId. 
       */
@@ -141,7 +126,6 @@ public class Nav
 
                         BControlPoint[] points = cache.getNavEquipPoints(
                             makeEquipNavId(siteName, equipName));
-                        points = annotatedPoints(points);
 
                         if (points.length == 0)
                         {
@@ -373,15 +357,9 @@ public class Nav
 
         String equipNav = makeEquipNavId(siteName, equipName);
         BControlPoint[] points = cache.getNavEquipPoints(equipNav);
-
         for (int i = 0; i < points.length; i++)
         {
             BControlPoint point = points[i];
-
-            // skip points that are not annotated
-            HDict dict = BHDict.findTagAnnotation(point);
-            if (dict == null || dict.equals(HDict.EMPTY))
-                continue;
 
             HDictBuilder hd = new HDictBuilder();
             hd.add(compStore.createComponentTags(point));
