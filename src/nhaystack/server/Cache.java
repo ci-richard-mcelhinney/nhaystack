@@ -231,18 +231,34 @@ public class Cache
         Array equipsArr = new Array(BHEquip.class);
 
         BHEquip curImplicitEquip = null;
-        Iterator iterator = new ComponentTreeIterator(
+        int curImplicitDepth = -1;
+
+        ComponentTreeIterator iterator = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
 
         while (iterator.hasNext())
         {
             BComponent comp = (BComponent) iterator.next();
+            int depth = iterator.getStackDepth();
+
             HDict tags = BHDict.findTagAnnotation(comp);
 
-            // implicit equip 
+            // set implicit equip 
             Cursor cursor = comp.getProperties();
             if (cursor.next(BHEquip.class))
+            {
                 curImplicitEquip = (BHEquip) cursor.get();
+                curImplicitDepth = iterator.getStackDepth();
+            }
+            // clear implicit equip once it goes out of scope
+            else
+            {
+                if (iterator.getStackDepth() <= curImplicitDepth)
+                {
+                    curImplicitEquip = null;
+                    curImplicitDepth = -1;
+                }
+            }
 
             // point
             if (comp instanceof BControlPoint)

@@ -99,5 +99,7 @@ public class ComponentTreeIterator implements Iterator
 // Attributes
 ////////////////////////////////////////////////////////////////
 
+    public int getStackDepth() { return stack.size(); }
+
     private final Array stack = new Array(Iterator.class);
 }
