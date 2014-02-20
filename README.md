@@ -205,6 +205,11 @@ an area that you can drag-and-drop Components into. The area says "Drag
 Components here to add a 'haystack' slot".  When you drop Components there,
 they will have a `nhaystack:HDict` "haystack" slot added automatically.
 
+There is a special tag called "axAnnotated" that is automatically generated
+for those Components that have a "haystack" slot.  This can be helpful if you
+need to query your system to figure out which parts of it have already been
+annotated.
+
 By the way, you may be wondering why `nhaystack:HDict` doesn't just appear in 
 the palette.  The reason for this is that `nhaystack:HDict` is a `baja:Simple`, 
 and sadly Simples cannot be placed in a palette.
@@ -420,7 +425,7 @@ that will make it easier for you to find the broken refs and fix them.
 
 Sometimes an AX TimeZone (a.k.a BTimeZone) do not map cleanly into a 
 Haystack TimeZone (a.k.a HTimeZone).  This happens when the BTimeZone uses
-an offset-style TimeZone ID, like "GMT-5:00", rather than a valid 
+an offset-style TimeZone ID, like "GMT-05:00", rather than a valid 
 [Olson](https://en.wikipedia.org/wiki/Tz_database) 
 ID, like "America/New_York".  When this occurs, you will see errors in your log 
 output that look like this:
@@ -434,7 +439,7 @@ However, NHaystack also allows you to  provide a custom mapping that overcomes
 this problem, via the "timeZoneAliases" folder on your BHaystackService.  Go to 
 the nhaystack palette in Workbench, drag a "timeZoneAlias" onto the 
 "timeZoneAliases" folder, and configure it so that the bogus AX TimeZone ID, 
-like "GMT-5:00", is mapped onto a proper HTimezone, such as 
+like "GMT-05:00", is mapped onto a proper HTimezone, such as 
 "America/New_York".  Now when NHaystack is attempting to generate the `tz` tag, 
 it will know how to proceed when it encounters non-Olson timezones.
 
