@@ -60,6 +60,9 @@ public class ComponentStorehouse extends Storehouse
             HDict tags = BHDict.findTagAnnotation(comp);
             if (tags == null) 
                 tags = HDict.EMPTY;
+            else
+                hdb.add("axAnnotated");
+
             hdb.add(tags);
 
             // navName
