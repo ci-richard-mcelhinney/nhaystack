@@ -239,7 +239,6 @@ public class Cache
         while (iterator.hasNext())
         {
             BComponent comp = (BComponent) iterator.next();
-            int depth = iterator.getStackDepth();
 
             HDict tags = BHDict.findTagAnnotation(comp);
 
