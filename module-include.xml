@@ -16,6 +16,10 @@
     <type name="HTimeZone" class="nhaystack.BHTimeZone"/>
     <type name="HUnit"     class="nhaystack.BHUnit"/>
 
+    <type name="NHaystackServer"        class="nhaystack.driver.BNHaystackServer"/>
+    <type name="NHaystackServerFolder"  class="nhaystack.driver.BNHaystackServerFolder"/>
+    <type name="NHaystackNetwork" class="nhaystack.driver.BNHaystackNetwork"/>
+
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
     <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>

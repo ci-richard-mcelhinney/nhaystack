@@ -9,7 +9,7 @@ import javax.baja.sys.*;
 import javax.baja.util.*;
 
 /**
-  * BNHaystackWorker is a BWorker that servers nhaystack.
+  * BNHaystackWorker is a BWorker that serves nhaystack.
   */
 public class BNHaystackWorker
   extends BWorker

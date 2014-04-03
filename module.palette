@@ -6,6 +6,10 @@
   <p n="servlet" h="3" t="nh:NHaystackServlet">
    <p n="servletName" v="haystack"/>
   </p>
+  <p n="timeZoneAliases" h="7" t="nh:TimeZoneAliasFolder">
+  </p>
+  <p n="worker" h="8" t="nh:NHaystackWorker">
+  </p>
  </p>
  <!-- /site -->
  <p n="site" h="4" t="nh:HSite">
@@ -15,6 +19,28 @@
  </p>
  <!-- /timeZoneAlias -->
  <p n="timeZoneAlias" h="6" t="nh:TimeZoneAlias">
+ </p>
+ <!-- /driver -->
+ <p n="driver" h="9" t="b:UnrestrictedFolder">
+  <!-- /driver/NHaystackNetwork -->
+  <p n="NHaystackNetwork" h="a" t="nh:NHaystackNetwork">
+   <p n="alarmSourceInfo" h="b" m="a=alarm" t="a:AlarmSourceInfo">
+    <p n="toOffnormalText" v="%lexicon(driver:pingFail)%"/>
+    <p n="toNormalText" v="%lexicon(driver:pingSuccess)%"/>
+   </p>
+   <p n="monitor" h="c" m="d=driver" t="d:PingMonitor">
+   </p>
+  </p>
+  <!-- /driver/NHaystackServerFolder -->
+  <p n="NHaystackServerFolder" h="d" t="nh:NHaystackServerFolder">
+  </p>
+  <!-- /driver/NHaystackServer -->
+  <p n="NHaystackServer" h="e" t="nh:NHaystackServer">
+   <p n="alarmSourceInfo" h="f" t="a:AlarmSourceInfo">
+   </p>
+   <p n="worker" h="10" t="nh:NHaystackWorker">
+   </p>
+  </p>
  </p>
 </p>
 </bajaObjectGraph>
