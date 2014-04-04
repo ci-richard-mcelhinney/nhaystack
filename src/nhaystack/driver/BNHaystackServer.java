@@ -10,6 +10,7 @@ package nhaystack.driver;
 import javax.baja.alarm.*;
 import javax.baja.driver.*;
 import javax.baja.log.*;
+import javax.baja.naming.*;
 import javax.baja.net.*;
 import javax.baja.security.*;
 import javax.baja.sys.*;
@@ -18,6 +19,7 @@ import javax.baja.util.*;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
+import nhaystack.driver.history.*;
 import nhaystack.worker.*;
 
 public class BNHaystackServer 
@@ -29,10 +31,12 @@ public class BNHaystackServer
     {
         properties
         {
-            address: BInternetAddress default{[ BInternetAddress.NULL ]}
+            internetAddress: BInternetAddress default{[ BInternetAddress.NULL ]}
             projectName: String default{[ "" ]}
 
             credentials: BUsernameAndPassword default{[ new BUsernameAndPassword() ]}
+
+            histories: BNHaystackHistoryDeviceExt  default{[ new BNHaystackHistoryDeviceExt()  ]}
 
             worker: BNHaystackWorker default{[ new BNHaystackWorker() ]}
 
@@ -40,34 +44,38 @@ public class BNHaystackServer
                 flags { hidden }
                 default {[ new BAlarmSourceInfo() ]}
         }
+        actions  
+        {  
+            submitLearnHistoriesJob(): BOrd flags { hidden }
+        }  
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(2639769931)1.0$ @*/
-/* Generated Thu Apr 03 15:38:38 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(3462888085)1.0$ @*/
+/* Generated Fri Apr 04 15:36:15 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
-// Property "address"
+// Property "internetAddress"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>address</code> property.
-   * @see nhaystack.driver.BNHaystackServer#getAddress
-   * @see nhaystack.driver.BNHaystackServer#setAddress
+   * Slot for the <code>internetAddress</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getInternetAddress
+   * @see nhaystack.driver.BNHaystackServer#setInternetAddress
    */
-  public static final Property address = newProperty(0, BInternetAddress.NULL,null);
+  public static final Property internetAddress = newProperty(0, BInternetAddress.NULL,null);
   
   /**
-   * Get the <code>address</code> property.
-   * @see nhaystack.driver.BNHaystackServer#address
+   * Get the <code>internetAddress</code> property.
+   * @see nhaystack.driver.BNHaystackServer#internetAddress
    */
-  public BInternetAddress getAddress() { return (BInternetAddress)get(address); }
+  public BInternetAddress getInternetAddress() { return (BInternetAddress)get(internetAddress); }
   
   /**
-   * Set the <code>address</code> property.
-   * @see nhaystack.driver.BNHaystackServer#address
+   * Set the <code>internetAddress</code> property.
+   * @see nhaystack.driver.BNHaystackServer#internetAddress
    */
-  public void setAddress(BInternetAddress v) { set(address,v,null); }
+  public void setInternetAddress(BInternetAddress v) { set(internetAddress,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "projectName"
@@ -116,6 +124,29 @@ public class BNHaystackServer
   public void setCredentials(BUsernameAndPassword v) { set(credentials,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "histories"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>histories</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getHistories
+   * @see nhaystack.driver.BNHaystackServer#setHistories
+   */
+  public static final Property histories = newProperty(0, new BNHaystackHistoryDeviceExt(),null);
+  
+  /**
+   * Get the <code>histories</code> property.
+   * @see nhaystack.driver.BNHaystackServer#histories
+   */
+  public BNHaystackHistoryDeviceExt getHistories() { return (BNHaystackHistoryDeviceExt)get(histories); }
+  
+  /**
+   * Set the <code>histories</code> property.
+   * @see nhaystack.driver.BNHaystackServer#histories
+   */
+  public void setHistories(BNHaystackHistoryDeviceExt v) { set(histories,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Property "worker"
 ////////////////////////////////////////////////////////////////
   
@@ -162,6 +193,22 @@ public class BNHaystackServer
   public void setAlarmSourceInfo(BAlarmSourceInfo v) { set(alarmSourceInfo,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "submitLearnHistoriesJob"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>submitLearnHistoriesJob</code> action.
+   * @see nhaystack.driver.BNHaystackServer#submitLearnHistoriesJob()
+   */
+  public static final Action submitLearnHistoriesJob = newAction(Flags.HIDDEN,null);
+  
+  /**
+   * Invoke the <code>submitLearnHistoriesJob</code> action.
+   * @see nhaystack.driver.BNHaystackServer#submitLearnHistoriesJob
+   */
+  public BOrd submitLearnHistoriesJob() { return (BOrd)invoke(submitLearnHistoriesJob,null,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -172,7 +219,7 @@ public class BNHaystackServer
 
     public void changed(Property property, Context context)
     {
-        if ((property == address) || 
+        if ((property == internetAddress) || 
             (property == projectName) || 
             (property == credentials))
             resetClient();
@@ -231,6 +278,16 @@ public class BNHaystackServer
                 LOG.trace("Server Ping END " + makeApiUrl() + " (" + (end-begin) + "ms)");
             }
         }
+    }
+
+////////////////////////////////////////////////////////////////
+// actions
+////////////////////////////////////////////////////////////////
+
+    public BOrd doSubmitLearnHistoriesJob()
+    {
+        BNHaystackLearnHistoriesJob job = new BNHaystackLearnHistoriesJob(this);
+        return job.submit(null);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -298,7 +355,7 @@ public class BNHaystackServer
     public String makeApiUrl()
     {
         return 
-            "http://" + getAddress().getAuthority() + 
+            "http://" + getInternetAddress().getAuthority() + 
             "/api/" + getProjectName() + "/";
     }
 

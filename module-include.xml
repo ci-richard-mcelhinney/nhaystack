@@ -20,6 +20,17 @@
     <type name="NHaystackServerFolder"  class="nhaystack.driver.BNHaystackServerFolder"/>
     <type name="NHaystackNetwork" class="nhaystack.driver.BNHaystackNetwork"/>
 
+    <type name="NHaystackHistoryDeviceExt"  class="nhaystack.driver.history.BNHaystackHistoryDeviceExt"  />
+    <type name="NHaystackHistoryImport"     class="nhaystack.driver.history.BNHaystackHistoryImport"     />
+    <type name="NHaystackLearnHistoriesJob" class="nhaystack.driver.history.BNHaystackLearnHistoriesJob" />
+
+    <type name="NHaystackHistoryEntry" class="nhaystack.driver.history.BNHaystackHistoryEntry" />
+    <type name="NHaystackHistoryImportManager" class="nhaystack.driver.history.BNHaystackHistoryImportManager" >
+      <agent>
+        <on type="nhaystack:NHaystackHistoryDeviceExt"/>
+      </agent>
+    </type>
+
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
     <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>

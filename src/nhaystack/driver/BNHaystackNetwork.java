@@ -19,8 +19,8 @@ public class BNHaystackNetwork extends BDeviceNetwork
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $j2inn.nhaystack.driver.BNHaystackNetwork(480915566)1.0$ @*/
-/* Generated Tue Dec 24 13:45:40 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackNetwork(3549694058)1.0$ @*/
+/* Generated Fri Apr 04 07:54:00 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

@@ -35,6 +35,7 @@
     <package name="nhaystack"                   doc="true"/>
     <package name="nhaystack.collection"        doc="true"/>
     <package name="nhaystack.driver"            doc="true"/>
+    <package name="nhaystack.driver.history"    doc="true"/>
     <package name="nhaystack.res"               doc="true"/>
     <package name="nhaystack.server"            doc="true"/>
     <package name="nhaystack.server.storehouse" doc="true"/>
