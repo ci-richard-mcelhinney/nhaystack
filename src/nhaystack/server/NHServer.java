@@ -717,8 +717,6 @@ public class NHServer extends HServer
         if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
 
         String[] navNames = TextUtil.split(str, '/');
-//        for (int i = 0; i < navNames.length; i++)
-//            navNames[i] = com.tridium.util.EscUtil.slot.unescape(navNames[i]);
 
         switch (navNames.length)
         {

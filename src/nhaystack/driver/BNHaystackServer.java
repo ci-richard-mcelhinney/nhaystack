@@ -20,6 +20,9 @@ import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
 import nhaystack.driver.history.*;
+import nhaystack.driver.history.learn.*;
+import nhaystack.driver.point.*;
+import nhaystack.driver.point.learn.*;
 import nhaystack.worker.*;
 
 public class BNHaystackServer 
@@ -33,10 +36,10 @@ public class BNHaystackServer
         {
             internetAddress: BInternetAddress default{[ BInternetAddress.NULL ]}
             projectName: String default{[ "" ]}
-
             credentials: BUsernameAndPassword default{[ new BUsernameAndPassword() ]}
 
-            histories: BNHaystackHistoryDeviceExt  default{[ new BNHaystackHistoryDeviceExt()  ]}
+            histories: BNHaystackHistoryDeviceExt default{[ new BNHaystackHistoryDeviceExt() ]}
+            points:    BNHaystackPointDeviceExt   default{[ new BNHaystackPointDeviceExt()   ]}
 
             worker: BNHaystackWorker default{[ new BNHaystackWorker() ]}
 
@@ -47,12 +50,13 @@ public class BNHaystackServer
         actions  
         {  
             submitLearnHistoriesJob(): BOrd flags { hidden }
+            submitLearnPointsJob():    BOrd flags { hidden }
         }  
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(3462888085)1.0$ @*/
-/* Generated Fri Apr 04 15:36:15 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(145180471)1.0$ @*/
+/* Generated Mon Apr 07 12:57:57 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
@@ -147,6 +151,29 @@ public class BNHaystackServer
   public void setHistories(BNHaystackHistoryDeviceExt v) { set(histories,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "points"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>points</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getPoints
+   * @see nhaystack.driver.BNHaystackServer#setPoints
+   */
+  public static final Property points = newProperty(0, new BNHaystackPointDeviceExt(),null);
+  
+  /**
+   * Get the <code>points</code> property.
+   * @see nhaystack.driver.BNHaystackServer#points
+   */
+  public BNHaystackPointDeviceExt getPoints() { return (BNHaystackPointDeviceExt)get(points); }
+  
+  /**
+   * Set the <code>points</code> property.
+   * @see nhaystack.driver.BNHaystackServer#points
+   */
+  public void setPoints(BNHaystackPointDeviceExt v) { set(points,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Property "worker"
 ////////////////////////////////////////////////////////////////
   
@@ -207,6 +234,22 @@ public class BNHaystackServer
    * @see nhaystack.driver.BNHaystackServer#submitLearnHistoriesJob
    */
   public BOrd submitLearnHistoriesJob() { return (BOrd)invoke(submitLearnHistoriesJob,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "submitLearnPointsJob"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>submitLearnPointsJob</code> action.
+   * @see nhaystack.driver.BNHaystackServer#submitLearnPointsJob()
+   */
+  public static final Action submitLearnPointsJob = newAction(Flags.HIDDEN,null);
+  
+  /**
+   * Invoke the <code>submitLearnPointsJob</code> action.
+   * @see nhaystack.driver.BNHaystackServer#submitLearnPointsJob
+   */
+  public BOrd submitLearnPointsJob() { return (BOrd)invoke(submitLearnPointsJob,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -290,6 +333,12 @@ public class BNHaystackServer
         return job.submit(null);
     }
 
+    public BOrd doSubmitLearnPointsJob()
+    {
+        BNHaystackLearnPointsJob job = new BNHaystackLearnPointsJob(this);
+        return job.submit(null);
+    }
+
 ////////////////////////////////////////////////////////////////
 // public
 ////////////////////////////////////////////////////////////////
@@ -357,6 +406,11 @@ public class BNHaystackServer
         return 
             "http://" + getInternetAddress().getAuthority() + 
             "/api/" + getProjectName() + "/";
+    }
+
+    public void poll()
+    {
+//        postAsyncChore(new PollChore(this));
     }
 
 ////////////////////////////////////////////////////////////////

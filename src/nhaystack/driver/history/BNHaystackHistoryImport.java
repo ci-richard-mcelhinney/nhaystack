@@ -24,15 +24,16 @@ public class BNHaystackHistoryImport extends BHistoryImport
     {
         properties
         {
-            id: BHRef default{[ BHRef.DEFAULT ]}
-            kind: String default{[ "" ]}
-            tz: String default{[ "" ]}
+            id:       BHRef  default{[ BHRef.DEFAULT  ]} 
+            kind:     String default{[ ""             ]} 
+            tz:       String default{[ ""             ]} 
+            haystack: BHDict default{[ BHDict.DEFAULT ]} 
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.history.BNHaystackHistoryImport(2335861380)1.0$ @*/
-/* Generated Fri Apr 04 16:22:12 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.history.BNHaystackHistoryImport(830107801)1.0$ @*/
+/* Generated Mon Apr 07 17:13:50 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "id"
@@ -102,6 +103,29 @@ public class BNHaystackHistoryImport extends BHistoryImport
    * @see nhaystack.driver.history.BNHaystackHistoryImport#tz
    */
   public void setTz(String v) { setString(tz,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "haystack"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>haystack</code> property.
+   * @see nhaystack.driver.history.BNHaystackHistoryImport#getHaystack
+   * @see nhaystack.driver.history.BNHaystackHistoryImport#setHaystack
+   */
+  public static final Property haystack = newProperty(0, BHDict.DEFAULT,null);
+  
+  /**
+   * Get the <code>haystack</code> property.
+   * @see nhaystack.driver.history.BNHaystackHistoryImport#haystack
+   */
+  public BHDict getHaystack() { return (BHDict)get(haystack); }
+  
+  /**
+   * Set the <code>haystack</code> property.
+   * @see nhaystack.driver.history.BNHaystackHistoryImport#haystack
+   */
+  public void setHaystack(BHDict v) { set(haystack,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -192,13 +216,6 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 BCapacity.UNLIMITED);
         }
 
-        else if (getKind().equals("Str"))
-        {
-            return new BHistoryConfig(
-                id, BTypeSpec.make(BStringTrendRecord.TYPE),
-                BCapacity.UNLIMITED);
-        }
-
         else throw new IllegalStateException("Cannot create history for id " + getId() + ", kind " + getKind());
     }
 
@@ -221,16 +238,6 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 ((HNum) val).val,
                 BStatus.ok);
             return numTrend;
-        }
-
-        else if (getKind().equals("Str"))
-        {
-            BStringTrendRecord strTrend = new BStringTrendRecord();
-            strTrend.set(
-                DateTimeUtil.fromHaystackDateTime(ts),
-                ((HStr) val).val,
-                BStatus.ok);
-            return strTrend;
         }
 
         else throw new IllegalStateException("Cannot create trend record for id " + getId() + ", kind " + getKind());

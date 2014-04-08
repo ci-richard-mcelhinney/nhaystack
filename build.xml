@@ -32,19 +32,22 @@
     <dependency name="workbench" vendor="Tridium" vendorVersion="3.5"/>
 
     <!-- Packages -->
-    <package name="nhaystack"                   doc="true"/>
-    <package name="nhaystack.collection"        doc="true"/>
-    <package name="nhaystack.driver"            doc="true"/>
-    <package name="nhaystack.driver.history"    doc="true"/>
-    <package name="nhaystack.res"               doc="true"/>
-    <package name="nhaystack.server"            doc="true"/>
-    <package name="nhaystack.server.storehouse" doc="true"/>
-    <package name="nhaystack.site"              doc="true"/>
-    <package name="nhaystack.ui"                doc="true"/>
-    <package name="nhaystack.ui.view"           doc="true"/>
-    <package name="nhaystack.util"              doc="true"/>
-    <package name="nhaystack.worker"            doc="true"/>
-
+    <package name="nhaystack"                      doc="true"/>
+    <package name="nhaystack.collection"           doc="true"/>
+    <package name="nhaystack.driver"               doc="true"/>
+    <package name="nhaystack.driver.history"       doc="true"/>
+    <package name="nhaystack.driver.history.learn" doc="true"/>
+    <package name="nhaystack.driver.point"         doc="true"/>
+    <package name="nhaystack.driver.point.learn"   doc="true"/>
+    <package name="nhaystack.res"                  doc="true"/>
+    <package name="nhaystack.server"               doc="true"/>
+    <package name="nhaystack.server.storehouse"    doc="true"/>
+    <package name="nhaystack.site"                 doc="true"/>
+    <package name="nhaystack.ui"                   doc="true"/>
+    <package name="nhaystack.ui.view"              doc="true"/>
+    <package name="nhaystack.util"                 doc="true"/>
+    <package name="nhaystack.worker"               doc="true"/>
+    
     <!-- Resources -->
     <resources name="nhaystack/res/*.csv" />
     <resources name="nhaystack/res/*.txt" />

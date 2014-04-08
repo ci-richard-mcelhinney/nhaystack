@@ -1,4 +1,4 @@
-package nhaystack.driver.history;
+package nhaystack.driver.history.learn;
 
 import javax.baja.control.*;
 import javax.baja.history.*;
@@ -6,6 +6,7 @@ import javax.baja.job.*;
 import javax.baja.net.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
+import com.tridium.util.EscUtil;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
@@ -56,20 +57,26 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
         for (int i = 0; i < grid.numRows(); i++)
         {
             HRow row = grid.row(i);
-            String name = com.tridium.util.EscUtil.slot.escape(row.dis());
 
-            BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
+            String kind = row.getStr("kind");
+            if (kind.equals("Bool") || kind.equals("Number"))
+            {
+                String name = EscUtil.slot.escape(row.dis());
 
-            entry.setId(BHRef.make(row.id()));
-            entry.setKind(row.getStr("kind"));
-            entry.setTz(row.getStr("tz"));
+                BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
 
-            entry.setHistoryId(
-                BHistoryId.make(
-                    Sys.getStation().getStationName(),
-                    name));
+                entry.setId(BHRef.make(row.id()));
+                entry.setKind(kind);
+                entry.setTz(row.getStr("tz"));
+                entry.setHaystack(BHDict.make(row));
 
-            add(name, entry);
+                entry.setHistoryId(
+                    BHistoryId.make(
+                        Sys.getStation().getStationName(),
+                        name));
+
+                add(name, entry);
+            }
         }
     }
 

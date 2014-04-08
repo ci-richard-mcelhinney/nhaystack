@@ -1,4 +1,4 @@
-package nhaystack.driver.history;
+package nhaystack.driver.history.learn;
 
 import javax.baja.driver.point.*;
 import javax.baja.driver.history.*;
@@ -36,16 +36,12 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-////////////////////////////////////////////////////////////////
-// History import manager
-////////////////////////////////////////////////////////////////
-
     protected ImportModel   makeImportModel() { return new Model(this);      }
     public    MgrController makeController()  { return new Controller(this); }
     protected MgrLearn      makeLearn()       { return new Learn(this);      }
 
 ////////////////////////////////////////////////////////////////
-// History import model
+// Model
 ////////////////////////////////////////////////////////////////
 
     private class Model extends ImportModel
@@ -55,18 +51,11 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
             super(importManager);
         }
 
-        /**
-         * Return the import columns
-         */
         protected MgrColumn[] makeColumns()
         {
             return cols;
         }
 
-        /**
-         * Get the list of types supported by the new operation.  The
-         * first entry in the list should be the default type.
-         */  
         public MgrTypeInfo[] getNewTypes()
         {
             return MgrTypeInfo.makeArray(BNHaystackHistoryImport.TYPE);
@@ -107,16 +96,15 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
 
         public void toRow(Object dis, MgrEditRow row) throws Exception
         {                                      
-            // When the device is moved to the other table we now copy the information across to the other object
             BNHaystackHistoryEntry entry = (BNHaystackHistoryEntry)dis;
 
-            // Set the default column data        
             row.setDefaultName(entry.getName());
+
             row.setCell(colId, entry.getId());
             row.setCell(colKind, BString.make(entry.getKind()));
             row.setCell(colTz, BString.make(entry.getTz()));
-
             row.setCell(colHistoryId, entry.getHistoryId());
+//            row.setCell(colHaystack, entry.getHaystack());
         }                   
 
         public boolean isExisting(Object discovery, BComponent component)
@@ -139,13 +127,6 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
         }
     } 
 
-////////////////////////////////////////////////////////////////
-// Discovery methods
-////////////////////////////////////////////////////////////////
-
-    /**
-     * Called once the discovery job has been executed
-     */ 
     private void updateDiscoveryRows(BComponent event)
     {
         BNHaystackHistoryEntry[] rows = (BNHaystackHistoryEntry[])event.getChildren(BNHaystackHistoryEntry.class); 
@@ -164,9 +145,6 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
     {             
         Controller(BHistoryImportManager mgr) { super(mgr); } 
 
-        /**
-         * Execute a discover
-         */
         public CommandArtifact doDiscover(Context context) throws Exception
         {                      
             super.doDiscover(context);          
@@ -178,7 +156,7 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
     }
 
 ////////////////////////////////////////////////////////////////
-// Fields
+// Attributes
 ////////////////////////////////////////////////////////////////
 
     MgrColumn colPath = new MgrColumn.Path(MgrColumn.UNSEEN);
@@ -193,23 +171,22 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
     MgrColumn colLastFailure   = new MgrColumn.Prop(BDescriptor.lastFailure,   MgrColumn.UNSEEN);
     MgrColumn colFaultCause    = new MgrColumn.Prop(BDescriptor.faultCause,    MgrColumn.UNSEEN);
 
-    MgrColumn colId = new MgrColumn.Prop(BNHaystackHistoryImport.id, MgrColumn.EDITABLE);
-    MgrColumn colKind = new MgrColumn.Prop(BNHaystackHistoryImport.kind, MgrColumn.EDITABLE);
-    MgrColumn colTz = new MgrColumn.Prop(BNHaystackHistoryImport.tz, MgrColumn.EDITABLE);
+    MgrColumn colId        = new MgrColumn.Prop(BNHaystackHistoryImport.id,   MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colKind      = new MgrColumn.Prop(BNHaystackHistoryImport.kind, MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colTz        = new MgrColumn.Prop(BNHaystackHistoryImport.tz,   MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colHistoryId = new MgrColumn.Prop(BArchiveDescriptor.historyId, MgrColumn.EDITABLE | MgrColumn.READONLY);
+//    MgrColumn colHaystack  = new MgrColumn.Prop(BNHaystackHistoryImport.haystack, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
 
     MgrColumn colOnDemandPollEnabled   = new MgrColumn.Prop(BHistoryImport.onDemandPollEnabled,   MgrColumn.EDITABLE | MgrColumn.UNSEEN);
     MgrColumn colOnDemandPollFrequency = new MgrColumn.Prop(BHistoryImport.onDemandPollFrequency, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-
-    MgrColumn colHistoryId   = new MgrColumn.Prop(BArchiveDescriptor.historyId,   MgrColumn.EDITABLE);
 
     MgrColumn[] cols = 
     { 
         colPath, colName,
         colStatus, colState, colEnabled, colExecutionTime,
         colLastAttempt, colLastSuccess, colLastFailure, colFaultCause,
-        colId, colKind, colTz,
+        colId, colKind, colTz, colHistoryId, //colHaystack,
         colOnDemandPollEnabled, colOnDemandPollFrequency,
-        colHistoryId
     };
 
     private static final BImage img = BImage.make(BNHaystackHistoryImport.TYPE.getInstance().getIcon());
