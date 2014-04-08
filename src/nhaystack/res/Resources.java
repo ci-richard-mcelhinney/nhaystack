@@ -313,16 +313,69 @@ public class Resources
         return null;
     }
 
+    /**
+      * Get the Unit that corresponds to the given Niagara BUnit,
+      * or return null if no corresponding Unit can be found.
+      */
+    public static BUnit convertToNiagaraUnit(Unit unit)
+    {
+        if (unit.name.equals("us_dollar"))     return BUnit.getUnit("dollar");
+        if (unit.name.equals("british_pound")) return BUnit.getUnit("pounds");
+        if (unit.name.equals("indian_rupee"))  return BUnit.getUnit("rupee");
+        if (unit.name.equals("chinese_yuan"))  return BUnit.getUnit("won");
+        if (unit.name.equals("japanese_yen"))  return BUnit.getUnit("yen");
+
+        return BUnit.getUnit(TextUtil.replace(unit.name, "_", " ").toLowerCase());
+    }
+
 ////////////////////////////////////////////////////////////////
 // main
 ////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) throws Exception
+    private static void missingUnitsToNiagara() throws Exception
+    {
+        // print all the haystack unit names which cannot automatically
+        // be converted into Baja unit names.
+
+        System.out.println("--------------------------------------------------------");
+        System.out.println("Units which cannot be converted from Haystack to Niagara");
+        System.out.println();
+
+        String[] quantities = getUnitQuantities();
+        for (int i = 0; i < quantities.length; i++)
+        {
+            String quantity = quantities[i];
+            boolean headerPrinted = false;
+
+            Unit[] units = getUnits(quantity);
+            for (int j = 0; j < units.length; j++)
+            {
+                Unit unit = units[j];
+                try
+                {
+                    BUnit bunit = convertToNiagaraUnit(unit);
+                }
+                catch (UnitException e)
+                {
+                    if (!headerPrinted)
+                    {
+                        System.out.println(quantity);
+                        headerPrinted = true;
+                    }
+                    System.out.println("    " + unit.name);
+                }
+            }
+        }
+    }
+
+    private static void missingUnitsFromNiagara() throws Exception
     {
         // print all the niagara unit names which cannot automatically
         // be converted into haystack unit names.
 
-        System.out.println("--------------------------------------------");
+        System.out.println("--------------------------------------------------------");
+        System.out.println("Units which cannot be converted from Niagara to Haystack");
+        System.out.println();
 
         UnitDatabase ud = UnitDatabase.getDefault();
         UnitDatabase.Quantity[] quantities = ud.getQuantities();
@@ -351,65 +404,9 @@ public class Resources
         }
     }
 
-// misc
-//     null
-// currency
-//     franc
-//     lira
-//     peseta
-// density
-//     grams per cubic meter
-//     milligrams per cubic meter
-//     micrograms per cubic meter
-// electric charge
-//     ampere hour
-//     milliampere hour
-// energy
-//     decatherms
-// energy consumption
-//     watt hours per square meter
-//     watt hours per square foot
-//     megawatt hours per square meter
-//     megawatt hours per square foot
-//     btus per square foot
-//     kilobtus per square foot
-// enthalpy
-//     kilojoule per kilogram
-// enthalpy differential
-//     delta kilojoules per kilogram
-//     delta btus per pound
-// illuminance
-//     kilolux
-//     footcandles
-// information
-//     bit
-//     kilobit
-//     megabit
-//     gigabit
-//     terabit
-// information speed
-//     bits per second
-//     bytes per second
-//     kilobits per second
-//     kilobytes per second
-//     megabits per second
-//     megabytes per second
-//     gigabits per second
-//     gigabytes per second
-//     terabits per second
-//     terabytes per second
-// irradiance
-//     megawatts per square meter
-//     megawatts per square foot
-//     btus per hour per square foot
-// pressure
-//     pounds per square inch gauge
-//     torr
-// specific energy
-//     joules per kilogram se
-//     btus per pound
-// surface tension
-//     newtons per meter st
-// volumetric flow
-//     milliliters per minute
+    public static void main(String[] args) throws Exception
+    {
+        missingUnitsFromNiagara();
+        missingUnitsToNiagara();
+    }
 }
