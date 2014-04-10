@@ -63,7 +63,7 @@ public class ComponentStorehouse extends Storehouse
             else
                 hdb.add("axAnnotated");
 
-            hdb.add(tags);
+            hdb.add(server.convertAnnotatedRefTags(tags));
 
             // navName
             String navName = Nav.makeNavName(comp, tags);
@@ -280,7 +280,9 @@ public class ComponentStorehouse extends Storehouse
             // try to look up  siteRef too
             HDict equipTags = BHDict.findTagAnnotation(equip);
             if (equipTags.has("siteRef"))
-                hdb.add("siteRef", equipTags.get("siteRef"));
+                hdb.add(
+                    "siteRef", 
+                    server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
         }
         // maybe we've cached an implicit equipRef
         else
@@ -293,7 +295,9 @@ public class ComponentStorehouse extends Storehouse
                 // try to look up  siteRef too
                 HDict equipTags = BHDict.findTagAnnotation(equip);
                 if (equipTags.has("siteRef"))
-                    hdb.add("siteRef", equipTags.get("siteRef"));
+                    hdb.add(
+                        "siteRef", 
+                        server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
             }
         }
     }

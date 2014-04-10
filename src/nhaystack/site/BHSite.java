@@ -62,7 +62,7 @@ public class BHSite extends BHTagged
 
         // add annotated
         HDict tags = getHaystack().getDict();
-        hdb.add(tags);
+        hdb.add(server.convertAnnotatedRefTags(tags));
 
         // navName
         String navName = Nav.makeNavName(this, tags);
