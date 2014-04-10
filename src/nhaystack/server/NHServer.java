@@ -625,6 +625,39 @@ public class NHServer extends HServer
     }
 
     /**
+      * Return a copy of the given annotated tags, except convert any
+      * Refs from ComponentRefs to SepRefs.
+      */
+    public HDict convertAnnotatedRefTags(HDict annotatedTags)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+
+        Iterator it = annotatedTags.iterator();
+        while (it.hasNext())
+        {
+            Map.Entry entry = (Map.Entry) it.next();
+            String name = (String) entry.getKey();
+            HVal val = (HVal) entry.getValue();
+
+            if (val instanceof HRef)
+                hdb.add(name, convertAnnotatedRefTag((HRef) val));
+            else
+                hdb.add(name, val);
+        }
+
+        return hdb.toDict();
+    }
+
+    /**
+      * Convert the ref from ComponentRef to SepRef (unless there is no SepRef).
+      */
+    public HRef convertAnnotatedRefTag(HRef ref)
+    {
+        BComponent comp = lookupComponent(ref);
+        return makeComponentRef(comp).getHRef();
+    }
+
+    /**
       * Look up the a BComponent by its HRef id.
       *
       * Return null if the BComponent cannot be found,
@@ -1086,8 +1119,8 @@ public class NHServer extends HServer
         "axSlotPath", "axType",         "cur",          "curStatus",
         "curVal",     "dis",            "enum",         "equip",
         "his",        "hisInterpolate", "id",           "kind",
-        "navName",    "point",          "site",         /*"siteUri",*/
-        "tz",         "unit",           "writable"      };
+        "navName",    "point",          "site",         "tz",         
+        "unit",       "writable"  };
 
     private final HashMap watches = new HashMap();
 

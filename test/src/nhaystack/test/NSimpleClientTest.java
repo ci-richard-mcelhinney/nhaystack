@@ -134,23 +134,6 @@ public class NSimpleClientTest extends NTest
         verifyEq(grid.row(14).getRef("id"), HRef.make("H.nhaystack_simple.AuditHistory"));
         verifyEq(grid.row(15).getRef("id"), HRef.make("H.nhaystack_simple.LogHistory"));
 
-//        verifyEq(grid.row( 0).get("siteUri", false), null);
-//        verifyEq(grid.row( 1).get("siteUri", false), null);
-//        verifyEq(grid.row( 2).get("siteUri", false), HUri.make("sep:/Richmond"));
-//        verifyEq(grid.row( 3).get("siteUri", false), HUri.make("sep:/Richmond/AHU1"));
-//        verifyEq(grid.row( 4).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/NumericWritable"));
-//        verifyEq(grid.row( 5).get("siteUri", false), HUri.make("sep:/Richmond/AHU1/AHU2_BooleanWritable"));
-//        verifyEq(grid.row( 6).get("siteUri", false), HUri.make("sep:/Richmond/AHU2"));
-//        verifyEq(grid.row( 7).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/EnumWritable"));
-//        verifyEq(grid.row( 8).get("siteUri", false), HUri.make("sep:/Richmond/AHU2/NumericWritable1"));
-//        verifyEq(grid.row( 9).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/NumericWritable"));
-//        verifyEq(grid.row(10).get("siteUri", false), HUri.make("sep:/Richmond/AHU1/AHU3_BooleanWritable"));
-//        verifyEq(grid.row(11).get("siteUri", false), HUri.make("sep:/Richmond/AHU3"));
-//        verifyEq(grid.row(12).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/EnumWritable"));
-//        verifyEq(grid.row(13).get("siteUri", false), HUri.make("sep:/Richmond/AHU3/NumericWritable1"));
-//        verifyEq(grid.row(14).get("siteUri", false), null);
-//        verifyEq(grid.row(15).get("siteUri", false), null);
-
         //////////////////////////////////////////
 
         HDict dict = client.readById(HRef.make("C.Foo.SineWave1"));

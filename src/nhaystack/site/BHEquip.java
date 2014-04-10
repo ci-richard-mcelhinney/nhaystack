@@ -85,7 +85,7 @@ public class BHEquip extends BHTagged
 
         // add annotated
         HDict tags = getHaystack().getDict();
-        hdb.add(tags);
+        hdb.add(server.convertAnnotatedRefTags(tags));
 
         // navName
         String navName = Nav.makeNavName(this, tags);
@@ -94,10 +94,6 @@ public class BHEquip extends BHTagged
         // dis
         String dis = createDis(server, tags, navName);
         hdb.add("dis", dis);
-
-//        // siteUri
-//        HUri siteUri = createSiteUri(server, tags, navName);
-//        if (siteUri != null) hdb.add("siteUri", siteUri);
 
         // add id
         HRef ref = server.makeComponentRef(this).getHRef();
@@ -131,24 +127,6 @@ public class BHEquip extends BHTagged
         }
 
         return dis;
-    }
-
-    private HUri createSiteUri(NHServer server, HDict tags, String navName)
-    {
-        // site
-        if (tags.has("siteRef"))
-        {
-            BComponent site = server.lookupComponent(tags.getRef("siteRef"));
-            if (site != null)
-            {
-                HDict siteTags = BHDict.findTagAnnotation(site);
-                String siteNavName = Nav.makeNavName(site, siteTags);
-
-                return HUri.make("sep:/" + siteNavName + "/" + navName);
-            }
-        }
-
-        return null;
     }
 
     public BIcon getIcon() { return ICON; }
