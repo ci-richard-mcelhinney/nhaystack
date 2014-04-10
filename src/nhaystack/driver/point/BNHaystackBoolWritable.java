@@ -17,13 +17,12 @@ public class BNHaystackBoolWritable
         properties
         {
             proxyExt: BAbstractProxyExt default{[ new BNHaystackBoolProxyExt() ]}
-            haystack: BHDict default{[ BHDict.DEFAULT ]} 
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackBoolWritable(106697507)1.0$ @*/
-/* Generated Mon Apr 07 17:13:50 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.BNHaystackBoolWritable(1814644378)1.0$ @*/
+/* Generated Thu Apr 10 15:56:03 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "proxyExt"
@@ -47,29 +46,6 @@ public class BNHaystackBoolWritable
    * @see nhaystack.driver.point.BNHaystackBoolWritable#proxyExt
    */
   public void setProxyExt(BAbstractProxyExt v) { set(proxyExt,v,null); }
-
-////////////////////////////////////////////////////////////////
-// Property "haystack"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>haystack</code> property.
-   * @see nhaystack.driver.point.BNHaystackBoolWritable#getHaystack
-   * @see nhaystack.driver.point.BNHaystackBoolWritable#setHaystack
-   */
-  public static final Property haystack = newProperty(0, BHDict.DEFAULT,null);
-  
-  /**
-   * Get the <code>haystack</code> property.
-   * @see nhaystack.driver.point.BNHaystackBoolWritable#haystack
-   */
-  public BHDict getHaystack() { return (BHDict)get(haystack); }
-  
-  /**
-   * Set the <code>haystack</code> property.
-   * @see nhaystack.driver.point.BNHaystackBoolWritable#haystack
-   */
-  public void setHaystack(BHDict v) { set(haystack,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type

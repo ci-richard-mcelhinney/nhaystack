@@ -119,6 +119,7 @@ public class BNHaystackPointManager extends BPointManager
             row.setDefaultName(entry.getName());
             row.setCell(colId, entry.getId());
             row.setCell(colFacets, entry.getFacets());
+            row.setCell(colImportedTags, entry.getImportedTags());
         }                   
 
         public boolean isExisting(Object discovery, BComponent component)
@@ -190,10 +191,13 @@ public class BNHaystackPointManager extends BPointManager
     MgrColumn colReadValue   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.readValue},    MgrColumn.UNSEEN);
     MgrColumn colWriteValue  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.writeValue},   MgrColumn.UNSEEN);
 
-    MgrColumn colId   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.id},   MgrColumn.EDITABLE);
+    MgrColumn colId           = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.id}, MgrColumn.EDITABLE);
+    MgrColumn colImportedTags = new MgrColumn.PropPath(
+        new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.importedTags}, MgrColumn.EDITABLE | MgrColumn.READONLY);
+
     MgrColumn[] cols = 
     { 
-        colPath, colName, colType, colToString, colId, 
+        colPath, colName, colType, colToString, colId, colImportedTags,
         colEnabled, colFacets, colTuning, colDeviceFacets, colConversion,
         colFaultCause, colReadValue, colWriteValue,
     }; 

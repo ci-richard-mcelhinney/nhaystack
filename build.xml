@@ -39,6 +39,7 @@
     <package name="nhaystack.driver.history.learn" doc="true"/>
     <package name="nhaystack.driver.point"         doc="true"/>
     <package name="nhaystack.driver.point.learn"   doc="true"/>
+    <package name="nhaystack.driver.ui"            doc="true"/>
     <package name="nhaystack.driver.worker"        doc="true"/>
     <package name="nhaystack.res"                  doc="true"/>
     <package name="nhaystack.server"               doc="true"/>

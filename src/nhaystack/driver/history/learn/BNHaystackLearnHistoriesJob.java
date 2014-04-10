@@ -66,9 +66,7 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
                 BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
 
                 entry.setId(BHRef.make(row.id()));
-                entry.setKind(kind);
-                entry.setTz(row.getStr("tz"));
-                entry.setHaystack(BHDict.make(row));
+                entry.setImportedTags(BHTags.make(row));
 
                 entry.setHistoryId(
                     BHistoryId.make(

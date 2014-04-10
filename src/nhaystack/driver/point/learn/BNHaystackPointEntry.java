@@ -17,15 +17,13 @@ public final class BNHaystackPointEntry extends BComponent
           {
               facets: BFacets default {[ BFacets.DEFAULT ]}
               id: BHRef default{[ BHRef.DEFAULT ]}
-              kind: String default{[ "" ]} 
-              writable: boolean default {[ false ]} 
-              haystack: BHDict default{[ BHDict.DEFAULT ]} 
+              importedTags: BHTags default{[ BHTags.DEFAULT ]}
           } 
       }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.learn.BNHaystackPointEntry(3427303347)1.0$ @*/
-/* Generated Thu Apr 10 14:11:07 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.learn.BNHaystackPointEntry(1085006972)1.0$ @*/
+/* Generated Thu Apr 10 15:56:03 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "facets"
@@ -74,73 +72,27 @@ public final class BNHaystackPointEntry extends BComponent
   public void setId(BHRef v) { set(id,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "kind"
+// Property "importedTags"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>kind</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#getKind
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#setKind
+   * Slot for the <code>importedTags</code> property.
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#getImportedTags
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#setImportedTags
    */
-  public static final Property kind = newProperty(0, "",null);
+  public static final Property importedTags = newProperty(0, BHTags.DEFAULT,null);
   
   /**
-   * Get the <code>kind</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#kind
+   * Get the <code>importedTags</code> property.
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#importedTags
    */
-  public String getKind() { return getString(kind); }
+  public BHTags getImportedTags() { return (BHTags)get(importedTags); }
   
   /**
-   * Set the <code>kind</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#kind
+   * Set the <code>importedTags</code> property.
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#importedTags
    */
-  public void setKind(String v) { setString(kind,v,null); }
-
-////////////////////////////////////////////////////////////////
-// Property "writable"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>writable</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#getWritable
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#setWritable
-   */
-  public static final Property writable = newProperty(0, false,null);
-  
-  /**
-   * Get the <code>writable</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#writable
-   */
-  public boolean getWritable() { return getBoolean(writable); }
-  
-  /**
-   * Set the <code>writable</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#writable
-   */
-  public void setWritable(boolean v) { setBoolean(writable,v,null); }
-
-////////////////////////////////////////////////////////////////
-// Property "haystack"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>haystack</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#getHaystack
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#setHaystack
-   */
-  public static final Property haystack = newProperty(0, BHDict.DEFAULT,null);
-  
-  /**
-   * Get the <code>haystack</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#haystack
-   */
-  public BHDict getHaystack() { return (BHDict)get(haystack); }
-  
-  /**
-   * Set the <code>haystack</code> property.
-   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#haystack
-   */
-  public void setHaystack(BHDict v) { set(haystack,v,null); }
+  public void setImportedTags(BHTags v) { set(importedTags,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -168,4 +120,7 @@ public final class BNHaystackPointEntry extends BComponent
 
         return res;
     }
+
+    public String  getKind()     { return getImportedTags().getDict().getStr("kind");  }
+    public boolean getWritable() { return getImportedTags().getDict().has("writable"); }
 }

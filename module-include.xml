@@ -18,6 +18,7 @@
     <type name="HUnit"     class="nhaystack.BHUnit"/>
 
     <!-- nhaystack.driver -->
+    <type name="HTags"                  class="nhaystack.driver.BHTags"/>
     <type name="NHaystackNetwork"       class="nhaystack.driver.BNHaystackNetwork"/>
     <type name="NHaystackPollScheduler" class="nhaystack.driver.BNHaystackPollScheduler"/>
     <type name="NHaystackServer"        class="nhaystack.driver.BNHaystackServer"/>
@@ -56,6 +57,9 @@
             <on type="nhaystack:NHaystackPointFolder"/>
         </agent>
     </type>
+
+    <type name="HTagsDialog" class="nhaystack.driver.ui.BHTagsDialog" />
+    <type name="HTagsFE" class="nhaystack.driver.ui.BHTagsFE"> <agent><on type="nhaystack:HTags"/> </agent></type>
 
     <!-- nhaystack.server -->
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>

@@ -4,6 +4,7 @@ import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.sys.*;
 import nhaystack.*;
+import nhaystack.driver.*;
 import nhaystack.driver.history.*;
 
 public final class BNHaystackHistoryEntry extends BComponent
@@ -13,17 +14,15 @@ public final class BNHaystackHistoryEntry extends BComponent
       {
           properties
           {
-              id:        BHRef      default{[ BHRef.DEFAULT      ]} 
-              kind:      String     default{[ ""                 ]} 
-              tz:        String     default{[ ""                 ]} 
-              haystack:  BHDict     default{[ BHDict.DEFAULT     ]} 
-              historyId: BHistoryId default{[ BHistoryId.DEFAULT ]} 
+              id:   BHRef  default{[ BHRef.DEFAULT ]}
+              importedTags: BHTags default{[ BHTags.DEFAULT ]}
+              historyId: BHistoryId default{[ BHistoryId.DEFAULT ]}
           } 
       }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.history.learn.BNHaystackHistoryEntry(927054564)1.0$ @*/
-/* Generated Mon Apr 07 17:13:50 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.history.learn.BNHaystackHistoryEntry(4001587975)1.0$ @*/
+/* Generated Thu Apr 10 15:13:14 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "id"
@@ -49,73 +48,27 @@ public final class BNHaystackHistoryEntry extends BComponent
   public void setId(BHRef v) { set(id,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "kind"
+// Property "importedTags"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>kind</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#getKind
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#setKind
+   * Slot for the <code>importedTags</code> property.
+   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#getImportedTags
+   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#setImportedTags
    */
-  public static final Property kind = newProperty(0, "",null);
+  public static final Property importedTags = newProperty(0, BHTags.DEFAULT,null);
   
   /**
-   * Get the <code>kind</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#kind
+   * Get the <code>importedTags</code> property.
+   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#importedTags
    */
-  public String getKind() { return getString(kind); }
+  public BHTags getImportedTags() { return (BHTags)get(importedTags); }
   
   /**
-   * Set the <code>kind</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#kind
+   * Set the <code>importedTags</code> property.
+   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#importedTags
    */
-  public void setKind(String v) { setString(kind,v,null); }
-
-////////////////////////////////////////////////////////////////
-// Property "tz"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>tz</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#getTz
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#setTz
-   */
-  public static final Property tz = newProperty(0, "",null);
-  
-  /**
-   * Get the <code>tz</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#tz
-   */
-  public String getTz() { return getString(tz); }
-  
-  /**
-   * Set the <code>tz</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#tz
-   */
-  public void setTz(String v) { setString(tz,v,null); }
-
-////////////////////////////////////////////////////////////////
-// Property "haystack"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>haystack</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#getHaystack
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#setHaystack
-   */
-  public static final Property haystack = newProperty(0, BHDict.DEFAULT,null);
-  
-  /**
-   * Get the <code>haystack</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#haystack
-   */
-  public BHDict getHaystack() { return (BHDict)get(haystack); }
-  
-  /**
-   * Set the <code>haystack</code> property.
-   * @see nhaystack.driver.history.learn.BNHaystackHistoryEntry#haystack
-   */
-  public void setHaystack(BHDict v) { set(haystack,v,null); }
+  public void setImportedTags(BHTags v) { set(importedTags,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "historyId"

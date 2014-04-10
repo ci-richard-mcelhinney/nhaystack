@@ -20,12 +20,13 @@ public abstract class BNHaystackProxyExt extends BProxyExt
         properties
         {
             id: BHRef default{[ BHRef.DEFAULT ]}
+            importedTags: BHTags default{[ BHTags.DEFAULT ]} flags { readonly }
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackProxyExt(1839545253)1.0$ @*/
-/* Generated Mon Apr 07 08:34:06 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.BNHaystackProxyExt(242587047)1.0$ @*/
+/* Generated Thu Apr 10 16:02:56 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "id"
@@ -49,6 +50,29 @@ public abstract class BNHaystackProxyExt extends BProxyExt
    * @see nhaystack.driver.point.BNHaystackProxyExt#id
    */
   public void setId(BHRef v) { set(id,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "importedTags"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>importedTags</code> property.
+   * @see nhaystack.driver.point.BNHaystackProxyExt#getImportedTags
+   * @see nhaystack.driver.point.BNHaystackProxyExt#setImportedTags
+   */
+  public static final Property importedTags = newProperty(Flags.READONLY, BHTags.DEFAULT,null);
+  
+  /**
+   * Get the <code>importedTags</code> property.
+   * @see nhaystack.driver.point.BNHaystackProxyExt#importedTags
+   */
+  public BHTags getImportedTags() { return (BHTags)get(importedTags); }
+  
+  /**
+   * Set the <code>importedTags</code> property.
+   * @see nhaystack.driver.point.BNHaystackProxyExt#importedTags
+   */
+  public void setImportedTags(BHTags v) { set(importedTags,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type

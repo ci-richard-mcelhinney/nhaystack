@@ -70,9 +70,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
                 else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
 
                 entry.setId(BHRef.make(row.id()));
-                entry.setKind(kind);
-                entry.setWritable(row.has("writable"));
-                entry.setHaystack(BHDict.make(row));
+                entry.setImportedTags(BHTags.make(row));
 
                 add(name, entry);
             }

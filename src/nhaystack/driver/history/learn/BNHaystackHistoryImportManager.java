@@ -101,10 +101,8 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
             row.setDefaultName(entry.getName());
 
             row.setCell(colId, entry.getId());
-            row.setCell(colKind, BString.make(entry.getKind()));
-            row.setCell(colTz, BString.make(entry.getTz()));
             row.setCell(colHistoryId, entry.getHistoryId());
-//            row.setCell(colHaystack, entry.getHaystack());
+            row.setCell(colImportedTags, entry.getImportedTags());
         }                   
 
         public boolean isExisting(Object discovery, BComponent component)
@@ -171,11 +169,9 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
     MgrColumn colLastFailure   = new MgrColumn.Prop(BDescriptor.lastFailure,   MgrColumn.UNSEEN);
     MgrColumn colFaultCause    = new MgrColumn.Prop(BDescriptor.faultCause,    MgrColumn.UNSEEN);
 
-    MgrColumn colId        = new MgrColumn.Prop(BNHaystackHistoryImport.id,   MgrColumn.EDITABLE | MgrColumn.READONLY);
-    MgrColumn colKind      = new MgrColumn.Prop(BNHaystackHistoryImport.kind, MgrColumn.EDITABLE | MgrColumn.READONLY);
-    MgrColumn colTz        = new MgrColumn.Prop(BNHaystackHistoryImport.tz,   MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colId = new MgrColumn.Prop(BNHaystackHistoryImport.id, MgrColumn.EDITABLE | MgrColumn.READONLY);
     MgrColumn colHistoryId = new MgrColumn.Prop(BArchiveDescriptor.historyId, MgrColumn.EDITABLE | MgrColumn.READONLY);
-//    MgrColumn colHaystack  = new MgrColumn.Prop(BNHaystackHistoryImport.haystack, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    MgrColumn colImportedTags  = new MgrColumn.Prop(BNHaystackHistoryImport.importedTags, MgrColumn.EDITABLE | MgrColumn.READONLY);
 
     MgrColumn colOnDemandPollEnabled   = new MgrColumn.Prop(BHistoryImport.onDemandPollEnabled,   MgrColumn.EDITABLE | MgrColumn.UNSEEN);
     MgrColumn colOnDemandPollFrequency = new MgrColumn.Prop(BHistoryImport.onDemandPollFrequency, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
@@ -185,7 +181,7 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
         colPath, colName,
         colStatus, colState, colEnabled, colExecutionTime,
         colLastAttempt, colLastSuccess, colLastFailure, colFaultCause,
-        colId, colKind, colTz, colHistoryId, //colHaystack,
+        colId, colHistoryId, colImportedTags,
         colOnDemandPollEnabled, colOnDemandPollFrequency,
     };
 
