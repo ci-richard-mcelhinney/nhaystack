@@ -21,12 +21,15 @@ public abstract class BNHaystackProxyExt extends BProxyExt
         {
             id: BHRef default{[ BHRef.DEFAULT ]}
             importedTags: BHTags default{[ BHTags.DEFAULT ]} flags { readonly }
+            haystackWriteLevel: int 
+                -- the level to use when writing to haystack
+                default{[ 16 ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackProxyExt(242587047)1.0$ @*/
-/* Generated Thu Apr 10 16:02:56 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.BNHaystackProxyExt(557806362)1.0$ @*/
+/* Generated Thu Apr 10 16:32:45 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "id"
@@ -73,6 +76,30 @@ public abstract class BNHaystackProxyExt extends BProxyExt
    * @see nhaystack.driver.point.BNHaystackProxyExt#importedTags
    */
   public void setImportedTags(BHTags v) { set(importedTags,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "haystackWriteLevel"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>haystackWriteLevel</code> property.
+   * the level to use when writing to haystack
+   * @see nhaystack.driver.point.BNHaystackProxyExt#getHaystackWriteLevel
+   * @see nhaystack.driver.point.BNHaystackProxyExt#setHaystackWriteLevel
+   */
+  public static final Property haystackWriteLevel = newProperty(0, 16,null);
+  
+  /**
+   * Get the <code>haystackWriteLevel</code> property.
+   * @see nhaystack.driver.point.BNHaystackProxyExt#haystackWriteLevel
+   */
+  public int getHaystackWriteLevel() { return getInt(haystackWriteLevel); }
+  
+  /**
+   * Set the <code>haystackWriteLevel</code> property.
+   * @see nhaystack.driver.point.BNHaystackProxyExt#haystackWriteLevel
+   */
+  public void setHaystackWriteLevel(int v) { setInt(haystackWriteLevel,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -145,10 +172,9 @@ public abstract class BNHaystackProxyExt extends BProxyExt
       */
     public final boolean write(Context context) throws Exception
     {
+        if (server == null) return false;
+        server.postAsyncChore(new WriteChore(server, this));
         return true;
-//        if (server == null) return false;
-//        server.postAsyncChore(new WriteChore(server, this));
-//        return true;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -157,9 +183,9 @@ public abstract class BNHaystackProxyExt extends BProxyExt
 
     public abstract void doRead(HVal curVal, HStr curStatus);
 
-//    public abstract void doWrite() throws Exception;
+    public abstract void doWrite() throws Exception;
 
-//    public BNHaystackServer getNHaystackServer() { return server; }
+    public BNHaystackServer getHaystackServer() { return server; }
 
 ////////////////////////////////////////////////////////////////
 // attributes

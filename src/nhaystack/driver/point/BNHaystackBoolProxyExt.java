@@ -7,6 +7,7 @@ import javax.baja.status.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
+import org.projecthaystack.client.*;
 
 import nhaystack.*;
 import nhaystack.driver.*;
@@ -45,7 +46,21 @@ public class BNHaystackBoolProxyExt extends BNHaystackProxyExt
             readFail("read fault");
             return;
         }
+    }
 
+    public void doWrite() throws Exception
+    {
+        BStatusBoolean writeValue = (BStatusBoolean) getWriteValue();
+
+        HClient client = getHaystackServer().getHaystackClient();
+        client.pointWrite(
+            getId().getRef(),
+            getHaystackWriteLevel(),
+            null, // who
+            HBool.make(writeValue.getBoolean()),
+            null); // dur
+
+        writeOk(writeValue);
     }
 }
 
