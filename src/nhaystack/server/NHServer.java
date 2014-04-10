@@ -1086,8 +1086,8 @@ public class NHServer extends HServer
         "axSlotPath", "axType",         "cur",          "curStatus",
         "curVal",     "dis",            "enum",         "equip",
         "his",        "hisInterpolate", "id",           "kind",
-        "navName",    "point",          "site",         /*"siteUri",*/
-        "tz",         "unit",           "writable"      };
+        "navName",    "point",          "site",         "tz",         
+        "unit",       "writable"  };
 
     private final HashMap watches = new HashMap();
 

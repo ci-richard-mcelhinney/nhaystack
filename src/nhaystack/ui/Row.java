@@ -168,10 +168,6 @@ class Row
         else if (val instanceof HStr)
             return makeStrFE(name, (HStr) val);
 
-//        // this is for siteUri, thus should always be readOnly
-//        else if (val instanceof HUri)
-//            return makeStrFE(name, HStr.make(((HUri) val).val));
-
         else if (val instanceof HRef)
             return makeRefFE(editor, name, (HRef) val);
 

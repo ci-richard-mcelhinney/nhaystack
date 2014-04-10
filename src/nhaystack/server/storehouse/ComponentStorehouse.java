@@ -81,10 +81,6 @@ public class ComponentStorehouse extends Storehouse
             String dis = createDis(hdb, navName);
             hdb.add("dis", dis);
 
-//            // uri
-//            HUri siteUri = createSiteUri(hdb, navName);
-//            if (siteUri != null) hdb.add("siteUri", siteUri);
-
             // add id
             HRef ref = server.makeComponentRef(comp).getHRef();
             hdb.add("id", HRef.make(ref.val, dis));
