@@ -13,6 +13,7 @@ import org.projecthaystack.client.*;
 
 import nhaystack.*;
 import nhaystack.driver.*;
+import nhaystack.res.*;
 
 public class BNHaystackLearnPointsJob extends BSimpleJob 
 {
@@ -65,13 +66,38 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
                 BNHaystackPointEntry entry = new BNHaystackPointEntry();
 
+                if      (kind.equals("Bool"))   entry.setFacets(makeBoolFacets(row));
+                else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
+
                 entry.setId(BHRef.make(row.id()));
                 entry.setKind(kind);
                 entry.setWritable(row.has("writable"));
+                entry.setHaystack(BHDict.make(row));
 
                 add(name, entry);
             }
         }
+    }
+
+    private BFacets makeBoolFacets(HDict rec)
+    {
+        if (!rec.has("enum")) return BFacets.NULL;
+
+        String[] tokens = TextUtil.split(rec.getStr("enum"), ',');
+
+        // first true, then false
+        return BFacets.makeBoolean(tokens[1], tokens[0]); 
+    }
+
+    private BFacets makeNumberFacets(HDict rec)
+    {
+        if (!rec.has("unit")) return BFacets.NULL;
+
+        return BFacets.make(
+            BFacets.UNITS,
+            Resources.convertToNiagaraUnit(
+                Resources.getSymbolUnit(
+                    rec.getStr("unit"))));
     }
 
 ////////////////////////////////////////////////////////////////

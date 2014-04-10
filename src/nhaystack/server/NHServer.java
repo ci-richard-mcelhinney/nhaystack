@@ -535,7 +535,7 @@ public class NHServer extends HServer
                 {
                     BValue result = comp.invoke(
                         actions[i], 
-                        Types.actionArgsToBaja(args, actions[i]));
+                        TypeUtil.actionArgsToBaja(args, actions[i]));
 
                     if (result == null)
                     {
@@ -544,7 +544,7 @@ public class NHServer extends HServer
                     else if (result instanceof BSimple)
                     {
                         HDictBuilder hd = new HDictBuilder();
-                        hd.add("result", Types.fromBajaSimple((BSimple) result));
+                        hd.add("result", TypeUtil.fromBajaSimple((BSimple) result));
                         return HGridBuilder.dictToGrid(hd.toDict());
                     }
                     else

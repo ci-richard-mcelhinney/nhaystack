@@ -118,6 +118,7 @@ public class BNHaystackPointManager extends BPointManager
 
             row.setDefaultName(entry.getName());
             row.setCell(colId, entry.getId());
+            row.setCell(colFacets, entry.getFacets());
         }                   
 
         public boolean isExisting(Object discovery, BComponent component)

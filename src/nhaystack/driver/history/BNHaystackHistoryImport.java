@@ -176,7 +176,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
             BAbsTime from = last.add(BRelTime.make(1L));
 
             HTimeZone tz = HTimeZone.make(getTz());
-            HDateTime dt = DateTimeUtil.toHaystackDateTime(from, tz);
+            HDateTime dt = TypeUtil.fromBajaAbsTime(from, tz);
             HDateTimeRange range = HDateTimeRange.make(dt.toZinc(), tz);
 
             // import records
@@ -225,7 +225,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
         {
             BBooleanTrendRecord boolTrend = new BBooleanTrendRecord();
             boolTrend.set(
-                DateTimeUtil.fromHaystackDateTime(ts),
+                TypeUtil.toBajaAbsTime(ts),
                 ((HBool) val).val,
                 BStatus.ok);
             return boolTrend;
@@ -234,7 +234,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
         {
             BNumericTrendRecord numTrend = new BNumericTrendRecord();
             numTrend.set(
-                DateTimeUtil.fromHaystackDateTime(ts),
+                TypeUtil.toBajaAbsTime(ts),
                 ((HNum) val).val,
                 BStatus.ok);
             return numTrend;

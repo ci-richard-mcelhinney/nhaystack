@@ -7,8 +7,11 @@
 
 package nhaystack.driver;
 
+import java.util.*;
+
 import javax.baja.alarm.*;
 import javax.baja.driver.*;
+import javax.baja.driver.util.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.net.*;
@@ -19,15 +22,17 @@ import javax.baja.util.*;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
+import nhaystack.*;
 import nhaystack.driver.history.*;
 import nhaystack.driver.history.learn.*;
 import nhaystack.driver.point.*;
 import nhaystack.driver.point.learn.*;
+import nhaystack.driver.worker.*;
 import nhaystack.worker.*;
 
 public class BNHaystackServer 
     extends BDevice
-    implements BINHaystackWorkerParent
+    implements BINHaystackWorkerParent, BIPollable
 {
     /*-
     class BNHaystackServer
@@ -40,6 +45,8 @@ public class BNHaystackServer
 
             histories: BNHaystackHistoryDeviceExt default{[ new BNHaystackHistoryDeviceExt() ]}
             points:    BNHaystackPointDeviceExt   default{[ new BNHaystackPointDeviceExt()   ]}
+
+            pollFrequency: BPollFrequency default{[ BPollFrequency.normal ]}
 
             worker: BNHaystackWorker default{[ new BNHaystackWorker() ]}
 
@@ -55,8 +62,8 @@ public class BNHaystackServer
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(145180471)1.0$ @*/
-/* Generated Mon Apr 07 12:57:57 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(2064952046)1.0$ @*/
+/* Generated Thu Apr 10 13:46:14 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
@@ -174,6 +181,29 @@ public class BNHaystackServer
   public void setPoints(BNHaystackPointDeviceExt v) { set(points,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "pollFrequency"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>pollFrequency</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getPollFrequency
+   * @see nhaystack.driver.BNHaystackServer#setPollFrequency
+   */
+  public static final Property pollFrequency = newProperty(0, BPollFrequency.normal,null);
+  
+  /**
+   * Get the <code>pollFrequency</code> property.
+   * @see nhaystack.driver.BNHaystackServer#pollFrequency
+   */
+  public BPollFrequency getPollFrequency() { return (BPollFrequency)get(pollFrequency); }
+  
+  /**
+   * Set the <code>pollFrequency</code> property.
+   * @see nhaystack.driver.BNHaystackServer#pollFrequency
+   */
+  public void setPollFrequency(BPollFrequency v) { set(pollFrequency,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Property "worker"
 ////////////////////////////////////////////////////////////////
   
@@ -275,6 +305,21 @@ public class BNHaystackServer
             (comp instanceof BNHaystackServerFolder);
     }
 
+    public void started()
+    {
+        getNHaystackNetwork().getPollScheduler().subscribe(this);
+    }
+
+    public void stopped()
+    {
+        getNHaystackNetwork().getPollScheduler().unsubscribe(this);
+
+        synchronized(this)
+        {
+            if (hwatch != null) hwatch.close();
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // BDevice
 ////////////////////////////////////////////////////////////////
@@ -289,7 +334,7 @@ public class BNHaystackServer
         return postAsyncChore(
             new PingInvocation(
                 getWorker(),
-                "Ping:" + makeApiUrl(),
+                "Ping:" + getApiUrl(),
                 new Invocation(this, ping, null, null)));
     }
 
@@ -297,7 +342,7 @@ public class BNHaystackServer
     {
         long begin = Clock.ticks();
         if (LOG.isTraceOn())
-            LOG.trace("Server Ping BEGIN " + makeApiUrl());
+            LOG.trace("Server Ping BEGIN " + getApiUrl());
 
         if (isDisabled() || isFault())
             return;
@@ -318,7 +363,7 @@ public class BNHaystackServer
             if (LOG.isTraceOn())
             {
                 long end = Clock.ticks();
-                LOG.trace("Server Ping END " + makeApiUrl() + " (" + (end-begin) + "ms)");
+                LOG.trace("Server Ping END " + getApiUrl() + " (" + (end-begin) + "ms)");
             }
         }
     }
@@ -350,14 +395,14 @@ public class BNHaystackServer
         if (!getEnabled())
         {
             if (LOG.isTraceOn())
-                LOG.trace(makeApiUrl() + " server disabled: " + chore);
+                LOG.trace(getApiUrl() + " server disabled: " + chore);
             return null;
         }
 
         if (getNetwork().isDisabled())
         {
             if (LOG.isTraceOn())
-                LOG.trace(makeApiUrl() + " network disabled: " + chore);
+                LOG.trace(getApiUrl() + " network disabled: " + chore);
             return null;
         }
 
@@ -369,48 +414,56 @@ public class BNHaystackServer
         }
         catch (Exception e)
         {
-            LOG.error(makeApiUrl() + " Cannot post async: " + e.getMessage());
+            LOG.error(getApiUrl() + " Cannot post async: " + e.getMessage());
             return null;
         }
     }
 
-//    /**
-//      * This is called whenever a chore which operates on this server
-//      * experiences a SocketTimeoutException
-//      */
-//    public synchronized void socketTimeout(WorkerChore chore, Exception e)
-//    {
-//        LOG.error(
-//            "Socket timeout! " + makeApiUrl() + ": " + 
-//            chore + ", " + e.getMessage());
-//        e.printStackTrace();
-//
-//        resetClient();
-//        pingFail(e.getMessage()); 
-//    }
-
-    public synchronized HClient getHaystackClient() throws Exception
+    public synchronized HClient getHaystackClient() 
     {
         if (hclient == null)
         {
             hclient = HClient.open(
-                makeApiUrl(),
+                getApiUrl(),
                 getCredentials().getUsername(),
                 getCredentials().getPassword().getString());
         }
         return hclient;
     }
 
-    public String makeApiUrl()
+    public synchronized HWatch getHaystackWatch() 
+    {
+        if (hwatch == null)
+            hwatch = getHaystackClient().watchOpen(getApiUrl());
+
+        return hwatch;
+    }
+
+    public String getApiUrl()
     {
         return 
             "http://" + getInternetAddress().getAuthority() + 
             "/api/" + getProjectName() + "/";
     }
 
-    public void poll()
+    public synchronized void registerProxyExt(BNHaystackProxyExt ext)
     {
-//        postAsyncChore(new PollChore(this));
+        proxyExts.put(ext.getId().getRef(), ext);
+    }
+
+    public synchronized void unregisterProxyExt(BNHaystackProxyExt ext)
+    {
+        proxyExts.remove(ext.getId().getRef());
+    }
+
+    public synchronized BNHaystackProxyExt getRegisteredProxyExt(HRef id)
+    {
+        return (BNHaystackProxyExt) proxyExts.get(id);
+    }
+
+    public BNHaystackNetwork getNHaystackNetwork()
+    {
+        return (BNHaystackNetwork) getNetwork();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -421,8 +474,14 @@ public class BNHaystackServer
     {
         hclient = null;
 
+        if (hwatch != null)
+        {
+            hwatch.close();
+            hwatch = null;
+        }
+
         if (isRunning() && LOG.isTraceOn())
-            LOG.trace(makeApiUrl() + " reset client");
+            LOG.trace(getApiUrl() + " reset client");
     }
 
 ////////////////////////////////////////////////////////////////
@@ -432,4 +491,6 @@ public class BNHaystackServer
     private static final Log LOG = Log.getLog("nhaystack");
 
     private HClient hclient;
+    private HWatch hwatch;
+    private Map proxyExts = new HashMap();
 }

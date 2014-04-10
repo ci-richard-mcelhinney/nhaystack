@@ -5,18 +5,20 @@
 // History:
 //   22 Mar 2013  Mike Jarmy  Creation
 //
-package nhaystack.server;
+package nhaystack.util;
 
 import java.util.*;
+
+import javax.baja.status.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
 import nhaystack.res.*;
 
 /**
-  * Types maps between Haystack types and Baja types.
+  * TypeUtil maps between Haystack types and Baja types.
   */
-public abstract class Types
+public abstract class TypeUtil
 {
     public static BSimple toBajaSimple(HVal val)
     {
@@ -131,6 +133,44 @@ public abstract class Types
 
             return cpx;
         }
+    }
+
+    public static HDateTime fromBajaAbsTime(BAbsTime absTime, HTimeZone tz)
+    {
+        return HDateTime.make(
+            HDate.make(
+                absTime.getYear(),
+                absTime.getMonth().getMonthOfYear(),
+                absTime.getDay()),
+            HTime.make(
+                absTime.getHour(),
+                absTime.getMinute(),
+                absTime.getSecond(),
+                absTime.getMillisecond()),
+            tz);
+    }
+
+    public static BAbsTime toBajaAbsTime(HDateTime dt)
+    {
+        return BAbsTime.make(
+            dt.date.year,
+            BMonth.make(dt.date.month - 1),
+            dt.date.day,
+            dt.time.hour,
+            dt.time.min,
+            dt.time.sec,
+            dt.time.ms);
+    }
+
+    public static BStatus toBajaStatus(HStr curStatus)
+    {
+        if (curStatus.val.equals("ok"))       return BStatus.ok;
+        if (curStatus.val.equals("fault"))    return BStatus.fault;
+        if (curStatus.val.equals("down"))     return BStatus.down;
+        if (curStatus.val.equals("disabled")) return BStatus.disabled;
+        if (curStatus.val.equals("unknown"))  return BStatus.nullStatus;
+
+        throw new IllegalStateException("Cannot convert " + curStatus.val + " to BStatus");
     }
 }
 

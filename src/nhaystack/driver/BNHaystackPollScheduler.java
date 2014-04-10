@@ -11,6 +11,8 @@ import javax.baja.net.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
+import nhaystack.driver.worker.*;
+
 public class BNHaystackPollScheduler 
     extends BPollScheduler
 {
@@ -41,7 +43,7 @@ public class BNHaystackPollScheduler
         if (network.isDisabled() || network.isDown() || network.isFault())
             return;
 
-        BNHaystackServer server = (BNHaystackServer) pollable;
-        server.poll();
+        BNHaystackServer server = (BNHaystackServer) pollable; 
+        server.postAsyncChore(new PollChore(server));
     }
 }

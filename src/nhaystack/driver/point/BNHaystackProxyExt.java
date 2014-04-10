@@ -6,8 +6,11 @@ import javax.baja.driver.point.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 
+import org.projecthaystack.*;
+
 import nhaystack.*;
 import nhaystack.driver.*;
+import nhaystack.driver.worker.*;
 
 public abstract class BNHaystackProxyExt extends BProxyExt
 {
@@ -62,16 +65,16 @@ public abstract class BNHaystackProxyExt extends BProxyExt
 
     public void started()
     {
-        server = server();
-//        server.registerProxyExt(this);
+        this.server = findServer();
+        server.registerProxyExt(this);
     }
 
-//    public void stopped()
-//    {
-//        if (server != null) server.unregisterProxyExt(this);
-//    }
+    public void stopped()
+    {
+        if (server != null) server.unregisterProxyExt(this);
+    }
 
-    private BNHaystackServer server()
+    private BNHaystackServer findServer()
     {
         BComplex comp = getParent();
         while ((comp != null) && (!(comp instanceof BNHaystackServer)))
@@ -100,10 +103,8 @@ public abstract class BNHaystackProxyExt extends BProxyExt
       */
     public final void readSubscribed(Context context) throws Exception
     {
-//        final BNHaystackServer server = getNHaystackServer();
-//        if (server == null) return;
-//
-//        server.postAsyncChore(new ReadSubscribeChore(server, this));
+        if (server != null)
+            server.postAsyncChore(new ReadSubscribeChore(server, this));
     }
 
     /**
@@ -111,10 +112,8 @@ public abstract class BNHaystackProxyExt extends BProxyExt
       */
     public final void readUnsubscribed(Context context) throws Exception
     {
-//        final BNHaystackServer server = getNHaystackServer();
-//        if (server == null) return;
-//
-//        server.postAsyncChore(new ReadUnsubscribeChore(server, this));
+        if (server != null)
+            server.postAsyncChore(new ReadUnsubscribeChore(server, this));
     }
 
     /**
@@ -122,27 +121,26 @@ public abstract class BNHaystackProxyExt extends BProxyExt
       */
     public final boolean write(Context context) throws Exception
     {
-        final BNHaystackServer server = getNHaystackServer();
-        if (server == null) return false;
-
-//        server.postAsyncChore(new WriteChore(server, this));
         return true;
+//        if (server == null) return false;
+//        server.postAsyncChore(new WriteChore(server, this));
+//        return true;
     }
 
 ////////////////////////////////////////////////////////////////
 // public
 ////////////////////////////////////////////////////////////////
 
-//    public abstract void doRead(Point point);
-//
+    public abstract void doRead(HVal curVal, HStr curStatus);
+
 //    public abstract void doWrite() throws Exception;
 
-    public BNHaystackServer getNHaystackServer() { return server; }
+//    public BNHaystackServer getNHaystackServer() { return server; }
 
 ////////////////////////////////////////////////////////////////
 // attributes
 ////////////////////////////////////////////////////////////////
 
-    BNHaystackServer server;
+    private BNHaystackServer server;
 }
 

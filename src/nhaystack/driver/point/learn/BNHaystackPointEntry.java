@@ -15,6 +15,7 @@ public final class BNHaystackPointEntry extends BComponent
       {
           properties
           {
+              facets: BFacets default {[ BFacets.DEFAULT ]}
               id: BHRef default{[ BHRef.DEFAULT ]}
               kind: String default{[ "" ]} 
               writable: boolean default {[ false ]} 
@@ -23,8 +24,31 @@ public final class BNHaystackPointEntry extends BComponent
       }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.learn.BNHaystackPointEntry(2127642458)1.0$ @*/
-/* Generated Mon Apr 07 17:13:50 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.learn.BNHaystackPointEntry(3427303347)1.0$ @*/
+/* Generated Thu Apr 10 14:11:07 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+
+////////////////////////////////////////////////////////////////
+// Property "facets"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>facets</code> property.
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#getFacets
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#setFacets
+   */
+  public static final Property facets = newProperty(0, BFacets.DEFAULT,null);
+  
+  /**
+   * Get the <code>facets</code> property.
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#facets
+   */
+  public BFacets getFacets() { return (BFacets)get(facets); }
+  
+  /**
+   * Set the <code>facets</code> property.
+   * @see nhaystack.driver.point.learn.BNHaystackPointEntry#facets
+   */
+  public void setFacets(BFacets v) { set(facets,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "id"

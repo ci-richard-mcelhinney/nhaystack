@@ -6,8 +6,11 @@ import javax.baja.driver.point.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 
+import org.projecthaystack.*;
+
 import nhaystack.*;
 import nhaystack.driver.*;
+import nhaystack.util.*;
 
 public class BNHaystackNumberProxyExt extends BNHaystackProxyExt
 {
@@ -28,5 +31,21 @@ public class BNHaystackNumberProxyExt extends BNHaystackProxyExt
   public static final Type TYPE = Sys.loadType(BNHaystackNumberProxyExt.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
+
+    public void doRead(HVal curVal, HStr curStatus)
+    {
+        BStatus status = TypeUtil.toBajaStatus(curStatus);
+        if (status.isOk())
+        {
+            double d = ((HNum) curVal).val;
+            readOk(new BStatusNumeric(d, status));
+        }
+        else
+        {
+            readFail("read fault");
+            return;
+        }
+
+    }
 }
 
