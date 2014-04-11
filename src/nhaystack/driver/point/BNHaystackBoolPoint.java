@@ -2,7 +2,6 @@ package nhaystack.driver.point;
 
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
-import javax.baja.driver.point.*;
 import javax.baja.sys.*;
 
 import nhaystack.*;

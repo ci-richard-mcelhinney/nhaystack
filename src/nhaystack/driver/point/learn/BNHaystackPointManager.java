@@ -1,9 +1,6 @@
 package nhaystack.driver.point.learn;
 
-import java.util.*;
-
 import javax.baja.sys.*;
-import javax.baja.util.*;
 import javax.baja.gx.*;
 import javax.baja.ui.*;
 import javax.baja.control.*;

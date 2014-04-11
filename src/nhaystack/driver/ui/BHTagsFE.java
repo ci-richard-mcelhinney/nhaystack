@@ -9,19 +9,14 @@
 package nhaystack.driver.ui;
 
 import javax.baja.gx.*;
-import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.enums.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
-import javax.baja.workbench.view.*;
 
 import nhaystack.driver.*;
-
-import nhaystack.*;
-import nhaystack.server.*;
 
 /**
   * BHTagsFE displays a BHTags, and allows editing via a BHTagsEditor.

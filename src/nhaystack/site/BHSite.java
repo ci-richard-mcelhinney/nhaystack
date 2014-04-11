@@ -11,10 +11,8 @@ package nhaystack.site;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
-import nhaystack.*;
 import nhaystack.res.*;
 import nhaystack.server.*;
-import nhaystack.server.storehouse.*;
 
 /**
  *  BHSite represents a Haystack 'site' rec.

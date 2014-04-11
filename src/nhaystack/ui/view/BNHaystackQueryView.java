@@ -19,11 +19,9 @@ import javax.baja.ui.table.*;
 import javax.baja.ui.util.*;
 import javax.baja.util.*;
 import javax.baja.workbench.view.*;
-import javax.baja.xml.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;
-import nhaystack.site.*;
 import nhaystack.server.*;
 
 /**

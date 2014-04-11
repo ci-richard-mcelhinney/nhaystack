@@ -22,7 +22,6 @@ import javax.baja.util.*;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
-import nhaystack.*;
 import nhaystack.driver.history.*;
 import nhaystack.driver.history.learn.*;
 import nhaystack.driver.point.*;

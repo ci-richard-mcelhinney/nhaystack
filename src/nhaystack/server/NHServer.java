@@ -13,7 +13,6 @@ import javax.baja.collection.*;
 import javax.baja.control.*;
 import javax.baja.control.enums.*;
 import javax.baja.history.*;
-import javax.baja.history.db.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.status.*;

@@ -1,11 +1,8 @@
 package nhaystack.driver.history.learn;
 
-import javax.baja.control.*;
-import javax.baja.history.*;
 import javax.baja.job.*;
-import javax.baja.net.*;
+import javax.baja.history.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 import com.tridium.util.EscUtil;
 
 import org.projecthaystack.*;

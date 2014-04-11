@@ -1,16 +1,11 @@
 package nhaystack.driver.point;
 
-import java.util.*;
-
-import javax.baja.driver.point.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
-import nhaystack.*;
-import nhaystack.driver.*;
 import nhaystack.util.*;
 
 public class BNHaystackBoolProxyExt extends BNHaystackProxyExt

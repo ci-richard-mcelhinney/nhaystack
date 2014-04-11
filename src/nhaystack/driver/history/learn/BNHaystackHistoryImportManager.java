@@ -1,18 +1,13 @@
 package nhaystack.driver.history.learn;
 
-import javax.baja.driver.point.*;
 import javax.baja.driver.history.*;
-import javax.baja.driver.ui.*;
 import javax.baja.driver.ui.history.*; 
 import javax.baja.driver.util.*;
 import javax.baja.gx.*;
 import javax.baja.ui.*;
 import javax.baja.job.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 import javax.baja.workbench.mgr.*; 
-import javax.baja.workbench.mgr.folder.*;
-import nhaystack.driver.*;
 import nhaystack.driver.history.*;
 
 public final class BNHaystackHistoryImportManager extends BHistoryImportManager

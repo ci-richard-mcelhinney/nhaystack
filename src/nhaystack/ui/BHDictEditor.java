@@ -11,13 +11,11 @@ package nhaystack.ui;
 import java.util.*;
 
 import javax.baja.gx.*;
-import javax.baja.history.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.enums.*;
 import javax.baja.ui.event.*;
-import javax.baja.ui.list.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
@@ -27,7 +25,6 @@ import org.projecthaystack.io.*;
 import nhaystack.*;
 import nhaystack.res.*;
 import nhaystack.server.*;
-import nhaystack.util.*;
 
 /**
   * BHDictEditor is the editor for BHDicts.

@@ -1,13 +1,5 @@
 package nhaystack.driver.worker;
 
-import java.net.*;
-import java.util.*;
-
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
-
 import nhaystack.driver.*;
 import nhaystack.driver.point.*;
 import nhaystack.worker.*;

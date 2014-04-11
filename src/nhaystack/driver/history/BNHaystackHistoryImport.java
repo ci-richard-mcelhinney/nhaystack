@@ -10,7 +10,6 @@ import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
-import org.projecthaystack.io.*;
 
 import nhaystack.*;
 import nhaystack.driver.*;

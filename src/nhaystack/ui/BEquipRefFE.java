@@ -8,8 +8,6 @@
 
 package nhaystack.ui;
 
-import java.util.*;
-
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;

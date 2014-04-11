@@ -3,13 +3,8 @@
   */
 package nhaystack.driver;
 
-import javax.baja.driver.*;
 import javax.baja.driver.util.*;
-import javax.baja.log.*;
-import javax.baja.naming.*;
-import javax.baja.net.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 
 import nhaystack.driver.worker.*;
 

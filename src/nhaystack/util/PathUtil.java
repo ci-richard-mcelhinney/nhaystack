@@ -7,8 +7,6 @@
 //
 package nhaystack.util;
 
-import javax.baja.util.*;
-
 public abstract class PathUtil
 {
     /**

@@ -13,14 +13,12 @@ import java.util.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.event.*;
-import javax.baja.ui.list.*;
 import javax.baja.ui.pane.*;
 import javax.baja.workbench.*;
 import javax.baja.workbench.fieldeditor.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;
-import nhaystack.res.*;
 
 /**
   * BHTimeZoneFE edits a Haystack timezone.

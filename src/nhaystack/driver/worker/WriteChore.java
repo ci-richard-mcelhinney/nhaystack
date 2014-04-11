@@ -1,7 +1,5 @@
 package nhaystack.driver.worker;
 
-import java.net.*;
-
 import nhaystack.driver.*;
 import nhaystack.driver.point.*;
 import nhaystack.worker.*;

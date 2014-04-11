@@ -1,12 +1,9 @@
 package nhaystack.driver.point;
 
-import java.util.*;
+import org.projecthaystack.*;
 
 import javax.baja.driver.point.*;
-import javax.baja.status.*;
 import javax.baja.sys.*;
-
-import org.projecthaystack.*;
 
 import nhaystack.*;
 import nhaystack.driver.*;

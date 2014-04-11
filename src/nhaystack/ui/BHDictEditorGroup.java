@@ -12,7 +12,6 @@ import java.util.*;
 
 import javax.baja.fox.*;
 import javax.baja.gx.*;
-import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;

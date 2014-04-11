@@ -3,8 +3,6 @@
   */
 package nhaystack.worker;
 
-import java.net.*;
-
 import javax.baja.status.*;
 import javax.baja.util.*;
 

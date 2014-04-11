@@ -18,7 +18,6 @@ import javax.baja.history.ext.*;
 import javax.baja.naming.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;

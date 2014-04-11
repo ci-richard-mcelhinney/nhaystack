@@ -10,8 +10,6 @@ package nhaystack.server;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
-import nhaystack.*;
-
 /**
   * BTimeZoneAliasFolder contains BTimeZoneAliases
   */

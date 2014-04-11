@@ -11,7 +11,6 @@ import javax.baja.driver.*;
 import javax.baja.driver.point.*;
 import javax.baja.driver.util.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
 
 public class BNHaystackNetwork extends BDeviceNetwork
 {

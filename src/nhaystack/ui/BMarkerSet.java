@@ -11,7 +11,6 @@ package nhaystack.ui;
 import javax.baja.gx.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
-import javax.baja.ui.list.*;
 import javax.baja.ui.enums.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
