@@ -138,7 +138,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 HRow row = hisItems.row(i);
                 HDateTime ts = (HDateTime) row.get("ts");
                 HVal val = row.get("val");
-                history.append(convertTrendRecord(ts, val));
+                history.append(makeTrendRecord(getKind(), ts, val));
             }
 
             executeOk();
@@ -171,9 +171,9 @@ public class BNHaystackHistoryImport extends BHistoryImport
         else throw new IllegalStateException("Cannot create history for id " + getId() + ", kind " + getKind());
     }
 
-    private BTrendRecord convertTrendRecord(HDateTime ts, HVal val)
+    public static BTrendRecord makeTrendRecord(String kind, HDateTime ts, HVal val)
     {
-        if (getKind().equals("Bool"))
+        if (kind.equals("Bool"))
         {
             BBooleanTrendRecord boolTrend = new BBooleanTrendRecord();
             boolTrend.set(
@@ -182,7 +182,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 BStatus.ok);
             return boolTrend;
         }
-        else if (getKind().equals("Number"))
+        else if (kind.equals("Number"))
         {
             BNumericTrendRecord numTrend = new BNumericTrendRecord();
             numTrend.set(
@@ -192,7 +192,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
             return numTrend;
         }
 
-        else throw new IllegalStateException("Cannot create trend record for id " + getId() + ", kind " + getKind());
+        else throw new IllegalStateException("Cannot create trend record for kind " + kind);
     }
 
     private BNHaystackServer server()

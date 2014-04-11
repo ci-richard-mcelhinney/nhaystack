@@ -13,6 +13,7 @@ import javax.baja.collection.*;
 import javax.baja.control.*;
 import javax.baja.control.enums.*;
 import javax.baja.history.*;
+import javax.baja.history.db.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.status.*;
@@ -25,6 +26,7 @@ import org.projecthaystack.server.*;
 import org.projecthaystack.util.*;
 import nhaystack.*;
 import nhaystack.collection.*;
+import nhaystack.driver.history.*;
 import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
 import nhaystack.util.*;
@@ -509,11 +511,20 @@ public class NHServer extends HServer
 
     /**
       * Write the history for the given BComponent.
-      * This is not currently supported.
       */
     protected void onHisWrite(HDict rec, HHisItem[] items)
     {
-        throw new UnsupportedOperationException();
+        if (LOG.isTraceOn())
+            LOG.trace("onHisWrite " + rec.id());
+
+        BHistoryConfig cfg = lookupHistoryConfig(rec.id());
+        BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
+
+        String kind = rec.getStr("kind");
+        for (int i = 0; i < items.length; i++)
+            history.append(
+                BNHaystackHistoryImport.makeTrendRecord(
+                    kind, items[i].ts, items[i].val));
     }
 
     /**
