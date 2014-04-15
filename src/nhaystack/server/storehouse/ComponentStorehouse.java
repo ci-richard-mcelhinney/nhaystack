@@ -18,6 +18,7 @@ import javax.baja.history.ext.*;
 import javax.baja.naming.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
+import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;
@@ -77,7 +78,7 @@ public class ComponentStorehouse extends Storehouse
                 createPointTags((BControlPoint) comp, hdb, tags);
 
             // dis
-            String dis = createDis(hdb, navName);
+            String dis = createDis(comp, tags, hdb);
             hdb.add("dis", dis);
 
             // add id
@@ -92,63 +93,49 @@ public class ComponentStorehouse extends Storehouse
         return hdb.toDict();
     }
 
-    private String createDis(HDictBuilder tags, String navName)
+    private String createDis(BComponent comp, HDict tags, HDictBuilder hdb)
     {
-        String dis = navName;
+        String dis = makeDisName(comp, tags);
 
-        if (tags.has("point"))
+        if (hdb.has("point"))
         {
-            String equipNav = getRefNav(tags, "equipRef");
-            if (equipNav != null)
+            String equipDis = lookupDisName(hdb, "equipRef");
+            if (equipDis != null)
             {
-                dis = equipNav + " " + navName;
+                dis = equipDis + " " + dis;
 
-                String siteNav = getRefNav(tags, "siteRef");
-                if (siteNav != null)
-                    dis = siteNav + " " + equipNav + " " + navName;
+                String siteDis = lookupDisName(hdb, "siteRef");
+                if (siteDis != null)
+                    dis = siteDis + " " + equipDis + " " + dis;
             }
         }
-        else if (tags.has("equip"))
+        else if (hdb.has("equip"))
         {
-            String siteNav = getRefNav(tags, "siteRef");
-            if (siteNav != null)
-                dis = siteNav + " " + navName;
+            String siteDis = lookupDisName(hdb, "siteRef");
+            if (siteDis != null)
+                dis = siteDis + " " + dis;
         }
 
         return dis;
     }
 
-    private HUri createSiteUri(HDictBuilder tags, String navName)
+    private static String makeDisName(BComponent comp, HDict tags)
     {
-        if (tags.has("point"))
-        {
-            String equipNav = getRefNav(tags, "equipRef");
-            if (equipNav != null)
-            {
-                String siteNav = getRefNav(tags, "siteRef");
-                if (siteNav != null)
-                    return HUri.make("sep:/" + siteNav + "/" + equipNav + "/" + navName);
-            }
-        }
-        else if (tags.has("equip"))
-        {
-            String siteNav = getRefNav(tags, "siteRef");
-            if (siteNav != null)
-                return HUri.make("sep:/" + siteNav + "/" + navName);
-        }
-
-        return null;
+        String format = tags.has("navNameFormat") ?
+            tags.getStr("navNameFormat") :
+            "%displayName%";
+        return BFormat.format(format, comp);
     }
 
-    private String getRefNav(HDictBuilder tags, String tagName)
+    private String lookupDisName(HDictBuilder hdb, String tagName)
     {
-        if (tags.has(tagName))
+        if (hdb.has(tagName))
         {
-            BComponent comp = server.lookupComponent((HRef) tags.get(tagName));
+            BComponent comp = server.lookupComponent((HRef) hdb.get(tagName));
             if (comp != null)
             {
                 HDict compTags = BHDict.findTagAnnotation(comp);
-                return Nav.makeNavName(comp, compTags);
+                return makeDisName(comp, compTags);
             }
         }
         return null;
