@@ -1,3 +1,10 @@
+//
+// Copyright (c) 2012, J2 Innovations
+// Licensed under the Academic Free License version 3.0
+//
+// History:
+//   14 Apr 2014  Mike Jarmy  Creation
+
 package nhaystack.driver.worker;
 
 import java.util.*;
