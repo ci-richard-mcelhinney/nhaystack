@@ -121,7 +121,6 @@ public class BNHaystackHistoryImport extends BHistoryImport
             BHistoryId id = getHistoryId();
 
             BHistoryConfig localCfg = makeLocalConfig(createConfig());
-            localCfg.setTimeZone(BTimeZone.getLocal()); 
 
             if(!db.exists(id)) db.createHistory(localCfg);
             else db.reconfigureHistory(localCfg);
@@ -159,22 +158,37 @@ public class BNHaystackHistoryImport extends BHistoryImport
     private BHistoryConfig createConfig()
     {
         BHistoryId id = getHistoryId();
+        BHistoryConfig cfg = null;
+
+        ////////////////////////////////
+        // create history config
 
         if (getKind().equals("Bool"))
         {
-            return new BHistoryConfig(
+            cfg = new BHistoryConfig(
                 id, BTypeSpec.make(BBooleanTrendRecord.TYPE),
                 BCapacity.UNLIMITED);
         }
-
         else if (getKind().equals("Number"))
         {
-            return new BHistoryConfig(
+            cfg = new BHistoryConfig(
                 id, BTypeSpec.make(BNumericTrendRecord.TYPE),
                 BCapacity.UNLIMITED);
         }
+        else throw new IllegalStateException(
+            "Cannot create history for id " + getId() + ", kind " + getKind());
 
-        else throw new IllegalStateException("Cannot create history for id " + getId() + ", kind " + getKind());
+        ////////////////////////////////
+        // set time zone
+
+        HTimeZone tz = HTimeZone.make(getTz());
+        BTimeZone bz = BTimeZone.getTimeZone(tz.java.getID());
+        cfg.setTimeZone(bz);
+
+        ////////////////////////////////
+        // done
+
+        return cfg;
     }
 
     public static BTrendRecord makeTrendRecord(String kind, HDateTime ts, HVal val)
