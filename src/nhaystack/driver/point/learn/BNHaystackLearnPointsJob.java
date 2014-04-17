@@ -110,7 +110,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
         return BFacets.make(
             BFacets.UNITS,
-            Resources.convertToNiagaraUnit(
+            Resources.toBajaUnit(
                 Resources.getSymbolUnit(
                     rec.getStr("unit"))));
     }

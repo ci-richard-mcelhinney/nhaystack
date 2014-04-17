@@ -297,7 +297,7 @@ public class Resources
       * Get the Unit that corresponds to the given Niagara BUnit,
       * or return null if no corresponding Unit can be found.
       */
-    public static Unit convertFromNiagaraUnit(BUnit bunit)
+    public static Unit fromBajaUnit(BUnit bunit)
     {
         Unit unit = (Unit) unitsByLowerCaseName.get(
             TextUtil.replace(bunit.getUnitName(), " ", "_").toLowerCase());
@@ -314,10 +314,10 @@ public class Resources
     }
 
     /**
-      * Get the Unit that corresponds to the given Niagara BUnit,
-      * or return null if no corresponding Unit can be found.
+      * Get the BUnit that corresponds to the given Haystack Unit,
+      * or return null if no corresponding BUnit can be found.
       */
-    public static BUnit convertToNiagaraUnit(Unit unit)
+    public static BUnit toBajaUnit(Unit unit)
     {
         if (unit.name.equals("us_dollar"))     return BUnit.getUnit("dollar");
         if (unit.name.equals("british_pound")) return BUnit.getUnit("pounds");
@@ -353,7 +353,7 @@ public class Resources
                 Unit unit = units[j];
                 try
                 {
-                    BUnit bunit = convertToNiagaraUnit(unit);
+                    BUnit bunit = toBajaUnit(unit);
                 }
                 catch (UnitException e)
                 {
@@ -390,7 +390,7 @@ public class Resources
             {
                 BUnit u = units[j];
 
-                if (convertFromNiagaraUnit(u) == null)
+                if (fromBajaUnit(u) == null)
                 {
                     if (!headerPrinted)
                     {

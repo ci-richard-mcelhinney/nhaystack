@@ -119,7 +119,7 @@ public abstract class Storehouse
         if (conv != 0)
             unit = BUnitConversion.make(conv).getDesiredUnit(unit);
 
-        return Resources.convertFromNiagaraUnit(unit);
+        return Resources.fromBajaUnit(unit);
     }
 
 ////////////////////////////////////////////////////////////////

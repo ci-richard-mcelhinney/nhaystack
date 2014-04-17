@@ -873,7 +873,7 @@ public class NHServer extends HServer
       * then this method uses of the timeZoneAliases stored on the
       * BNHaystackService to attempt to perform a custom mapping.
       */
-    public HTimeZone makeTimeZone(BTimeZone timeZone)
+    public HTimeZone fromBajaTimeZone(BTimeZone timeZone)
     {
         String tzName = timeZone.getId();
 

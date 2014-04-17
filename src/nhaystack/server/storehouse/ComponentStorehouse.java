@@ -162,7 +162,7 @@ public class ComponentStorehouse extends Storehouse
             // tz
             if (!tags.has("tz"))
             {
-                HTimeZone tz = server.makeTimeZone(cfg.getTimeZone());
+                HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
                 if (tz != null) hdb.add("tz", tz.name);
             }
 
