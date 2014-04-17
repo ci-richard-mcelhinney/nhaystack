@@ -7,6 +7,8 @@
 
 package nhaystack.driver.point.learn;
 
+import java.util.*;
+
 import javax.baja.job.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -57,6 +59,9 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
     public void run(Context ctx) throws Exception 
     {
+        NameGenerator nameGen = new NameGenerator();
+        Map entries = new TreeMap();
+        
         HClient client = server.getHaystackClient();
         HGrid grid = client.readAll("point");
         for (int i = 0; i < grid.numRows(); i++)
@@ -66,7 +71,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = EscUtil.slot.escape(row.dis());
+                String name = EscUtil.slot.escape(nameGen.makeName(row));
 
                 BNHaystackPointEntry entry = new BNHaystackPointEntry();
 
@@ -76,8 +81,16 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
                 entry.setId(BHRef.make(row.id()));
                 entry.setImportedTags(BHTags.make(row));
 
-                add(name, entry);
+                entries.put(name, entry);
             }
+        }
+
+        Iterator it = entries.keySet().iterator();
+        while (it.hasNext())
+        {
+            String name = (String) it.next();
+            BNHaystackPointEntry entry = (BNHaystackPointEntry) entries.get(name);
+            add(name, entry);
         }
     }
 

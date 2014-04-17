@@ -7,6 +7,8 @@
 
 package nhaystack.driver.history.learn;
 
+import java.util.*;
+
 import javax.baja.job.*;
 import javax.baja.history.*;
 import javax.baja.sys.*;
@@ -56,6 +58,9 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
 
     public void run(Context ctx) throws Exception 
     {
+        NameGenerator nameGen = new NameGenerator();
+        Map entries = new TreeMap();
+
         HClient client = server.getHaystackClient();
         HGrid grid = client.readAll("his");
         for (int i = 0; i < grid.numRows(); i++)
@@ -65,7 +70,7 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = EscUtil.slot.escape(row.dis());
+                String name = EscUtil.slot.escape(nameGen.makeName(row));
 
                 BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
 
@@ -77,8 +82,16 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
                         Sys.getStation().getStationName(),
                         name));
 
-                add(name, entry);
+                entries.put(name, entry);
             }
+        }
+
+        Iterator it = entries.keySet().iterator();
+        while (it.hasNext())
+        {
+            String name = (String) it.next();
+            BNHaystackHistoryEntry entry = (BNHaystackHistoryEntry) entries.get(name);
+            add(name, entry);
         }
     }
 

@@ -109,9 +109,6 @@ public final class BNHaystackHistoryEntry extends BComponent
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    /**
-      * Indentifies if the supplied component is point entry and whether it is the same one
-      */
     public boolean is(BComponent component)
     {
         boolean res = false;
