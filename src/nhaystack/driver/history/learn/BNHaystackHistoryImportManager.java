@@ -165,26 +165,27 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
     MgrColumn colStatus        = new MgrColumn.Prop(BDescriptor.status,        MgrColumn.UNSEEN);
     MgrColumn colState         = new MgrColumn.Prop(BDescriptor.state,         MgrColumn.UNSEEN);
     MgrColumn colEnabled       = new MgrColumn.Prop(BDescriptor.enabled,       MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    MgrColumn colExecutionTime = new MgrColumn.Prop(BDescriptor.executionTime, MgrColumn.UNSEEN);
-    MgrColumn colLastAttempt   = new MgrColumn.Prop(BDescriptor.lastAttempt,   MgrColumn.UNSEEN);
-    MgrColumn colLastSuccess   = new MgrColumn.Prop(BDescriptor.lastSuccess,   MgrColumn.UNSEEN);
-    MgrColumn colLastFailure   = new MgrColumn.Prop(BDescriptor.lastFailure,   MgrColumn.UNSEEN);
-    MgrColumn colFaultCause    = new MgrColumn.Prop(BDescriptor.faultCause,    MgrColumn.UNSEEN);
+    MgrColumn colExecutionTime = new MgrColumn.Prop(BDescriptor.executionTime, MgrColumn.EDITABLE);
+    MgrColumn colLastAttempt   = new MgrColumn.Prop(BDescriptor.lastAttempt,   MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colLastSuccess   = new MgrColumn.Prop(BDescriptor.lastSuccess,   MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colLastFailure   = new MgrColumn.Prop(BDescriptor.lastFailure,   MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colFaultCause    = new MgrColumn.Prop(BDescriptor.faultCause,    MgrColumn.EDITABLE | MgrColumn.READONLY);
 
-    MgrColumn colId = new MgrColumn.Prop(BNHaystackHistoryImport.id, MgrColumn.EDITABLE | MgrColumn.READONLY);
-    MgrColumn colHistoryId = new MgrColumn.Prop(BArchiveDescriptor.historyId, MgrColumn.EDITABLE | MgrColumn.READONLY);
-    MgrColumn colImportedTags  = new MgrColumn.Prop(BNHaystackHistoryImport.importedTags, MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colId           = new MgrColumn.Prop(BNHaystackHistoryImport.id,           MgrColumn.EDITABLE | MgrColumn.READONLY);
+    MgrColumn colHistoryId    = new MgrColumn.Prop(BArchiveDescriptor.historyId,         MgrColumn.EDITABLE);
+    MgrColumn colImportedTags = new MgrColumn.Prop(BNHaystackHistoryImport.importedTags, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
 
-    MgrColumn colOnDemandPollEnabled   = new MgrColumn.Prop(BHistoryImport.onDemandPollEnabled,   MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    MgrColumn colOnDemandPollFrequency = new MgrColumn.Prop(BHistoryImport.onDemandPollFrequency, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    MgrColumn colOnDemandPollEnabled   = new MgrColumn.Prop(BHistoryImport.onDemandPollEnabled,   MgrColumn.EDITABLE);
+    MgrColumn colOnDemandPollFrequency = new MgrColumn.Prop(BHistoryImport.onDemandPollFrequency, MgrColumn.EDITABLE);
 
     MgrColumn[] cols = 
     { 
         colPath, colName,
         colStatus, colState, colEnabled, colExecutionTime,
         colLastAttempt, colLastSuccess, colLastFailure, colFaultCause,
-        colId, colHistoryId, colImportedTags,
+        colId, colHistoryId, 
         colOnDemandPollEnabled, colOnDemandPollFrequency,
+        colImportedTags,
     };
 
     private static final BImage img = BImage.make(BNHaystackHistoryImport.TYPE.getInstance().getIcon());

@@ -187,23 +187,24 @@ public class BNHaystackPointManager extends BPointManager
     MgrColumn colType        = new MgrColumn.Type();
     MgrColumn colToString    = new MgrColumn.ToString("Out", 0);
     MgrColumn colEnabled     = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.enabled}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    MgrColumn colFacets      = new MgrColumn.PropPath(new Property[] {BControlPoint.facets},  MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    MgrColumn colFacets      = new MgrColumn.PropPath(new Property[] {BControlPoint.facets},  MgrColumn.EDITABLE);
     MgrColumn colTuning      = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.tuningPolicyName}, MgrColumn.EDITABLE);
     MgrColumn colDeviceFacets= new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.deviceFacets}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
     MgrColumn colConversion  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.conversion},   MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    MgrColumn colFaultCause  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.faultCause},   MgrColumn.UNSEEN);
+    MgrColumn colFaultCause  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.faultCause},   MgrColumn.EDITABLE | MgrColumn.READONLY);
     MgrColumn colReadValue   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.readValue},    MgrColumn.UNSEEN);
     MgrColumn colWriteValue  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.writeValue},   MgrColumn.UNSEEN);
 
     MgrColumn colId           = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.id}, MgrColumn.EDITABLE);
     MgrColumn colImportedTags = new MgrColumn.PropPath(
-        new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.importedTags}, MgrColumn.EDITABLE | MgrColumn.READONLY);
+        new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.importedTags}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
 
     MgrColumn[] cols = 
     { 
-        colPath, colName, colType, colToString, colId, colImportedTags,
+        colPath, colName, colType, colToString, colId, 
         colEnabled, colFacets, colTuning, colDeviceFacets, colConversion,
         colFaultCause, colReadValue, colWriteValue,
+        colImportedTags,
     }; 
 
     private static final BImage NUMBER_ICON = BImage.make(BNumericPoint .TYPE.getInstance().getIcon());
