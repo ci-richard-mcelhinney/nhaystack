@@ -102,15 +102,15 @@ public class BNHaystackPointManager extends BPointManager
             if (entry.getKind().equals("Bool"))
             {
                 return (entry.getWritable()) ?
-                    new MgrTypeInfo[] { TYPE_BOOL } :
-                    new MgrTypeInfo[] { TYPE_BOOL_WRITABLE };
+                    new MgrTypeInfo[] { TYPE_BOOL_WRITABLE } :
+                    new MgrTypeInfo[] { TYPE_BOOL };
             }
 
             else if (entry.getKind().equals("Number"))
             {
                 return (entry.getWritable()) ?
-                    new MgrTypeInfo[] { TYPE_NUMBER } :
-                    new MgrTypeInfo[] { TYPE_NUMBER_WRITABLE };
+                    new MgrTypeInfo[] { TYPE_NUMBER_WRITABLE } :
+                    new MgrTypeInfo[] { TYPE_NUMBER };
             }
 
             else throw new IllegalStateException();
