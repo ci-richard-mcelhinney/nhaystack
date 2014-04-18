@@ -71,7 +71,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = EscUtil.slot.escape(nameGen.makeName(row));
+                String name = EscUtil.slot.escape(nameGen.makeUniqueName(row.dis()));
 
                 BNHaystackPointEntry entry = new BNHaystackPointEntry();
 

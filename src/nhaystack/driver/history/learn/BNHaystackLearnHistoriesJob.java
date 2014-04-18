@@ -70,7 +70,7 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = EscUtil.slot.escape(nameGen.makeName(row));
+                String name = EscUtil.slot.escape(nameGen.makeUniqueName(row.dis()));
 
                 BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
 

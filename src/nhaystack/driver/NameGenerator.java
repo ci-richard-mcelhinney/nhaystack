@@ -8,14 +8,11 @@
 package nhaystack.driver;
 
 import java.util.*;
-import org.projecthaystack.*;
 
 public class NameGenerator
 {
-    public String makeName(HDict rec)
+    public String makeUniqueName(String name)
     {
-        String name = dis(rec);
-
         if (set.contains(name))
         {
             int n = 1;
@@ -27,18 +24,6 @@ public class NameGenerator
 
         set.add(name);
         return name;
-    }
-
-    private String dis(HDict rec)
-    {
-        if (rec.has("dis"))
-            return rec.getStr("dis");
-
-        HRef id = rec.id();
-        if (id.dis != null) 
-            return id.dis;
-
-        return id.val;
     }
 
     Set set = new HashSet();
