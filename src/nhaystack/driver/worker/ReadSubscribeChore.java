@@ -32,21 +32,12 @@ public class ReadSubscribeChore extends AbstractSubscribeChore
         if (server.isDisabled() || server.isDown() || server.isFault())
             return;
 
-        try
+        HGrid grid = server.getHaystackWatch().sub(getProxyExtIds(), true);
+        for (int i = 0; i < grid.numRows(); i++)
         {
-            HGrid grid = server.getHaystackWatch().sub(getProxyExtIds(), true);
-            for (int i = 0; i < grid.numRows(); i++)
-            {
-                HRow row = grid.row(i);
-                BNHaystackProxyExt ext = getProxyExt(row.id());
-                ext.doRead(row.get("curVal"), (HStr) row.get("curStatus"));
-            }
-        }
-        catch (Exception e)
-        {
-            BNHaystackProxyExt[] exts = getProxyExts();
-            for (int i = 0; i < exts.length; i++)
-                exts[i].readFail(e.getMessage());
+            HRow row = grid.row(i);
+            BNHaystackProxyExt ext = getProxyExt(row.id());
+            ext.doRead(row.get("curVal"), (HStr) row.get("curStatus"));
         }
     }
 

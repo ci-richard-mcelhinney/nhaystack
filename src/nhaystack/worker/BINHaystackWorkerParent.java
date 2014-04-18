@@ -10,12 +10,19 @@ package nhaystack.worker;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 
+import org.projecthaystack.client.*;
+
 /**
   * BINHaystackWorkerParent is the parent of a BNHaystackWorker
   */
 public interface BINHaystackWorkerParent extends BInterface
 {
     public static final Type TYPE = Sys.loadType(BINHaystackWorkerParent.class);
+
+    /**
+      * This is called by the chore whenever there is a CallNetworkException
+      */
+    public void handleNetworkException(WorkerChore chore, CallNetworkException e);
 
     public BStatus getStatus();
 }

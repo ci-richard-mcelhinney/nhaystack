@@ -16,6 +16,8 @@ import javax.baja.sys.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;
+import org.projecthaystack.client.*;
+
 import nhaystack.*;
 import nhaystack.worker.*;
 import nhaystack.site.*;
@@ -554,6 +556,15 @@ public class BNHaystackService
                 NIAGARA_NETWORK.resolve(this, null).get();
 
         return niagaraNetwork;
+    }
+
+////////////////////////////////////////////////////////////////
+// BINHaystackWorkerParent
+////////////////////////////////////////////////////////////////
+
+    public void handleNetworkException(WorkerChore chore, CallNetworkException e)
+    {
+        // no op
     }
 
 ////////////////////////////////////////////////////////////////

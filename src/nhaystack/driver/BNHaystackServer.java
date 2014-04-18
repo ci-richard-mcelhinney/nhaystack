@@ -466,6 +466,27 @@ public class BNHaystackServer
     }
 
 ////////////////////////////////////////////////////////////////
+// BINHaystackWorkerParent
+////////////////////////////////////////////////////////////////
+
+    /**
+      * This is called by the chore whenever there is a CallNetworkException
+      */
+    public synchronized void handleNetworkException(WorkerChore chore, CallNetworkException e)
+    {
+        LOG.error("Network Exception! " + chore + ", " + e.getMessage());
+        e.printStackTrace();
+
+        resetClient();
+
+        // By calling pingFail, we ensure that this server, and all its 
+        // points, etc, go into 'down' status.  This has the additional effect 
+        // of causing all non-ping WorkerChores to be ignored in 
+        // BNHaystackWorker.enqueueChore() until a ping succeeds.
+        pingFail(e.getMessage()); 
+    }
+
+////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
 

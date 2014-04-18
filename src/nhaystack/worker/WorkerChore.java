@@ -10,6 +10,8 @@ package nhaystack.worker;
 import javax.baja.log.*;
 import javax.baja.sys.*;
 
+import org.projecthaystack.client.*;
+
 /**
   * A WorkerChore is a Runnable that is used to post work to a
   * BNHaystackWorker instance.
@@ -39,7 +41,11 @@ public abstract class WorkerChore implements Runnable
         }
         catch (Exception e)
         {
-            throw new BajaRuntimeException(e);
+            if (e instanceof CallNetworkException)
+                worker.getWorkerParent().handleNetworkException(
+                    this, (CallNetworkException) e);
+            else
+                throw new BajaRuntimeException(e);
         }
         finally
         {

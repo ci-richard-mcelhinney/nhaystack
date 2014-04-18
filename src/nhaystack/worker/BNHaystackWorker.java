@@ -147,6 +147,7 @@ public class BNHaystackWorker
             return;
         }
 
+        // if we are 'down', then all chores except pings will be ignored
         if (status.isDown() && !chore.isPing())
         {
             if (LOG.isTraceOn()) LOG.trace("Chore IGNORE " + chore + " -- " + status);
