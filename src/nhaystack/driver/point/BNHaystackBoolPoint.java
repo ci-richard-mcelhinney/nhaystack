@@ -13,6 +13,9 @@ import javax.baja.sys.*;
 
 import nhaystack.*;
 
+/**
+  * BNHaystackBoolPoint is a read-only boolean proxy point
+  */
 public class BNHaystackBoolPoint 
     extends BBooleanPoint
 {

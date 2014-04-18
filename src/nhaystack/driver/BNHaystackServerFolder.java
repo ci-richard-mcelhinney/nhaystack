@@ -10,6 +10,10 @@ package nhaystack.driver;
 import javax.baja.driver.*;
 import javax.baja.sys.*;
 
+/**
+  * BNHaystackServerFolder is used to organize BNHaystackServer instances
+  * underneath a BNHaystackNetwork.
+  */
 public class BNHaystackServerFolder extends BDeviceFolder
 {
     /*-

@@ -14,7 +14,7 @@ import nhaystack.driver.point.*;
 import nhaystack.worker.*;
 
 /**
-  * ReadSubscribeChore
+  * ReadSubscribeChore handles subscribing to a point
   */
 public class ReadSubscribeChore extends AbstractSubscribeChore
 {
@@ -22,7 +22,7 @@ public class ReadSubscribeChore extends AbstractSubscribeChore
         BNHaystackServer server, 
         BNHaystackProxyExt ext)
     {
-        super(server, "ReadSubscribeChore:" + server.getApiUrl());
+        super(server, "ReadSubscribeChore:" + server.getHaystackUrl());
 
         putProxyExt(ext);
     }

@@ -22,7 +22,7 @@ import org.projecthaystack.*;
 import nhaystack.driver.*;
 
 /**
-  * BHTagsDialog is used by a BHDictFE to bring up a BHDictEditorGroup.
+  * BHTagsDialog is used by a BHTagsFE.
   */
 public final class BHTagsDialog extends BDialog
 {

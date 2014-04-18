@@ -14,13 +14,13 @@ import nhaystack.driver.point.*;
 import nhaystack.worker.*;
 
 /**
-  * PollChore
+  * PollChore handles polling subscribed points
   */
 public class PollChore extends WorkerChore
 {
     public PollChore(BNHaystackServer server)
     {
-        super(server.getWorker(), "PollChore:" + server.getApiUrl());
+        super(server.getWorker(), "PollChore:" + server.getHaystackUrl());
 
         this.server = server;
     }

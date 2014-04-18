@@ -3,7 +3,7 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   10 Feb 2013  Mike Jarmy  Creation
+//   18 Apr 2014  Mike Jarmy  Creation
 
 package nhaystack.driver;
 
@@ -13,7 +13,11 @@ import org.projecthaystack.*;
 import org.projecthaystack.io.*;
 
 /**
- *  BHTags wraps a Haystack HDict
+ * BHTags wraps a Haystack HDict.  BHTags is similar to BHDict,
+ * except that it is intended to always be read-only. 
+ * <p/>
+ * BHTags is used to keep track of the tags that were imported when points or 
+ * histories were added to a BNHaystackServer.
  */
 public final class BHTags
     extends BSimple
@@ -99,27 +103,6 @@ public final class BHTags
     { 
         HZincReader zr = new HZincReader(s);
         return new BHTags(zr.readDict());
-    }
-
-////////////////////////////////////////////////////////////////
-// public
-////////////////////////////////////////////////////////////////
-
-    /**
-      * Return the explicitly annotated tags for the component, 
-      * or return null.
-      *
-      * In order for the annotation to be recognized, it
-      * must be stored in a property called 'haystack'.
-      */
-    public static HDict findTagAnnotation(BComponent comp)
-    {
-        BValue val = comp.get("haystack");
-        if (val == null) return null;
-        if (!(val instanceof BHTags)) return null;
-
-        BHTags dict = (BHTags) comp.get("haystack");
-        return dict.getDict();
     }
 
 ////////////////////////////////////////////////////////////////

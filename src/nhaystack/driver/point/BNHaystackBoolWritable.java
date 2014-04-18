@@ -13,6 +13,9 @@ import javax.baja.sys.*;
 
 import nhaystack.*;
 
+/**
+  * BNHaystackBoolWritable is a writable boolean proxy point
+  */
 public class BNHaystackBoolWritable 
     extends BBooleanWritable
 {

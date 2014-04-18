@@ -12,6 +12,10 @@ import javax.baja.sys.*;
 
 import nhaystack.driver.*;
 
+/**
+  * BNHaystackPointFolder organizes haystack points underneath a
+  * BNHaystackPointDeviceExt.
+  */
 public class BNHaystackPointFolder extends BPointFolder 
 {
     /*-

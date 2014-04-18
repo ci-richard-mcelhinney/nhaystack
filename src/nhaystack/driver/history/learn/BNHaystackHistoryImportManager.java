@@ -17,6 +17,10 @@ import javax.baja.sys.*;
 import javax.baja.workbench.mgr.*; 
 import nhaystack.driver.history.*;
 
+/**
+  * BNHaystackHistoryImportManager manages the transfer of remote haystack
+  * history data into local Baja histories. 
+  */
 public final class BNHaystackHistoryImportManager extends BHistoryImportManager
 {
     /*-

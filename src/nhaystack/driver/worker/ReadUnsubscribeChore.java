@@ -12,7 +12,7 @@ import nhaystack.driver.point.*;
 import nhaystack.worker.*;
 
 /**
-  * ReadUnsubscribeChore
+  * ReadUnsubscribeChore handles unsubscribing from a point
   */
 public class ReadUnsubscribeChore extends AbstractSubscribeChore
 {
@@ -20,7 +20,7 @@ public class ReadUnsubscribeChore extends AbstractSubscribeChore
         BNHaystackServer server, 
         BNHaystackProxyExt ext)
     {
-        super(server, "ReadUnsubscribeChore:" + server.getApiUrl());
+        super(server, "ReadUnsubscribeChore:" + server.getHaystackUrl());
 
         putProxyExt(ext);
     }

@@ -9,6 +9,9 @@ package nhaystack.driver;
 
 import java.util.*;
 
+/**
+  * NameGenerator generates a sequence of unique names
+  */
 public class NameGenerator
 {
     public String makeUniqueName(String name)

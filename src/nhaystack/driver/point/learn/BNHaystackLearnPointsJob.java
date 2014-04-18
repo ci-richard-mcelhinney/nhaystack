@@ -21,6 +21,10 @@ import nhaystack.*;
 import nhaystack.driver.*;
 import nhaystack.res.*;
 
+/**
+  * BNHaystackLearnPointsJob is a Job which 'learns' all the remote
+  * points from a remote haystack server.
+  */
 public class BNHaystackLearnPointsJob extends BSimpleJob 
 {
     /*-

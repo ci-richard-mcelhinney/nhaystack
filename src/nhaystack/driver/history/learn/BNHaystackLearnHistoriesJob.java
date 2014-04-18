@@ -20,6 +20,10 @@ import org.projecthaystack.client.*;
 import nhaystack.*;
 import nhaystack.driver.*;
 
+/**
+  * BNHaystackLearnHistoriesJob is a Job which 'learns' all the remote
+  * histories from a remote haystack server.
+  */
 public class BNHaystackLearnHistoriesJob extends BSimpleJob 
 {
     /*-

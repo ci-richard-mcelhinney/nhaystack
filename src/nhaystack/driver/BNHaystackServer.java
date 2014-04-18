@@ -29,6 +29,9 @@ import nhaystack.driver.point.learn.*;
 import nhaystack.driver.worker.*;
 import nhaystack.worker.*;
 
+/**
+  * BNHaystackServer models a device which is serving up haystack data
+  */
 public class BNHaystackServer 
     extends BDevice
     implements BINHaystackWorkerParent, BIPollable
@@ -333,7 +336,7 @@ public class BNHaystackServer
         return postAsyncChore(
             new PingInvocation(
                 getWorker(),
-                "Ping:" + getApiUrl(),
+                "Ping:" + getHaystackUrl(),
                 new Invocation(this, ping, null, null)));
     }
 
@@ -341,7 +344,7 @@ public class BNHaystackServer
     {
         long begin = Clock.ticks();
         if (LOG.isTraceOn())
-            LOG.trace("Server Ping BEGIN " + getApiUrl());
+            LOG.trace("Server Ping BEGIN " + getHaystackUrl());
 
         if (isDisabled() || isFault())
             return;
@@ -362,7 +365,7 @@ public class BNHaystackServer
             if (LOG.isTraceOn())
             {
                 long end = Clock.ticks();
-                LOG.trace("Server Ping END " + getApiUrl() + " (" + (end-begin) + "ms)");
+                LOG.trace("Server Ping END " + getHaystackUrl() + " (" + (end-begin) + "ms)");
             }
         }
     }
@@ -387,6 +390,9 @@ public class BNHaystackServer
 // public
 ////////////////////////////////////////////////////////////////
 
+    /**
+      * Post a chore asynchronously to the worker queue
+      */
     public final IFuture postAsyncChore(WorkerChore chore)
     {
         if (!isRunning()) return null;
@@ -394,14 +400,14 @@ public class BNHaystackServer
         if (!getEnabled())
         {
             if (LOG.isTraceOn())
-                LOG.trace(getApiUrl() + " server disabled: " + chore);
+                LOG.trace(getHaystackUrl() + " server disabled: " + chore);
             return null;
         }
 
         if (getNetwork().isDisabled())
         {
             if (LOG.isTraceOn())
-                LOG.trace(getApiUrl() + " network disabled: " + chore);
+                LOG.trace(getHaystackUrl() + " network disabled: " + chore);
             return null;
         }
 
@@ -413,32 +419,42 @@ public class BNHaystackServer
         }
         catch (Exception e)
         {
-            LOG.error(getApiUrl() + " Cannot post async: " + e.getMessage());
+            LOG.error(getHaystackUrl() + " Cannot post async: " + e.getMessage());
             return null;
         }
     }
 
+    /**
+      * Obtain an HClient instance that can be used to communicate with
+      * the remote server.
+      */
     public synchronized HClient getHaystackClient() 
     {
         if (hclient == null)
         {
             hclient = HClient.open(
-                getApiUrl(),
+                getHaystackUrl(),
                 getCredentials().getUsername(),
                 getCredentials().getPassword().getString());
         }
         return hclient;
     }
 
+    /**
+      * Obtain an HWatch that can be used to subscribe to remote objects.
+      */
     public synchronized HWatch getHaystackWatch() 
     {
         if ((hwatch == null) || !hwatch.isOpen())
-            hwatch = getHaystackClient().watchOpen(getApiUrl());
+            hwatch = getHaystackClient().watchOpen(getHaystackUrl());
 
         return hwatch;
     }
 
-    public String getApiUrl()
+    /**
+      * Get the full Url to use when communicating with the remote server.
+      */
+    public String getHaystackUrl()
     {
         StringBuffer sb = new StringBuffer();
 
@@ -453,21 +469,33 @@ public class BNHaystackServer
         return sb.toString();
     }
 
+    /**
+      * Do not call this method directly, it should only be used by the driver
+      */
     public synchronized void registerProxyExt(BNHaystackProxyExt ext)
     {
         proxyExts.put(ext.getId().getRef(), ext);
     }
 
+    /**
+      * Do not call this method directly, it should only be used by the driver
+      */
     public synchronized void unregisterProxyExt(BNHaystackProxyExt ext)
     {
         proxyExts.remove(ext.getId().getRef());
     }
 
+    /**
+      * Do not call this method directly, it should only be used by the driver
+      */
     public synchronized BNHaystackProxyExt getRegisteredProxyExt(HRef id)
     {
         return (BNHaystackProxyExt) proxyExts.get(id);
     }
 
+    /**
+      * Return the parent BNHaystackNetwork
+      */
     public BNHaystackNetwork getNHaystackNetwork()
     {
         return (BNHaystackNetwork) getNetwork();
@@ -478,7 +506,7 @@ public class BNHaystackServer
 ////////////////////////////////////////////////////////////////
 
     /**
-      * This is called by the chore whenever there is a CallNetworkException
+      * Handle a network exception that occured when running a chore.
       */
     public synchronized void handleNetworkException(WorkerChore chore, CallNetworkException e)
     {
@@ -509,7 +537,7 @@ public class BNHaystackServer
         }
 
         if (isRunning() && LOG.isTraceOn())
-            LOG.trace(getApiUrl() + " reset client");
+            LOG.trace(getHaystackUrl() + " reset client");
     }
 
 ////////////////////////////////////////////////////////////////

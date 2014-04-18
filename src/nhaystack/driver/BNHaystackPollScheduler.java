@@ -12,6 +12,9 @@ import javax.baja.sys.*;
 
 import nhaystack.driver.worker.*;
 
+/**
+  * BNHaystackPollScheduler schedules polling for BNHaystackServer instances.
+  */
 public class BNHaystackPollScheduler 
     extends BPollScheduler
 {

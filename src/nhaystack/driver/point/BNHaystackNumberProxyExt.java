@@ -15,6 +15,9 @@ import org.projecthaystack.client.*;
 
 import nhaystack.util.*;
 
+/**
+  * BNHaystackNumberProxyExt is a proxy extension for numeric remote haystack points.
+  */
 public class BNHaystackNumberProxyExt extends BNHaystackProxyExt
 {
     /*-

@@ -18,7 +18,7 @@ import nhaystack.driver.point.*;
 import nhaystack.worker.*;
 
 /**
-  * AbstractSubscribeChore
+  * AbstractSubscribeChore handles subscribing and unsubscribing a point
   */
 public abstract class AbstractSubscribeChore extends WorkerChore
 {

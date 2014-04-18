@@ -13,6 +13,9 @@ import javax.baja.sys.*;
 
 import nhaystack.*;
 
+/**
+  * BNHaystackNumberPoint is a read-only numeric proxy point
+  */
 public class BNHaystackNumberPoint 
     extends BNumericPoint
 {

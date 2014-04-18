@@ -13,6 +13,9 @@ import javax.baja.sys.*;
 
 import nhaystack.*;
 
+/**
+  * BNHaystackNumberWritable is a writable number proxy point
+  */
 public class BNHaystackNumberWritable 
     extends BNumericWritable
 {

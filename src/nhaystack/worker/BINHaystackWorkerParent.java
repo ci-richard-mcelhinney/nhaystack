@@ -20,7 +20,7 @@ public interface BINHaystackWorkerParent extends BInterface
     public static final Type TYPE = Sys.loadType(BINHaystackWorkerParent.class);
 
     /**
-      * This is called by the chore whenever there is a CallNetworkException
+      * Handle a network exception that occured when running a chore.
       */
     public void handleNetworkException(WorkerChore chore, CallNetworkException e);
 

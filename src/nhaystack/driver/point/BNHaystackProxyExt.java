@@ -16,6 +16,9 @@ import nhaystack.*;
 import nhaystack.driver.*;
 import nhaystack.driver.worker.*;
 
+/**
+  * BNHaystackProxyExt is a proxy extension for remote haystack points.
+  */
 public abstract class BNHaystackProxyExt extends BProxyExt
 {
     /*-

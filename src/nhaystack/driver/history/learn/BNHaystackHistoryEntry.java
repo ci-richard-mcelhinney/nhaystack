@@ -14,6 +14,10 @@ import nhaystack.*;
 import nhaystack.driver.*;
 import nhaystack.driver.history.*;
 
+/**
+  * BNHaystackHistoryEntry represents an object that was discovered
+  * during a 'learn' in the BNHaystackHistoryImportManager.
+  */
 public final class BNHaystackHistoryEntry extends BComponent
 {
     /*-

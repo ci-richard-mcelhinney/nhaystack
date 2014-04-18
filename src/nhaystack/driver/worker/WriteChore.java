@@ -12,7 +12,7 @@ import nhaystack.driver.point.*;
 import nhaystack.worker.*;
 
 /**
-  * WriteChore
+  * WriteChore handles writing to a point
   */
 public class WriteChore extends WorkerChore
 {
@@ -21,7 +21,7 @@ public class WriteChore extends WorkerChore
         super(
             server.getWorker(),
             "WriteChore:" + 
-            server.getApiUrl() + ":" + 
+            server.getHaystackUrl() + ":" + 
             ext.getId());
 
         this.server = server;

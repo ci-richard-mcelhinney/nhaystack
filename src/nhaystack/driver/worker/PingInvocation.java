@@ -12,6 +12,9 @@ import javax.baja.util.*;
 
 import nhaystack.worker.*;
 
+/**
+  * PingInvocation handles pinging a BNHaystackServer
+  */
 public final class PingInvocation extends WorkerChore
 {
     public PingInvocation(BNHaystackWorker worker, String name, Invocation invocation) 

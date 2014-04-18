@@ -14,6 +14,10 @@ import nhaystack.*;
 import nhaystack.driver.*;
 import nhaystack.driver.point.*;
 
+/**
+  * BNHaystackPointEntry represents an object that was discovered
+  * during a 'learn' in the BNHaystackPointManager.
+  */
 public final class BNHaystackPointEntry extends BComponent
 {
     /*-

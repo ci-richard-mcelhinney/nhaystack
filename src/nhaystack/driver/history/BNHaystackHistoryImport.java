@@ -23,6 +23,10 @@ import nhaystack.driver.*;
 import nhaystack.util.*;
 import nhaystack.worker.*;
 
+/**
+  * BNHaystackHistoryImport transfers remote haystack history data
+  * into a local Baja history.
+  */
 public class BNHaystackHistoryImport extends BHistoryImport
 {
     /*-

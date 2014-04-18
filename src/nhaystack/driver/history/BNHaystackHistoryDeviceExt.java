@@ -11,6 +11,10 @@ import javax.baja.driver.history.*;
 import javax.baja.sys.*;
 import nhaystack.driver.*;
 
+/**
+  * BNHaystackHistoryDeviceExt maps haystack history data
+  * into Baja histories.
+  */
 public class BNHaystackHistoryDeviceExt extends BHistoryDeviceExt
 {
     /*-

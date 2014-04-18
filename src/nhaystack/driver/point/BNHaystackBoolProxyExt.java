@@ -15,6 +15,9 @@ import org.projecthaystack.client.*;
 
 import nhaystack.util.*;
 
+/**
+  * BNHaystackBoolProxyExt is a proxy extension for boolean remote haystack points.
+  */
 public class BNHaystackBoolProxyExt extends BNHaystackProxyExt
 {
     /*-

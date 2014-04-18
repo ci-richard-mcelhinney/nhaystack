@@ -19,6 +19,10 @@ import javax.baja.job.*;
 import nhaystack.driver.*;
 import nhaystack.driver.point.*;
 
+/**
+  * BNHaystackPointManager manages the proxy points
+  * under a BNHaystackServer.
+  */
 public class BNHaystackPointManager extends BPointManager
 {                
     public Type getType() { return TYPE; }
