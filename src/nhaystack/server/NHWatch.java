@@ -209,6 +209,14 @@ public class NHWatch extends HWatch
         server.removeWatch(watchId);
     }
 
+    /**
+     * Return whether this watch is currently open.
+     */
+    public synchronized boolean isOpen()
+    {
+        return open;
+    }
+
 ////////////////////////////////////////////////////////////////
 // NSubscriber
 ////////////////////////////////////////////////////////////////

@@ -39,7 +39,7 @@ public class BNHaystackServer
         properties
         {
             internetAddress: BInternetAddress default{[ BInternetAddress.NULL ]}
-            projectName: String default{[ "" ]}
+            uriPath: String default{[ "" ]}
             credentials: BUsernameAndPassword default{[ new BUsernameAndPassword() ]}
 
             histories: BNHaystackHistoryDeviceExt default{[ new BNHaystackHistoryDeviceExt() ]}
@@ -61,8 +61,8 @@ public class BNHaystackServer
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(2064952046)1.0$ @*/
-/* Generated Thu Apr 10 13:46:14 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(2474489210)1.0$ @*/
+/* Generated Fri Apr 18 12:50:39 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
@@ -88,27 +88,27 @@ public class BNHaystackServer
   public void setInternetAddress(BInternetAddress v) { set(internetAddress,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "projectName"
+// Property "uriPath"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>projectName</code> property.
-   * @see nhaystack.driver.BNHaystackServer#getProjectName
-   * @see nhaystack.driver.BNHaystackServer#setProjectName
+   * Slot for the <code>uriPath</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getUriPath
+   * @see nhaystack.driver.BNHaystackServer#setUriPath
    */
-  public static final Property projectName = newProperty(0, "",null);
+  public static final Property uriPath = newProperty(0, "",null);
   
   /**
-   * Get the <code>projectName</code> property.
-   * @see nhaystack.driver.BNHaystackServer#projectName
+   * Get the <code>uriPath</code> property.
+   * @see nhaystack.driver.BNHaystackServer#uriPath
    */
-  public String getProjectName() { return getString(projectName); }
+  public String getUriPath() { return getString(uriPath); }
   
   /**
-   * Set the <code>projectName</code> property.
-   * @see nhaystack.driver.BNHaystackServer#projectName
+   * Set the <code>uriPath</code> property.
+   * @see nhaystack.driver.BNHaystackServer#uriPath
    */
-  public void setProjectName(String v) { setString(projectName,v,null); }
+  public void setUriPath(String v) { setString(uriPath,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "credentials"
@@ -292,7 +292,7 @@ public class BNHaystackServer
     public void changed(Property property, Context context)
     {
         if ((property == internetAddress) || 
-            (property == projectName) || 
+            (property == uriPath) || 
             (property == credentials))
             resetClient();
     }
@@ -432,7 +432,7 @@ public class BNHaystackServer
 
     public synchronized HWatch getHaystackWatch() 
     {
-        if (hwatch == null)
+        if ((hwatch == null) || !hwatch.isOpen())
             hwatch = getHaystackClient().watchOpen(getApiUrl());
 
         return hwatch;
@@ -440,9 +440,17 @@ public class BNHaystackServer
 
     public String getApiUrl()
     {
-        return 
-            "http://" + getInternetAddress().getAuthority() + 
-            "/api/" + getProjectName() + "/";
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("http://");
+        sb.append(getInternetAddress().getAuthority());
+
+        String path = getUriPath();
+        if (!path.startsWith("/")) sb.append("/");
+        sb.append(path);
+        if (!path.endsWith("/")) sb.append("/");
+
+        return sb.toString();
     }
 
     public synchronized void registerProxyExt(BNHaystackProxyExt ext)
