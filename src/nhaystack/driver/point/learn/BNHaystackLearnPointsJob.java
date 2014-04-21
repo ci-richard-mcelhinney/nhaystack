@@ -112,11 +112,14 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
     {
         if (!rec.has("unit")) return BFacets.NULL;
 
+        String unit = rec.getStr("unit");
+        if (unit.toLowerCase().equals("none"))
+            return BFacets.NULL;
+
         return BFacets.make(
             BFacets.UNITS,
             Resources.toBajaUnit(
-                Resources.getSymbolUnit(
-                    rec.getStr("unit"))));
+                Resources.getSymbolUnit(unit)));
     }
 
 ////////////////////////////////////////////////////////////////
