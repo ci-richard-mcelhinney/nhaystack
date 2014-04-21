@@ -11,6 +11,7 @@ import java.util.*;
 
 import javax.baja.status.*;
 import javax.baja.sys.*;
+import javax.baja.timezone.*;
 
 import org.projecthaystack.*;
 import nhaystack.res.*;
@@ -135,31 +136,9 @@ public abstract class TypeUtil
         }
     }
 
-    public static HDateTime fromBajaAbsTime(BAbsTime absTime, HTimeZone tz)
+    public static BTimeZone toBajaTimeZone(HTimeZone tz)
     {
-        return HDateTime.make(
-            HDate.make(
-                absTime.getYear(),
-                absTime.getMonth().getMonthOfYear(),
-                absTime.getDay()),
-            HTime.make(
-                absTime.getHour(),
-                absTime.getMinute(),
-                absTime.getSecond(),
-                absTime.getMillisecond()),
-            tz);
-    }
-
-    public static BAbsTime toBajaAbsTime(HDateTime dt)
-    {
-        return BAbsTime.make(
-            dt.date.year,
-            BMonth.make(dt.date.month - 1),
-            dt.date.day,
-            dt.time.hour,
-            dt.time.min,
-            dt.time.sec,
-            dt.time.ms);
+        return BTimeZone.getTimeZone(tz.java.getID());
     }
 
     public static BStatus toBajaStatus(HStr curStatus)

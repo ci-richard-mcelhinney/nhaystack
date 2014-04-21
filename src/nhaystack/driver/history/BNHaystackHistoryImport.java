@@ -12,7 +12,6 @@ import javax.baja.history.*;
 import javax.baja.history.db.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
-import javax.baja.timezone.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;
@@ -137,7 +136,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
             BAbsTime from = last.add(BRelTime.make(1L));
 
             HTimeZone tz = HTimeZone.make(getTz());
-            HDateTime dt = TypeUtil.fromBajaAbsTime(from, tz);
+            HDateTime dt = HDateTime.make(from.getMillis(), tz);
             HDateTimeRange range = HDateTimeRange.make(dt.toZinc(), tz);
 
             // import records
@@ -185,9 +184,9 @@ public class BNHaystackHistoryImport extends BHistoryImport
         ////////////////////////////////
         // set time zone
 
-        HTimeZone tz = HTimeZone.make(getTz());
-        BTimeZone bz = BTimeZone.getTimeZone(tz.java.getID());
-        cfg.setTimeZone(bz);
+        cfg.setTimeZone(
+            TypeUtil.toBajaTimeZone(
+                HTimeZone.make(getTz())));
 
         ////////////////////////////////
         // done
@@ -197,22 +196,20 @@ public class BNHaystackHistoryImport extends BHistoryImport
 
     public static BTrendRecord makeTrendRecord(String kind, HDateTime ts, HVal val)
     {
+        BAbsTime abs = BAbsTime.make(
+            ts.millis(), 
+            TypeUtil.toBajaTimeZone(ts.tz));
+
         if (kind.equals("Bool"))
         {
             BBooleanTrendRecord boolTrend = new BBooleanTrendRecord();
-            boolTrend.set(
-                TypeUtil.toBajaAbsTime(ts),
-                ((HBool) val).val,
-                BStatus.ok);
+            boolTrend.set(abs, ((HBool) val).val, BStatus.ok);
             return boolTrend;
         }
         else if (kind.equals("Number"))
         {
             BNumericTrendRecord numTrend = new BNumericTrendRecord();
-            numTrend.set(
-                TypeUtil.toBajaAbsTime(ts),
-                ((HNum) val).val,
-                BStatus.ok);
+            numTrend.set(abs, ((HNum) val).val, BStatus.ok);
             return numTrend;
         }
 
