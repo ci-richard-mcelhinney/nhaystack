@@ -3,25 +3,29 @@
 ## ![NHaystack](tag.png) NHaystack
 
 NHaystack is an open-source [Niagara AX](http://www.niagaraax.com/) module 
-that enables Niagara stations (JACE and WebSupervisor) to serve data 
-in the [Project Haystack](http://project-haystack.org) format, via a 
-[RESTful](http://project-haystack.org/doc/Rest) protocol.  Using NHaystack, 
+that enables Niagara stations (JACE and WebSupervisor) to act as either servers 
+_or_ clients in the [Project Haystack](http://project-haystack.org) format, via 
+a [RESTful](http://project-haystack.org/doc/Rest) protocol.  Using NHaystack, 
 external applications receive data that includes essential meta data (tags) 
 to describe the meaning of the data. 
 
-NHaystack automatically generates standard tags for all the ControlPoints in 
-your system.  This feature allows for connecting immediately to the Niagara 
-Station via Haystack once the NHaystack module has been installed, without 
-requiring any further configuration.  It makes discovering the points in your 
-station as easy as issuing a simple query.
+When acting as a server, NHaystack automatically generates standard tags for 
+all the ControlPoints in your system.  This feature allows for connecting 
+immediately to the Niagara Station via Haystack once the NHaystack module has 
+been installed, without requiring any further configuration.  It makes 
+discovering the points in your station as easy as issuing a simple query.
 
-NHaystack also streamlines the process of adding user-specified Haystack tags
-to Niagara systems by providing a GUI tool that allows users to add the tags 
-directly to Niagara components. Once tags have been defined, the data 
-associated with the Niagara components, including the tags, are available over 
-the Rest communications interface. This combination of the tagging tool and the 
-Haystack protocol "engine" reduces the effort involved in connecting Niagara 
-data to external software applications.
+NHaystack-as-a-server also streamlines the process of adding user-specified 
+Haystack tags to Niagara systems, by providing a GUI tool that allows users to 
+add the tags directly to Niagara components. Once tags have been defined, the 
+data associated with the Niagara components, including the tags, are available 
+over the Rest communications interface. This combination of the tagging tool 
+and the Haystack protocol "engine" reduces the effort involved in connecting 
+Niagara data to external software applications.
+
+NHaystack can also act as a Haystack client, via an AX driver that models
+remote servers as AX devices. This allows haystack devices to exist "underneath"
+AX stations.  See Section 7 of this document for an explanation of how that works.
 
 NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
@@ -49,12 +53,15 @@ equipment and data.
 * Unifies the Component and History namespaces
 * Allows for arbitrary queries of the station based on Haystack tags
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
+* Provides a standard AX driver so that remote Haystack servers can be modeled 
+inside of AX.
 
-### 1. Getting started
+### 1. Using NHaystack as a server
 
-To get started, install nhaystack.jar into an AX station.  Then 
-open the nhaystack palette in Workbench, and drag-and-drop the NHaystackService 
-onto the "/Services" folder of your station.
+To get started with exposing an AX station as a haystack server, install 
+nhaystack.jar into an AX station.  Then open the nhaystack palette in 
+Workbench, and drag-and-drop the NHaystackService onto the "/Services" folder 
+of your station.
 
 This is all you need to do to get rolling.  Your station is now automatically
 serving up all its ControlPoint objects and Histories as haystack 
@@ -500,6 +507,41 @@ which looks something like this:
     h.L25oYXlzdGFja19zaW1wbGUvQXVkaXRIaXN0b3J5
 
 Nhaystack no longer generates IDs with this form, but it can resolve them.
+
+### 7. Using NHaystack as a client
+
+NHaystack can also model remote haystack servers as AX devices.  This is done 
+via a standard AX driver that maps the Haystack protocol into the AX driver 
+framework.
+
+You do *not* need to have an NHaystackService installed in your station to do 
+this -- the driver is a standalone piece of functionality.  In fact you 
+_shouldn't_ have an NHaystackService in the station unless you are acting 
+simultaneously as a server and a client.
+
+To get started, open the nhaystack palette in Workbench, open the "drivers" 
+sub-folder of the palette, and drag-and-drop the NHaystackNetwork onto the 
+"/Drivers" folder of your station.  Then drag an NHaystackServer so that it is 
+underneath your NHaystackNetwork.
+
+Next, configure the internetAddress, uriPath, and credentials slots on the
+NHaystackServer.  The internetAddress adress should just be the hostname or IP 
+address (plus a colon and then the port number if something other than port 
+80 is being used).  The uriPath should be of the form "api/myProjectName" if 
+the remote server is running FIN|Stack or SkySpark.  If the remote server is an 
+AX station that is running nhaystack-as-a-server, then the uriPath should 
+simply be "haystack".
+
+After you've configured the NHaystackServer, manually do a ping to make sure its
+connected.  Once connectivity has been established, you can go to the "points" 
+and "histories" folders of the NHaystackServer object, and discover points and 
+histories just like any other Niagara driver.
+
+Note that currently, the driver imports ["Str" points](http://project-haystack.org/tag/point)
+as Baja BStringPoint and BStringWritable objects, even if the haystack point
+has an enum tag which specifies a list allowable values.  BEnumPoint and 
+BEnumWritable objects are currently not created by the driver.  Instead, the 
+enum tag is stored as a 'range' facet on the AX ControlPoint.
 
 [rec]: http://project-haystack.org/doc/TagModel#entities
 [structure]: http://project-haystack.org/doc/Structure
