@@ -57,6 +57,7 @@ public class BNHaystackPointManager extends BPointManager
             {
                 TYPE_NUMBER, TYPE_NUMBER_WRITABLE,
                 TYPE_BOOL,   TYPE_BOOL_WRITABLE,
+                TYPE_STR,    TYPE_STR_WRITABLE,
             };
         }                                    
     }   
@@ -95,6 +96,7 @@ public class BNHaystackPointManager extends BPointManager
 
             if      (entry.getKind().equals("Bool"))   return BOOL_ICON;
             else if (entry.getKind().equals("Number")) return NUMBER_ICON;
+            else if (entry.getKind().equals("Str"))    return STR_ICON;
 
             else throw new IllegalStateException();
         }
@@ -115,6 +117,13 @@ public class BNHaystackPointManager extends BPointManager
                 return (entry.getWritable()) ?
                     new MgrTypeInfo[] { TYPE_NUMBER_WRITABLE } :
                     new MgrTypeInfo[] { TYPE_NUMBER };
+            }
+
+            else if (entry.getKind().equals("Str"))
+            {
+                return (entry.getWritable()) ?
+                    new MgrTypeInfo[] { TYPE_STR_WRITABLE } :
+                    new MgrTypeInfo[] { TYPE_STR };
             }
 
             else throw new IllegalStateException();
@@ -185,6 +194,8 @@ public class BNHaystackPointManager extends BPointManager
     static MgrTypeInfo TYPE_NUMBER_WRITABLE = MgrTypeInfo.make(BNHaystackNumberWritable.TYPE);
     static MgrTypeInfo TYPE_BOOL            = MgrTypeInfo.make(BNHaystackBoolPoint.TYPE);
     static MgrTypeInfo TYPE_BOOL_WRITABLE   = MgrTypeInfo.make(BNHaystackBoolWritable.TYPE);
+    static MgrTypeInfo TYPE_STR             = MgrTypeInfo.make(BNHaystackStrPoint.TYPE);
+    static MgrTypeInfo TYPE_STR_WRITABLE    = MgrTypeInfo.make(BNHaystackStrWritable.TYPE);
 
     MgrColumn colPath        = new MgrColumn.Path(MgrColumn.UNSEEN);
     MgrColumn colName        = new MgrColumn.Name();
@@ -213,4 +224,5 @@ public class BNHaystackPointManager extends BPointManager
 
     private static final BImage NUMBER_ICON = BImage.make(BNumericPoint .TYPE.getInstance().getIcon());
     private static final BImage BOOL_ICON   = BImage.make(BBooleanPoint .TYPE.getInstance().getIcon());
+    private static final BImage STR_ICON    = BImage.make(BStringPoint  .TYPE.getInstance().getIcon());
 }

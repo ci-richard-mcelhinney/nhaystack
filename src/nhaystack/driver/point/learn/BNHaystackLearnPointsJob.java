@@ -73,20 +73,18 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
             HRow row = grid.row(i);
 
             String kind = row.getStr("kind");
-            if (kind.equals("Bool") || kind.equals("Number"))
-            {
-                String name = EscUtil.slot.escape(nameGen.makeUniqueName(row.dis()));
+            String name = EscUtil.slot.escape(nameGen.makeUniqueName(row.dis()));
 
-                BNHaystackPointEntry entry = new BNHaystackPointEntry();
+            BNHaystackPointEntry entry = new BNHaystackPointEntry();
 
-                if      (kind.equals("Bool"))   entry.setFacets(makeBoolFacets(row));
-                else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
+            if      (kind.equals("Bool"))   entry.setFacets(makeBoolFacets(row));
+            else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
+            else if (kind.equals("Str"))    entry.setFacets(makeStrFacets(row));
 
-                entry.setId(BHRef.make(row.id()));
-                entry.setImportedTags(BHTags.make(row));
+            entry.setId(BHRef.make(row.id()));
+            entry.setImportedTags(BHTags.make(row));
 
-                entries.put(name, entry);
-            }
+            entries.put(name, entry);
         }
 
         Iterator it = entries.keySet().iterator();
@@ -120,6 +118,15 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
             BFacets.UNITS,
             Resources.toBajaUnit(
                 Resources.getSymbolUnit(unit)));
+    }
+
+    private BFacets makeStrFacets(HDict rec)
+    {
+        if (!rec.has("enum")) return BFacets.NULL;
+
+        String[] tokens = TextUtil.split(rec.getStr("enum"), ',');
+
+        return BFacets.makeEnum(BEnumRange.make(tokens));
     }
 
 ////////////////////////////////////////////////////////////////

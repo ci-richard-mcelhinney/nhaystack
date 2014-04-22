@@ -47,6 +47,9 @@
     <type name="NHaystackPointDeviceExt" class="nhaystack.driver.point.BNHaystackPointDeviceExt" />
     <type name="NHaystackPointFolder"    class="nhaystack.driver.point.BNHaystackPointFolder"    />
     <type name="NHaystackProxyExt"       class="nhaystack.driver.point.BNHaystackProxyExt"       />
+    <type name="NHaystackStrPoint"       class="nhaystack.driver.point.BNHaystackStrPoint"       />
+    <type name="NHaystackStrProxyExt"    class="nhaystack.driver.point.BNHaystackStrProxyExt"    />
+    <type name="NHaystackStrWritable"    class="nhaystack.driver.point.BNHaystackStrWritable"    />
 
     <!-- nhaystack.driver.point.learn -->
     <type name="NHaystackLearnPointsJob"  class="nhaystack.driver.point.learn.BNHaystackLearnPointsJob"  />
