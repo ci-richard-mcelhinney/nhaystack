@@ -1084,6 +1084,31 @@ public class NHServer extends HServer
         return HGridBuilder.dictsToGrid(dicts);
     }
 
+//////////////////////////////////////////////////////////////////////////
+// ApplyBatchTags
+//////////////////////////////////////////////////////////////////////////
+
+    static class ApplyBatchTags extends HOp
+    {
+        public String name() { return "applyBatchTags"; }
+        public String summary() { return "Apply Batch Tags"; }
+        public HGrid onService(HServer db, HGrid req)
+        {
+            NHServer server = (NHServer) db;
+
+            HRow params = req.row(0);
+
+            boolean returnResultRows = false;
+            if (params.has("returnResultRows"))
+                returnResultRows = params.getBool("returnResultRows");
+
+            return server.getService().applyBatchTags(
+                params.getStr("tags"),
+                params.getStr("targetFilter"),
+                returnResultRows);
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
@@ -1104,6 +1129,8 @@ public class NHServer extends HServer
     private static final Log LOG = Log.getLog("nhaystack");
 
     private static final String LAST_WRITE = "haystackLastWrite";
+    
+    private static final HOp APPLY_BATCH_TAGS = new ApplyBatchTags();
 
     private static final HOp[] OPS = new HOp[]
     {
@@ -1119,6 +1146,7 @@ public class NHServer extends HServer
         HStdOps.hisRead,
         HStdOps.hisWrite,
         HStdOps.invokeAction,
+        APPLY_BATCH_TAGS
     };
 
     // Every single tag which the server may have auto-generated.

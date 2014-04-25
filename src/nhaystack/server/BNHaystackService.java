@@ -8,6 +8,8 @@
 //
 package nhaystack.server;
 
+import java.util.*;
+
 import javax.baja.driver.*;
 import javax.baja.history.db.*;
 import javax.baja.log.*;
@@ -17,6 +19,7 @@ import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
+import org.projecthaystack.io.*;
 
 import nhaystack.*;
 import nhaystack.worker.*;
@@ -558,6 +561,85 @@ public class BNHaystackService
         return niagaraNetwork;
     }
 
+    /**
+      * Apply the given tags to every component that is part of the given target filter.
+      */
+    public HGrid applyBatchTags(String tags, String targetFilter, boolean returnResultRows)
+    {
+        HDict newTags = new HZincReader(tags).readDict();
+
+        BComponent[] targets = getFilterComponents(targetFilter);
+        HDict[] rows = new HDict[targets.length];
+        for (int i = 0; i < targets.length; i++)
+        {
+            BComponent target = targets[i];
+            if (target.get("haystack") == null) continue;
+            if (!(target.get("haystack") instanceof BHDict)) continue;
+
+            HDictBuilder hdb = new HDictBuilder();
+
+            // add orig tags
+            HDict origTags = ((BHDict) target.get("haystack")).getDict();
+            Iterator it = origTags.iterator();
+            while (it.hasNext())
+            {
+                Map.Entry e = (Map.Entry) it.next();
+                String key = (String) e.getKey();
+                HVal   val = (HVal)   e.getValue();
+
+                HVal rem = (HVal) newTags.get(key, false);
+                if (!(rem != null && rem.equals(REMOVE)))
+                    hdb.add(key, val);
+            }
+
+            // add new tags
+            it = newTags.iterator();
+            while (it.hasNext())
+            {
+                Map.Entry e = (Map.Entry) it.next();
+                String key = (String) e.getKey();
+                HVal   val = (HVal)   e.getValue();
+
+                if (!val.equals(REMOVE))
+                    hdb.add(key, val);
+            }
+
+            HDict row = hdb.toDict();
+            target.set("haystack", BHDict.make(row));
+            rows[i] = row;
+        }
+        
+        if (returnResultRows)
+        {
+            return HGridBuilder.dictsToGrid(rows);
+        }
+        else
+        {
+            HDictBuilder hdb = new HDictBuilder();
+            hdb.add("rowsChanged", HNum.make(targets.length));
+            return HGridBuilder.dictToGrid(hdb.toDict());
+        }
+    }
+
+    /**
+      * Find all the components that are part of the given filter.
+      */
+    public BComponent[] getFilterComponents(String filter)
+    {
+        Array arr = new Array(BComponent.class);
+
+        NHServer server = getHaystackServer();
+        HGrid grid = server.readAll(filter);
+        for (int i = 0; i < grid.numRows(); i++)
+        {
+            HStr slotPath = (HStr) grid.row(i).get("axSlotPath", false);
+            if (slotPath != null)
+                arr.add(BOrd.make("station:|" + slotPath.val).get(this, null));
+        }
+
+        return (BComponent[]) arr.trim();
+    }
+
 ////////////////////////////////////////////////////////////////
 // BINHaystackWorkerParent
 ////////////////////////////////////////////////////////////////
@@ -579,6 +661,8 @@ public class BNHaystackService
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final HStr REMOVE = HStr.make("_remove_");
 
     private static final Log LOG = Log.getLog("nhaystack");
 
