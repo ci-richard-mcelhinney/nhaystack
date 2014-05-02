@@ -622,6 +622,28 @@ public class BNHaystackService
     }
 
     /**
+      * Add a haystack slot to every component that is part of the given target filter.
+      */
+    public HGrid addHaystackSlots(String targetFilter)
+    {
+        int count = 0;
+        BComponent[] targets = getFilterComponents(targetFilter);
+        for (int i = 0; i < targets.length; i++)
+        {
+            BComponent target = targets[i];
+            if (target.get("haystack") == null) 
+            {
+                count++;
+                target.add("haystack", BHDict.DEFAULT);
+            }
+        }
+        
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(count));
+        return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
       * Find all the components that are part of the given filter.
       */
     public BComponent[] getFilterComponents(String filter)

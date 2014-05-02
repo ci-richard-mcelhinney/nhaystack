@@ -1109,6 +1109,25 @@ public class NHServer extends HServer
         }
     }
 
+//////////////////////////////////////////////////////////////////////////
+// AddHaystackSlots
+//////////////////////////////////////////////////////////////////////////
+
+    static class AddHaystackSlots extends HOp
+    {
+        public String name() { return "addHaystackSlots"; }
+        public String summary() { return "Add Haystack Slots"; }
+        public HGrid onService(HServer db, HGrid req)
+        {
+            NHServer server = (NHServer) db;
+
+            HRow params = req.row(0);
+
+            return server.getService().addHaystackSlots(
+                params.getStr("targetFilter"));
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
@@ -1130,7 +1149,8 @@ public class NHServer extends HServer
 
     private static final String LAST_WRITE = "haystackLastWrite";
     
-    private static final HOp APPLY_BATCH_TAGS = new ApplyBatchTags();
+    private static final HOp APPLY_BATCH_TAGS   = new ApplyBatchTags();
+    private static final HOp ADD_HAYSTACK_SLOTS = new AddHaystackSlots();
 
     private static final HOp[] OPS = new HOp[]
     {
@@ -1146,7 +1166,8 @@ public class NHServer extends HServer
         HStdOps.hisRead,
         HStdOps.hisWrite,
         HStdOps.invokeAction,
-        APPLY_BATCH_TAGS
+        APPLY_BATCH_TAGS,
+        ADD_HAYSTACK_SLOTS,
     };
 
     // Every single tag which the server may have auto-generated.
