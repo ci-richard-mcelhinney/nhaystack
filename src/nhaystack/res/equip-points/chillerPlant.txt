@@ -12,7 +12,7 @@ chilled water delta pressure sensor
 chilled water delta pressure sp
 chilled water bypass valve cmd
 
-**Condensed water between Chillers/Cooling Towers**
-condensed water delta pressure sensor
-condensed water bypass valve cmd
+**Condenser water between Chillers/Cooling Towers**
+condenser water delta pressure sensor
+condenser water bypass valve cmd
 

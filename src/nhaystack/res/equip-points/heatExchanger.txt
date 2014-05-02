@@ -1,4 +1,4 @@
 chilled water leaving temp sensor
 chilled water entering temp sensor
-condensed water leaving temp sensor
-condensed water entering flow sensor
+condenser water leaving temp sensor
+condenser water entering flow sensor

@@ -27,6 +27,8 @@ degrees_phase,degPh
 steradian,sr
 nephelometric_turbidity_units,ntu
 formazin_nephelometric_unit,fnu
+power_usage_effectiveness,PUE
+data_center_infrastructure_efficiency,DCIE
 
 -- currency --
 australian_dollar,AUD
@@ -375,13 +377,14 @@ milliliters_per_second,mL/s
 liters_per_second,L/s
 cubic_feet_per_second,cfs
 cubic_feet_per_minute,cfm
+cubic_feet_per_hour,cfh
 kilocubic_feet_per_minute,kcfm
 imperial_gallons_per_minute,galUK/min
 liters_per_minute,L/min
 gallons_per_minute,gal/min
-cubic_meters_per_hour,m³/h
 liters_per_hour,L/h
 cubic_meters_per_minute,m³/min
+cubic_meters_per_hour,m³/h
 
 -- bytes --
 byte
