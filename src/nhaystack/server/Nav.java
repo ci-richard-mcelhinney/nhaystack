@@ -237,6 +237,7 @@ public class Nav
         }
         else
         {
+            hdb.add("id", NHServer.makeSlotPathRef(comp).getHRef());
             hdb.add("dis", comp.getDisplayName(null));
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
