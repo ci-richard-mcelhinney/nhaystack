@@ -206,26 +206,26 @@ public class ComponentStorehouse extends Storehouse
                         curVal = HNum.make(np.getNumeric(), unit.symbol);
                 }
                 hdb.add("curVal", curVal);
-                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                addStatusTags(hdb, point.getStatus());
 
                 break;
 
             case BOOLEAN_KIND:
                 BBooleanPoint bp = (BBooleanPoint) point;
                 hdb.add("curVal",    HBool.make(bp.getBoolean()));
-                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                addStatusTags(hdb, point.getStatus());
                 break;
 
             case ENUM_KIND:
                 BEnumPoint ep = (BEnumPoint) point;
                 hdb.add("curVal",    HStr.make(ep.getEnum().toString()));
-                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                addStatusTags(hdb, point.getStatus());
                 break;
 
             case STRING_KIND:
                 BStringPoint sp = (BStringPoint) point;
                 hdb.add("curVal",    HStr.make(sp.getOut().getValue().toString()));
-                hdb.add("curStatus", makeStatusString(point.getStatus()));
+                addStatusTags(hdb, point.getStatus());
                 break;
         }
 
@@ -416,21 +416,33 @@ public class ComponentStorehouse extends Storehouse
         else return UNKNOWN_KIND;
     }
 
-    private static String makeStatusString(BStatus status)
+    private static void addStatusTags(HDictBuilder hdb, BStatus status)
     {
-        if (status.isOk())
-            return "ok";
+        // ok       ==> { curStatus: "ok"       }
+        // disabled ==> { curStatus: "disabled" }
+        // fault    ==> { curStatus: "fault"    }
+        // down     ==> { curStatus: "down"     }
+        // null     ==> { curStatus: "unknown"  }
 
-        if (status.isDisabled())     return "disabled";
-        if (status.isFault())        return "fault";
-        if (status.isDown())         return "down";
-        if (status.isAlarm())        return "alarm";
-        if (status.isStale())        return "stale";
-        if (status.isOverridden())   return "overridden";
-        if (status.isNull())         return "null";
-        if (status.isUnackedAlarm()) return "unackedAlarm";
+        if      (status.isOk())           hdb.add("curStatus", "ok");
+        else if (status.isDisabled())     hdb.add("curStatus", "disabled");
+        else if (status.isFault())        hdb.add("curStatus", "fault");
+        else if (status.isDown())         hdb.add("curStatus", "down");
+        else if (status.isNull())         hdb.add("curStatus", "unknown");
 
-        throw new IllegalStateException();
+        // overridden   ==> { curStatus: "ok", axOverridden   } 
+        // alarm        ==> { curStatus: "ok", axAlarm        } 
+        // stale        ==> { curStatus: "ok", axStale        } 
+        // unackedAlarm ==> { curStatus: "ok", axUnackedAlarm }
+        else
+        {
+            hdb.add("curStatus", "ok");
+
+            if (status.isOverridden())   hdb.add("axOverridden"); 
+            if (status.isAlarm())        hdb.add("axAlarm");
+            if (status.isStale())        hdb.add("axStale");
+            if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
+        }
     }
 
 ////////////////////////////////////////////////////////////////
