@@ -1128,6 +1128,78 @@ public class NHServer extends HServer
         }
     }
 
+//////////////////////////////////////////////////////////////////////////
+// ExtendedRead
+//////////////////////////////////////////////////////////////////////////
+
+    static class ExtendedRead extends HOp
+    {
+        public String name() { return "extendedRead"; }
+        public String summary() { return "Extended Read"; }
+        public HGrid onService(HServer db, HGrid req)
+        {
+            NHServer server = (NHServer) db;
+
+            HRow params = req.row(0);
+
+            String filter = params.getStr("filter");
+
+            int limit = params.has("limit") ?
+                params.getInt("limit") :
+                Integer.MAX_VALUE;
+
+            HGrid grid = server.onReadAll(filter, limit);
+
+           // size
+           if (params.has("size") && params.get("size").equals(HBool.TRUE))
+               grid = makeSizeGrid(grid);
+
+           // unique
+           else if (params.has("unique"))
+               grid = makeUniqueGrid(grid, params.getStr("unique"));
+
+           return grid;
+        }
+
+        private static HGrid makeSizeGrid(HGrid grid)
+        {
+            HDictBuilder hdb = new HDictBuilder();
+            hdb.add("size", HNum.make(grid.numRows()));
+            return HGridBuilder.dictToGrid(hdb.toDict());
+        }
+
+        private static HGrid makeUniqueGrid(HGrid grid, String column)
+        {
+            Map map = new HashMap();
+            for (int i = 0; i < grid.numRows(); i++)
+            {
+                HRow row = grid.row(i);
+                if (row.has(column))
+                {
+                    HVal val = row.get(column);
+                    Integer count = (Integer) map.get(val);
+                    map.put(val, (count == null) ? 
+                        new Integer(1) :
+                        new Integer(count.intValue() + 1));
+                }
+            }
+
+            Array arr = new Array(HDict.class);
+            Iterator it = map.keySet().iterator();
+            while (it.hasNext())
+            {
+                HVal val = (HVal) it.next();
+                Integer count = (Integer) map.get(val);
+
+                HDictBuilder hdb = new HDictBuilder();
+                hdb.add(column, val);
+                hdb.add("count", HNum.make(count.intValue()));
+                arr.add(hdb.toDict());
+            }
+            return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
+        }
+    }
+ 
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
@@ -1151,6 +1223,7 @@ public class NHServer extends HServer
     
     private static final HOp APPLY_BATCH_TAGS   = new ApplyBatchTags();
     private static final HOp ADD_HAYSTACK_SLOTS = new AddHaystackSlots();
+    private static final HOp EXTENDED_READ = new ExtendedRead();
 
     private static final HOp[] OPS = new HOp[]
     {
@@ -1168,6 +1241,7 @@ public class NHServer extends HServer
         HStdOps.invokeAction,
         APPLY_BATCH_TAGS,
         ADD_HAYSTACK_SLOTS,
+        EXTENDED_READ,
     };
 
     // Every single tag which the server may have auto-generated.
