@@ -9,10 +9,10 @@ package nhaystack.driver.history.learn;
 
 import java.util.*;
 
-import javax.baja.job.*;
 import javax.baja.history.*;
+import javax.baja.job.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
-import com.tridium.util.EscUtil;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
@@ -74,7 +74,7 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = EscUtil.slot.escape(nameGen.makeUniqueName(row.dis()));
+                String name = SlotPath.escape(nameGen.makeUniqueName(row.dis()));
 
                 BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
 

@@ -15,7 +15,6 @@ import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 import javax.baja.xml.*;
-import com.tridium.util.EscUtil;
 
 import org.projecthaystack.*;
 import nhaystack.server.storehouse.*;
@@ -50,7 +49,7 @@ public class Nav
             "%displayName%";
 
         String navName = BFormat.format(format, comp);
-        navName = EscUtil.slot.escape(navName);
+        navName = SlotPath.escape(navName);
 
         return PathUtil.fromNiagaraPath(navName);
     }

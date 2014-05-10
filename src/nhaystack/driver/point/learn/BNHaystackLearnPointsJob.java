@@ -13,7 +13,6 @@ import javax.baja.job.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
-import com.tridium.util.EscUtil;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
@@ -74,7 +73,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
             HRow row = grid.row(i);
 
             String kind = row.getStr("kind");
-            String name = EscUtil.slot.escape(nameGen.makeUniqueName(row.dis()));
+            String name = SlotPath.escape(nameGen.makeUniqueName(row.dis()));
 
             BNHaystackPointEntry entry = new BNHaystackPointEntry();
 
