@@ -10,6 +10,7 @@ package nhaystack.driver.point.learn;
 import java.util.*;
 
 import javax.baja.job.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 import com.tridium.util.EscUtil;
@@ -79,7 +80,11 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
             if      (kind.equals("Bool"))   entry.setFacets(makeBoolFacets(row));
             else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
-            else if (kind.equals("Str"))    entry.setFacets(makeStrFacets(row));
+            else if (kind.equals("Str"))    
+            {
+                BFacets facets = makeStrFacets(row);
+                if (facets != null) entry.setFacets(facets);
+            }
 
             entry.setId(BHRef.make(row.id()));
             entry.setImportedTags(BHTags.make(row));
@@ -125,6 +130,9 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         if (!rec.has("enum")) return BFacets.NULL;
 
         String[] tokens = TextUtil.split(rec.getStr("enum"), ',');
+
+        for (int i = 0; i < tokens.length; i++)
+            if (!SlotPath.isValidName(tokens[i])) return null;
 
         return BFacets.makeEnum(BEnumRange.make(tokens));
     }
