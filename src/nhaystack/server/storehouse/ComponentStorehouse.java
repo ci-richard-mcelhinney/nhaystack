@@ -21,6 +21,8 @@ import javax.baja.sys.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;
+import org.projecthaystack.io.*;
+
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.res.*;
@@ -229,33 +231,12 @@ public class ComponentStorehouse extends Storehouse
                 break;
         }
 
-        // actions
-        switch(pointKind)
+        // actions tag
+        if (point.isWritablePoint())
         {
-            case NUMERIC_KIND:
-            case ENUM_KIND:
-            case STRING_KIND:
-                hdb.add("actions", HStr.make(
-                    "ver:\"2.0\"\n" + 
-                    "dis,expr\n" + 
-                    "\"Manual Set\",\"pointOverride(\\$self, \\$val, \\$duration)\"\n" + 
-                    "\"Manual Auto\",\"pointAuto(\\$self)\"\n" + 
-                    "\"Emergency Set\",\"pointEmergencyOverride(\\$self, \\$val)\"\n" + 
-                    "\"Emergency Auto\",\"pointEmergencyAuto(\\$self)\"\n"
-                ));
-
-                break;
-
-            case BOOLEAN_KIND:
-                hdb.add("actions", HStr.make(
-                    "ver:\"2.0\"\n" + 
-                    "dis,expr\n" + 
-                    "\"Manual On\",\"pointOverride(\\$self, true, \\$duration)\"\n" + 
-                    "\"Manual Off\",\"pointOverride(\\$self, false, \\$duration)\"\n" + 
-                    "\"Manual Auto\",\"pointAuto(\\$self)\"\n"
-                ));
-
-                break;
+            HGrid actionsGrid = createPointActions(point, pointKind);
+            if (actionsGrid != null)
+                hdb.add("actions", HStr.make(HZincWriter.gridToString(actionsGrid)));
         }
 
         // the point is explicitly tagged with an equipRef
@@ -286,6 +267,57 @@ public class ComponentStorehouse extends Storehouse
                         server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
             }
         }
+    }
+
+    private HGrid createPointActions(BControlPoint point, int pointKind)
+    {
+        Array arr = new Array(HDict.class);
+
+        switch(pointKind)
+        {
+            case NUMERIC_KIND:
+            case ENUM_KIND:
+            case STRING_KIND:
+                addPointAction(point, arr, "override",          "pointOverride(\\$self, \\$val, \\$duration)");
+                addPointAction(point, arr, "auto",              "pointAuto(\\$self)");
+                addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride(\\$self, \\$val)");
+                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
+                break;
+
+            case BOOLEAN_KIND:
+                addPointAction(point, arr, "active",   "pointOverride(\\$self, true, \\$duration)");
+                addPointAction(point, arr, "inactive", "pointOverride(\\$self, false, \\$duration)");
+                addPointAction(point, arr, "auto",     "pointAuto(\\$self)");
+
+                addPointAction(point, arr, "emergencyActive",   "pointEmergencyOverride(\\$self, true, \\$duration)");
+                addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride(\\$self, false, \\$duration)");
+                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
+                break;
+        }
+
+        HDict[] rows = (HDict[]) arr.trim();
+        return (rows.length == 0) ?
+            null : HGridBuilder.dictsToGrid(rows);
+    }
+
+    /**
+      * add an action for the point (unless its hidden)
+      */
+    private void addPointAction(
+        BControlPoint point,
+        Array arr,
+        String name,
+        String expr)
+    {
+        Action action = point.getAction(name);
+        if (action == null) return;
+        if (Flags.isHidden(point, action)) return;
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("dis", point.getDisplayName(action, null));
+        hdb.add("expr", expr);
+
+        arr.add(hdb.toDict());
     }
 
     /**
