@@ -75,6 +75,10 @@ public class NHWatch extends HWatch
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
+
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.sub " + watchId + ", length " + ids.length);
+
         scheduleLeaseTimeout();
 
         HDict meta = new HDictBuilder()
@@ -83,6 +87,7 @@ public class NHWatch extends HWatch
             .toDict();
 
         Array dictArr = new Array(HDict.class);
+        Array compArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
             // we can assume this because onNavReadByUri will have
@@ -102,7 +107,7 @@ public class NHWatch extends HWatch
                 // found
                 else
                 {
-                    subscriber.subscribe(comp, DEPTH);
+                    compArr.add(comp);
 
                     HDict dict = server.createTags(comp);
                     dictArr.add(dict);
@@ -116,6 +121,9 @@ public class NHWatch extends HWatch
             }
         }
 
+        BComponent[] comps = (BComponent[]) compArr.trim();
+        subscriber.subscribe(comps, DEPTH, null);
+
         return HGridBuilder.dictsToGrid(meta, (HDict[]) dictArr.trim());
     }
 
@@ -127,8 +135,13 @@ public class NHWatch extends HWatch
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
+
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.unsub " + watchId + ", length " + ids.length);
+
         scheduleLeaseTimeout();
 
+        Array compArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
             // we can assume this because onNavReadByUri will have
@@ -138,11 +151,14 @@ public class NHWatch extends HWatch
             BComponent comp = server.lookupComponent(id);
             if (comp != null)
             {
-                subscriber.unsubscribe(comp);
+                compArr.add(comp);
                 allDicts.remove(comp);
                 changedDicts.remove(comp);
             }
         }
+
+        BComponent[] comps = (BComponent[]) compArr.trim();
+        subscriber.unsubscribe(comps, null);
     }
 
     /**
@@ -152,6 +168,10 @@ public class NHWatch extends HWatch
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
+
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.pollChanges " + watchId);
+
         scheduleLeaseTimeout();
 
         Array dictArr = new Array(HDict.class);
@@ -163,6 +183,7 @@ public class NHWatch extends HWatch
             dictArr.add(dict);
         }
 
+        changedDicts.clear();
         return HGridBuilder.dictsToGrid((HDict[]) dictArr.trim());
     }
 
@@ -173,6 +194,10 @@ public class NHWatch extends HWatch
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
+
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.pollRefresh " + watchId);
+
         scheduleLeaseTimeout();
 
         Array dictArr = new Array(HDict.class);
@@ -198,6 +223,10 @@ public class NHWatch extends HWatch
     {
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
+
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.close " + watchId);
+
         if (timeout != null) timeout.cancel();
         open = false;
 

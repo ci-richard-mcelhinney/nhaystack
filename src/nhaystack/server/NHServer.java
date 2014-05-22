@@ -213,6 +213,7 @@ public class NHServer extends HServer
             Iterator itr = watches.values().iterator();
             while (itr.hasNext())
                 arr[n++] = (HWatch) itr.next();
+
             return arr;
         }
         catch (RuntimeException e)
@@ -227,6 +228,9 @@ public class NHServer extends HServer
       */
     protected HWatch onWatch(String id)
     {
+        if (LOG.isTraceOn())
+            LOG.trace("onWatch " + id);
+
         try
         {
             return (HWatch) watches.get(id);
