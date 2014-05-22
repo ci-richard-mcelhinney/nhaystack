@@ -1246,12 +1246,40 @@ public class NHServer extends HServer
 
     // Every single tag which the server may have auto-generated.
     protected static final String[] AUTO_GEN_TAGS = new String[] {
-        "actions",    "axHistoryId",    "axHistoryRef", "axPointRef",
-        "axSlotPath", "axType",         "cur",          "curStatus",
-        "curVal",     "dis",            "enum",         "equip",
-        "his",        "hisInterpolate", "id",           "kind",
-        "navName",    "point",          "site",         "tz",         
-        "unit",       "writable"  };
+
+        "axAnnotated",    
+        "axDisabled",
+        "axFault",
+        "axDown",
+        "axNull",
+        "axOverridden",
+        "axAlarm",
+        "axStale",
+        "axUnackedAlarm",
+        "axHistoryId",    
+        "axHistoryRef", 
+        "axPointRef",
+        "axSlotPath", 
+        "axType",         
+
+        "actions",    
+        "cur",          
+        "curStatus",
+        "curVal",     
+        "dis",            
+        "enum",         
+        "equip",
+        "his",        
+        "hisInterpolate", 
+        "id",           
+        "kind",
+        "navName",    
+        "point",          
+        "site",         
+        "tz",         
+        "unit",       
+        "writable"  
+    };
 
     private final HashMap watches = new HashMap();
 
