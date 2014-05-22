@@ -450,31 +450,35 @@ public class ComponentStorehouse extends Storehouse
 
     private static void addStatusTags(HDictBuilder hdb, BStatus status)
     {
-        // ok       ==> { curStatus: "ok"       }
-        // disabled ==> { curStatus: "disabled" }
-        // fault    ==> { curStatus: "fault"    }
-        // down     ==> { curStatus: "down"     }
-        // null     ==> { curStatus: "unknown"  }
+        /////////////////////////////////////////////
+        // curStatus
 
-        if      (status.isOk())           hdb.add("curStatus", "ok");
-        else if (status.isDisabled())     hdb.add("curStatus", "disabled");
-        else if (status.isFault())        hdb.add("curStatus", "fault");
-        else if (status.isDown())         hdb.add("curStatus", "down");
-        else if (status.isNull())         hdb.add("curStatus", "unknown");
+        if      (status.isOk())       hdb.add("curStatus", "ok");
+        else if (status.isDisabled()) hdb.add("curStatus", "disabled");
+        else if (status.isFault())    hdb.add("curStatus", "fault");
+        else if (status.isDown())     hdb.add("curStatus", "down");
+        else if (status.isNull())     hdb.add("curStatus", "unknown");
 
-        // overridden   ==> { curStatus: "ok", axOverridden   } 
-        // alarm        ==> { curStatus: "ok", axAlarm        } 
-        // stale        ==> { curStatus: "ok", axStale        } 
-        // unackedAlarm ==> { curStatus: "ok", axUnackedAlarm }
-        else
+        // these qualify as "ok" for curStatus
+        else if (status.isOverridden() ||
+                 status.isAlarm() ||
+                 status.isStale() ||
+                 status.isUnackedAlarm())
         {
             hdb.add("curStatus", "ok");
-
-            if (status.isOverridden())   hdb.add("axOverridden"); 
-            if (status.isAlarm())        hdb.add("axAlarm");
-            if (status.isStale())        hdb.add("axStale");
-            if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
         }
+
+        /////////////////////////////////////////////
+        // 'ax' tags
+
+        if (status.isDisabled())     hdb.add("axDisabled");
+        if (status.isFault())        hdb.add("axFault");
+        if (status.isDown())         hdb.add("axDown");
+        if (status.isNull())         hdb.add("axNull");
+        if (status.isOverridden())   hdb.add("axOverridden"); 
+        if (status.isAlarm())        hdb.add("axAlarm");
+        if (status.isStale())        hdb.add("axStale");
+        if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
     }
 
 ////////////////////////////////////////////////////////////////
