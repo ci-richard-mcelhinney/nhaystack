@@ -644,6 +644,41 @@ public class BNHaystackService
     }
 
     /**
+      * Search-and-replace component names
+      */
+    public HGrid searchAndReplace(
+        String filter,
+        String searchText,
+        String replaceText)
+    {
+        int count = 0;
+        BComponent[] comps = getFilterComponents(filter);
+        for (int i = 0; i < comps.length; i++)
+        {
+            BComponent comp = comps[i];
+            String name = comp.getName();
+
+            int n = name.indexOf(searchText);
+            if (n != -1)
+            {
+                String newName = 
+                    name.substring(0, n) + 
+                    replaceText + 
+                    name.substring(n + searchText.length());
+
+                BComponent parent = (BComponent) comp.getParent();
+                parent.rename(comp.getPropertyInParent(), newName);
+
+                count++;
+            }
+        }
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(count));
+        return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
       * Find all the components that are part of the given filter.
       */
     public BComponent[] getFilterComponents(String filter)
