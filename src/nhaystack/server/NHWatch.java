@@ -8,9 +8,12 @@
 package nhaystack.server;
 
 import java.util.*;
+
+import javax.baja.control.*;
 import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
+
 import org.projecthaystack.*;
 
 /**
@@ -86,12 +89,10 @@ public class NHWatch extends HWatch
             .add("lease", lease())
             .toDict();
 
-        Array dictArr = new Array(HDict.class);
-        Array compArr = new Array(BComponent.class);
+        Array response = new Array(HDict.class);
+        Array pointArr = new Array(BControlPoint.class);
         for (int i = 0; i < ids.length; i++)
         {
-            // we can assume this because onNavReadByUri will have
-            // already been called for us.
             HRef id = (HRef) ids[i];
 
             try
@@ -100,31 +101,37 @@ public class NHWatch extends HWatch
 
                 // no such component -- treat 'checked' as if it were false, since
                 // 'checked' is handled on the client side.
-                if (comp == null)
+                //
+                // we also ignore anything that's not a control point.
+                //
+                if ((comp == null) || !(comp instanceof BControlPoint))
                 {
-                    dictArr.add(null);
+                    response.add(null);
                 }
                 // found
                 else
                 {
-                    compArr.add(comp);
+                    if (LOG.isTraceOn())
+                        LOG.trace("NHWatch.sub " + watchId + " subscribe " + id);
 
+                    pointArr.add(comp);
                     HDict dict = server.createTags(comp);
-                    dictArr.add(dict);
-                    allDicts.put(comp, dict);
+                    response.add(dict);
+                    allSubscribed.put(comp, dict);
                 }
             }
             catch (Exception e)
             {
                 LOG.warning("Could not subscribe to " + id + ": " + e.getMessage());
-                dictArr.add(null);
+                response.add(null);
             }
         }
 
-        BComponent[] comps = (BComponent[]) compArr.trim();
-        subscriber.subscribe(comps, DEPTH, null);
+        // subscribe
+        BControlPoint[] points = (BControlPoint[]) pointArr.trim();
+        subscriber.subscribe(points, DEPTH, null);
 
-        return HGridBuilder.dictsToGrid(meta, (HDict[]) dictArr.trim());
+        return HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
     }
 
     /**
@@ -141,28 +148,31 @@ public class NHWatch extends HWatch
 
         scheduleLeaseTimeout();
 
-        Array compArr = new Array(BComponent.class);
+        Array pointArr = new Array(BControlPoint.class);
         for (int i = 0; i < ids.length; i++)
         {
-            // we can assume this because onNavReadByUri will have
-            // already been called for us.
             HRef id = (HRef) ids[i];
 
             BComponent comp = server.lookupComponent(id);
-            if (comp != null)
+            if ((comp != null) && allSubscribed.containsKey(comp))
             {
-                compArr.add(comp);
-                allDicts.remove(comp);
-                changedDicts.remove(comp);
+                if (LOG.isTraceOn())
+                    LOG.trace("NHWatch.unsub " + watchId + " unsubscribe " + id);
+
+                pointArr.add(comp);
+                allSubscribed.remove(comp);
+                nextPoll.remove(comp);
             }
         }
 
-        BComponent[] comps = (BComponent[]) compArr.trim();
-        subscriber.unsubscribe(comps, null);
+        // unsubscribe
+        BControlPoint[] points = (BControlPoint[]) pointArr.trim();
+        subscriber.unsubscribe(points, null);
     }
 
     /**
      * Poll for any changes to the subscriptions records.
+     * This returns only the id, curVal and curStatus tags for each point.
      */
     public synchronized HGrid pollChanges()
     {
@@ -174,21 +184,22 @@ public class NHWatch extends HWatch
 
         scheduleLeaseTimeout();
 
-        Array dictArr = new Array(HDict.class);
-
-        Iterator itr = changedDicts.values().iterator();
+        // create a response from all the COV values in nextPoll
+        Array response = new Array(HDict.class);
+        Iterator itr = nextPoll.values().iterator();
         while (itr.hasNext())
-        {
-            HDict dict = (HDict) itr.next();
-            dictArr.add(dict);
-        }
+            response.add(itr.next());
 
-        changedDicts.clear();
-        return HGridBuilder.dictsToGrid((HDict[]) dictArr.trim());
+        // clear out nextPoll so we can start accumulating more COVs
+        nextPoll.clear();
+
+        // done
+        return HGridBuilder.dictsToGrid((HDict[]) response.trim());
     }
 
     /**
      * Poll all the subscriptions records even if there have been no changes.
+     * This returns all of the tags for each point.
      */
     public synchronized HGrid pollRefresh()
     {
@@ -200,20 +211,24 @@ public class NHWatch extends HWatch
 
         scheduleLeaseTimeout();
 
-        Array dictArr = new Array(HDict.class);
-
-        Iterator itr = allDicts.keySet().iterator();
+        // create a response that represents every tag for every subscribed point
+        Array response = new Array(HDict.class);
+        Iterator itr = allSubscribed.keySet().iterator();
         while (itr.hasNext())
         {
-            BComponent comp = (BComponent) itr.next();
-            HDict dict = server.createTags(comp);
+            BControlPoint point = (BControlPoint) itr.next();
+            HDict dict = server.createTags(point);
 
-            dictArr.add(dict);
-            allDicts.put(comp, dict);
+            response.add(dict);
+            allSubscribed.put(point, dict);
         }
 
-        changedDicts.clear();
-        return HGridBuilder.dictsToGrid((HDict[]) dictArr.trim());
+        // since this method counts as a poll, clear out nextPoll so we 
+        // can start accumulating more Covs.
+        nextPoll.clear();
+
+        // done
+        return HGridBuilder.dictsToGrid((HDict[]) response.trim());
     }
 
     /**
@@ -232,8 +247,8 @@ public class NHWatch extends HWatch
 
         subscriber.unsubscribeAll();
 
-        allDicts.clear();
-        changedDicts.clear();
+        allSubscribed.clear();
+        nextPoll.clear();
 
         server.removeWatch(watchId);
     }
@@ -254,21 +269,29 @@ public class NHWatch extends HWatch
     {
         public void event(BComponentEvent event)     
         {
-            BComponent comp = event.getSourceComponent();
-
-            // Check components upwards to the depth that we are subscribed.
-            // This will put things like proxyExts covs up to the 'point' 
-            // component where they belong.
-            for (int i = 0; i < DEPTH; i++)
+            synchronized(NHWatch.this)
             {
-                if (allDicts.containsKey(comp))
-                {
-                    HDict dict = server.createTags(comp);
-                    changedDicts.put(comp, dict);
-                    break;
-                }
+                BComponent comp = event.getSourceComponent();
 
-                comp = (BComponent) comp.getParent();
+                // Check components upwards to the depth that we are subscribed.
+                // This will put things like proxyExts COVs up to the 'point' 
+                // component where they belong.
+                for (int i = 0; i < DEPTH; i++)
+                {
+                    if (allSubscribed.containsKey(comp))
+                    {
+                        BControlPoint point = (BControlPoint) comp;
+                        HDict cov = server.getComponentStorehouse().createPointCovTags(point);
+
+                        if (LOG.isTraceOn())
+                            LOG.trace("NSubscriber.event " + cov);
+
+                        nextPoll.put(comp, cov);
+                        break;
+                    }
+
+                    comp = (BComponent) comp.getParent();
+                }
             }
         }
     }
@@ -299,7 +322,7 @@ public class NHWatch extends HWatch
 
     private static final Log LOG = Log.getLog("nhaystack");
 
-    // this is deep enough to get Cov callbacks on proxy extensions
+    // this is deep enough to get COV callbacks on proxy extensions
     private static final int DEPTH = 2;
 
     private final NHServer server;
@@ -309,8 +332,8 @@ public class NHWatch extends HWatch
 
     private final Subscriber subscriber = new NSubscriber();
 
-    private final HashMap allDicts     = new HashMap(); // comp -> dict
-    private final HashMap changedDicts = new HashMap(); // comp -> dict
+    private final HashMap allSubscribed = new HashMap(); // point -> HDict (all tags)
+    private final HashMap nextPoll      = new HashMap(); // point -> HDict (cov)
 
     private boolean open;
     private final Timer timer = new Timer();

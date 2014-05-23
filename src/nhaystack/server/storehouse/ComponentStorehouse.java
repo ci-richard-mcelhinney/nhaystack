@@ -84,8 +84,8 @@ public class ComponentStorehouse extends Storehouse
             hdb.add("dis", dis);
 
             // add id
-            HRef ref = server.makeComponentRef(comp).getHRef();
-            hdb.add("id", HRef.make(ref.val, dis));
+            HRef id = server.makeComponentRef(comp).getHRef();
+            hdb.add("id", HRef.make(id.val, dis));
         }
 
         // add custom tags
@@ -95,229 +95,30 @@ public class ComponentStorehouse extends Storehouse
         return hdb.toDict();
     }
 
-    private String createDis(BComponent comp, HDict tags, HDictBuilder hdb)
-    {
-        String dis = makeDisName(comp, tags);
-
-        if (hdb.has("point"))
-        {
-            String equipDis = lookupDisName(hdb, "equipRef");
-            if (equipDis != null)
-            {
-                dis = equipDis + " " + dis;
-
-                String siteDis = lookupDisName(hdb, "siteRef");
-                if (siteDis != null)
-                    dis = siteDis + " " + equipDis + " " + dis;
-            }
-        }
-        else if (hdb.has("equip"))
-        {
-            String siteDis = lookupDisName(hdb, "siteRef");
-            if (siteDis != null)
-                dis = siteDis + " " + dis;
-        }
-
-        return dis;
-    }
-
-    private static String makeDisName(BComponent comp, HDict tags)
-    {
-        String format = tags.has("navNameFormat") ?
-            tags.getStr("navNameFormat") :
-            "%displayName%";
-        return BFormat.format(format, comp);
-    }
-
-    private String lookupDisName(HDictBuilder hdb, String tagName)
-    {
-        if (hdb.has(tagName))
-        {
-            BComponent comp = server.lookupComponent((HRef) hdb.get(tagName));
-            if (comp != null)
-            {
-                HDict compTags = BHDict.findTagAnnotation(comp);
-                return makeDisName(comp, compTags);
-            }
-        }
-        return null;
-    }
-
-    private void createPointTags(
-        BControlPoint point, 
-        HDictBuilder hdb,
-        HDict tags)
-    {
-        // ensure there is a point marker tag
-        hdb.add("point");
-
-        // check if this point has a history
-        BHistoryConfig cfg = server.getHistoryStorehouse()
-            .lookupHistoryFromPoint(point);
-        if (cfg != null)
-        {
-            hdb.add("his");
-
-            if (service.getShowLinkedHistories())
-                hdb.add("axHistoryRef", server.makeComponentRef(cfg).getHRef());
-
-            // tz
-            if (!tags.has("tz"))
-            {
-                HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
-                if (tz != null) hdb.add("tz", tz.name);
-            }
-
-            // hisInterpolate 
-            if (!tags.has("hisInterpolate"))
-            {
-                BHistoryExt historyExt = lookupHistoryExt(point);
-                if (historyExt != null && (historyExt instanceof BCovHistoryExt))
-                    hdb.add("hisInterpolate", "cov");
-            }
-        }
-
-        // point kind tags
-        int pointKind = getControlPointKind(point);
-        BFacets facets = (BFacets) point.get("facets");
-        addPointKindTags(pointKind, facets, tags, hdb);
-
-        // cur, writable
-        hdb.add("cur");
-        if (point.isWritablePoint())
-            hdb.add("writable");
-
-        // curVal, curStatus
-        switch(pointKind)
-        {
-            case NUMERIC_KIND:
-                BNumericPoint np = (BNumericPoint) point;
-
-                HNum curVal = null;
-                if (tags.has("unit"))
-                {
-                    HVal unit = tags.get("unit");
-                    curVal = HNum.make(np.getNumeric(), unit.toString());
-                }
-                else
-                {
-                    Unit unit = findUnit(facets);
-                    if (unit == null) 
-                        curVal = HNum.make(np.getNumeric());
-                    else
-                        curVal = HNum.make(np.getNumeric(), unit.symbol);
-                }
-                hdb.add("curVal", curVal);
-                addStatusTags(hdb, point.getStatus());
-
-                break;
-
-            case BOOLEAN_KIND:
-                BBooleanPoint bp = (BBooleanPoint) point;
-                hdb.add("curVal",    HBool.make(bp.getBoolean()));
-                addStatusTags(hdb, point.getStatus());
-                break;
-
-            case ENUM_KIND:
-                BEnumPoint ep = (BEnumPoint) point;
-                hdb.add("curVal",    HStr.make(ep.getEnum().toString()));
-                addStatusTags(hdb, point.getStatus());
-                break;
-
-            case STRING_KIND:
-                BStringPoint sp = (BStringPoint) point;
-                hdb.add("curVal",    HStr.make(sp.getOut().getValue().toString()));
-                addStatusTags(hdb, point.getStatus());
-                break;
-        }
-
-        // actions tag
-        if (point.isWritablePoint())
-        {
-            HGrid actionsGrid = createPointActions(point, pointKind);
-            if (actionsGrid != null)
-                hdb.add("actions", HStr.make(HZincWriter.gridToString(actionsGrid)));
-        }
-
-        // the point is explicitly tagged with an equipRef
-        if (tags.has("equipRef"))
-        {
-            BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
-
-            // try to look up  siteRef too
-            HDict equipTags = BHDict.findTagAnnotation(equip);
-            if (equipTags.has("siteRef"))
-                hdb.add(
-                    "siteRef", 
-                    server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
-        }
-        // maybe we've cached an implicit equipRef
-        else
-        {
-            BComponent equip = server.getCache().getImplicitEquip(point);
-            if (equip != null)
-            {
-                hdb.add("equipRef", server.makeComponentRef(equip).getHRef());
-
-                // try to look up  siteRef too
-                HDict equipTags = BHDict.findTagAnnotation(equip);
-                if (equipTags.has("siteRef"))
-                    hdb.add(
-                        "siteRef", 
-                        server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
-            }
-        }
-    }
-
-    private HGrid createPointActions(BControlPoint point, int pointKind)
-    {
-        Array arr = new Array(HDict.class);
-
-        switch(pointKind)
-        {
-            case NUMERIC_KIND:
-            case ENUM_KIND:
-            case STRING_KIND:
-                addPointAction(point, arr, "override",          "pointOverride(\\$self, \\$val, \\$duration)");
-                addPointAction(point, arr, "auto",              "pointAuto(\\$self)");
-                addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride(\\$self, \\$val)");
-                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
-                break;
-
-            case BOOLEAN_KIND:
-                addPointAction(point, arr, "active",   "pointOverride(\\$self, true, \\$duration)");
-                addPointAction(point, arr, "inactive", "pointOverride(\\$self, false, \\$duration)");
-                addPointAction(point, arr, "auto",     "pointAuto(\\$self)");
-
-                addPointAction(point, arr, "emergencyActive",   "pointEmergencyOverride(\\$self, true, \\$duration)");
-                addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride(\\$self, false, \\$duration)");
-                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
-                break;
-        }
-
-        HDict[] rows = (HDict[]) arr.trim();
-        return (rows.length == 0) ?
-            null : HGridBuilder.dictsToGrid(rows);
-    }
-
     /**
-      * add an action for the point (unless its hidden)
+      * Create the tags which represent a change-of-value on a point.
+      * The only tags that are returned are id, curVal, and curStatus.
       */
-    private void addPointAction(
-        BControlPoint point,
-        Array arr,
-        String name,
-        String expr)
+    public HDict createPointCovTags(BControlPoint point)
     {
-        Action action = point.getAction(name);
-        if (action == null) return;
-        if (Flags.isHidden(point, action)) return;
+        // id
+        HRef id = server.makeComponentRef(point).getHRef();
 
-        HDictBuilder hdb = new HDictBuilder();
-        hdb.add("dis", point.getDisplayName(action, null));
-        hdb.add("expr", expr);
+        // curVal
+        HDict tags = BHDict.findTagAnnotation(point);
+        if (tags == null) tags = HDict.EMPTY;
+        HVal curVal = makeCurVal(point, tags);
 
-        arr.add(hdb.toDict());
+        // curStatus
+        BStatus status = point.getStatus();
+        HStr curStatus = makeCurStatus(status);
+
+        // done
+        return new HDictBuilder()
+            .add("id", id)
+            .add("curVal", curVal)
+            .add("curStatus", curStatus)
+            .toDict();
     }
 
     /**
@@ -399,6 +200,294 @@ public class ComponentStorehouse extends Storehouse
 ////////////////////////////////////////////////////////////////
 
     /**
+      * create the 'dis' tag
+      */
+    private String createDis(BComponent comp, HDict tags, HDictBuilder hdb)
+    {
+        String dis = makeDisName(comp, tags);
+
+        if (hdb.has("point"))
+        {
+            String equipDis = lookupDisName(hdb, "equipRef");
+            if (equipDis != null)
+            {
+                dis = equipDis + " " + dis;
+
+                String siteDis = lookupDisName(hdb, "siteRef");
+                if (siteDis != null)
+                    dis = siteDis + " " + equipDis + " " + dis;
+            }
+        }
+        else if (hdb.has("equip"))
+        {
+            String siteDis = lookupDisName(hdb, "siteRef");
+            if (siteDis != null)
+                dis = siteDis + " " + dis;
+        }
+
+        return dis;
+    }
+
+    /**
+      * make 'dis' based on navNameFormat
+      */
+    private static String makeDisName(BComponent comp, HDict tags)
+    {
+        String format = tags.has("navNameFormat") ?
+            tags.getStr("navNameFormat") :
+            "%displayName%";
+        return BFormat.format(format, comp);
+    }
+
+    /**
+      * look up the 'dis' associated with the given tag name
+      */
+    private String lookupDisName(HDictBuilder hdb, String tagName)
+    {
+        if (hdb.has(tagName))
+        {
+            BComponent comp = server.lookupComponent((HRef) hdb.get(tagName));
+            if (comp != null)
+            {
+                HDict compTags = BHDict.findTagAnnotation(comp);
+                return makeDisName(comp, compTags);
+            }
+        }
+        return null;
+    }
+
+    /**
+      * create all the point-specific tags
+      */
+    private void createPointTags(
+        BControlPoint point, 
+        HDictBuilder hdb,
+        HDict tags)
+    {
+        // ensure there is a point marker tag
+        hdb.add("point");
+
+        // check if this point has a history
+        BHistoryConfig cfg = server.getHistoryStorehouse()
+            .lookupHistoryFromPoint(point);
+        if (cfg != null)
+        {
+            hdb.add("his");
+
+            if (service.getShowLinkedHistories())
+                hdb.add("axHistoryRef", server.makeComponentRef(cfg).getHRef());
+
+            // tz
+            if (!tags.has("tz"))
+            {
+                HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
+                if (tz != null) hdb.add("tz", tz.name);
+            }
+
+            // hisInterpolate 
+            if (!tags.has("hisInterpolate"))
+            {
+                BHistoryExt historyExt = lookupHistoryExt(point);
+                if (historyExt != null && (historyExt instanceof BCovHistoryExt))
+                    hdb.add("hisInterpolate", "cov");
+            }
+        }
+
+        // point kind tags
+        int pointKind = getControlPointKind(point);
+        BFacets facets = (BFacets) point.get("facets");
+        addPointKindTags(pointKind, facets, tags, hdb);
+
+        // cur, writable
+        hdb.add("cur");
+        if (point.isWritablePoint())
+            hdb.add("writable");
+
+        // curVal
+        HVal curVal = makeCurVal(point, tags);
+        if (curVal != null) hdb.add("curVal", curVal);
+
+        // curStatus
+        BStatus status = point.getStatus();
+        HStr curStatus = makeCurStatus(status);
+        if (curStatus != null) hdb.add("curStatus", curStatus);
+
+        // ax status tags
+        addAxStatusTags(hdb, status);
+
+        // actions tag
+        if (point.isWritablePoint())
+        {
+            HGrid actionsGrid = createPointActions(point, pointKind);
+            if (actionsGrid != null)
+                hdb.add("actions", HStr.make(HZincWriter.gridToString(actionsGrid)));
+        }
+
+        // the point is explicitly tagged with an equipRef
+        if (tags.has("equipRef"))
+        {
+            BComponent equip = server.lookupComponent((HRef) tags.get("equipRef"));
+
+            // try to look up  siteRef too
+            HDict equipTags = BHDict.findTagAnnotation(equip);
+            if (equipTags.has("siteRef"))
+                hdb.add(
+                    "siteRef", 
+                    server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
+        }
+        // maybe we've cached an implicit equipRef
+        else
+        {
+            BComponent equip = server.getCache().getImplicitEquip(point);
+            if (equip != null)
+            {
+                hdb.add("equipRef", server.makeComponentRef(equip).getHRef());
+
+                // try to look up  siteRef too
+                HDict equipTags = BHDict.findTagAnnotation(equip);
+                if (equipTags.has("siteRef"))
+                    hdb.add(
+                        "siteRef", 
+                        server.convertAnnotatedRefTag(equipTags.getRef("siteRef")));
+            }
+        }
+    }
+
+    /**
+      * create a curVal for a point
+      */
+    private static HVal makeCurVal(BControlPoint point, HDict tags)
+    {
+        switch(getControlPointKind(point))
+        {
+            case NUMERIC_KIND:
+                BNumericPoint np = (BNumericPoint) point;
+
+                if (tags.has("unit"))
+                {
+                    HVal unit = tags.get("unit");
+                    return HNum.make(np.getNumeric(), unit.toString());
+                }
+                else
+                {
+                    BFacets facets = (BFacets) point.get("facets");
+                    Unit unit = findUnit(facets);
+                    if (unit == null) 
+                        return HNum.make(np.getNumeric());
+                    else
+                        return HNum.make(np.getNumeric(), unit.symbol);
+                }
+
+            case BOOLEAN_KIND:
+                BBooleanPoint bp = (BBooleanPoint) point;
+                return HBool.make(bp.getBoolean());
+
+            case ENUM_KIND:
+                BEnumPoint ep = (BEnumPoint) point;
+                return HStr.make(ep.getEnum().toString());
+
+            case STRING_KIND:
+                BStringPoint sp = (BStringPoint) point;
+                return HStr.make(sp.getOut().getValue().toString());
+
+            default: 
+                return null;
+        }
+    }
+
+    /**
+      * create a curStatus from a BStatus
+      */
+    private static HStr makeCurStatus(BStatus status)
+    {
+        if      (status.isOk())       return HStr.make("ok");
+        else if (status.isDisabled()) return HStr.make("disabled");
+        else if (status.isFault())    return HStr.make("fault");
+        else if (status.isDown())     return HStr.make("down");
+        else if (status.isNull())     return HStr.make("unknown");
+
+        // these qualify as "ok" for curStatus
+        else if (status.isOverridden() ||
+                 status.isAlarm() ||
+                 status.isStale() ||
+                 status.isUnackedAlarm())
+        {
+            return HStr.make("ok");
+        }
+
+        return null;
+    }
+
+    /**
+      * add all the 'ax' tags associated with a BStatus
+      */
+    private static void addAxStatusTags(HDictBuilder hdb, BStatus status)
+    {
+        if (status.isDisabled())     hdb.add("axDisabled");
+        if (status.isFault())        hdb.add("axFault");
+        if (status.isDown())         hdb.add("axDown");
+        if (status.isNull())         hdb.add("axNull");
+        if (status.isOverridden())   hdb.add("axOverridden"); 
+        if (status.isAlarm())        hdb.add("axAlarm");
+        if (status.isStale())        hdb.add("axStale");
+        if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
+    }
+
+    /**
+      * create the 'actions' tag for a point
+      */
+    private HGrid createPointActions(BControlPoint point, int pointKind)
+    {
+        Array arr = new Array(HDict.class);
+
+        switch(pointKind)
+        {
+            case NUMERIC_KIND:
+            case ENUM_KIND:
+            case STRING_KIND:
+                addPointAction(point, arr, "override",          "pointOverride(\\$self, \\$val, \\$duration)");
+                addPointAction(point, arr, "auto",              "pointAuto(\\$self)");
+                addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride(\\$self, \\$val)");
+                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
+                break;
+
+            case BOOLEAN_KIND:
+                addPointAction(point, arr, "active",   "pointOverride(\\$self, true, \\$duration)");
+                addPointAction(point, arr, "inactive", "pointOverride(\\$self, false, \\$duration)");
+                addPointAction(point, arr, "auto",     "pointAuto(\\$self)");
+
+                addPointAction(point, arr, "emergencyActive",   "pointEmergencyOverride(\\$self, true, \\$duration)");
+                addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride(\\$self, false, \\$duration)");
+                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
+                break;
+        }
+
+        HDict[] rows = (HDict[]) arr.trim();
+        return (rows.length == 0) ?
+            null : HGridBuilder.dictsToGrid(rows);
+    }
+
+    /**
+      * add an action for the point (unless its hidden)
+      */
+    private void addPointAction(
+        BControlPoint point,
+        Array arr,
+        String name,
+        String expr)
+    {
+        Action action = point.getAction(name);
+        if (action == null) return;
+        if (Flags.isHidden(point, action)) return;
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("dis", point.getDisplayName(action, null));
+        hdb.add("expr", expr);
+
+        arr.add(hdb.toDict());
+    }
+
+    /**
       * Find the imported point that goes with an imported history, 
       * or return null.  
       */
@@ -436,49 +525,6 @@ public class ComponentStorehouse extends Storehouse
 
         // no such point
         return null;
-    }
-
-    private static int getControlPointKind(BControlPoint point)
-    {
-        if      (point instanceof BNumericPoint) return NUMERIC_KIND;
-        else if (point instanceof BBooleanPoint) return BOOLEAN_KIND;
-        else if (point instanceof BEnumPoint)    return ENUM_KIND;
-        else if (point instanceof BStringPoint)  return STRING_KIND;
-
-        else return UNKNOWN_KIND;
-    }
-
-    private static void addStatusTags(HDictBuilder hdb, BStatus status)
-    {
-        /////////////////////////////////////////////
-        // curStatus
-
-        if      (status.isOk())       hdb.add("curStatus", "ok");
-        else if (status.isDisabled()) hdb.add("curStatus", "disabled");
-        else if (status.isFault())    hdb.add("curStatus", "fault");
-        else if (status.isDown())     hdb.add("curStatus", "down");
-        else if (status.isNull())     hdb.add("curStatus", "unknown");
-
-        // these qualify as "ok" for curStatus
-        else if (status.isOverridden() ||
-                 status.isAlarm() ||
-                 status.isStale() ||
-                 status.isUnackedAlarm())
-        {
-            hdb.add("curStatus", "ok");
-        }
-
-        /////////////////////////////////////////////
-        // 'ax' tags
-
-        if (status.isDisabled())     hdb.add("axDisabled");
-        if (status.isFault())        hdb.add("axFault");
-        if (status.isDown())         hdb.add("axDown");
-        if (status.isNull())         hdb.add("axNull");
-        if (status.isOverridden())   hdb.add("axOverridden"); 
-        if (status.isAlarm())        hdb.add("axAlarm");
-        if (status.isStale())        hdb.add("axStale");
-        if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
     }
 
 ////////////////////////////////////////////////////////////////

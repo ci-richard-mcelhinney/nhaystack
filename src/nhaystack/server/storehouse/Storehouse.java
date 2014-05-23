@@ -122,6 +122,16 @@ public abstract class Storehouse
         return Resources.fromBajaUnit(unit);
     }
 
+    static int getControlPointKind(BControlPoint point)
+    {
+        if      (point instanceof BNumericPoint) return NUMERIC_KIND;
+        else if (point instanceof BBooleanPoint) return BOOLEAN_KIND;
+        else if (point instanceof BEnumPoint)    return ENUM_KIND;
+        else if (point instanceof BStringPoint)  return STRING_KIND;
+
+        else return UNKNOWN_KIND;
+    }
+
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
