@@ -129,7 +129,7 @@ public class NHWatch extends HWatch
 
         // subscribe
         BControlPoint[] points = (BControlPoint[]) pointArr.trim();
-        subscriber.subscribe(points, DEPTH, null);
+        subscriber.subscribe(points, 0, null);  // depth '0'
 
         return HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
     }
@@ -273,24 +273,16 @@ public class NHWatch extends HWatch
             {
                 BComponent comp = event.getSourceComponent();
 
-                // Check components upwards to the depth that we are subscribed.
-                // This will put things like proxyExts COVs up to the 'point' 
-                // component where they belong.
-                for (int i = 0; i < DEPTH; i++)
+                if (event.getSlotName().equals("out") && // we only care about the "out" slot
+                    allSubscribed.containsKey(comp))     // and we'll double check that we are really subscribed
                 {
-                    if (allSubscribed.containsKey(comp))
-                    {
-                        BControlPoint point = (BControlPoint) comp;
-                        HDict cov = server.getComponentStorehouse().createPointCovTags(point);
+                    BControlPoint point = (BControlPoint) comp;
+                    HDict cov = server.getComponentStorehouse().createPointCovTags(point);
 
-                        if (LOG.isTraceOn())
-                            LOG.trace("NSubscriber.event " + cov);
+                    if (LOG.isTraceOn())
+                        LOG.trace("NSubscriber.event " + cov);
 
-                        nextPoll.put(comp, cov);
-                        break;
-                    }
-
-                    comp = (BComponent) comp.getParent();
+                    nextPoll.put(comp, cov);
                 }
             }
         }
@@ -321,9 +313,6 @@ public class NHWatch extends HWatch
 ////////////////////////////////////////////////////////////////
 
     private static final Log LOG = Log.getLog("nhaystack");
-
-    // this is deep enough to get COV callbacks on proxy extensions
-    private static final int DEPTH = 2;
 
     private final NHServer server;
     private final String dis;
