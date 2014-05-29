@@ -217,7 +217,7 @@ public class NHWatch extends HWatch
         while (itr.hasNext())
         {
             BControlPoint point = (BControlPoint) itr.next();
-            HDict dict = server.createTags(point);
+            HDict dict = server.getComponentStorehouse().createPointCovTags(point);
 
             response.add(dict);
             allSubscribed.put(point, dict);
@@ -286,6 +286,23 @@ public class NHWatch extends HWatch
                 }
             }
         }
+    }
+
+////////////////////////////////////////////////////////////////
+// package-scope
+////////////////////////////////////////////////////////////////
+
+    HDict[] curSubscribed()
+    {
+        Array arr = new Array(HDict.class);
+        Iterator itr = allSubscribed.keySet().iterator();
+        while (itr.hasNext())
+        {
+            BControlPoint point = (BControlPoint) itr.next();
+            HDict dict = server.createTags(point);
+            arr.add(dict);
+        }
+        return (HDict[]) arr.trim();
     }
 
 ////////////////////////////////////////////////////////////////

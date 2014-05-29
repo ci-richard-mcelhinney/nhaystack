@@ -208,13 +208,7 @@ public class NHServer extends HServer
 
         try
         {
-            HWatch[] arr = new HWatch[watches.size()];
-            int n = 0;
-            Iterator itr = watches.values().iterator();
-            while (itr.hasNext())
-                arr[n++] = (HWatch) itr.next();
-
-            return arr;
+            return curWatches();
         }
         catch (RuntimeException e)
         {
@@ -1225,6 +1219,62 @@ public class NHServer extends HServer
         }
     }
  
+//////////////////////////////////////////////////////////////////////////
+// WatchStatus
+//////////////////////////////////////////////////////////////////////////
+
+    static class WatchStatus extends HOp
+    {
+        public String name() { return "watchStatus"; }
+        public String summary() { return "Status of currrently open Watches"; }
+        public HGrid onService(HServer db, HGrid req)
+        {
+            NHServer server = (NHServer) db;
+
+            Array arr = new Array(HDict.class);
+
+            HWatch[] watches = server.curWatches();
+            for (int i = 0; i < watches.length; i++)
+            {
+                HRef watchId = HRef.make(watches[i].id());
+
+                HDictBuilder hdb = new HDictBuilder();
+                hdb.add("id", watchId);
+                hdb.add("watch");
+                arr.add(hdb.toDict());
+
+                HDict[] sub = ((NHWatch) watches[i]).curSubscribed();
+                for (int j = 0; j < sub.length; j++)
+                {
+                    hdb = new HDictBuilder();
+                    hdb.add("watchRef", watchId);
+
+                    Iterator it = sub[j].iterator();
+                    while (it.hasNext())
+                    {
+                        Map.Entry e = (Map.Entry) it.next();
+                        String key = (String) e.getKey();
+                        HVal   val = (HVal)   e.getValue();
+                        hdb.add(key, val);
+                    }
+                    arr.add(hdb.toDict());
+                }
+            }
+
+            return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
+        }
+    }
+
+    private HWatch[] curWatches() 
+    {
+        HWatch[] arr = new HWatch[watches.size()];
+        int n = 0;
+        Iterator itr = watches.values().iterator();
+        while (itr.hasNext())
+            arr[n++] = (HWatch) itr.next();
+        return arr;
+    }
+ 
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
@@ -1265,6 +1315,7 @@ public class NHServer extends HServer
         new AddHaystackSlots(),
         new ExtendedRead(),
         new SearchAndReplace(),
+        new WatchStatus(),
     };
 
     // Every single tag which the server may have auto-generated.
