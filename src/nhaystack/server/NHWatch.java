@@ -115,14 +115,11 @@ class NHWatch extends HWatch
                 // found
                 else
                 {
-//                    if (LOG.isTraceOn())
-//                        LOG.trace("NHWatch.sub " + watchId + " subscribe " + id);
-
-                    pointArr.add(comp);
-
-                    HDictBuilder hdb = new HDictBuilder();
-                    hdb.add("id", id);
-                    response.add(hdb.toDict());
+                    BControlPoint point = (BControlPoint) comp;
+                    pointArr.add(point);
+                    HDict cov = server.getTagManager().createPointCovTags(point);
+                    allSubscribed.put(point, cov);
+                    response.add(cov);
                 }
             }
             catch (Exception e)
@@ -133,53 +130,15 @@ class NHWatch extends HWatch
             }
         }
 
+        subscriber.subscribe((BControlPoint[]) pointArr.trim(), 0, null);
+
         HGrid grid = HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
-        startSubscriptionThread((BControlPoint[]) pointArr.trim());
 
         if (LOG.isTraceOn())
             LOG.trace("NHWatch.sub end   " + watchId + ", length " + ids.length + ", " +
                 (Clock.ticks()-ticks) + "ms.");
 
         return grid;
-    }
-
-    /**
-      * Subscribe to all the points, and then add them to allSubscribed.
-      * Also, add them to the next cov
-      */
-    private void startSubscriptionThread(final BControlPoint[] points)
-    {
-        Runnable runnable = new Runnable() {
-            public void run() {
-
-                String msg = watchId + ", " + points.length + " points";
-
-                long ticks = Clock.ticks();
-                LOG.trace("NHWatch begin batch subscribe request " + msg + ".");
-                subscriber.subscribe(points, 0, null);
-                LOG.trace("NHWatch end   batch subscribe request " + msg + ", " + (Clock.ticks()-ticks) + "ms.");
-
-                ticks = Clock.ticks();
-                LOG.trace("NHWatch begin batch subscribe cov " + msg + ".");
-
-                synchronized(NHWatch.this) 
-                {
-                    for (int i = 0; i < points.length; i++)
-                    {
-                        HDict cov = server.getTagManager().createPointCovTags(points[i]);
-                        allSubscribed.put(points[i], cov);
-                        nextPoll.put(points[i], cov);
-
-//                        if (LOG.isTraceOn())
-//                            LOG.trace("NHWatch.sub " + watchId + " subscribe " + cov.id());
-                    }
-                }
-
-                LOG.trace("NHWatch end   batch subscribe cov " + msg + ", " + (Clock.ticks()-ticks) + "ms.");
-            }
-        };
-
-        (new Thread(runnable, "NHWatch-Subscription-" + watchId)).start();
     }
 
     /**
@@ -331,10 +290,6 @@ class NHWatch extends HWatch
                 {
                     BControlPoint point = (BControlPoint) comp;
                     HDict cov = server.getTagManager().createPointCovTags(point);
-
-//                    if (LOG.isTraceOn())
-//                        LOG.trace("NSubscriber.event " + watchId + ", " + cov);
-
                     nextPoll.put(comp, cov);
                 }
             }
