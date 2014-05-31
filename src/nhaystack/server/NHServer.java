@@ -586,12 +586,14 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onNavReadByUri " + uri);
 
-        throw new IllegalStateException("TODO");
+        if (!uri.val.startsWith("sep:/")) return null;
+        String str = uri.val.substring("sep:/".length());
+        if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
+        String[] navNames = TextUtil.split(str, '/');
 
-//        BComponent comp = lookupComponentByUri(uri);
-//
-//        return (comp == null) ?  null : 
-//            spaceMgr.createComponentTags(comp);
+        NHRef ref = TagManager.makeSepRef(navNames);
+        BComponent comp = cache.lookupComponentBySepRef(ref);
+        return (comp == null) ?  null : tagMgr.createTags(comp);
     }
 
 ////////////////////////////////////////////////////////////////

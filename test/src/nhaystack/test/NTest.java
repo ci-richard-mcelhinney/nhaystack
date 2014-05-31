@@ -24,6 +24,13 @@ public abstract class NTest extends Test
         return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
     }
 
+    static HGrid makeIdGrid(HVal id)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("id", id);
+        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    }
+
     void verifyGridContains(HGrid g, String col, String val) 
     { 
         verifyGridContains(g, col, HStr.make(val)); 

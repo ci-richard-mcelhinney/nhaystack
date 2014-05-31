@@ -159,6 +159,14 @@ public class TagManager
         return NHRef.make(NHRef.COMP, path);
     }
 
+    public static NHRef makeSepRef(String[] navPath)
+    {
+        return NHRef.make(
+            NHRef.SEP, 
+            PathUtil.fromNiagaraPath(
+                TextUtil.join(navPath, '/')));
+    }
+
 ////////////////////////////////////////////////////////////////
 // package-scope
 ////////////////////////////////////////////////////////////////

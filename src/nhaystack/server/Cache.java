@@ -136,6 +136,8 @@ class Cache
       */
     String[] getNavHistoryStationNames()
     {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
         Array arr = new Array(String.class, navHistories.keySet());
         return (String[]) arr.trim();
     }
@@ -145,6 +147,8 @@ class Cache
       */
     BHistoryConfig[] getNavHistories(String stationName)
     {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
         Array arr = (Array) navHistories.get(stationName);
 
         if (arr == null) 
@@ -155,18 +159,22 @@ class Cache
     }
 
     /**
-      * Return the BComponent that is associate with the SepRef id
+      * Return the BComponent that is associate with the SepRef id, or null.
       */
     BComponent lookupComponentBySepRef(NHRef id)
     {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
         return (BComponent) sepRefToComp.get(id);
     }
 
     /**
-      * Return the SepRef id that is associate with the component.
+      * Return the SepRef id that is associate with the component, or null.
       */
     NHRef lookupSepRefByComponent(BComponent comp)
     {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+
         return (NHRef) compToSepRef.get(comp);
     }
 
@@ -323,7 +331,7 @@ class Cache
             // make ref for site
             HDict siteTags = site.getHaystack().getDict();
             String siteNav = Nav.makeNavName(site, siteTags);
-            NHRef siteRef = makeSepRef(new String[] { siteNav });
+            NHRef siteRef = TagManager.makeSepRef(new String[] { siteNav });
 
 //System.out.println(">>>>: " + site.getSlotPath() + ", " + siteRef.getHRef());
 
@@ -344,7 +352,7 @@ class Cache
                 // make ref for equip
                 HDict equipTags = equip.getHaystack().getDict();
                 String equipNav = Nav.makeNavName(equip, equipTags);
-                NHRef equipRef = makeSepRef(new String[] { siteNav, equipNav });
+                NHRef equipRef = TagManager.makeSepRef(new String[] { siteNav, equipNav });
 
 //System.out.println(">>>>: " + equip.getSlotPath() + ", " + equipRef.getHRef());
 
@@ -366,7 +374,7 @@ class Cache
                     HDict pointTags = BHDict.findTagAnnotation(point);
                     if (pointTags == null) pointTags = HDict.EMPTY;
                     String pointNav = Nav.makeNavName(point, pointTags);
-                    NHRef pointRef = makeSepRef(new String[] { siteNav, equipNav, pointNav });
+                    NHRef pointRef = TagManager.makeSepRef(new String[] { siteNav, equipNav, pointNav });
 
 //System.out.println(">>>>: " + point.getSlotPath() + ", " + pointRef.getHRef());
 
@@ -376,14 +384,6 @@ class Cache
                 }
             }
         }
-    }
-
-    private static NHRef makeSepRef(String[] navPath)
-    {
-        return NHRef.make(
-            NHRef.SEP, 
-            PathUtil.fromNiagaraPath(
-                TextUtil.join(navPath, '/')));
     }
 
 ////////////////////////////////////////////////////////////////
