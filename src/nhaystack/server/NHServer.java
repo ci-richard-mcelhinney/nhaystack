@@ -26,7 +26,6 @@ import org.projecthaystack.util.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.driver.history.*;
-import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
 import nhaystack.util.*;
 
@@ -39,10 +38,10 @@ public class NHServer extends HServer
     public NHServer(BNHaystackService service)
     {
         this.service = service;
-        this.compStore = new ComponentStorehouse(this);
-        this.hisStore = new HistoryStorehouse(this);
+        this.spaceMgr = new SpaceManager(this);
         this.cache = new Cache(this);
-        this.nav = new Nav(service, compStore, hisStore, cache);
+        this.tagMgr = new TagManager(this, service, spaceMgr, cache);
+        this.nav = new Nav(service, spaceMgr, cache, tagMgr);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -95,11 +94,14 @@ public class NHServer extends HServer
     {
         try
         {
+            if (LOG.isTraceOn())
+                LOG.trace("onReadAll begin filter:\"" + filter + "\", limit:" + limit);
+
             long ticks = Clock.ticks();
             HGrid grid = super.onReadAll(filter, limit);
 
             if (LOG.isTraceOn())
-                LOG.trace("onReadAll " + (Clock.ticks()-ticks) + "ms.");
+                LOG.trace("onReadAll end   filter:\"" + filter + "\", limit:" + limit + ", " + (Clock.ticks()-ticks) + "ms.");
 
             return grid;
         }
@@ -119,8 +121,8 @@ public class NHServer extends HServer
         try
         {
             return new CompositeIterator(new Iterator[] { 
-                compStore.makeIterator(),
-                hisStore.makeIterator() });
+                spaceMgr.makeComponentSpaceIterator(),
+                spaceMgr.makeHistorySpaceIterator() });
         }
         catch (RuntimeException e)
         {
@@ -143,8 +145,8 @@ public class NHServer extends HServer
 
         try
         {
-            BComponent comp = lookupComponent(id);
-            return (comp == null) ? null : createTags(comp);
+            BComponent comp = tagMgr.lookupComponent(id);
+            return (comp == null) ? null : tagMgr.createTags(comp);
         }
         catch (RuntimeException e)
         {
@@ -188,7 +190,7 @@ public class NHServer extends HServer
                 dis, 
                 service.getLeaseInterval().getMillis());
 
-            watches.put(watch.id(), watch);
+            synchronized(watches) { watches.put(watch.id(), watch); }
             return watch;
         }
         catch (RuntimeException e)
@@ -208,7 +210,7 @@ public class NHServer extends HServer
 
         try
         {
-            return curWatches();
+            return getWatches();
         }
         catch (RuntimeException e)
         {
@@ -227,7 +229,7 @@ public class NHServer extends HServer
 
         try
         {
-            return (HWatch) watches.get(id);
+            synchronized(watches) { return (HWatch) watches.get(id); }
         }
         catch (RuntimeException e)
         {
@@ -248,7 +250,7 @@ public class NHServer extends HServer
         {
             HVal[] vals = new HVal[17];
 
-            BControlPoint point = (BControlPoint) lookupComponent(rec.id());
+            BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());
 
             // Numeric
             if (point instanceof BNumericWritable)
@@ -310,7 +312,7 @@ public class NHServer extends HServer
                 HDictBuilder hd = new HDictBuilder();
                 HNum level = HNum.make(i+1);
                 hd.add("level", level);
-                hd.add("levelDis", "level " + (i+1)); // TODO
+                hd.add("levelDis", "level " + (i+1)); // TODO?
                 if (vals[i] != null)
                     hd.add("val", vals[i]);
 
@@ -348,7 +350,7 @@ public class NHServer extends HServer
 
         try
         {
-            BControlPoint point = (BControlPoint) lookupComponent(rec.id());
+            BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());
 
             if (point instanceof BNumericWritable)
             {
@@ -419,14 +421,14 @@ public class NHServer extends HServer
       * Read the history for the given BComponent.
       * The items wil be exclusive of start and inclusive of end time.
       */
-    public HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
+    protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
         if (LOG.isTraceOn())
             LOG.trace("onHisRead " + rec.id() + ", " + range);
 
         try
         {
-            BHistoryConfig cfg = lookupHistoryConfig(rec.id());
+            BHistoryConfig cfg = tagMgr.lookupHistoryConfig(rec.id());
             if (cfg == null) return new HHisItem[0];
 
             HStr unit = (HStr) rec.get("unit", false);
@@ -514,7 +516,7 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onHisWrite " + rec.id());
 
-        BHistoryConfig cfg = lookupHistoryConfig(rec.id());
+        BHistoryConfig cfg = tagMgr.lookupHistoryConfig(rec.id());
         BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
 
         String kind = rec.getStr("kind");
@@ -534,7 +536,7 @@ public class NHServer extends HServer
 
         try
         {
-            BComponent comp = lookupComponent(rec.id());
+            BComponent comp = tagMgr.lookupComponent(rec.id());
 
             Action[] actions = comp.getActionsArray();
             for (int i = 0; i < actions.length; i++)
@@ -584,10 +586,12 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onNavReadByUri " + uri);
 
-        BComponent comp = lookupComponentByUri(uri);
+        throw new IllegalStateException("TODO");
 
-        return (comp == null) ?  null : 
-            compStore.createComponentTags(comp);
+//        BComponent comp = lookupComponentByUri(uri);
+//
+//        return (comp == null) ?  null : 
+//            spaceMgr.createComponentTags(comp);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -609,260 +613,12 @@ public class NHServer extends HServer
       */
     public String[] getAutoGeneratedTags()
     {
-        return AUTO_GEN_TAGS;
+        return TagManager.AUTO_GEN_TAGS;
     }
 
 ////////////////////////////////////////////////////////////////
-// public
+// package-scope
 ////////////////////////////////////////////////////////////////
-
-    /**
-      * Create the haystack representation of a BComponent.
-      *
-      * The haystack representation is a combination of the 
-      * autogenerated tags, and those tags specified
-      * in the explicit haystack annotation (if any).
-      *
-      * This method never returns null.
-      */
-    public HDict createTags(BComponent comp)
-    {
-        return (comp instanceof BHistoryConfig) ?
-            hisStore.createHistoryTags((BHistoryConfig) comp) :
-            compStore.createComponentTags(comp);
-    }
-
-    /**
-      * Return a copy of the given annotated tags, except convert any
-      * Refs from ComponentRefs to SepRefs.
-      */
-    public HDict convertAnnotatedRefTags(HDict annotatedTags)
-    {
-        HDictBuilder hdb = new HDictBuilder();
-
-        Iterator it = annotatedTags.iterator();
-        while (it.hasNext())
-        {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            HVal val = (HVal) entry.getValue();
-
-            if (val instanceof HRef)
-                hdb.add(name, convertAnnotatedRefTag((HRef) val));
-            else
-                hdb.add(name, val);
-        }
-
-        return hdb.toDict();
-    }
-
-    /**
-      * Convert the ref from ComponentRef to SepRef (unless there is no SepRef).
-      */
-    public HRef convertAnnotatedRefTag(HRef ref)
-    {
-        BComponent comp = lookupComponent(ref);
-        return makeComponentRef(comp).getHRef();
-    }
-
-    /**
-      * Look up the a BComponent by its HRef id.
-      *
-      * Return null if the BComponent cannot be found,
-      * or if it is not haystack-annotated.
-      */
-    public BComponent lookupComponent(HRef id)
-    {
-        NHRef nh = NHRef.make(id);
-
-        // component space
-        if (nh.getSpace().equals(NHRef.COMP) ||
-            nh.getSpace().equals(NHRef.COMP_BASE64))
-        {
-            BOrd ord = BOrd.make("station:|" + 
-                (nh.getSpace().equals(NHRef.COMP) ? 
-                    "slot:" + PathUtil.toNiagaraPath(nh.getPath()) : 
-                    Base64.URI.decodeUTF8(nh.getPath())));
-
-            BComponent comp = (BComponent) ord.get(service, null);
-            if (comp == null) return null;
-            return compStore.isVisibleComponent(comp) ? comp : null;
-        }
-        // history space
-        else if (
-            nh.getSpace().equals(NHRef.HIS_BASE64) ||
-            nh.getSpace().equals(NHRef.HIS))
-        {
-            BHistoryId hid = BHistoryId.make(
-                nh.getSpace().equals(NHRef.HIS) ? 
-                    "/" + PathUtil.toNiagaraPath(nh.getPath()) :
-                    Base64.URI.decodeUTF8(nh.getPath()));
-
-            BIHistory history = service.getHistoryDb().getHistory(hid);
-            BHistoryConfig cfg = history.getConfig();
-            return hisStore.isVisibleHistory(cfg) ? cfg : null;
-        }
-        // sep space
-        else if (nh.getSpace().equals(NHRef.SEP))
-        {
-            return lookupComponentByUri(HUri.make(
-                "sep:/" + TextUtil.replace(nh.getPath(), ".", "/")));
-        }
-        // invalid space
-        else 
-        {
-            return null;
-        }
-    }
-
-    /**
-      * Look up a component by its URI, or return null.
-      */
-    public BComponent lookupComponentByUri(HUri uri)
-    {
-        if (!uri.val.startsWith("sep:/")) return null;
-        String str = uri.val.substring("sep:/".length());
-        if (str.endsWith("/")) str = str.substring(0, str.length() - 1);
-
-        String[] navNames = TextUtil.split(str, '/');
-
-        switch (navNames.length)
-        {
-            case 1: return cache.getNavSite  (Nav.makeSiteNavId  (navNames[0]));
-            case 2: return cache.getNavEquip (Nav.makeEquipNavId (navNames[0], navNames[1]));
-            case 3: return cache.getNavPoint (Nav.makeEquipNavId (navNames[0], navNames[1]), navNames[2]);
-
-            // bad uri
-            default: return null;
-        }
-    }
-
-    /**
-      * Make an ID from a BComponent.  
-      */
-    public NHRef makeComponentRef(BComponent comp)
-    {
-        // history space
-        if (comp instanceof BHistoryConfig)
-        {
-            BHistoryConfig cfg = (BHistoryConfig) comp;
-            return makeHistoryRef(cfg);
-        }
-        // component space
-        else
-        {
-            NHRef sepRef = makeComponentSepRef(comp);
-            if (sepRef != null) return sepRef;
-
-            return makeSlotPathRef(comp);
-        }
-    }
-
-    public static NHRef makeSlotPathRef(BComponent comp)
-    {
-        String path = comp.getSlotPath().toString();
-        path = removePrefix(path, "slot:/");
-        path = PathUtil.fromNiagaraPath(path);
-
-        return NHRef.make(NHRef.COMP, path);
-    }
-
-    public static NHRef makeHistoryRef(BHistoryConfig cfg)
-    {
-        String path = cfg.getId().toString();
-        path = removePrefix(path, "/");
-        path = PathUtil.fromNiagaraPath(path);
-
-        return NHRef.make(NHRef.HIS, path);
-    }
-
-    private static String removePrefix(String path, String prefix)
-    {
-        if (!path.startsWith(prefix))
-            throw new IllegalStateException(
-                "'" + path + "' does not start with '" + prefix + "'");
-
-        return path.substring(prefix.length());
-    }
-
-    public static NHRef makeSepRef(String[] navPath)
-    {
-        return NHRef.make(
-            NHRef.SEP, 
-            PathUtil.fromNiagaraPath(
-                TextUtil.join(navPath, '/')));
-    }
-
-    /**
-      * Make a SEP-style ref
-      */
-    private NHRef makeComponentSepRef(BComponent comp)
-    {
-        if (comp instanceof BHSite)
-        {
-            BHSite site = (BHSite) comp;
-            HDict siteTags = site.getHaystack().getDict();
-
-            String navName = Nav.makeNavName(site, siteTags);
-
-            return makeSepRef(new String[] { navName });
-        }
-        else if (comp instanceof BHEquip) 
-        {
-            String[] equipNavPath = makeEquipNavPath((BHEquip) comp);
-            if (equipNavPath != null) 
-                return makeSepRef(equipNavPath);
-        }
-        else if (comp instanceof BControlPoint) 
-        {
-            BControlPoint point = (BControlPoint) comp;
-            HDict pointTags = BHDict.findTagAnnotation(point);
-
-            BHEquip equip = ((pointTags != null) && pointTags.has("equipRef")) ?
-                (BHEquip) lookupComponent(pointTags.getRef("equipRef")) :
-                cache.getImplicitEquip(point);
-
-            if (equip != null)
-            {
-                String[] equipNavPath = makeEquipNavPath(equip);
-                if (equipNavPath != null)
-                {
-                    // this can happen on an unannotated point with an implicit equip
-                    if (pointTags == null) pointTags = HDict.EMPTY;
-
-                    String navName = Nav.makeNavName(point, pointTags);
-                    return makeSepRef(
-                        new String[] {
-                            equipNavPath[0], 
-                            equipNavPath[1], 
-                            navName });
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
-      * Make a SEP-style ref for an equip
-      */
-    private String[] makeEquipNavPath(BHEquip equip)
-    {
-        HDict equipTags = equip.getHaystack().getDict();
-
-        if ((equipTags != null) && equipTags.has("siteRef"))
-        {
-            BHSite site = (BHSite) lookupComponent((HRef) equipTags.get("siteRef"));
-            if (site != null)
-            {
-                HDict siteTags = BHDict.findTagAnnotation(site);
-                String siteNav = Nav.makeNavName(site, siteTags);
-                String navName = Nav.makeNavName(equip, equipTags);
-                return new String[] { siteNav, navName };
-            }
-        }
-
-        return null;
-    }
 
     /**
       * Make an HTimeZone from a BTimeZone.
@@ -871,7 +627,7 @@ public class NHServer extends HServer
       * then this method uses of the timeZoneAliases stored on the
       * BNHaystackService to attempt to perform a custom mapping.
       */
-    public HTimeZone fromBajaTimeZone(BTimeZone timeZone)
+    final HTimeZone fromBajaTimeZone(BTimeZone timeZone)
     {
         String tzName = timeZone.getId();
 
@@ -904,41 +660,9 @@ public class NHServer extends HServer
         }
     }
 
-    public BHistoryConfig lookupHistoryConfig(HRef id)
-    {
-        BComponent comp = lookupComponent(id);
-        if (comp == null)
-        {
-            LOG.error("lookup failed for '" + id + "'");
-            return null;
-        }
-
-        // history space
-        if (comp instanceof BHistoryConfig)
-        {
-            BHistoryConfig cfg = (BHistoryConfig) comp;
-            return hisStore.isVisibleHistory(cfg) ? 
-                cfg : null;
-        }
-        // component space
-        else if (comp instanceof BControlPoint)
-        {
-            return hisStore.lookupHistoryFromPoint((BControlPoint) comp);
-        }
-        else
-        {
-            LOG.error("cannot find history for for '" + id + "'");
-            return null;
-        }
-    }
-
-////////////////////////////////////////////////////////////////
-// package-scope
-////////////////////////////////////////////////////////////////
-
     void removeWatch(String watchId)
     {
-        watches.remove(watchId);
+        synchronized(watches) { watches.remove(watchId); }
     }
 
     void removeBrokenRefs() 
@@ -969,7 +693,7 @@ public class NHServer extends HServer
                     // try to resolve the ref
                     try
                     {
-                        lookupComponent((HRef) val);
+                        tagMgr.lookupComponent((HRef) val);
                     }
                     // failed!
                     catch (UnresolvedException ue)
@@ -1004,6 +728,19 @@ public class NHServer extends HServer
         }
 
         if (LOG.isTraceOn()) LOG.trace("END removeBrokenRefs"); 
+    }
+
+    HWatch[] getWatches() 
+    {
+        synchronized(watches) 
+        {
+            HWatch[] arr = new HWatch[watches.size()];
+            int n = 0;
+            Iterator itr = watches.values().iterator();
+            while (itr.hasNext())
+                arr[n++] = (HWatch) itr.next();
+            return arr;
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -1082,211 +819,16 @@ public class NHServer extends HServer
         return HGridBuilder.dictsToGrid(dicts);
     }
 
-//////////////////////////////////////////////////////////////////////////
-// ApplyBatchTags
-//////////////////////////////////////////////////////////////////////////
-
-    static class ApplyBatchTags extends HOp
-    {
-        public String name() { return "applyBatchTags"; }
-        public String summary() { return "Apply Batch Tags"; }
-        public HGrid onService(HServer db, HGrid req)
-        {
-            NHServer server = (NHServer) db;
-
-            HRow params = req.row(0);
-
-            boolean returnResultRows = false;
-            if (params.has("returnResultRows"))
-                returnResultRows = params.getBool("returnResultRows");
-
-            return server.getService().applyBatchTags(
-                params.getStr("tags"),
-                params.getStr("targetFilter"),
-                returnResultRows);
-        }
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// AddHaystackSlots
-//////////////////////////////////////////////////////////////////////////
-
-    static class AddHaystackSlots extends HOp
-    {
-        public String name() { return "addHaystackSlots"; }
-        public String summary() { return "Add Haystack Slots"; }
-        public HGrid onService(HServer db, HGrid req)
-        {
-            NHServer server = (NHServer) db;
-
-            HRow params = req.row(0);
-
-            return server.getService().addHaystackSlots(
-                params.getStr("targetFilter"));
-        }
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// ExtendedRead
-//////////////////////////////////////////////////////////////////////////
-
-    static class ExtendedRead extends HOp
-    {
-        public String name() { return "extendedRead"; }
-        public String summary() { return "Extended Read"; }
-        public HGrid onService(HServer db, HGrid req)
-        {
-            NHServer server = (NHServer) db;
-
-            HRow params = req.row(0);
-
-            String filter = params.getStr("filter");
-
-            int limit = params.has("limit") ?
-                params.getInt("limit") :
-                Integer.MAX_VALUE;
-
-            HGrid grid = server.onReadAll(filter, limit);
-
-           // size
-           if (params.has("size") && params.get("size").equals(HBool.TRUE))
-               grid = makeSizeGrid(grid);
-
-           // unique
-           else if (params.has("unique"))
-               grid = makeUniqueGrid(grid, params.getStr("unique"));
-
-           return grid;
-        }
-
-        private static HGrid makeSizeGrid(HGrid grid)
-        {
-            HDictBuilder hdb = new HDictBuilder();
-            hdb.add("size", HNum.make(grid.numRows()));
-            return HGridBuilder.dictToGrid(hdb.toDict());
-        }
-
-        private static HGrid makeUniqueGrid(HGrid grid, String column)
-        {
-            Map map = new HashMap();
-            for (int i = 0; i < grid.numRows(); i++)
-            {
-                HRow row = grid.row(i);
-                if (row.has(column))
-                {
-                    HVal val = row.get(column);
-                    Integer count = (Integer) map.get(val);
-                    map.put(val, (count == null) ? 
-                        new Integer(1) :
-                        new Integer(count.intValue() + 1));
-                }
-            }
-
-            Array arr = new Array(HDict.class);
-            Iterator it = map.keySet().iterator();
-            while (it.hasNext())
-            {
-                HVal val = (HVal) it.next();
-                Integer count = (Integer) map.get(val);
-
-                HDictBuilder hdb = new HDictBuilder();
-                hdb.add(column, val);
-                hdb.add("count", HNum.make(count.intValue()));
-                arr.add(hdb.toDict());
-            }
-            return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
-        }
-    }
- 
-//////////////////////////////////////////////////////////////////////////
-// SearchAndReplace
-//////////////////////////////////////////////////////////////////////////
-
-    static class SearchAndReplace extends HOp
-    {
-        public String name() { return "searchAndReplace"; }
-        public String summary() { return "Search and Replace"; }
-        public HGrid onService(HServer db, HGrid req)
-        {
-            NHServer server = (NHServer) db;
-
-            HRow params = req.row(0);
-
-            return server.getService().searchAndReplace(
-                params.getStr("filter"),
-                params.getStr("searchText"),
-                params.getStr("replaceText"));
-        }
-    }
- 
-//////////////////////////////////////////////////////////////////////////
-// WatchStatus
-//////////////////////////////////////////////////////////////////////////
-
-    static class WatchStatus extends HOp
-    {
-        public String name() { return "watchStatus"; }
-        public String summary() { return "Status of currrently open Watches"; }
-        public HGrid onService(HServer db, HGrid req)
-        {
-            NHServer server = (NHServer) db;
-
-            Array arr = new Array(HDict.class);
-
-            HWatch[] watches = server.curWatches();
-            for (int i = 0; i < watches.length; i++)
-            {
-                HRef watchId = HRef.make(watches[i].id());
-
-                HDictBuilder hdb = new HDictBuilder();
-                hdb.add("id", watchId);
-                hdb.add("watch");
-                arr.add(hdb.toDict());
-
-                HDict[] sub = ((NHWatch) watches[i]).curSubscribed();
-                for (int j = 0; j < sub.length; j++)
-                {
-                    hdb = new HDictBuilder();
-                    hdb.add("watchRef", watchId);
-
-                    Iterator it = sub[j].iterator();
-                    while (it.hasNext())
-                    {
-                        Map.Entry e = (Map.Entry) it.next();
-                        String key = (String) e.getKey();
-                        HVal   val = (HVal)   e.getValue();
-                        hdb.add(key, val);
-                    }
-                    arr.add(hdb.toDict());
-                }
-            }
-
-            return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
-        }
-    }
-
-    private HWatch[] curWatches() 
-    {
-        HWatch[] arr = new HWatch[watches.size()];
-        int n = 0;
-        Iterator itr = watches.values().iterator();
-        while (itr.hasNext())
-            arr[n++] = (HWatch) itr.next();
-        return arr;
-    }
- 
 ////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
 
     public BNHaystackService getService() { return service; }
 
-    public ComponentStorehouse getComponentStorehouse() { return compStore; }
-    public HistoryStorehouse   getHistoryStorehouse()   { return hisStore;  }
-
-    public Cache getCache() { return cache; }
-
-    public Nav getNav() { return nav; }
+    SpaceManager getSpaceManager() { return spaceMgr; }
+    Cache getCache() { return cache; }
+    Nav getNav() { return nav; }
+    public TagManager getTagManager() { return tagMgr; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 
@@ -1295,7 +837,6 @@ public class NHServer extends HServer
     private static final Log LOG = Log.getLog("nhaystack");
 
     private static final String LAST_WRITE = "haystackLastWrite";
-    
 
     private static final HOp[] OPS = new HOp[]
     {
@@ -1311,56 +852,19 @@ public class NHServer extends HServer
         HStdOps.hisRead,
         HStdOps.hisWrite,
         HStdOps.invokeAction,
-        new ApplyBatchTags(),
-        new AddHaystackSlots(),
-        new ExtendedRead(),
-        new SearchAndReplace(),
-        new WatchStatus(),
-    };
-
-    // Every single tag which the server may have auto-generated.
-    protected static final String[] AUTO_GEN_TAGS = new String[] {
-
-        "axAnnotated",    
-        "axDisabled",
-        "axFault",
-        "axDown",
-        "axNull",
-        "axOverridden",
-        "axAlarm",
-        "axStale",
-        "axUnackedAlarm",
-        "axHistoryId",    
-        "axHistoryRef", 
-        "axPointRef",
-        "axSlotPath", 
-        "axType",         
-
-        "actions",    
-        "cur",          
-        "curStatus",
-        "curVal",     
-        "dis",            
-        "enum",         
-        "equip",
-        "his",        
-        "hisInterpolate", 
-        "id",           
-        "kind",
-        "navName",    
-        "point",          
-        "site",         
-        "tz",         
-        "unit",       
-        "writable"  
+        new NHServerOps.ApplyBatchTags(),
+        new NHServerOps.AddHaystackSlots(),
+        new NHServerOps.ExtendedRead(),
+        new NHServerOps.SearchAndReplace(),
+        new NHServerOps.WatchStatus(),
     };
 
     private final HashMap watches = new HashMap();
 
     private final BNHaystackService service;
-    private final ComponentStorehouse compStore;
-    private final HistoryStorehouse hisStore;
+    private final SpaceManager spaceMgr;
     private final Cache cache;
     private final Nav nav;
+    private final TagManager tagMgr;
 }
 

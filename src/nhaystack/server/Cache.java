@@ -19,11 +19,12 @@ import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.site.*;
+import nhaystack.util.*;
 
 /**
   * Cache stores various data structures that make it faster to look things up.
   */
-public class Cache
+class Cache
 {
     Cache(NHServer server)
     {
@@ -38,42 +39,30 @@ public class Cache
         long t0 = Clock.ticks();
         LOG.message("Begin cache rebuild.");
 
-        LOG.trace("rebuildComponentCache"); 
-        rebuildComponentCache();
+        LOG.trace("Rebuild cache, pass 1 of 4..."); 
+        rebuildComponentCache_firstPass();
 
-        LOG.trace("rebuildHistoryCache_firstPass"); 
+        LOG.trace("Rebuild cache, pass 2 of 4..."); 
+        rebuildComponentCache_secondPass();
+
+        LOG.trace("Rebuild cache, pass 3 of 4..."); 
         rebuildHistoryCache_firstPass();
 
-        if (!initialized)
-            initialized = true;
-
-        // this is simplest way to avoid a chicken-and-egg problem
-        // when creating the nav history cache
-        LOG.trace("rebuildHistoryCache_secondPass"); 
+        LOG.trace("Rebuild cache, pass 4 of 4..."); 
         rebuildHistoryCache_secondPass();
 
-        numPoints = 0;
-        numEquips = 0;
-        numSites = 0;
-        Iterator it = server.iterator();
-        while (it.hasNext())
-        {
-            HDict tags = (HDict) it.next();
-            if (tags.has("point")) numPoints++;
-            else if (tags.has("equip")) numEquips++;
-            else if (tags.has("site")) numSites++;
-        }
         lastRebuildTime = BAbsTime.now();
-
         long t1 = Clock.ticks();
         LOG.message("End cache rebuild " + (t1-t0) + "ms.");
         lastRebuildDuration = BRelTime.make(t1-t0);
+
+        initialized = true;
     }
 
     /**
       * Get the history config that goes with the remote point, or return null.
       */
-    public synchronized BHistoryConfig getHistoryConfig(RemotePoint remotePoint)
+    synchronized BHistoryConfig getHistoryConfig(RemotePoint remotePoint)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -83,7 +72,7 @@ public class Cache
     /**
       * Get the control point that goes with the remote point, or return null.
       */
-    public synchronized BControlPoint getControlPoint(RemotePoint remotePoint)
+    synchronized BControlPoint getControlPoint(RemotePoint remotePoint)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -91,65 +80,37 @@ public class Cache
     }
 
     /**
-      * Get everything that is tagged as 'site'
+      * Return the implicit 'equip' for the point, or null.
       */
-    public BHSite[] getAllSites()
+    BHEquip getImplicitEquip(BControlPoint point)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
+        return (BHEquip) implicitEquips.get(point);
+    }
+
+    BHSite[] getAllSites()
+    {
+        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
         return sites;
     }
 
-    /**
-      * Get everything that is tagged as 'equip'
-      */
-    public BHEquip[] getAllEquips()
+    BHEquip[] getAllEquips()
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
-
         return equips;
-    }
-
-    /**
-      * Return the implicit 'equip' for the point, or null.
-      */
-    public BHEquip getImplicitEquip(BControlPoint point)
-    {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
-
-        return (BHEquip) implicitEquips.get(point.getHandle());
-    }
-
-    /**
-      * Get the site identified by the navId, or return null.
-      */
-    public BHSite getNavSite(String siteNav)
-    {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
-
-        return (BHSite) siteNavs.get(siteNav);
-    }
-
-    /**
-      * Get the equip identified by the navId, or return null.
-      */
-    public BHEquip getNavEquip(String equipNav)
-    {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
-
-        return (BHEquip) equipNavs.get(equipNav);
     }
 
     /**
       * Get all the equips associated with the given site navId.
       */
-    public BHEquip[] getNavSiteEquips(String siteNav)
+    BHEquip[] getNavSiteEquips(String siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
         BHSite site = (BHSite) siteNavs.get(siteNav);
 
-        Array arr = (Array) siteEquips.get(site.getHandle());
+        Array arr = (Array) siteEquips.get(site);
         return (arr == null) ?  
             new BHEquip[0] : 
             (BHEquip[]) arr.trim();
@@ -158,43 +119,22 @@ public class Cache
     /**
       * Get all the points associated with the given equip navId.
       */
-    public BControlPoint[] getNavEquipPoints(String equipNav)
+    BControlPoint[] getNavEquipPoints(String equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
         BHEquip equip = (BHEquip) equipNavs.get(equipNav);
 
-        Array arr = (Array) equipPoints.get(equip.getHandle());
+        Array arr = (Array) equipPoints.get(equip);
         return (arr == null) ?  
             new BControlPoint[0] : 
             (BControlPoint[]) arr.trim();
     }
 
     /**
-      * Get the site identified by the equip navId and point navName, or return null.
-      */
-    public BControlPoint getNavPoint(String equipNav, String pointNav)
-    {
-        // TODO we may want to make this more efficient eventually.
-        BControlPoint[] points = getNavEquipPoints(equipNav);
-
-        for (int i = 0; i < points.length; i++)
-        {
-            BControlPoint point = points[i];
-            HDict tags = BHDict.findTagAnnotation(point);
-            if (tags == null) 
-                tags = HDict.EMPTY;
-
-            if (Nav.makeNavName(point, tags).equals(pointNav))
-                return point;
-        }
-        return null;
-    }
-
-    /**
       * Get the stationNames for nav histories
       */
-    public String[] getNavHistoryStationNames()
+    String[] getNavHistoryStationNames()
     {
         Array arr = new Array(String.class, navHistories.keySet());
         return (String[]) arr.trim();
@@ -203,7 +143,7 @@ public class Cache
     /**
       * Get the nav histories for the given stationName
       */
-    public BHistoryConfig[] getNavHistories(String stationName)
+    BHistoryConfig[] getNavHistories(String stationName)
     {
         Array arr = (Array) navHistories.get(stationName);
 
@@ -214,11 +154,27 @@ public class Cache
         return (BHistoryConfig[]) arr.trim();
     }
 
+    /**
+      * Return the BComponent that is associate with the SepRef id
+      */
+    BComponent lookupComponentBySepRef(NHRef id)
+    {
+        return (BComponent) sepRefToComp.get(id);
+    }
+
+    /**
+      * Return the SepRef id that is associate with the component.
+      */
+    NHRef lookupSepRefByComponent(BComponent comp)
+    {
+        return (NHRef) compToSepRef.get(comp);
+    }
+
 ////////////////////////////////////////////////////////////////
 // private -- component space
 ////////////////////////////////////////////////////////////////
 
-    private void rebuildComponentCache()
+    private void rebuildComponentCache_firstPass()
     {
         remoteToPoint  = new HashMap();
         implicitEquips = new HashMap();
@@ -226,9 +182,12 @@ public class Cache
         equipNavs = new HashMap();
         siteEquips  = new HashMap();
         equipPoints = new HashMap();
+        sepRefToComp = new HashMap();
+        compToSepRef = new HashMap();
 
         Array sitesArr = new Array(BHSite.class);
         Array equipsArr = new Array(BHEquip.class);
+        numPoints = 0;
 
         BHEquip curImplicitEquip = null;
         int curImplicitDepth = -1;
@@ -263,6 +222,7 @@ public class Cache
             if (comp instanceof BControlPoint)
             {
                 BControlPoint point = (BControlPoint) comp;
+                numPoints++;
 
                 // BControlPoints always have tags generated
                 if (tags == null) tags = HDict.EMPTY;
@@ -278,7 +238,7 @@ public class Cache
                 if (tags.has("equipRef"))
                 {
                     HRef ref = tags.getRef("equipRef");
-                    BHEquip equip = (BHEquip) server.lookupComponent(ref);
+                    BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
                     addPointToEquip(equip, point);
                 }
                 // implicit equip
@@ -287,7 +247,7 @@ public class Cache
                     if (curImplicitEquip != null)
                     {
                         addPointToEquip(curImplicitEquip, point);
-                        implicitEquips.put(point.getHandle(), curImplicitEquip);
+                        implicitEquips.put(point, curImplicitEquip);
                     }
                 }
             }
@@ -312,27 +272,23 @@ public class Cache
 
         sites  = (BHSite[]) sitesArr.trim();
         equips = (BHEquip[]) equipsArr.trim();
+        numSites = sites.length;
+        numEquips = equips.length;
     }
 
-    /**
-      * This will save a reference to the point from its equip.
-      */
     private void addPointToEquip(BHEquip equip, BControlPoint point)
     {
-        Array arr = (Array) equipPoints.get(equip.getHandle());
+        Array arr = (Array) equipPoints.get(equip);
         if (arr == null)
-            equipPoints.put(equip.getHandle(), arr = new Array(BControlPoint.class));
+            equipPoints.put(equip, arr = new Array(BControlPoint.class));
         arr.add(point);
     }
 
-    /**
-      * This will save a reference to the equip from its site.
-      */
     private void addEquipToSite(BHSite site, BHEquip equip)
     {
-        Array arr = (Array) siteEquips.get(site.getHandle());
+        Array arr = (Array) siteEquips.get(site);
         if (arr == null)
-            siteEquips.put(site.getHandle(), arr = new Array(BHEquip.class));
+            siteEquips.put(site, arr = new Array(BHEquip.class));
         arr.add(equip);
     }
 
@@ -342,7 +298,7 @@ public class Cache
         if (equipTags.has("siteRef"))
         {
             HRef ref = equipTags.getRef("siteRef");
-            BHSite site = (BHSite) server.lookupComponent(ref);
+            BHSite site = (BHSite) server.getTagManager().lookupComponent(ref);
             if (site != null)
             {
                 addEquipToSite(site, equip);
@@ -356,6 +312,78 @@ public class Cache
                     equip);
             }
         }
+    }
+
+    private void rebuildComponentCache_secondPass()
+    {
+        for (int i = 0; i < sites.length; i++)
+        {
+            BHSite site = sites[i];
+
+            // make ref for site
+            HDict siteTags = site.getHaystack().getDict();
+            String siteNav = Nav.makeNavName(site, siteTags);
+            NHRef siteRef = makeSepRef(new String[] { siteNav });
+
+//System.out.println(">>>>: " + site.getSlotPath() + ", " + siteRef.getHRef());
+
+            // save bi-directional lookup for site
+            sepRefToComp.put(siteRef, site);
+            compToSepRef.put(site, siteRef);
+
+            // lookup equips for site
+            Array arr = (Array) siteEquips.get(site);
+            BHEquip[] equips = (arr == null) ?  
+                new BHEquip[0] : (BHEquip[]) arr.trim();
+
+            // iterate through equips for site
+            for (int j = 0; j < equips.length; j++)
+            {
+                BHEquip equip = equips[j];
+
+                // make ref for equip
+                HDict equipTags = equip.getHaystack().getDict();
+                String equipNav = Nav.makeNavName(equip, equipTags);
+                NHRef equipRef = makeSepRef(new String[] { siteNav, equipNav });
+
+//System.out.println(">>>>: " + equip.getSlotPath() + ", " + equipRef.getHRef());
+
+                // save bi-directional lookup for equip
+                sepRefToComp.put(equipRef, equip);
+                compToSepRef.put(equip, equipRef);
+
+                // lookup points for equip
+                arr = (Array) equipPoints.get(equip);
+                BControlPoint[] points = (arr == null) ?  
+                    new BControlPoint[0] : (BControlPoint[]) arr.trim();
+
+                // iterate through points for equip
+                for (int k = 0; k < points.length; k++)
+                {
+                    BControlPoint point = points[k];
+
+                    // make ref for point
+                    HDict pointTags = BHDict.findTagAnnotation(point);
+                    if (pointTags == null) pointTags = HDict.EMPTY;
+                    String pointNav = Nav.makeNavName(point, pointTags);
+                    NHRef pointRef = makeSepRef(new String[] { siteNav, equipNav, pointNav });
+
+//System.out.println(">>>>: " + point.getSlotPath() + ", " + pointRef.getHRef());
+
+                    // save bi-directional lookup for point
+                    sepRefToComp.put(pointRef, point);
+                    compToSepRef.put(point, pointRef);
+                }
+            }
+        }
+    }
+
+    private static NHRef makeSepRef(String[] navPath)
+    {
+        return NHRef.make(
+            NHRef.SEP, 
+            PathUtil.fromNiagaraPath(
+                TextUtil.join(navPath, '/')));
     }
 
 ////////////////////////////////////////////////////////////////
@@ -391,7 +419,7 @@ public class Cache
         {
             BHistoryConfig cfg = (BHistoryConfig) itr.next();
 
-            if (server.getHistoryStorehouse().isVisibleHistory(cfg))
+            if (server.getSpaceManager().isVisibleHistory(cfg))
             {
                 String stationName = cfg.getId().getDeviceName();
 
@@ -416,18 +444,21 @@ public class Cache
     private Map remoteToPoint  = null; // RemotePoint -> BControlPoint
     private Map navHistories   = null; // stationName -> Array<BHistoryConfig>
 
-    private BHSite[]  sites  = null;
-    private BHEquip[] equips = null;
+    private BHSite[] sites = new BHSite[0];
+    private BHEquip[] equips = new BHEquip[0];
 
-    private Map implicitEquips = null; // Handle -> BHEquip
+    private Map implicitEquips = null; // BControlPoint -> BHEquip
     private Map siteNavs       = null; // String -> BHSite
     private Map equipNavs      = null; // String -> BHEquip
-    private Map siteEquips     = null; // Handle -> Array<BHEquip>
-    private Map equipPoints    = null; // Handle -> Array<BControlPoint>
+    private Map siteEquips     = null; // BHSite -> Array<BHEquip>
+    private Map equipPoints    = null; // BHEquip -> Array<BControlPoint>
 
-    int numPoints = 0;
-    int numEquips = 0;
+    private Map sepRefToComp = null; // NHRef -> BComponent
+    private Map compToSepRef = null; // BComponent -> NHRef
+
     int numSites = 0;
+    int numEquips = 0;
+    int numPoints = 0;
     BRelTime lastRebuildDuration = BRelTime.DEFAULT;
     BAbsTime lastRebuildTime = BAbsTime.DEFAULT;
 }

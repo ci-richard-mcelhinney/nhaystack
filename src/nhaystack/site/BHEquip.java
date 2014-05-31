@@ -85,7 +85,7 @@ public class BHEquip extends BHTagged
 
         // add annotated
         HDict tags = getHaystack().getDict();
-        hdb.add(server.convertAnnotatedRefTags(tags));
+        hdb.add(server.getTagManager().convertAnnotatedRefTags(tags));
 
         // navName
         String navName = Nav.makeNavName(this, tags);
@@ -96,7 +96,7 @@ public class BHEquip extends BHTagged
         hdb.add("dis", dis);
 
         // add id
-        HRef ref = server.makeComponentRef(this).getHRef();
+        HRef ref = server.getTagManager().makeComponentRef(this).getHRef();
         hdb.add("id", HRef.make(ref.val, dis));
 
         // add equip
@@ -116,7 +116,7 @@ public class BHEquip extends BHTagged
         // site
         if (tags.has("siteRef"))
         {
-            BComponent site = server.lookupComponent(tags.getRef("siteRef"));
+            BComponent site = server.getTagManager().lookupComponent(tags.getRef("siteRef"));
             if (site != null)
             {
                 HDict siteTags = BHDict.findTagAnnotation(site);

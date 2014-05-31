@@ -17,7 +17,6 @@ import javax.baja.util.*;
 import javax.baja.xml.*;
 
 import org.projecthaystack.*;
-import nhaystack.server.storehouse.*;
 import nhaystack.site.*;
 import nhaystack.util.*;
 
@@ -28,14 +27,14 @@ public class Nav
 {
     Nav(
         BNHaystackService service,
-        ComponentStorehouse compStore,
-        HistoryStorehouse hisStore,
-        Cache cache)
+        SpaceManager spaceMgr,
+        Cache cache,
+        TagManager tagMgr)
     {
         this.service = service;
-        this.compStore = compStore;
-        this.hisStore = hisStore;
+        this.spaceMgr = spaceMgr;
         this.cache = cache;
+        this.tagMgr = tagMgr;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -54,12 +53,16 @@ public class Nav
         return PathUtil.fromNiagaraPath(navName);
     }
 
-    public static String makeSiteNavId(String siteNav)
+////////////////////////////////////////////////////////////////
+// package-scope
+////////////////////////////////////////////////////////////////
+
+    static String makeSiteNavId(String siteNav)
     {
         return "sep:/" + siteNav;
     }
 
-    public static String makeEquipNavId(String siteNav, String equipNav)
+    static String makeEquipNavId(String siteNav, String equipNav)
     {
         return siteNav + "/" + equipNav;
     }
@@ -67,7 +70,7 @@ public class Nav
     /**
       * Return navigation tree children for given navId. 
       */
-    public HGrid onNav(String navId)
+    HGrid onNav(String navId)
     {
         if (navId == null) return roots();
 
@@ -82,7 +85,7 @@ public class Nav
     /**
       * Fetch the site-equip-point nav tree in xml format
       */
-    public String fetchSepNav() throws Exception
+    String fetchSepNav() throws Exception
     {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         XWriter out = new XWriter(bout);
@@ -97,7 +100,7 @@ public class Nav
             out.w("<sepNav>").nl();
             for (int i = 0; i < sites.length; i++)
             {
-                HDict siteTags = compStore.createComponentTags(sites[i]);
+                HDict siteTags = tagMgr.createComponentTags(sites[i]);
                 String siteName = siteTags.getStr("navName");
 
                 BComponent[] equips = cache.getNavSiteEquips(makeSiteNavId(siteName));
@@ -117,7 +120,7 @@ public class Nav
 
                     for (int j = 0; j < equips.length; j++)
                     {
-                        HDict equipTags = compStore.createComponentTags(equips[j]);
+                        HDict equipTags = tagMgr.createComponentTags(equips[j]);
                         String equipName = equipTags.getStr("navName");
 
                         BControlPoint[] points = cache.getNavEquipPoints(
@@ -139,7 +142,7 @@ public class Nav
 
                             for (int k = 0; k < points.length; k++)
                             {
-                                HDict pointTags = compStore.createComponentTags(points[k]);
+                                HDict pointTags = tagMgr.createComponentTags(points[k]);
                                 out.indent(3)
                                     .w("<point ")
                                     .attr("navName", pointTags.getStr("navName")).w(" ")
@@ -230,13 +233,13 @@ public class Nav
             hdb.add("navId", comp.getSlotPath().toString());
         }
 
-        if (compStore.isVisibleComponent(comp))
+        if (spaceMgr.isVisibleComponent(comp))
         {
-            hdb.add(compStore.createComponentTags(comp));
+            hdb.add(tagMgr.createComponentTags(comp));
         }
         else
         {
-            hdb.add("id", NHServer.makeSlotPathRef(comp).getHRef());
+            hdb.add("id", TagManager.makeSlotPathRef(comp).getHRef());
             hdb.add("dis", comp.getDisplayName(null));
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
@@ -275,7 +278,7 @@ public class Nav
             Array dicts = new Array(HDict.class);
             for (int i = 0; i < configs.length; i++)
             {
-                dicts.add(hisStore.createHistoryTags(configs[i]));
+                dicts.add(tagMgr.createHistoryTags(configs[i]));
             }
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
@@ -293,7 +296,7 @@ public class Nav
             for (int i = 0; i < sites.length; i++)
             {
                 BHSite site = sites[i];
-                HDict tags = compStore.createComponentTags(site);
+                HDict tags = tagMgr.createComponentTags(site);
 
                 String siteNav = makeSiteNavId(tags.getStr("navName"));
 
@@ -334,7 +337,7 @@ public class Nav
         for (int i = 0; i < equips.length; i++)
         {
             BComponent equip = equips[i];
-            HDict tags = compStore.createComponentTags(equip);
+            HDict tags = tagMgr.createComponentTags(equip);
 
             String equipNav = makeEquipNavId(
                 siteNav, tags.getStr("navName"));
@@ -359,7 +362,7 @@ public class Nav
             BControlPoint point = points[i];
 
             HDictBuilder hd = new HDictBuilder();
-            hd.add(compStore.createComponentTags(point));
+            hd.add(tagMgr.createComponentTags(point));
             dicts.add(hd.toDict());
         }
 
@@ -372,6 +375,6 @@ public class Nav
 
     final BNHaystackService service;
     final Cache cache;
-    final ComponentStorehouse compStore;
-    final HistoryStorehouse hisStore;
+    final SpaceManager spaceMgr;
+    final TagManager tagMgr;
 }

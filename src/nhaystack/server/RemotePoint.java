@@ -21,13 +21,13 @@ import javax.baja.util.*;
   * associated NiagaraNetwork history, or an associated 
   * NiagaraNetwork point, or both.
   */
-public class RemotePoint
+class RemotePoint
 {
     /**
       * Create a RemotePoint from a BControlPoint, or return null.
       * The BControlPoint must be an imported point.
       */
-    public static RemotePoint fromControlPoint(BControlPoint point)
+    static RemotePoint fromControlPoint(BControlPoint point)
     {
         // Check for a NiagaraProxyExt
         BAbstractProxyExt proxyExt = point.getProxyExt();
@@ -58,7 +58,7 @@ public class RemotePoint
       * Create a RemotePoint from a BHistoryConfig, or return null.
       * The BHistoryConfig must be an imported history.
       */
-    public static RemotePoint fromHistoryConfig(BHistoryConfig cfg)
+    static RemotePoint fromHistoryConfig(BHistoryConfig cfg)
     {
         // cannot be local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
@@ -156,19 +156,19 @@ public class RemotePoint
       * This will always correspond to the name of a NiagaraStation 
       * underneath the NiagaraNetwork.
       */
-    public String getStationName() { return stationName; }
+    String getStationName() { return stationName; }
 
     /**
       * The slotPath of the point on the remote station.
       */
-    public SlotPath getSlotPath() { return slotPath; }
+    SlotPath getSlotPath() { return slotPath; }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    public static final Type NIAGARA_PROXY_EXT;
-    public static final Type NIAGARA_STATION;
+    static final Type NIAGARA_PROXY_EXT;
+    static final Type NIAGARA_STATION;
     static
     {
         NIAGARA_PROXY_EXT = BTypeSpec.make("niagaraDriver:NiagaraProxyExt") .getResolvedType();

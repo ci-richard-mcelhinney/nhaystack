@@ -228,7 +228,7 @@ public class BHDictEditor extends BEdgePane
                             throw new BajaRuntimeException(
                                 ord + " is not mounted.");
 
-                        NHRef ref = NHServer.makeSlotPathRef(comp);
+                        NHRef ref = TagManager.makeSlotPathRef(comp);
                         builder.add(name, ref.getHRef());
                     }
 

@@ -428,7 +428,7 @@ public class BNHaystackService
 
         HDict[] dicts = new HDict[sites.length];
         for (int i = 0; i < sites.length; i++)
-            dicts[i] = server.getComponentStorehouse().createComponentTags(sites[i]);
+            dicts[i] = server.getTagManager().createComponentTags(sites[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
@@ -439,7 +439,7 @@ public class BNHaystackService
 
         HDict[] dicts = new HDict[equips.length];
         for (int i = 0; i < equips.length; i++)
-            dicts[i] = server.getComponentStorehouse().createComponentTags(equips[i]);
+            dicts[i] = server.getTagManager().createComponentTags(equips[i]);
 
         return BHGrid.make(HGridBuilder.dictsToGrid(dicts));
     }
@@ -517,9 +517,9 @@ public class BNHaystackService
             cache.rebuild();
 
             BNHaystackStats stats = getStats();
-            stats.setNumPoints(cache.numPoints);
-            stats.setNumEquips(cache.numEquips);
             stats.setNumSites(cache.numSites);
+            stats.setNumEquips(cache.numEquips);
+            stats.setNumPoints(cache.numPoints);
             stats.setLastCacheRebuildDuration(cache.lastRebuildDuration);
             stats.setLastCacheRebuildTime(cache.lastRebuildTime);
         }
@@ -561,142 +561,6 @@ public class BNHaystackService
         return niagaraNetwork;
     }
 
-    /**
-      * Apply the given tags to every component that is part of the given target filter.
-      */
-    public HGrid applyBatchTags(String tags, String targetFilter, boolean returnResultRows)
-    {
-        HDict newTags = new HZincReader(tags).readDict();
-
-        BComponent[] targets = getFilterComponents(targetFilter);
-        HDict[] rows = new HDict[targets.length];
-        for (int i = 0; i < targets.length; i++)
-        {
-            BComponent target = targets[i];
-            if (target.get("haystack") == null) continue;
-            if (!(target.get("haystack") instanceof BHDict)) continue;
-
-            HDictBuilder hdb = new HDictBuilder();
-
-            // add orig tags
-            HDict origTags = ((BHDict) target.get("haystack")).getDict();
-            Iterator it = origTags.iterator();
-            while (it.hasNext())
-            {
-                Map.Entry e = (Map.Entry) it.next();
-                String key = (String) e.getKey();
-                HVal   val = (HVal)   e.getValue();
-
-                HVal rem = (HVal) newTags.get(key, false);
-                if (!(rem != null && rem.equals(REMOVE)))
-                    hdb.add(key, val);
-            }
-
-            // add new tags
-            it = newTags.iterator();
-            while (it.hasNext())
-            {
-                Map.Entry e = (Map.Entry) it.next();
-                String key = (String) e.getKey();
-                HVal   val = (HVal)   e.getValue();
-
-                if (!val.equals(REMOVE))
-                    hdb.add(key, val);
-            }
-
-            HDict row = hdb.toDict();
-            target.set("haystack", BHDict.make(row));
-            rows[i] = row;
-        }
-        
-        if (returnResultRows)
-        {
-            return HGridBuilder.dictsToGrid(rows);
-        }
-        else
-        {
-            HDictBuilder hdb = new HDictBuilder();
-            hdb.add("rowsChanged", HNum.make(targets.length));
-            return HGridBuilder.dictToGrid(hdb.toDict());
-        }
-    }
-
-    /**
-      * Add a haystack slot to every component that is part of the given target filter.
-      */
-    public HGrid addHaystackSlots(String targetFilter)
-    {
-        int count = 0;
-        BComponent[] targets = getFilterComponents(targetFilter);
-        for (int i = 0; i < targets.length; i++)
-        {
-            BComponent target = targets[i];
-            if (target.get("haystack") == null) 
-            {
-                count++;
-                target.add("haystack", BHDict.DEFAULT);
-            }
-        }
-        
-        HDictBuilder hdb = new HDictBuilder();
-        hdb.add("rowsChanged", HNum.make(count));
-        return HGridBuilder.dictToGrid(hdb.toDict());
-    }
-
-    /**
-      * Search-and-replace component names
-      */
-    public HGrid searchAndReplace(
-        String filter,
-        String searchText,
-        String replaceText)
-    {
-        int count = 0;
-        BComponent[] comps = getFilterComponents(filter);
-        for (int i = 0; i < comps.length; i++)
-        {
-            BComponent comp = comps[i];
-            String name = comp.getName();
-
-            int n = name.indexOf(searchText);
-            if (n != -1)
-            {
-                String newName = 
-                    name.substring(0, n) + 
-                    replaceText + 
-                    name.substring(n + searchText.length());
-
-                BComponent parent = (BComponent) comp.getParent();
-                parent.rename(comp.getPropertyInParent(), newName);
-
-                count++;
-            }
-        }
-
-        HDictBuilder hdb = new HDictBuilder();
-        hdb.add("rowsChanged", HNum.make(count));
-        return HGridBuilder.dictToGrid(hdb.toDict());
-    }
-
-    /**
-      * Find all the components that are part of the given filter.
-      */
-    public BComponent[] getFilterComponents(String filter)
-    {
-        Array arr = new Array(BComponent.class);
-
-        NHServer server = getHaystackServer();
-        HGrid grid = server.readAll(filter);
-        for (int i = 0; i < grid.numRows(); i++)
-        {
-            HStr slotPath = (HStr) grid.row(i).get("axSlotPath", false);
-            if (slotPath != null)
-                arr.add(BOrd.make("station:|" + slotPath.val).get(this, null));
-        }
-
-        return (BComponent[]) arr.trim();
-    }
-
 ////////////////////////////////////////////////////////////////
 // BINHaystackWorkerParent
 ////////////////////////////////////////////////////////////////
@@ -718,8 +582,6 @@ public class BNHaystackService
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
-
-    private static final HStr REMOVE = HStr.make("_remove_");
 
     private static final Log LOG = Log.getLog("nhaystack");
 

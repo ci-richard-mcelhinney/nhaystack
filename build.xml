@@ -43,7 +43,6 @@
     <package name="nhaystack.driver.worker"        doc="true"/>
     <package name="nhaystack.res"                  doc="true"/>
     <package name="nhaystack.server"               doc="true"/>
-    <package name="nhaystack.server.storehouse"    doc="true"/>
     <package name="nhaystack.site"                 doc="true"/>
     <package name="nhaystack.ui"                   doc="true"/>
     <package name="nhaystack.ui.view"              doc="true"/>

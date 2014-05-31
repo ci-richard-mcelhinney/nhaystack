@@ -19,9 +19,9 @@ import org.projecthaystack.*;
 /**
   * NHWatch manages leased components
   */
-public class NHWatch extends HWatch
+class NHWatch extends HWatch
 {
-    public NHWatch(NHServer server, String dis, long leaseInterval)
+    NHWatch(NHServer server, String dis, long leaseInterval)
     {
         this.server = server;
         this.dis = dis;
@@ -79,8 +79,9 @@ public class NHWatch extends HWatch
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
 
+        long ticks = Clock.ticks();
         if (LOG.isTraceOn())
-            LOG.trace("NHWatch.sub " + watchId + ", length " + ids.length);
+            LOG.trace("NHWatch.sub begin " + watchId + ", length " + ids.length);
 
         scheduleLeaseTimeout();
 
@@ -97,7 +98,7 @@ public class NHWatch extends HWatch
 
             try
             {
-                BComponent comp = server.lookupComponent(id);
+                BComponent comp = server.getTagManager().lookupComponent(id);
 
                 // no such component -- treat 'checked' as if it were false, since
                 // 'checked' is handled on the client side.
@@ -106,32 +107,79 @@ public class NHWatch extends HWatch
                 //
                 if ((comp == null) || !(comp instanceof BControlPoint))
                 {
+                    if (LOG.isTraceOn())
+                        LOG.warning("NHWatch.sub " + watchId + " cannot subscribe to " + id);
+
                     response.add(null);
                 }
                 // found
                 else
                 {
-                    if (LOG.isTraceOn())
-                        LOG.trace("NHWatch.sub " + watchId + " subscribe " + id);
+//                    if (LOG.isTraceOn())
+//                        LOG.trace("NHWatch.sub " + watchId + " subscribe " + id);
 
                     pointArr.add(comp);
-                    HDict dict = server.createTags(comp);
-                    response.add(dict);
-                    allSubscribed.put(comp, dict);
+
+                    HDictBuilder hdb = new HDictBuilder();
+                    hdb.add("id", id);
+                    response.add(hdb.toDict());
                 }
             }
             catch (Exception e)
             {
-                LOG.warning("Could not subscribe to " + id + ": " + e.getMessage());
+                LOG.warning("NHWatch.sub " + watchId + " cannot subscribe to " + id +
+                    ": " + e.getMessage());
                 response.add(null);
             }
         }
 
-        // subscribe
-        BControlPoint[] points = (BControlPoint[]) pointArr.trim();
-        subscriber.subscribe(points, 0, null);  // depth '0'
+        HGrid grid = HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
+        startSubscriptionThread((BControlPoint[]) pointArr.trim());
 
-        return HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.sub end   " + watchId + ", length " + ids.length + ", " +
+                (Clock.ticks()-ticks) + "ms.");
+
+        return grid;
+    }
+
+    /**
+      * Subscribe to all the points, and then add them to allSubscribed.
+      * Also, add them to the next cov
+      */
+    private void startSubscriptionThread(final BControlPoint[] points)
+    {
+        Runnable runnable = new Runnable() {
+            public void run() {
+
+                String msg = watchId + ", " + points.length + " points";
+
+                long ticks = Clock.ticks();
+                LOG.trace("NHWatch begin batch subscribe request " + msg + ".");
+                subscriber.subscribe(points, 0, null);
+                LOG.trace("NHWatch end   batch subscribe request " + msg + ", " + (Clock.ticks()-ticks) + "ms.");
+
+                ticks = Clock.ticks();
+                LOG.trace("NHWatch begin batch subscribe cov " + msg + ".");
+
+                synchronized(NHWatch.this) 
+                {
+                    for (int i = 0; i < points.length; i++)
+                    {
+                        HDict cov = server.getTagManager().createPointCovTags(points[i]);
+                        allSubscribed.put(points[i], cov);
+                        nextPoll.put(points[i], cov);
+
+//                        if (LOG.isTraceOn())
+//                            LOG.trace("NHWatch.sub " + watchId + " subscribe " + cov.id());
+                    }
+                }
+
+                LOG.trace("NHWatch end   batch subscribe cov " + msg + ", " + (Clock.ticks()-ticks) + "ms.");
+            }
+        };
+
+        (new Thread(runnable, "NHWatch-Subscription-" + watchId)).start();
     }
 
     /**
@@ -153,7 +201,7 @@ public class NHWatch extends HWatch
         {
             HRef id = (HRef) ids[i];
 
-            BComponent comp = server.lookupComponent(id);
+            BComponent comp = server.getTagManager().lookupComponent(id);
             if ((comp != null) && allSubscribed.containsKey(comp))
             {
                 if (LOG.isTraceOn())
@@ -180,7 +228,7 @@ public class NHWatch extends HWatch
             "Watch " + watchId + " is closed.");
 
         if (LOG.isTraceOn())
-            LOG.trace("NHWatch.pollChanges " + watchId);
+            LOG.trace("NHWatch.pollChanges begin " + watchId);
 
         scheduleLeaseTimeout();
 
@@ -194,6 +242,8 @@ public class NHWatch extends HWatch
         nextPoll.clear();
 
         // done
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.pollChanges end   " + watchId + ", size " + response.size());
         return HGridBuilder.dictsToGrid((HDict[]) response.trim());
     }
 
@@ -207,7 +257,7 @@ public class NHWatch extends HWatch
             "Watch " + watchId + " is closed.");
 
         if (LOG.isTraceOn())
-            LOG.trace("NHWatch.pollRefresh " + watchId);
+            LOG.trace("NHWatch.pollRefresh begin " + watchId);
 
         scheduleLeaseTimeout();
 
@@ -217,7 +267,7 @@ public class NHWatch extends HWatch
         while (itr.hasNext())
         {
             BControlPoint point = (BControlPoint) itr.next();
-            HDict dict = server.getComponentStorehouse().createPointCovTags(point);
+            HDict dict = server.getTagManager().createPointCovTags(point);
 
             response.add(dict);
             allSubscribed.put(point, dict);
@@ -228,6 +278,9 @@ public class NHWatch extends HWatch
         nextPoll.clear();
 
         // done
+        if (LOG.isTraceOn())
+            LOG.trace("NHWatch.pollRefresh end   " + watchId + ", size " + response.size());
+
         return HGridBuilder.dictsToGrid((HDict[]) response.trim());
     }
 
@@ -274,13 +327,13 @@ public class NHWatch extends HWatch
                 BComponent comp = event.getSourceComponent();
 
                 if (event.getSlotName().equals("out") && // we only care about the "out" slot
-                    allSubscribed.containsKey(comp))     // and we'll double check that we are really subscribed
+                    allSubscribed.containsKey(comp))     // and lets double check that we are really subscribed
                 {
                     BControlPoint point = (BControlPoint) comp;
-                    HDict cov = server.getComponentStorehouse().createPointCovTags(point);
+                    HDict cov = server.getTagManager().createPointCovTags(point);
 
-                    if (LOG.isTraceOn())
-                        LOG.trace("NSubscriber.event " + cov);
+//                    if (LOG.isTraceOn())
+//                        LOG.trace("NSubscriber.event " + watchId + ", " + cov);
 
                     nextPoll.put(comp, cov);
                 }
@@ -292,14 +345,14 @@ public class NHWatch extends HWatch
 // package-scope
 ////////////////////////////////////////////////////////////////
 
-    HDict[] curSubscribed()
+    synchronized HDict[] curSubscribed()
     {
         Array arr = new Array(HDict.class);
         Iterator itr = allSubscribed.keySet().iterator();
         while (itr.hasNext())
         {
             BControlPoint point = (BControlPoint) itr.next();
-            HDict dict = server.createTags(point);
+            HDict dict = server.getTagManager().createPointCovTags(point);
             arr.add(dict);
         }
         return (HDict[]) arr.trim();

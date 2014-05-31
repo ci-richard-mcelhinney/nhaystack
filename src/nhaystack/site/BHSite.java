@@ -60,7 +60,7 @@ public class BHSite extends BHTagged
 
         // add annotated
         HDict tags = getHaystack().getDict();
-        hdb.add(server.convertAnnotatedRefTags(tags));
+        hdb.add(server.getTagManager().convertAnnotatedRefTags(tags));
 
         // navName
         String navName = Nav.makeNavName(this, tags);
@@ -71,7 +71,7 @@ public class BHSite extends BHTagged
         hdb.add("dis", dis);
 
         // add id
-        HRef ref = server.makeComponentRef(this).getHRef();
+        HRef ref = server.getTagManager().makeComponentRef(this).getHRef();
         hdb.add("id", HRef.make(ref.val, dis));
 
         // add site

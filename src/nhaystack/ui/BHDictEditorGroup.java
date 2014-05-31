@@ -165,7 +165,7 @@ public class BHDictEditorGroup extends BScrollPane
     {
         try
         {
-            NHRef ref = NHServer.makeSlotPathRef(comp);
+            NHRef ref = TagManager.makeSlotPathRef(comp);
             BHRef id = BHRef.make(ref.getHRef());
             return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
         }
