@@ -54,6 +54,9 @@
   <!-- /driver/NHaystackServerFolder -->
   <p n="NHaystackServerFolder" h="d" t="nh:NHaystackServerFolder">
   </p>
+  <!-- /driver/NHaystackPointfolder -->
+  <p n="NHaystackPointfolder" h="2f" t="nh:NHaystackPointFolder">
+  </p>
  </p>
 </p>
 </bajaObjectGraph>
