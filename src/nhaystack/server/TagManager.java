@@ -280,24 +280,28 @@ public class TagManager
       */
     HDict createPointCovTags(BControlPoint point)
     {
+        HDictBuilder hdb = new HDictBuilder();
+
         // id
         HRef id = makeComponentRef(point).getHRef();
+        hdb.add("id", id);
 
         // curVal
         HDict tags = BHDict.findTagAnnotation(point);
         if (tags == null) tags = HDict.EMPTY;
         HVal curVal = makeCurVal(point, tags);
+        hdb.add("curVal", curVal);
 
         // curStatus
         BStatus status = point.getStatus();
         HStr curStatus = makeCurStatus(status);
+        hdb.add("curStatus", curStatus);
+
+        // ax status tags
+        addAxStatusTags(hdb, status);
 
         // done
-        return new HDictBuilder()
-            .add("id", id)
-            .add("curVal", curVal)
-            .add("curStatus", curStatus)
-            .toDict();
+        return hdb.toDict();
     }
 
     /**
