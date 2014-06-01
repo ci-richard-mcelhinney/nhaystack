@@ -48,6 +48,9 @@ public class BNHaystackService
                 default{[ new BTimeZoneAliasFolder() ]}
             worker: BNHaystackWorker
                 default{[ new BNHaystackWorker() ]}
+            watchCount: int
+                flags { readonly }
+                default{[ 0 ]}
         }
         actions
         {
@@ -81,8 +84,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1150523866)1.0$ @*/
-/* Generated Sun Jun 01 09:55:13 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1478352391)1.0$ @*/
+/* Generated Sun Jun 01 10:43:58 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -230,6 +233,29 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#worker
    */
   public void setWorker(BNHaystackWorker v) { set(worker,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "watchCount"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>watchCount</code> property.
+   * @see nhaystack.server.BNHaystackService#getWatchCount
+   * @see nhaystack.server.BNHaystackService#setWatchCount
+   */
+  public static final Property watchCount = newProperty(Flags.READONLY, 0,null);
+  
+  /**
+   * Get the <code>watchCount</code> property.
+   * @see nhaystack.server.BNHaystackService#watchCount
+   */
+  public int getWatchCount() { return getInt(watchCount); }
+  
+  /**
+   * Set the <code>watchCount</code> property.
+   * @see nhaystack.server.BNHaystackService#watchCount
+   */
+  public void setWatchCount(int v) { setInt(watchCount,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"

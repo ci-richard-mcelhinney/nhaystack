@@ -188,7 +188,12 @@ public class NHServer extends HServer
                 dis, 
                 service.getLeaseInterval().getMillis());
 
-            synchronized(watches) { watches.put(watch.id(), watch); }
+            synchronized(watches) 
+            { 
+                watches.put(watch.id(), watch); 
+                service.setWatchCount(watches.size());
+            }
+
             return watch;
         }
         catch (RuntimeException e)
@@ -662,7 +667,11 @@ public class NHServer extends HServer
 
     void removeWatch(String watchId)
     {
-        synchronized(watches) { watches.remove(watchId); }
+        synchronized(watches) 
+        { 
+            watches.remove(watchId); 
+            service.setWatchCount(watches.size());
+        }
     }
 
     void removeBrokenRefs() 
