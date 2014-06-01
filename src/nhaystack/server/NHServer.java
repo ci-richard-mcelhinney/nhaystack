@@ -410,8 +410,24 @@ public class NHServer extends HServer
 
                 saveLastWrite(point, level, who);
             }
-            else
-                throw new IllegalStateException("Cannot write to " + point.getType());
+            else if (point instanceof BStringWritable)
+            {
+                BStringWritable sw = (BStringWritable) point;
+                BStatusString s = sw.getLevel(BPriorityLevel.make(level));
+
+                if (val == null)
+                {
+                    s.setStatus(BStatus.nullStatus);
+                }
+                else
+                {
+                    HStr str = (HStr) val;
+                    s.setValue(str.val);
+                    s.setStatus(BStatus.ok);
+                }
+
+                saveLastWrite(point, level, who);
+            }
         }
         catch (RuntimeException e)
         {
