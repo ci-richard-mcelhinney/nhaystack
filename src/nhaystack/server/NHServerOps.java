@@ -9,6 +9,8 @@
 package nhaystack.server;
 
 import java.util.*;
+
+import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -35,6 +37,9 @@ class NHServerOps
         public String summary() { return "Apply Batch Tags"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
             NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
@@ -89,16 +94,20 @@ class NHServerOps
                 rows[i] = row;
             }
 
+            HGrid result;
             if (returnResultRows)
             {
-                return HGridBuilder.dictsToGrid(rows);
+                result = HGridBuilder.dictsToGrid(rows);
             }
             else
             {
                 HDictBuilder hdb = new HDictBuilder();
                 hdb.add("rowsChanged", HNum.make(targets.length));
-                return HGridBuilder.dictToGrid(hdb.toDict());
+                result = HGridBuilder.dictToGrid(hdb.toDict());
             }
+
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
         }
     }
 
@@ -112,6 +121,9 @@ class NHServerOps
         public String summary() { return "Add Haystack Slots"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
             NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
@@ -131,7 +143,10 @@ class NHServerOps
 
             HDictBuilder hdb = new HDictBuilder();
             hdb.add("rowsChanged", HNum.make(count));
-            return HGridBuilder.dictToGrid(hdb.toDict());
+            HGrid result = HGridBuilder.dictToGrid(hdb.toDict());
+
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
         }
     }
 
@@ -145,6 +160,9 @@ class NHServerOps
         public String summary() { return "Extended Read"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
             NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
@@ -155,17 +173,18 @@ class NHServerOps
                 params.getInt("limit") :
                 Integer.MAX_VALUE;
 
-            HGrid grid = server.onReadAll(filter, limit);
+            HGrid result = server.onReadAll(filter, limit);
 
-           // size
-           if (params.has("size") && params.get("size").equals(HBool.TRUE))
-               grid = makeSizeGrid(grid);
+            // size
+            if (params.has("size") && params.get("size").equals(HBool.TRUE))
+                result = makeSizeGrid(result);
 
-           // unique
-           else if (params.has("unique"))
-               grid = makeUniqueGrid(grid, params.getStr("unique"));
+            // unique
+            else if (params.has("unique"))
+                result = makeUniqueGrid(result, params.getStr("unique"));
 
-           return grid;
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
         }
 
         private static HGrid makeSizeGrid(HGrid grid)
@@ -217,6 +236,9 @@ class NHServerOps
         public String summary() { return "Search and Replace"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
             NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
@@ -248,7 +270,10 @@ class NHServerOps
 
             HDictBuilder hdb = new HDictBuilder();
             hdb.add("rowsChanged", HNum.make(count));
-            return HGridBuilder.dictToGrid(hdb.toDict());
+            HGrid result = HGridBuilder.dictToGrid(hdb.toDict());
+
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
         }
     }
  
@@ -262,6 +287,9 @@ class NHServerOps
         public String summary() { return "Status of currrently open Watches"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
             NHServer server = (NHServer) db;
 
             Array arr = new Array(HDict.class);
@@ -296,7 +324,10 @@ class NHServerOps
                 }
             }
 
-            return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
+            HGrid result = HGridBuilder.dictsToGrid((HDict[]) arr.trim());
+
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
         }
     }
 
@@ -323,6 +354,8 @@ class NHServerOps
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     private static final HStr REMOVE = HStr.make("_remove_");
 }
