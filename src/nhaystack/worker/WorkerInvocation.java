@@ -7,6 +7,7 @@
 
 package nhaystack.worker;
 
+import javax.baja.log.*;
 import javax.baja.status.*;
 import javax.baja.util.*;
 
@@ -34,6 +35,14 @@ public class WorkerInvocation extends WorkerChore
     public boolean merge(WorkerChore chore) { return false; }
 
     public boolean isPing() { return false; }
+
+    protected final Log getLog() { return LOG; }
+
+////////////////////////////////////////////////////////////////
+// attributes
+////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     protected final Invocation invocation;
 }

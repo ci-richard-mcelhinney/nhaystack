@@ -140,23 +140,27 @@ public class BNHaystackWorker
           throw new NotRunningException();
 
         BStatus status = getWorkerParent().getStatus();
+        Log log = chore.getLog();
 
         if (status.isDisabled() || status.isFault())
         {
-            if (LOG.isTraceOn()) LOG.trace("Chore IGNORE " + chore + " -- " + status);
+            if (log.isTraceOn()) 
+                log.trace("Chore IGNORE " + chore + " -- " + status);
             return;
         }
 
         // if we are 'down', then all chores except pings will be ignored
         if (status.isDown() && !chore.isPing())
         {
-            if (LOG.isTraceOn()) LOG.trace("Chore IGNORE " + chore + " -- " + status);
+            if (log.isTraceOn()) 
+                log.trace("Chore IGNORE " + chore + " -- " + status);
             return;
         }
 
         if (queue.size() == 0)
         {
-            if (LOG.isTraceOn()) LOG.trace("Chore ENQUEUE " + chore);
+            if (log.isTraceOn()) 
+                log.trace("Chore ENQUEUE " + chore);
             queue.enqueue(chore);
         }
         else
@@ -168,12 +172,14 @@ public class BNHaystackWorker
             if (tail.merge(chore))
             {
                 // merge succeeded
-                if (LOG.isTraceOn()) LOG.trace("Chore MERGE " + chore);
+                if (log.isTraceOn()) 
+                    log.trace("Chore MERGE " + chore);
             }
             // else the merge did not happen, so enqueue the chore
             else
             {
-                if (LOG.isTraceOn()) LOG.trace("Chore ENQUEUE " + chore);
+                if (log.isTraceOn()) 
+                    log.trace("Chore ENQUEUE " + chore);
                 queue.enqueue(chore);
             }
         }
@@ -182,8 +188,6 @@ public class BNHaystackWorker
 ////////////////////////////////////////////////////////////////
 // attributes 
 ////////////////////////////////////////////////////////////////
-
-    private static final Log LOG = Log.getLog("nhaystack");
 
     private Queue queue = null;
     private Worker worker = null;

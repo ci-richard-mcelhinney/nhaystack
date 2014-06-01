@@ -16,7 +16,7 @@ import nhaystack.worker.*;
 /**
   * PollChore handles polling subscribed points
   */
-public class PollChore extends WorkerChore
+public class PollChore extends DriverChore
 {
     public PollChore(BNHaystackServer server)
     {

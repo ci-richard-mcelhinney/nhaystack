@@ -15,7 +15,7 @@ import nhaystack.worker.*;
 /**
   * PingInvocation handles pinging a BNHaystackServer
   */
-public final class PingInvocation extends WorkerChore
+public final class PingInvocation extends DriverChore
 {
     public PingInvocation(BNHaystackWorker worker, String name, Invocation invocation) 
     { 

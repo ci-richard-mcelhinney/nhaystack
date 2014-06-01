@@ -14,7 +14,7 @@ import nhaystack.worker.*;
 /**
   * WriteChore handles writing to a point
   */
-public class WriteChore extends WorkerChore
+public class WriteChore extends DriverChore
 {
     public WriteChore(BNHaystackServer server, BNHaystackProxyExt ext)
     {

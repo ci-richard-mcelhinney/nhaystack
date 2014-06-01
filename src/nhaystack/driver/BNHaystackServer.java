@@ -544,7 +544,7 @@ public class BNHaystackServer
 // attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Log LOG = Log.getLog("nhaystack.driver");
 
     private HClient hclient;
     private HWatch hwatch;

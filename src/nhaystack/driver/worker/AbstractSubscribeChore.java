@@ -20,7 +20,7 @@ import nhaystack.worker.*;
 /**
   * AbstractSubscribeChore handles subscribing and unsubscribing a point
   */
-public abstract class AbstractSubscribeChore extends WorkerChore
+public abstract class AbstractSubscribeChore extends DriverChore
 {
     AbstractSubscribeChore(
         BNHaystackServer server, 

@@ -32,8 +32,8 @@ public abstract class WorkerChore implements Runnable
     public final void run()
     {
         long begin = Clock.ticks();
-        if (LOG.isTraceOn())
-            LOG.trace("Chore BEGIN " + toString());
+        if (getLog().isTraceOn())
+            getLog().trace("Chore BEGIN " + toString());
 
         try
         {
@@ -49,10 +49,10 @@ public abstract class WorkerChore implements Runnable
         }
         finally
         {
-            if (LOG.isTraceOn())
+            if (getLog().isTraceOn())
             {
                 long end = Clock.ticks();
-                LOG.trace("Chore END " + toString() + " (" + (end-begin) + "ms)");
+                getLog().trace("Chore END " + toString() + " (" + (end-begin) + "ms)");
             }
         }
     }
@@ -73,12 +73,15 @@ public abstract class WorkerChore implements Runnable
       */
     public abstract boolean isPing();
 
+    /**
+      * get the Log
+      */
+    protected abstract Log getLog();
+
 ////////////////////////////////////////////////////////////////
 // attributes
 ////////////////////////////////////////////////////////////////
 
     public final BNHaystackWorker worker;
     public final String name;
-
-    private static final Log LOG = Log.getLog("nhaystack");
 }
