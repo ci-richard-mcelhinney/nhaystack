@@ -26,8 +26,8 @@ public class BNHaystackStrProxyExt extends BNHaystackProxyExt
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackStrProxyExt(290784672)1.0$ @*/
-/* Generated Mon Apr 07 09:39:40 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.BNHaystackStrProxyExt(3391908686)1.0$ @*/
+/* Generated Sun Jun 01 09:34:38 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type
