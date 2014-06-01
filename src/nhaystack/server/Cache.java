@@ -33,7 +33,7 @@ class Cache
     /**
       * Rebuild the cache.
       */
-    synchronized void rebuild()
+    synchronized void rebuild(BNHaystackStats stats)
     {
         long t0 = Clock.ticks();
         LOG.message("Begin cache rebuild.");
@@ -54,6 +54,12 @@ class Cache
         long t1 = Clock.ticks();
         LOG.message("End cache rebuild " + (t1-t0) + "ms.");
         lastRebuildDuration = BRelTime.make(t1-t0);
+
+        stats.setNumSites(numSites);
+        stats.setNumEquips(numEquips);
+        stats.setNumPoints(numPoints);
+        stats.setLastCacheRebuildDuration(lastRebuildDuration);
+        stats.setLastCacheRebuildTime(lastRebuildTime);
 
         initialized = true;
     }
@@ -81,20 +87,20 @@ class Cache
     /**
       * Return the implicit 'equip' for the point, or null.
       */
-    BHEquip getImplicitEquip(BControlPoint point)
+    synchronized BHEquip getImplicitEquip(BControlPoint point)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
         return (BHEquip) implicitEquips.get(point);
     }
 
-    BHSite[] getAllSites()
+    synchronized BHSite[] getAllSites()
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
         return sites;
     }
 
-    BHEquip[] getAllEquips()
+    synchronized BHEquip[] getAllEquips()
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
         return equips;
@@ -103,7 +109,7 @@ class Cache
     /**
       * Get all the equips associated with the given site navId.
       */
-    BHEquip[] getNavSiteEquips(String siteNav)
+    synchronized BHEquip[] getNavSiteEquips(String siteNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -118,7 +124,7 @@ class Cache
     /**
       * Get all the points associated with the given equip navId.
       */
-    BControlPoint[] getNavEquipPoints(String equipNav)
+    synchronized BControlPoint[] getNavEquipPoints(String equipNav)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -133,7 +139,7 @@ class Cache
     /**
       * Get the stationNames for nav histories
       */
-    String[] getNavHistoryStationNames()
+    synchronized String[] getNavHistoryStationNames()
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -144,7 +150,7 @@ class Cache
     /**
       * Get the nav histories for the given stationName
       */
-    BHistoryConfig[] getNavHistories(String stationName)
+    synchronized BHistoryConfig[] getNavHistories(String stationName)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -160,7 +166,7 @@ class Cache
     /**
       * Return the BComponent that is associate with the SepRef id, or null.
       */
-    BComponent lookupComponentBySepRef(NHRef id)
+    synchronized BComponent lookupComponentBySepRef(NHRef id)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -170,7 +176,7 @@ class Cache
     /**
       * Return the SepRef id that is associate with the component, or null.
       */
-    NHRef lookupSepRefByComponent(BComponent comp)
+    synchronized NHRef lookupSepRefByComponent(BComponent comp)
     {
         if (!initialized) throw new IllegalStateException("Cache is not initialized.");
 
@@ -455,10 +461,10 @@ class Cache
     private Map sepRefToComp = null; // NHRef -> BComponent
     private Map compToSepRef = null; // BComponent -> NHRef
 
-    int numSites = 0;
-    int numEquips = 0;
-    int numPoints = 0;
-    BRelTime lastRebuildDuration = BRelTime.DEFAULT;
-    BAbsTime lastRebuildTime = BAbsTime.DEFAULT;
+    private int numSites = 0;
+    private int numEquips = 0;
+    private int numPoints = 0;
+    private BRelTime lastRebuildDuration = BRelTime.DEFAULT;
+    private BAbsTime lastRebuildTime = BAbsTime.DEFAULT;
 }
 

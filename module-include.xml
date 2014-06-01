@@ -65,6 +65,8 @@
     <type name="HTagsFE" class="nhaystack.driver.ui.BHTagsFE"> <agent><on type="nhaystack:HTags"/> </agent></type>
 
     <!-- nhaystack.server -->
+    <type name="NHaystackRebuildCacheJob"     class="nhaystack.server.BNHaystackRebuildCacheJob"/>
+    <type name="NHaystackRemoveBrokenRefsJob" class="nhaystack.server.BNHaystackRemoveBrokenRefsJob"/>
     <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
     <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
     <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>

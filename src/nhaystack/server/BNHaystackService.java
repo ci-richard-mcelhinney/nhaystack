@@ -71,18 +71,18 @@ public class BNHaystackService
             fetchAutoGenTags(): BString
                 -- fetch the tags that the server auto-generates.
                 flags { operator, hidden }
-            rebuildCache()
+            rebuildCache(): BOrd
                 -- Rebuild the internal cache
                 flags { operator, async }
-            removeBrokenRefs()
+            removeBrokenRefs(): BOrd
                 -- Remove all the invalid refs
                 flags { operator, async }
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(900991610)1.0$ @*/
-/* Generated Thu May 30 15:22:22 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1150523866)1.0$ @*/
+/* Generated Sun Jun 01 09:55:13 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -98,12 +98,14 @@ public class BNHaystackService
   
   /**
    * Get the <code>leaseInterval</code> property.
+   * The amount of time that objects in watches are leased.
    * @see nhaystack.server.BNHaystackService#leaseInterval
    */
   public BRelTime getLeaseInterval() { return (BRelTime)get(leaseInterval); }
   
   /**
    * Set the <code>leaseInterval</code> property.
+   * The amount of time that objects in watches are leased.
    * @see nhaystack.server.BNHaystackService#leaseInterval
    */
   public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
@@ -123,12 +125,16 @@ public class BNHaystackService
   
   /**
    * Get the <code>showLinkedHistories</code> property.
+   * Whether to show BHistoryConfigs that are linked to
+   * a BControlPoint
    * @see nhaystack.server.BNHaystackService#showLinkedHistories
    */
   public boolean getShowLinkedHistories() { return getBoolean(showLinkedHistories); }
   
   /**
    * Set the <code>showLinkedHistories</code> property.
+   * Whether to show BHistoryConfigs that are linked to
+   * a BControlPoint
    * @see nhaystack.server.BNHaystackService#showLinkedHistories
    */
   public void setShowLinkedHistories(boolean v) { setBoolean(showLinkedHistories,v,null); }
@@ -238,6 +244,7 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>readById</code> action.
+   * Lookup an entity record by it's unique identifier.
    * @see nhaystack.server.BNHaystackService#readById
    */
   public BHDict readById(BHRef id) { return (BHDict)invoke(readById,id,null); }
@@ -255,6 +262,7 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>readAll</code> action.
+   * Query every entity record that matches given filter.
    * @see nhaystack.server.BNHaystackService#readAll
    */
   public BHGrid readAll(BString filter) { return (BHGrid)invoke(readAll,filter,null); }
@@ -272,6 +280,7 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>fetchSites</code> action.
+   * fetch all the records that are tagged as 'site'.
    * @see nhaystack.server.BNHaystackService#fetchSites
    */
   public BHGrid fetchSites() { return (BHGrid)invoke(fetchSites,null,null); }
@@ -289,6 +298,7 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>fetchEquips</code> action.
+   * fetch all the records that are tagged as 'equip'.
    * @see nhaystack.server.BNHaystackService#fetchEquips
    */
   public BHGrid fetchEquips() { return (BHGrid)invoke(fetchEquips,null,null); }
@@ -306,6 +316,7 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>fetchSepNav</code> action.
+   * fetch the site-equip-point nav tree in xml format
    * @see nhaystack.server.BNHaystackService#fetchSepNav
    */
   public BString fetchSepNav() { return (BString)invoke(fetchSepNav,null,null); }
@@ -323,6 +334,7 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>fetchAutoGenTags</code> action.
+   * fetch the tags that the server auto-generates.
    * @see nhaystack.server.BNHaystackService#fetchAutoGenTags
    */
   public BString fetchAutoGenTags() { return (BString)invoke(fetchAutoGenTags,null,null); }
@@ -340,9 +352,10 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>rebuildCache</code> action.
+   * Rebuild the internal cache
    * @see nhaystack.server.BNHaystackService#rebuildCache
    */
-  public void rebuildCache() { invoke(rebuildCache,null,null); }
+  public BOrd rebuildCache() { return (BOrd)invoke(rebuildCache,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "removeBrokenRefs"
@@ -357,9 +370,10 @@ public class BNHaystackService
   
   /**
    * Invoke the <code>removeBrokenRefs</code> action.
+   * Remove all the invalid refs
    * @see nhaystack.server.BNHaystackService#removeBrokenRefs
    */
-  public void removeBrokenRefs() { invoke(removeBrokenRefs,null,null); }
+  public BOrd removeBrokenRefs() { return (BOrd)invoke(removeBrokenRefs,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -506,29 +520,16 @@ public class BNHaystackService
         }
     }
 
-    public void doRebuildCache() 
+    public BOrd doRebuildCache() 
     {
-        Cache cache = server.getCache();
-        synchronized(cache)
-        {
-            cache.rebuild();
-
-            BNHaystackStats stats = getStats();
-            stats.setNumSites(cache.numSites);
-            stats.setNumEquips(cache.numEquips);
-            stats.setNumPoints(cache.numPoints);
-            stats.setLastCacheRebuildDuration(cache.lastRebuildDuration);
-            stats.setLastCacheRebuildTime(cache.lastRebuildTime);
-        }
+        BNHaystackRebuildCacheJob job = new BNHaystackRebuildCacheJob(this);
+        return job.submit(null);
     }
 
-    public void doRemoveBrokenRefs() 
+    public BOrd doRemoveBrokenRefs() 
     {
-        Cache cache = server.getCache();
-        synchronized(cache)
-        {
-            server.removeBrokenRefs();
-        }
+        BNHaystackRemoveBrokenRefsJob job = new BNHaystackRemoveBrokenRefsJob(this);
+        return job.submit(null);
     }
 
 ////////////////////////////////////////////////////////////////
