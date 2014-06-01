@@ -47,6 +47,8 @@ public class BAddHaystackSlot extends BTextEditor
 
     public int dragOver(TransferContext ctx)
     {
+        if (!view.service.getEnabled()) return 0;
+
         Mark mark = (Mark) ctx.getEnvelope().getData(TransferFormat.mark);
         for (int i = 0; i < mark.size(); i++)
         {
@@ -60,6 +62,8 @@ public class BAddHaystackSlot extends BTextEditor
     public CommandArtifact drop(TransferContext ctx)
         throws Exception
     {
+        if (!view.service.getEnabled()) return null;
+
         Mark mark = (Mark) ctx.getEnvelope().getData(TransferFormat.mark);
         for (int i = 0; i < mark.size(); i++)
         {

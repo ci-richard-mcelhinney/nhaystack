@@ -19,4 +19,5 @@ dragHere=Drag Components here to add a 'haystack' slot
 noSites=(there are no Sites)
 filter=Filter:
 siteEquipPoint=Site-Equip-Point Hierarchy:
+load=Load
 

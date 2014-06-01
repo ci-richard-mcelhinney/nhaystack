@@ -66,10 +66,20 @@ public class BNHaystackServiceView extends BWbComponentView
         BScrollPane sp = new BScrollPane();
         sp.setContent(b2);
 
-        BEdgePane e1 = new BEdgePane();
         BLabel label = new BLabel(LEX.getText("siteEquipPoint"), BOLD);
         label.setHalign(BHalign.left);
-        e1.setTop(label);
+
+        this.loadSepTree = new LoadSepTree(this);
+        BButton button = new BButton(loadSepTree);
+        BBorderPane b4 = new BBorderPane(button);
+        b4.setPadding(BInsets.make(0, 0, 2, 0));
+
+        BEdgePane e3 = new BEdgePane();
+        e3.setLeft(label);
+        e3.setRight(b4);
+
+        BEdgePane e1 = new BEdgePane();
+        e1.setTop(e3);
         e1.setCenter(sp);
 
         ///////////////////////////////// 
@@ -84,6 +94,54 @@ public class BNHaystackServiceView extends BWbComponentView
         setContent(e2);
     }
 
+    class LoadSepTree extends Command
+    {
+        LoadSepTree(BNHaystackServiceView view)
+        {
+            super(view, "");
+            this.view = view;
+        }
+
+        public String getLabel()
+        {
+            return LEX.getText("load");
+        }
+
+        public CommandArtifact doInvoke()
+        {
+            String xml = ((BString) service.invoke(
+                BNHaystackService.fetchSepNav, null)).getString();
+            try
+            {
+                XElem root = XParser.make(xml).parse();
+
+                XElem[] xsites = root.elems("site");
+                if (xsites.length == 0)
+                {
+                    tree.setModel(new EmptyTreeModel());
+                }
+                else
+                {
+                    NavTreeModel model = new NavTreeModel();
+                    model.sites = new SiteNode[xsites.length];
+                    for (int i = 0; i < model.sites.length; i++)
+                        model.sites[i] = new SiteNode(model, xsites[i]);
+                    tree.setModel(model);
+                }
+
+                tree.relayoutSync();
+                tree.repaint();
+                return null;
+            }
+            catch (Exception e)
+            {
+                throw new BajaRuntimeException(e);
+            }
+        }
+
+        final BNHaystackServiceView view;
+    }
+
     public void stopped() throws Exception 
     {
         super.stopped();
@@ -92,32 +150,15 @@ public class BNHaystackServiceView extends BWbComponentView
 
     protected void doLoadValue(BObject value, Context cx)
     {
-        BNHaystackService service = (BNHaystackService) value;
+        this.service = (BNHaystackService) value;
+        tree.setModel(new NullTreeModel());
+        loadSepTree.setEnabled(service.getEnabled());
+    }
 
-        String xml = ((BString) service.invoke(
-            BNHaystackService.fetchSepNav, null)).getString();
-        try
-        {
-            XElem root = XParser.make(xml).parse();
-
-            XElem[] xsites = root.elems("site");
-            if (xsites.length == 0)
-            {
-                tree.setModel(new EmptyTreeModel());
-            }
-            else
-            {
-                NavTreeModel model = new NavTreeModel();
-                model.sites = new SiteNode[xsites.length];
-                for (int i = 0; i < model.sites.length; i++)
-                    model.sites[i] = new SiteNode(model, xsites[i]);
-                tree.setModel(model);
-            }
-        }
-        catch (Exception e)
-        {
-            throw new BajaRuntimeException(e);
-        }
+    class NullTreeModel extends TreeModel
+    {
+        public int getRootCount() { return 0; }
+        public TreeNode getRoot(int index) { throw new IllegalStateException(); }
     }
 
     class NavTreeModel extends TreeModel
@@ -239,4 +280,7 @@ public class BNHaystackServiceView extends BWbComponentView
 
     private final BTree tree;
     private BAddHaystackSlot addSlot;
+
+    BNHaystackService service;
+    private final LoadSepTree loadSepTree;
 }

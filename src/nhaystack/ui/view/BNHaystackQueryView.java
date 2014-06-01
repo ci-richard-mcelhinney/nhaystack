@@ -93,6 +93,7 @@ public class BNHaystackQueryView extends BWbView
     protected void doLoadValue(BObject value, Context cx)
     {
         this.service = (BNHaystackService) value;
+        this.filterMru.setEnabled(service.getEnabled());
     }
 
     public void doQueryFilter(BWidgetEvent event)
