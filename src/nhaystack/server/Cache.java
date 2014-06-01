@@ -19,7 +19,6 @@ import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.site.*;
-import nhaystack.util.*;
 
 /**
   * Cache stores various data structures that make it faster to look things up.

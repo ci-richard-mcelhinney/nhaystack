@@ -8,8 +8,6 @@
 //
 package nhaystack.server;
 
-import java.util.*;
-
 import javax.baja.driver.*;
 import javax.baja.history.db.*;
 import javax.baja.log.*;
@@ -19,7 +17,6 @@ import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
-import org.projecthaystack.io.*;
 
 import nhaystack.*;
 import nhaystack.worker.*;

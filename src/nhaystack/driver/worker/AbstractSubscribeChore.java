@@ -15,7 +15,6 @@ import org.projecthaystack.*;
 
 import nhaystack.driver.*;
 import nhaystack.driver.point.*;
-import nhaystack.worker.*;
 
 /**
   * AbstractSubscribeChore handles subscribing and unsubscribing a point

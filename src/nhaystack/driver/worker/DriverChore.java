@@ -9,10 +9,6 @@ package nhaystack.driver.worker;
 
 import javax.baja.log.*;
 
-import org.projecthaystack.*;
-
-import nhaystack.driver.*;
-import nhaystack.driver.point.*;
 import nhaystack.worker.*;
 
 /**
