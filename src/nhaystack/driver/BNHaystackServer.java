@@ -415,13 +415,16 @@ public class BNHaystackServer
         {
             // the worker is responsible for coalescing tasks
             getWorker().enqueueChore(chore);
-            return null;
+        }
+        catch (QueueFullException e)
+        {
+            LOG.error(getHaystackUrl() + " Cannot enqueue chore " + chore + ": QueueFullException");
         }
         catch (Exception e)
         {
-            LOG.error(getHaystackUrl() + " Cannot post async: " + e.getMessage());
-            return null;
+            LOG.error(getHaystackUrl() + " Cannot enqueue chore " + chore + ": " + e.getMessage());
         }
+        return null;
     }
 
     /**

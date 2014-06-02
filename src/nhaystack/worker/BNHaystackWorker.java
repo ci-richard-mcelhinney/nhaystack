@@ -26,14 +26,14 @@ public class BNHaystackWorker
         {
             maxQueueSize: int
                 -- the size of the queue
-                default {[ 256 ]}
+                default {[ 5000 ]}
         }
     }
 
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.worker.BNHaystackWorker(319417993)1.0$ @*/
-/* Generated Thu Dec 26 12:05:12 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.worker.BNHaystackWorker(1126374167)1.0$ @*/
+/* Generated Sun Jun 01 13:38:16 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "maxQueueSize"
@@ -45,16 +45,18 @@ public class BNHaystackWorker
    * @see nhaystack.worker.BNHaystackWorker#getMaxQueueSize
    * @see nhaystack.worker.BNHaystackWorker#setMaxQueueSize
    */
-  public static final Property maxQueueSize = newProperty(0, 256,null);
+  public static final Property maxQueueSize = newProperty(0, 5000,null);
   
   /**
    * Get the <code>maxQueueSize</code> property.
+   * the size of the queue
    * @see nhaystack.worker.BNHaystackWorker#maxQueueSize
    */
   public int getMaxQueueSize() { return getInt(maxQueueSize); }
   
   /**
    * Set the <code>maxQueueSize</code> property.
+   * the size of the queue
    * @see nhaystack.worker.BNHaystackWorker#maxQueueSize
    */
   public void setMaxQueueSize(int v) { setInt(maxQueueSize,v,null); }
