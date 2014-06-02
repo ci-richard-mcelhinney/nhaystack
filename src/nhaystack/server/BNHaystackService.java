@@ -49,8 +49,13 @@ public class BNHaystackService
             worker: BNHaystackWorker
                 default{[ new BNHaystackWorker() ]}
             watchCount: int
-                flags { readonly }
+                flags { transient, readonly }
                 default{[ 0 ]}
+            initialized: boolean
+                flags { transient, readonly }
+                default{[ false ]}
+            initializationDelayTime: BRelTime 
+                default{[ BRelTime.DEFAULT ]}
         }
         actions
         {
@@ -74,6 +79,9 @@ public class BNHaystackService
             fetchAutoGenTags(): BString
                 -- fetch the tags that the server auto-generates.
                 flags { operator, hidden }
+            initializeHaystack()
+                -- Initialize nhaystack
+                flags { operator, async }
             rebuildCache(): BOrd
                 -- Rebuild the internal cache
                 flags { operator, async }
@@ -84,8 +92,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1478352391)1.0$ @*/
-/* Generated Sun Jun 01 10:43:58 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(2630361953)1.0$ @*/
+/* Generated Mon Jun 02 12:17:17 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -243,7 +251,7 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#getWatchCount
    * @see nhaystack.server.BNHaystackService#setWatchCount
    */
-  public static final Property watchCount = newProperty(Flags.READONLY, 0,null);
+  public static final Property watchCount = newProperty(Flags.TRANSIENT|Flags.READONLY, 0,null);
   
   /**
    * Get the <code>watchCount</code> property.
@@ -256,6 +264,52 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#watchCount
    */
   public void setWatchCount(int v) { setInt(watchCount,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "initialized"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>initialized</code> property.
+   * @see nhaystack.server.BNHaystackService#getInitialized
+   * @see nhaystack.server.BNHaystackService#setInitialized
+   */
+  public static final Property initialized = newProperty(Flags.TRANSIENT|Flags.READONLY, false,null);
+  
+  /**
+   * Get the <code>initialized</code> property.
+   * @see nhaystack.server.BNHaystackService#initialized
+   */
+  public boolean getInitialized() { return getBoolean(initialized); }
+  
+  /**
+   * Set the <code>initialized</code> property.
+   * @see nhaystack.server.BNHaystackService#initialized
+   */
+  public void setInitialized(boolean v) { setBoolean(initialized,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "initializationDelayTime"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>initializationDelayTime</code> property.
+   * @see nhaystack.server.BNHaystackService#getInitializationDelayTime
+   * @see nhaystack.server.BNHaystackService#setInitializationDelayTime
+   */
+  public static final Property initializationDelayTime = newProperty(0, BRelTime.DEFAULT,null);
+  
+  /**
+   * Get the <code>initializationDelayTime</code> property.
+   * @see nhaystack.server.BNHaystackService#initializationDelayTime
+   */
+  public BRelTime getInitializationDelayTime() { return (BRelTime)get(initializationDelayTime); }
+  
+  /**
+   * Set the <code>initializationDelayTime</code> property.
+   * @see nhaystack.server.BNHaystackService#initializationDelayTime
+   */
+  public void setInitializationDelayTime(BRelTime v) { set(initializationDelayTime,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"
@@ -366,6 +420,24 @@ public class BNHaystackService
   public BString fetchAutoGenTags() { return (BString)invoke(fetchAutoGenTags,null,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "initializeHaystack"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>initializeHaystack</code> action.
+   * Initialize nhaystack
+   * @see nhaystack.server.BNHaystackService#initializeHaystack()
+   */
+  public static final Action initializeHaystack = newAction(Flags.OPERATOR|Flags.ASYNC,null);
+  
+  /**
+   * Invoke the <code>initializeHaystack</code> action.
+   * Initialize nhaystack
+   * @see nhaystack.server.BNHaystackService#initializeHaystack
+   */
+  public void initializeHaystack() { invoke(initializeHaystack,null,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "rebuildCache"
 ////////////////////////////////////////////////////////////////
   
@@ -423,26 +495,30 @@ public class BNHaystackService
 
     public void serviceStarted() throws Exception 
     { 
+        LOG.message("NHaystack Service started");
         this.server = createServer();
-
-        // We need this here for when this service gets dropped into
-        // a running station.  However, this will fail at station start time.
-        // When that happens,  we'll ignore the error that it generates, and 
-        // rely on atSteadyState() to get us set up.
-        try
-        {
-            rebuildCache();
-        }
-        catch (Exception e)
-        {
-        }
     }
 
-    public void serviceStopped() throws Exception { }
+    public void serviceStopped()
+    { 
+        LOG.message("NHaystack Service stopped");
+    }
 
     public void atSteadyState() throws Exception
     {
-        rebuildCache();
+        BRelTime initDelay = getInitializationDelayTime();
+
+        // initialize immediately
+        if (initDelay.equals(BRelTime.DEFAULT))
+        {
+            initializeHaystack();
+        }
+        // wait for a while, so field bus can initialize, etc
+        else
+        {
+            LOG.message("Delaying NHaystack initialization for " + initDelay);
+            Clock.schedule(this, initDelay, initializeHaystack, null);
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -511,7 +587,9 @@ public class BNHaystackService
 
     public IFuture post(Action action, BValue value, Context cx)
     {             
-        if ((action == rebuildCache) || (action == removeBrokenRefs))
+        if ((action == initializeHaystack) || 
+            (action == rebuildCache) || 
+            (action == removeBrokenRefs))
         {
             return postAsyncChore(
                 new WorkerInvocation(
@@ -544,6 +622,17 @@ public class BNHaystackService
             LOG.error(getSlotPath() + " Cannot post async: " + e.getMessage());
             return null;
         }
+    }
+
+    public void doInitializeHaystack() 
+    {
+        LOG.message("Begin initializing NHaystack");
+
+        getHaystackServer().getCache().rebuild(getStats());
+        getServlet().enableWithMessage(true);
+        setInitialized(true);
+
+        LOG.message("End initializing NHaystack");
     }
 
     public BOrd doRebuildCache() 

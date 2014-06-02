@@ -11,8 +11,11 @@ package nhaystack.server;
 import java.io.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+
+import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.web.*;
+
 import org.projecthaystack.server.*;
 
 /**
@@ -43,6 +46,19 @@ public class BNHaystackServlet extends BWebServlet
     public BNHaystackServlet()
     {
         setServletName("haystack");
+    }
+
+    public void serviceStarted() throws Exception
+    {
+        // Disable the servlet when its started.  It will be re-enabled 
+        // when BNHaystackService.initializeHaystack() is called
+        enableWithMessage(false);
+    }
+
+    void enableWithMessage(boolean flag)
+    {
+        LOG.message("NHaystack Servlet " + (flag ? "enabled" : "disabled"));
+        setEnabled(flag);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -114,6 +130,8 @@ public class BNHaystackServlet extends BWebServlet
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
