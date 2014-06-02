@@ -51,6 +51,9 @@ public class NHServer extends HServer
       */
     public HOp[] ops()
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         return OPS;
     }
 
@@ -59,6 +62,9 @@ public class NHServer extends HServer
       */
     protected HDict onAbout()
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onAbout");
 
@@ -90,6 +96,9 @@ public class NHServer extends HServer
 
     protected HGrid onReadAll(String filter, int limit)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         try
         {
             if (LOG.isTraceOn())
@@ -116,6 +125,9 @@ public class NHServer extends HServer
       */
     protected Iterator iterator()
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         try
         {
             return new CompositeIterator(new Iterator[] { 
@@ -138,6 +150,9 @@ public class NHServer extends HServer
       */
     protected HDict onReadById(HRef id)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onReadById " + id);
 
@@ -159,6 +174,9 @@ public class NHServer extends HServer
       */
     protected HGrid onNav(String navId)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onNav " + navId);
 
@@ -178,6 +196,9 @@ public class NHServer extends HServer
       */
     protected HWatch onWatchOpen(String dis)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onWatchOpen " + dis);
 
@@ -208,6 +229,9 @@ public class NHServer extends HServer
       */
     protected HWatch[] onWatches()
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onWatches");
 
@@ -227,6 +251,9 @@ public class NHServer extends HServer
       */
     protected HWatch onWatch(String id)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onWatch " + id);
 
@@ -246,6 +273,9 @@ public class NHServer extends HServer
       */
     protected HGrid onPointWriteArray(HDict rec)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onPointWriteArray " + rec.id());
 
@@ -344,6 +374,9 @@ public class NHServer extends HServer
         String who, 
         HNum dur) // ignore this for now
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onPointWrite " + 
               "id:   "  + rec.id()   + ", " +
@@ -442,6 +475,9 @@ public class NHServer extends HServer
       */
     protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onHisRead " + rec.id() + ", " + range);
 
@@ -532,6 +568,9 @@ public class NHServer extends HServer
       */
     protected void onHisWrite(HDict rec, HHisItem[] items)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onHisWrite " + rec.id());
 
@@ -550,6 +589,9 @@ public class NHServer extends HServer
       */
     protected HGrid onInvokeAction(HDict rec, String actionName, HDict args)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onInvokeAction " + rec.id() + ", " + actionName + ", " + args);
 
@@ -602,6 +644,9 @@ public class NHServer extends HServer
      */
     protected HDict onNavReadByUri(HUri uri)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn())
             LOG.trace("onNavReadByUri " + uri);
 
@@ -650,6 +695,9 @@ public class NHServer extends HServer
       */
     final HTimeZone fromBajaTimeZone(BTimeZone timeZone)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         String tzName = timeZone.getId();
 
         // lop off the region, e.g. "America" 
@@ -683,6 +731,9 @@ public class NHServer extends HServer
 
     void removeWatch(String watchId)
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         synchronized(watches) 
         { 
             watches.remove(watchId); 
@@ -692,6 +743,9 @@ public class NHServer extends HServer
 
     void removeBrokenRefs() 
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         if (LOG.isTraceOn()) LOG.trace("BEGIN removeBrokenRefs"); 
 
         Iterator compItr = new ComponentTreeIterator(
@@ -757,6 +811,9 @@ public class NHServer extends HServer
 
     HWatch[] getWatches() 
     {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
         synchronized(watches) 
         {
             HWatch[] arr = new HWatch[watches.size()];

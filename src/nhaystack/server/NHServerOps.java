@@ -37,10 +37,12 @@ class NHServerOps
         public String summary() { return "Apply Batch Tags"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
             long ticks = Clock.ticks();
             if (LOG.isTraceOn()) LOG.trace(name() + " begin");
-
-            NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
 
@@ -121,10 +123,12 @@ class NHServerOps
         public String summary() { return "Add Haystack Slots"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
             long ticks = Clock.ticks();
             if (LOG.isTraceOn()) LOG.trace(name() + " begin");
-
-            NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
             String targetFilter = params.getStr("targetFilter");
@@ -160,10 +164,12 @@ class NHServerOps
         public String summary() { return "Extended Read"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
             long ticks = Clock.ticks();
             if (LOG.isTraceOn()) LOG.trace(name() + " begin");
-
-            NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
 
@@ -236,10 +242,12 @@ class NHServerOps
         public String summary() { return "Search and Replace"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
             long ticks = Clock.ticks();
             if (LOG.isTraceOn()) LOG.trace(name() + " begin");
-
-            NHServer server = (NHServer) db;
 
             HRow params = req.row(0);
             String filter = params.getStr("filter");
@@ -287,10 +295,12 @@ class NHServerOps
         public String summary() { return "Status of currrently open Watches"; }
         public HGrid onService(HServer db, HGrid req)
         {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
             long ticks = Clock.ticks();
             if (LOG.isTraceOn()) LOG.trace(name() + " begin");
-
-            NHServer server = (NHServer) db;
 
             Array arr = new Array(HDict.class);
 

@@ -69,7 +69,7 @@ class Cache
       */
     synchronized BHistoryConfig getHistoryConfig(RemotePoint remotePoint)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         return (BHistoryConfig) remoteToConfig.get(remotePoint);
     }
@@ -79,7 +79,7 @@ class Cache
       */
     synchronized BControlPoint getControlPoint(RemotePoint remotePoint)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         return (BControlPoint) remoteToPoint.get(remotePoint);
     }
@@ -89,20 +89,20 @@ class Cache
       */
     synchronized BHEquip getImplicitEquip(BControlPoint point)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         return (BHEquip) implicitEquips.get(point);
     }
 
     synchronized BHSite[] getAllSites()
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
         return sites;
     }
 
     synchronized BHEquip[] getAllEquips()
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
         return equips;
     }
 
@@ -111,7 +111,7 @@ class Cache
       */
     synchronized BHEquip[] getNavSiteEquips(String siteNav)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         BHSite site = (BHSite) siteNavs.get(siteNav);
 
@@ -126,7 +126,7 @@ class Cache
       */
     synchronized BControlPoint[] getNavEquipPoints(String equipNav)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         BHEquip equip = (BHEquip) equipNavs.get(equipNav);
 
@@ -141,7 +141,7 @@ class Cache
       */
     synchronized String[] getNavHistoryStationNames()
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         Array arr = new Array(String.class, navHistories.keySet());
         return (String[]) arr.trim();
@@ -152,7 +152,7 @@ class Cache
       */
     synchronized BHistoryConfig[] getNavHistories(String stationName)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         Array arr = (Array) navHistories.get(stationName);
 
@@ -168,7 +168,7 @@ class Cache
       */
     synchronized BComponent lookupComponentBySepRef(NHRef id)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         return (BComponent) sepRefToComp.get(id);
     }
@@ -178,7 +178,7 @@ class Cache
       */
     synchronized NHRef lookupSepRefByComponent(BComponent comp)
     {
-        if (!initialized) throw new IllegalStateException("Cache is not initialized.");
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         return (NHRef) compToSepRef.get(comp);
     }
@@ -437,8 +437,17 @@ class Cache
     }
 
 ////////////////////////////////////////////////////////////////
+// access
+////////////////////////////////////////////////////////////////
+
+    boolean initialized() { return initialized; }
+
+////////////////////////////////////////////////////////////////
 // attribs
 ////////////////////////////////////////////////////////////////
+
+    static final String NOT_INITIALIZED = 
+        "NHAYSTACK CACHE NOT INITIALIZED";
 
     private static final Log LOG = Log.getLog("nhaystack");
 
