@@ -327,7 +327,20 @@ public class NHServer extends HServer
                 if (!se.getStatus().isNull())
                     vals[16] = HStr.make(se.getValue().getTag());
             }
-            else throw new IllegalStateException();
+            // String
+            else if (point instanceof BStringWritable)
+            {
+                BStringWritable sw = (BStringWritable) point;
+                for (int i = 0; i < 16; i++)
+                {
+                    BStatusString s = (BStatusString) sw.get("in" + (i+1));
+                    if (!s.getStatus().isNull())
+                        vals[i] = HStr.make(s.getValue());
+                }
+                BStatusString s = (BStatusString) sw.getFallback();
+                if (!s.getStatus().isNull())
+                    vals[16] = HStr.make(s.getValue());
+            }
 
             //////////////////////////////////////////////
 
@@ -379,10 +392,10 @@ public class NHServer extends HServer
 
         if (LOG.isTraceOn())
             LOG.trace("onPointWrite " + 
-              "id:   "  + rec.id()   + ", " +
-              "level: " + level + ", " +
-              "val:   " + val   + ", " +
-              "who:   " + who);
+              "id:"    + rec.id() + ", " +
+              "level:" + level    + ", " +
+              "val:"   + val      + ", " +
+              "who:"   + who);
 
         try
         {
