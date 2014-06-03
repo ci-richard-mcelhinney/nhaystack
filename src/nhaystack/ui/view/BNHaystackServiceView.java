@@ -211,7 +211,7 @@ public class BNHaystackServiceView extends BWbComponentView
             for (int i = 0; i < points.length; i++)
                 points[i] = new PointNode(model, xpoints[i]);
 
-            setExpanded(true);
+            setExpanded(false);
         }
 
         public String getText() { return text; }
