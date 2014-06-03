@@ -341,6 +341,107 @@ class NHServerOps
         }
     }
 
+//////////////////////////////////////////////////////////////////////////
+// UniqueTags
+//////////////////////////////////////////////////////////////////////////
+
+    static class UniqueTags extends HOp
+    {
+        public String name() { return "uniqueTags"; }
+        public String summary() { return "Unique Tags"; }
+        public HGrid onService(HServer db, HGrid req)
+        {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
+            // query by filter
+            HRow params = req.row(0);
+            String filter = params.getStr("filter");
+            int limit = params.has("limit") ?
+                params.getInt("limit") :
+                Integer.MAX_VALUE;
+            HGrid grid = server.onReadAll(filter, limit);
+
+            // get all the distinct markers from the grid
+            String[] markers = distinctMarkers(grid);
+
+            // generate all combinations
+            List combinations = new ArrayList();
+            combine(markers, new ArrayList(), 0, combinations);
+
+            // for each combination, count the number of times it occurs
+            // in any of the rows in the grid
+            Array resultRows = new Array(HDict.class);
+            for (int i = 0; i < combinations.size(); i++)
+            {
+                String[] tags = (String[]) combinations.get(i);
+                int count = 0;
+
+                for (int j = 0; j < grid.numRows(); j++)
+                {
+                    if (dictHasAllTags(grid.row(j), tags))
+                        count++;
+                }
+
+                if (count > 0)
+                {
+                    HDictBuilder hdb = new HDictBuilder();
+                    hdb.add("markers", TextUtil.join(tags, ','));
+                    hdb.add("count", count);
+                    resultRows.add(hdb.toDict());
+                }
+            }
+            HGrid result = HGridBuilder.dictsToGrid((HDict[]) resultRows.trim());
+
+            // done
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
+        }
+
+        /** find all the distinct marker tags in the entire grid */
+        static String[] distinctMarkers(HGrid grid)
+        {
+            Set set = new TreeSet();
+            for (int i = 0; i < grid.numRows(); i++)
+            {
+                Iterator it = grid.row(i).iterator();
+                while (it.hasNext())
+                {
+                    Map.Entry e = (Map.Entry) it.next();
+                    String key = (String) e.getKey();
+                    HVal val = (HVal) e.getValue();
+                    if (val instanceof HMarker) set.add(key);
+                }
+            }
+            List list = new ArrayList(set);
+            return (String[]) list.toArray(new String[list.size()]);
+        }
+
+        /** generate all of the combinations of markers */ 
+        static void combine(String[] markers, List temp, int index, List combinations)
+        {
+            for (int i = index; i < markers.length; i++)
+            {
+                temp.add(markers[i]);
+                combinations.add(temp.toArray(new String[temp.size()]));
+                combine(markers, temp, i + 1, combinations);
+                temp.remove(temp.size() - 1);
+            }
+        } 
+
+        /** return whether the dict has all of the tags */
+        static boolean dictHasAllTags(HDict dict, String[] tags)
+        {
+            for (int i = 0; i < tags.length; i++)
+                if (!dict.has(tags[i])) return false;
+            return true;
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // utils
 ////////////////////////////////////////////////////////////////

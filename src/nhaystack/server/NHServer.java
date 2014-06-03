@@ -952,6 +952,7 @@ public class NHServer extends HServer
         new NHServerOps.ExtendedRead(),
         new NHServerOps.SearchAndReplace(),
         new NHServerOps.WatchStatus(),
+        new NHServerOps.UniqueTags(),
     };
 
     private final HashMap watches = new HashMap();
