@@ -838,6 +838,11 @@ public class NHServer extends HServer
         }
     }
 
+    HWatch getWatch(String watchId)
+    {
+        synchronized(watches) { return (HWatch) watches.get(watchId); }
+    }
+
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
@@ -951,7 +956,8 @@ public class NHServer extends HServer
         new NHServerOps.AddHaystackSlots(),
         new NHServerOps.ExtendedRead(),
         new NHServerOps.SearchAndReplace(),
-        new NHServerOps.WatchStatus(),
+        new NHServerOps.Watches(),
+        new NHServerOps.WatchSubscriptions(),
         new NHServerOps.UniqueTags(),
     };
 

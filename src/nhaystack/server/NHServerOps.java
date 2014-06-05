@@ -286,13 +286,13 @@ class NHServerOps
     }
  
 //////////////////////////////////////////////////////////////////////////
-// WatchStatus
+// Watches
 //////////////////////////////////////////////////////////////////////////
 
-    static class WatchStatus extends HOp
+    static class Watches extends HOp
     {
-        public String name() { return "watchStatus"; }
-        public String summary() { return "Status of currrently open Watches"; }
+        public String name() { return "watches"; }
+        public String summary() { return "Currrently open Watches"; }
         public HGrid onService(HServer db, HGrid req)
         {
             NHServer server = (NHServer) db;
@@ -316,25 +316,37 @@ class NHServerOps
                 hdb.add("watch");
                 hdb.add("subscriptionCount", sub.length);
                 arr.add(hdb.toDict());
-
-                for (int j = 0; j < sub.length; j++)
-                {
-                    hdb = new HDictBuilder();
-                    hdb.add("watchRef", watchId);
-
-                    Iterator it = sub[j].iterator();
-                    while (it.hasNext())
-                    {
-                        Map.Entry e = (Map.Entry) it.next();
-                        String key = (String) e.getKey();
-                        HVal   val = (HVal)   e.getValue();
-                        hdb.add(key, val);
-                    }
-                    arr.add(hdb.toDict());
-                }
             }
 
             HGrid result = HGridBuilder.dictsToGrid((HDict[]) arr.trim());
+
+            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            return result;
+        }
+    }
+
+    static class WatchSubscriptions extends HOp
+    {
+        public String name() { return "watchSubscriptions"; }
+        public String summary() { return "Subscriptions for a watch"; }
+        public HGrid onService(HServer db, HGrid req)
+        {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
+            long ticks = Clock.ticks();
+            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+
+            HRow params = req.row(0);
+            String watchId = params.getStr("watchId");
+            NHWatch watch = (NHWatch) server.getWatch(watchId);
+            if (watch == null) return HGrid.EMPTY;
+
+            Array arr = new Array(HDict.class);
+
+            HDict[] sub = watch.curSubscribed();
+            HGrid result = HGridBuilder.dictsToGrid(sub);
 
             if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
             return result;
