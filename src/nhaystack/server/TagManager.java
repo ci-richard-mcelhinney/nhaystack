@@ -547,20 +547,20 @@ public class TagManager
             case NUMERIC_KIND:
             case ENUM_KIND:
             case STRING_KIND:
-                addPointAction(point, arr, "override",          "pointOverride(\\$self, \\$val, \\$duration)");
-                addPointAction(point, arr, "auto",              "pointAuto(\\$self)");
-                addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride(\\$self, \\$val)");
-                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
+                addPointAction(point, arr, "override",          "pointOverride($self, $val, $duration)");
+                addPointAction(point, arr, "auto",              "pointAuto($self)");
+                addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride($self, $val)");
+                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto($self)");
                 break;
 
             case BOOLEAN_KIND:
-                addPointAction(point, arr, "active",   "pointOverride(\\$self, true, \\$duration)");
-                addPointAction(point, arr, "inactive", "pointOverride(\\$self, false, \\$duration)");
-                addPointAction(point, arr, "auto",     "pointAuto(\\$self)");
+                addPointAction(point, arr, "active",   "pointOverride($self, true, $duration)");
+                addPointAction(point, arr, "inactive", "pointOverride($self, false, $duration)");
+                addPointAction(point, arr, "auto",     "pointAuto($self)");
 
-                addPointAction(point, arr, "emergencyActive",   "pointEmergencyOverride(\\$self, true, \\$duration)");
-                addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride(\\$self, false, \\$duration)");
-                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto(\\$self)");
+                addPointAction(point, arr, "emergencyActive",   "pointEmergencyOverride($self, true, $duration)");
+                addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride($self, false, $duration)");
+                addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto($self)");
                 break;
         }
 
