@@ -129,7 +129,14 @@ class Cache
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         BHEquip equip = (BHEquip) equipNavs.get(equipNav);
+        return getEquipPoints(equip);
+    }
 
+    /**
+      * Get all the points associated with the given equip.
+      */
+    synchronized BControlPoint[] getEquipPoints(BHEquip equip)
+    {
         Array arr = (Array) equipPoints.get(equip);
         return (arr == null) ?  
             new BControlPoint[0] : 

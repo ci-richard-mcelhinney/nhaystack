@@ -83,6 +83,7 @@ class NHWatch extends HWatch
         if (LOG.isTraceOn())
             LOG.trace("NHWatch.sub begin " + watchId + ", length " + ids.length);
 
+        lastPoll = System.currentTimeMillis();
         scheduleLeaseTimeout();
 
         HDict meta = new HDictBuilder()
@@ -189,6 +190,7 @@ class NHWatch extends HWatch
         if (LOG.isTraceOn())
             LOG.trace("NHWatch.pollChanges begin " + watchId);
 
+        lastPoll = System.currentTimeMillis();
         scheduleLeaseTimeout();
 
         // create a response from all the COV values in nextPoll
@@ -218,6 +220,7 @@ class NHWatch extends HWatch
         if (LOG.isTraceOn())
             LOG.trace("NHWatch.pollRefresh begin " + watchId);
 
+        lastPoll = System.currentTimeMillis();
         scheduleLeaseTimeout();
 
         // create a response that represents every tag for every subscribed point
@@ -313,6 +316,11 @@ class NHWatch extends HWatch
         return (HDict[]) arr.trim();
     }
 
+    synchronized long lastPoll()
+    {
+        return lastPoll;
+    }
+
 ////////////////////////////////////////////////////////////////
 // Timeout
 ////////////////////////////////////////////////////////////////
@@ -352,5 +360,6 @@ class NHWatch extends HWatch
     private boolean open;
     private final Timer timer = new Timer();
     private Timeout timeout = null;
+    private long lastPoll = 0;
 }
 

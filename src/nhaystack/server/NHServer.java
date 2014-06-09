@@ -822,27 +822,6 @@ public class NHServer extends HServer
         if (LOG.isTraceOn()) LOG.trace("END removeBrokenRefs"); 
     }
 
-    HWatch[] getWatches() 
-    {
-        if (!cache.initialized()) 
-            throw new IllegalStateException(Cache.NOT_INITIALIZED);
-
-        synchronized(watches) 
-        {
-            HWatch[] arr = new HWatch[watches.size()];
-            int n = 0;
-            Iterator itr = watches.values().iterator();
-            while (itr.hasNext())
-                arr[n++] = (HWatch) itr.next();
-            return arr;
-        }
-    }
-
-    HWatch getWatch(String watchId)
-    {
-        synchronized(watches) { return (HWatch) watches.get(watchId); }
-    }
-
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
@@ -920,6 +899,31 @@ public class NHServer extends HServer
     }
 
 ////////////////////////////////////////////////////////////////
+// watches
+////////////////////////////////////////////////////////////////
+
+    HWatch[] getWatches() 
+    {
+        if (!cache.initialized()) 
+            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
+        synchronized(watches) 
+        {
+            HWatch[] arr = new HWatch[watches.size()];
+            int n = 0;
+            Iterator itr = watches.values().iterator();
+            while (itr.hasNext())
+                arr[n++] = (HWatch) itr.next();
+            return arr;
+        }
+    }
+
+    HWatch getWatch(String watchId)
+    {
+        synchronized(watches) { return (HWatch) watches.get(watchId); }
+    }
+
+////////////////////////////////////////////////////////////////
 // access
 ////////////////////////////////////////////////////////////////
 
@@ -952,13 +956,8 @@ public class NHServer extends HServer
         HStdOps.hisRead,
         HStdOps.hisWrite,
         HStdOps.invokeAction,
-        new NHServerOps.ApplyBatchTags(),
-        new NHServerOps.AddHaystackSlots(),
         new NHServerOps.ExtendedRead(),
-        new NHServerOps.SearchAndReplace(),
-        new NHServerOps.Watches(),
-        new NHServerOps.WatchSubscriptions(),
-        new NHServerOps.UniqueTags(),
+        new NHServerOps.Extended(),
     };
 
     private final HashMap watches = new HashMap();
