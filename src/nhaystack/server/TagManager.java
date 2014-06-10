@@ -494,6 +494,14 @@ public class TagManager
         HStr curStatus = makeCurStatus(status);
         if (curStatus != null) hdb.add("curStatus", curStatus);
 
+        // minVal, maxVal, precision
+        BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
+        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
+        BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
+        if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
+        if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
+        if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
+
         // ax status tags
         addAxStatusTags(hdb, status);
 
@@ -533,6 +541,15 @@ public class TagManager
                         convertAnnotatedRefTag(equipTags.getRef("siteRef")));
             }
         }
+    }
+
+    private BNumber getNumberFacet(BFacets facets, String name)
+    {
+        BNumber num = (BNumber) facets.get(name);
+        if (num == null) return null;
+        if (num.toString().equals("+inf")) return null;
+        if (num.toString().equals("-inf")) return null;
+        return num;
     }
 
     /**
@@ -747,7 +764,7 @@ public class TagManager
         if (facets == null) 
             return null;
 
-        BUnit unit = (BUnit)facets.get("units");
+        BUnit unit = (BUnit)facets.get(BFacets.UNITS);
         if ((unit == null) || (unit.isNull()))
             return null;
 
