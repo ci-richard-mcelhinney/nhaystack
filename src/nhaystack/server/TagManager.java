@@ -293,8 +293,8 @@ public class TagManager
         HStr curStatus = makeCurStatus(status);
         hdb.add("curStatus", curStatus);
 
-        // ax status tags
-        addAxStatusTags(hdb, status);
+//        // ax status tags
+//        addAxStatusTags(hdb, status);
 
         // done
         return hdb.toDict();
@@ -495,8 +495,8 @@ public class TagManager
         HStr curStatus = makeCurStatus(status);
         if (curStatus != null) hdb.add("curStatus", curStatus);
 
-        // ax status tags
-        addAxStatusTags(hdb, status);
+//        // ax status tags
+//        addAxStatusTags(hdb, status);
 
         // minVal, maxVal, precision
         BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
@@ -701,20 +701,20 @@ public class TagManager
         return null;
     }
 
-    /**
-      * add all the 'ax' tags associated with a BStatus
-      */
-    private static void addAxStatusTags(HDictBuilder hdb, BStatus status)
-    {
-        if (status.isDisabled())     hdb.add("axDisabled");
-        if (status.isFault())        hdb.add("axFault");
-        if (status.isDown())         hdb.add("axDown");
-        if (status.isNull())         hdb.add("axNull");
-        if (status.isOverridden())   hdb.add("axOverridden"); 
-        if (status.isAlarm())        hdb.add("axAlarm");
-        if (status.isStale())        hdb.add("axStale");
-        if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
-    }
+//    /**
+//      * add all the 'ax' tags associated with a BStatus
+//      */
+//    private static void addAxStatusTags(HDictBuilder hdb, BStatus status)
+//    {
+//        if (status.isDisabled())     hdb.add("axDisabled");
+//        if (status.isFault())        hdb.add("axFault");
+//        if (status.isDown())         hdb.add("axDown");
+//        if (status.isNull())         hdb.add("axNull");
+//        if (status.isOverridden())   hdb.add("axOverridden"); 
+//        if (status.isAlarm())        hdb.add("axAlarm");
+//        if (status.isStale())        hdb.add("axStale");
+//        if (status.isUnackedAlarm()) hdb.add("axUnackedAlarm");
+//    }
 
     /**
       * add the 'kind' tag, along with an associated tags 
