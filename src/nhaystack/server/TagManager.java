@@ -108,6 +108,7 @@ public class TagManager
                     Base64.URI.decodeUTF8(nh.getPath()));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
+            if (history == null) return null;
             BHistoryConfig cfg = history.getConfig();
             return spaceMgr.isVisibleHistory(cfg) ? cfg : null;
         }
@@ -494,6 +495,9 @@ public class TagManager
         HStr curStatus = makeCurStatus(status);
         if (curStatus != null) hdb.add("curStatus", curStatus);
 
+        // ax status tags
+        addAxStatusTags(hdb, status);
+
         // minVal, maxVal, precision
         BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
         BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
@@ -501,9 +505,6 @@ public class TagManager
         if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
         if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
         if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
-
-        // ax status tags
-        addAxStatusTags(hdb, status);
 
         // actions tag
         if (point.isWritablePoint())
@@ -858,8 +859,11 @@ public class TagManager
         "hisInterpolate", 
         "id",           
         "kind",
+        "maxVal",
+        "minVal",
         "navName",    
         "point",          
+        "precision",
         "site",         
         "tz",         
         "unit",       

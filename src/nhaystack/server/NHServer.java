@@ -60,7 +60,7 @@ public class NHServer extends HServer
     /**
       * Return the 'about' tags.
       */
-    protected HDict onAbout()
+    public HDict onAbout()
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -94,7 +94,7 @@ public class NHServer extends HServer
         }
     }
 
-    protected HGrid onReadAll(String filter, int limit)
+    public HGrid onReadAll(String filter, int limit)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -123,7 +123,7 @@ public class NHServer extends HServer
       * Iterate every haystack-annotated entry in both the 
       * BComponentSpace and the BHistoryDatabase.
       */
-    protected Iterator iterator()
+    public Iterator iterator()
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -148,7 +148,7 @@ public class NHServer extends HServer
       * Return null if the BComponent cannot be found,
       * or if it is not haystack-annotated.
       */
-    protected HDict onReadById(HRef id)
+    public HDict onReadById(HRef id)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -172,7 +172,7 @@ public class NHServer extends HServer
       * Return navigation tree children for given navId.
       * The grid must define the "navId" column.
       */
-    protected HGrid onNav(String navId)
+    public HGrid onNav(String navId)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -194,7 +194,7 @@ public class NHServer extends HServer
     /**
       * Open a new watch.
       */
-    protected HWatch onWatchOpen(String dis)
+    public HWatch onWatchOpen(String dis)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -227,7 +227,7 @@ public class NHServer extends HServer
     /**
       * Return current watches
       */
-    protected HWatch[] onWatches()
+    public HWatch[] onWatches()
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -249,7 +249,7 @@ public class NHServer extends HServer
     /**
       * Look up a watch by id
       */
-    protected HWatch onWatch(String id)
+    public HWatch onWatch(String id)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -271,7 +271,7 @@ public class NHServer extends HServer
     /**
       * Implementation hook for pointWriteArray
       */
-    protected HGrid onPointWriteArray(HDict rec)
+    public HGrid onPointWriteArray(HDict rec)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -380,7 +380,7 @@ public class NHServer extends HServer
     /**
       * Implementation hook for pointWrite
       */
-    protected void onPointWrite(
+    public void onPointWrite(
         HDict rec, 
         int level, 
         HVal val, 
@@ -486,7 +486,7 @@ public class NHServer extends HServer
       * Read the history for the given BComponent.
       * The items wil be exclusive of start and inclusive of end time.
       */
-    protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
+    public HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -579,7 +579,7 @@ public class NHServer extends HServer
     /**
       * Write the history for the given BComponent.
       */
-    protected void onHisWrite(HDict rec, HHisItem[] items)
+    public void onHisWrite(HDict rec, HHisItem[] items)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -600,7 +600,7 @@ public class NHServer extends HServer
     /**
       * Implementation hook for invokeAction
       */
-    protected HGrid onInvokeAction(HDict rec, String actionName, HDict args)
+    public HGrid onInvokeAction(HDict rec, String actionName, HDict args)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -655,7 +655,7 @@ public class NHServer extends HServer
      * Implementation hook for navReadByUri.  Return null if not
      * found.  Do NOT raise any exceptions.
      */
-    protected HDict onNavReadByUri(HUri uri)
+    public HDict onNavReadByUri(HUri uri)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
