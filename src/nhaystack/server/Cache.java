@@ -79,7 +79,10 @@ class Cache
       */
     synchronized BControlPoint getControlPoint(RemotePoint remotePoint)
     {
-        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
+        // skip this check, since this method gets called during
+        // rebuildHistoryCache_secondPass()
+        //
+        //if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
         return (BControlPoint) remoteToPoint.get(remotePoint);
     }
