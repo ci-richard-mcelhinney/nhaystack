@@ -134,6 +134,10 @@ class NHServerOps
             else if (function.equals("showPointsInWatch"))   result = showPointsInWatch   (server, params);
             else if (function.equals("showWatches"))         result = showWatches         (server, params);
             else if (function.equals("uniqueTags"))          result = uniqueTags          (server, params);
+
+            // pullPropTags needs the whole request grid, not just the parameters
+            else if (function.equals("pullPropTags")) result = pullPropTags(server, req);
+
             else 
             {
                 HDictBuilder hdb = new HDictBuilder();
@@ -445,6 +449,42 @@ class NHServerOps
         hdb.add("id", ref);
         hdb.add("slotPath", point.getSlotPath().toString());
         return hdb.toDict();
+    }
+
+    /**
+      * pullPropTags -- pull into finstack
+      *
+      */
+    private static HGrid pullPropTags(NHServer server, HGrid req)
+    {
+        HRow params = req.row(0);
+        String[] tags = TextUtil.split(params.getStr("tags"), ',');
+
+        Array arr = new Array(HDict.class);
+        for (int i = 1; i < req.numRows(); i++)
+        {
+            HRow inRow = req.row(i);
+
+            HRef haystackCur = inRow.getRef("haystackCur");
+            HDict outRow = server.onReadById(haystackCur);
+            if (outRow == null) continue;
+
+            HDictBuilder hdb = new HDictBuilder();
+            hdb.add("id", inRow.id());
+            hdb.add("mod", inRow.get("mod"));
+            for (int j = 0; j < tags.length; j++)
+            {
+                String tag = tags[j];
+
+                if (outRow.has(tag))
+                    hdb.add(tag, outRow.get(tag));
+                else
+                    hdb.add(tag, REMOVE);
+            }
+            arr.add(hdb.toDict());
+        }
+
+        return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
     }
 
 ////////////////////////////////////////////////////////////////
