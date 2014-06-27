@@ -180,8 +180,17 @@ public class BHDictEditor extends BEdgePane
             }
             else if (kind.equals("Number"))
             {
-                HNum num = ((BHNum) row.fe.saveValue()).getNum();
-                builder.add(name, num);
+                if (name.equals("schedulable"))
+                {
+                    BHSchedulable sched = (BHSchedulable) row.fe.saveValue();
+                    if (!sched.equals(BHSchedulable.DEFAULT))
+                        builder.add(name, HNum.make(sched.getPriority()));
+                }
+                else 
+                {
+                    HNum num = ((BHNum) row.fe.saveValue()).getNum();
+                    builder.add(name, num);
+                }
             }
             else if (kind.equals("Str"))
             {
@@ -198,6 +207,10 @@ public class BHDictEditor extends BEdgePane
                 else
                 {
                     BString str = (BString) row.fe.saveValue();
+
+                    if (name.equals("floorName") && str.equals(BString.DEFAULT))
+                        continue;
+
                     builder.add(name, str.getString());
                 }
             }

@@ -161,7 +161,7 @@ class Row
             return makeMarkerFE();
 
         else if (val instanceof HNum)
-            return makeNumFE((HNum) val);
+            return makeNumFE(name, (HNum) val);
 
         else if (val instanceof HStr)
             return makeStrFE(name, (HStr) val);
@@ -183,11 +183,20 @@ class Row
         return fe;
     }
 
-    private static BWbFieldEditor makeNumFE(HNum num)
+    private static BWbFieldEditor makeNumFE(String name, HNum num)
     {
-        BWbFieldEditor fe = new BHNumFE();
-        fe.loadValue(BHNum.make(num));
-        return fe;
+        if (name.equals("schedulable"))
+        {
+            BWbFieldEditor fe = new BHSchedulableFE();
+            fe.loadValue(BHSchedulable.make((int) num.val));
+            return fe;
+        }
+        else 
+        {
+            BWbFieldEditor fe = new BHNumFE();
+            fe.loadValue(BHNum.make(num));
+            return fe;
+        }
     }
 
     private static BWbFieldEditor makeStrFE(String name, HStr str)
