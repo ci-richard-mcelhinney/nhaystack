@@ -11,12 +11,13 @@
 
     <!-- nhaystack -->
     <type name="HDict"        class="nhaystack.BHDict"/>
-    <type name="HNum"         class="nhaystack.BHNum"/>
+    <type name="HFloor"       class="nhaystack.BHFloor"/>
     <type name="HGrid"        class="nhaystack.BHGrid"/>
+    <type name="HNum"         class="nhaystack.BHNum"/>
     <type name="HRef"         class="nhaystack.BHRef"/>
+    <type name="HSchedulable" class="nhaystack.BHSchedulable"/>
     <type name="HTimeZone"    class="nhaystack.BHTimeZone"/>
     <type name="HUnit"        class="nhaystack.BHUnit"/>
-    <type name="HSchedulable" class="nhaystack.BHSchedulable"/>
 
     <!-- nhaystack.driver -->
     <type name="HTags"                  class="nhaystack.driver.BHTags"/>
@@ -66,13 +67,14 @@
     <type name="HTagsFE" class="nhaystack.driver.ui.BHTagsFE"> <agent><on type="nhaystack:HTags"/> </agent></type>
 
     <!-- nhaystack.server -->
+    <type name="HScheduleEvent"               class="nhaystack.server.BHScheduleEvent"/>
     <type name="NHaystackRebuildCacheJob"     class="nhaystack.server.BNHaystackRebuildCacheJob"/>
     <type name="NHaystackRemoveBrokenRefsJob" class="nhaystack.server.BNHaystackRemoveBrokenRefsJob"/>
-    <type name="NHaystackService" class="nhaystack.server.BNHaystackService"/>
-    <type name="NHaystackServlet" class="nhaystack.server.BNHaystackServlet"/>
-    <type name="NHaystackStats"   class="nhaystack.server.BNHaystackStats"/>
-    <type name="TimeZoneAlias"       class="nhaystack.server.BTimeZoneAlias"/>
-    <type name="TimeZoneAliasFolder" class="nhaystack.server.BTimeZoneAliasFolder"/>
+    <type name="NHaystackService"             class="nhaystack.server.BNHaystackService"/>
+    <type name="NHaystackServlet"             class="nhaystack.server.BNHaystackServlet"/>
+    <type name="NHaystackStats"               class="nhaystack.server.BNHaystackStats"/>
+    <type name="TimeZoneAlias"                class="nhaystack.server.BTimeZoneAlias"/>
+    <type name="TimeZoneAliasFolder"          class="nhaystack.server.BTimeZoneAliasFolder"/>
 
     <!-- nhaystack.site -->
     <type name="HEquip"  class="nhaystack.site.BHEquip"/>
@@ -87,10 +89,11 @@
     <type name="MarkerSet"        class="nhaystack.ui.BMarkerSet"/>
 
     <type name="HDictFE"        class="nhaystack.ui.BHDictFE">        <agent><on type="nhaystack:HDict"/>        </agent></type>
+    <type name="HFloorFE"       class="nhaystack.ui.BHFloorFE">       <agent><on type="nhaystack:HFloor"/>       </agent></type>
     <type name="HNumFE"         class="nhaystack.ui.BHNumFE">         <agent><on type="nhaystack:HNum"/>         </agent></type>
+    <type name="HSchedulableFE" class="nhaystack.ui.BHSchedulableFE"> <agent><on type="nhaystack:HSchedulable"/> </agent></type>
     <type name="HTimeZoneFE"    class="nhaystack.ui.BHTimeZoneFE">    <agent><on type="nhaystack:HTimeZone"/>    </agent></type>
     <type name="HUnitFE"        class="nhaystack.ui.BHUnitFE">        <agent><on type="nhaystack:HUnit"/>        </agent></type>
-    <type name="HSchedulableFE" class="nhaystack.ui.BHSchedulableFE"> <agent><on type="nhaystack:HSchedulable"/> </agent></type>
 
     <type name="EquipRefFE" class="nhaystack.ui.BEquipRefFE"/>
     <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>

@@ -29,10 +29,10 @@ class NHServerOps
 {
 
 //////////////////////////////////////////////////////////////////////////
-// ExtendedRead
+// ExtendedReadOp
 //////////////////////////////////////////////////////////////////////////
 
-    static class ExtendedRead extends HOp
+    static class ExtendedReadOp extends HOp
     {
         public String name() { return "extendedRead"; }
         public String summary() { return "Extended Read"; }
@@ -107,10 +107,10 @@ class NHServerOps
     }
  
 //////////////////////////////////////////////////////////////////////////
-// Extended
+// ExtendedOp
 //////////////////////////////////////////////////////////////////////////
 
-    static class Extended extends HOp
+    static class ExtendedOp extends HOp
     {
         public String name() { return "extended"; }
         public String summary() { return "Extended Functions"; }
@@ -128,8 +128,10 @@ class NHServerOps
 
             HGrid result = HGrid.EMPTY;
             if      (function.equals("addHaystackSlots"))    result = addHaystackSlots    (server, params);
+            else if (function.equals("addEquips"))           result = addEquips           (server, params);
             else if (function.equals("applyBatchTags"))      result = applyBatchTags      (server, params);
             else if (function.equals("findDuplicatePoints")) result = findDuplicatePoints (server, params);
+            else if (function.equals("rebuildCache"))        result = rebuildCache        (server, params);
             else if (function.equals("searchAndReplace"))    result = searchAndReplace    (server, params);
             else if (function.equals("showPointsInWatch"))   result = showPointsInWatch   (server, params);
             else if (function.equals("showWatches"))         result = showWatches         (server, params);
@@ -241,6 +243,75 @@ class NHServerOps
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("rowsChanged", HNum.make(count));
         return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
+      * addEquips
+      */
+    private static HGrid addEquips(NHServer server, HRow params)
+    {
+        String targetFilter = params.getStr("targetFilter");
+
+        HRef siteRef = null;
+        if (params.has("siteName"))
+        {
+            String siteName = params.getStr("siteName");
+            HDict siteGrid = server.read(
+                "site and dis == \"" + siteName + "\"", false);
+
+            if (siteGrid == null)
+            {
+                BComponent root = (BComponent) 
+                    BOrd.make("slot:/").get(server.getService(), null);
+
+                BHSite site = new BHSite();
+                root.add(siteName, site);
+                siteRef = HRef.make("C." + siteName);
+            }
+            else
+            {
+                BHSite site = (BHSite) server.getTagManager().lookupComponent(
+                    siteGrid.getRef("id"));
+                siteRef = TagManager.makeSlotPathRef(site).getHRef();
+            }
+        }
+
+        int count = 0;
+        BComponent[] targets = getFilterComponents(server, targetFilter);
+        for (int i = 0; i < targets.length; i++)
+        {
+            BComponent target = targets[i];
+            if (target.get("equip") == null) 
+            {
+                count++;
+                BHEquip equip = new BHEquip();
+
+                if (siteRef != null)
+                {
+                    HDictBuilder hdb = new HDictBuilder();
+                    hdb.add("siteRef", siteRef);
+                    hdb.add("navNameFormat", "%parent.displayName%");
+
+                    equip.setHaystack(BHDict.make(hdb.toDict()));
+                }
+                target.add("equip", equip);
+            }
+        }
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(count));
+        return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
+      * rebuildCache
+      */
+    private static HGrid rebuildCache(NHServer server, HRow params)
+    {
+        server.getService().invoke(
+            BNHaystackService.rebuildCache, null, null);
+
+        return HGrid.EMPTY;
     }
 
     /**
@@ -487,6 +558,51 @@ class NHServerOps
         return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
     }
 
+//////////////////////////////////////////////////////////////////////////
+// ScheduleRead
+//////////////////////////////////////////////////////////////////////////
+
+    static class ScheduleReadOp extends HOp
+    {
+        public String name() { return "scheduleRead"; }
+        public String summary() { return "Read time series from point schedule"; }
+        public HGrid onService(HServer db, HGrid req) throws Exception
+        {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
+            if (req.isEmpty()) throw new Exception("Request has no rows");
+            HRow row = req.row(0);
+            HRef id = valToId(db, row.get("id"));
+
+            return server.scheduleRead(id);
+        }
+    }
+
+//////////////////////////////////////////////////////////////////////////
+// ScheduleWriteOp
+//////////////////////////////////////////////////////////////////////////
+
+    static class ScheduleWriteOp extends HOp
+    {
+        public String name() { return "scheduleWrite"; }
+        public String summary() { return "Write time series data to point schedule"; }
+        public HGrid onService(HServer db, HGrid req) throws Exception
+        {
+            NHServer server = (NHServer) db;
+            if (!server.getCache().initialized()) 
+                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+
+            if (req.isEmpty()) throw new Exception("Request has no rows");
+            HRef id = valToId(db, req.meta().get("id"));
+
+            HHisItem[] items = HHisItem.gridToItems(req);
+            server.scheduleWrite(id, items);
+            return HGrid.EMPTY;
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // utils
 ////////////////////////////////////////////////////////////////
@@ -505,6 +621,19 @@ class NHServerOps
         }
 
         return (BComponent[]) arr.trim();
+    }
+
+    static HRef valToId(HServer db, HVal val)
+    {
+        if (val instanceof HUri)
+        {
+            HDict rec = db.navReadByUri((HUri)val, false);
+            return rec == null ? HRef.nullRef : rec.id();
+        }
+        else
+        {
+            return (HRef)val;
+        }
     }
 
 ////////////////////////////////////////////////////////////////

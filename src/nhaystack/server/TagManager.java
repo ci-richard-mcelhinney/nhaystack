@@ -9,7 +9,9 @@
 package nhaystack.server;
 
 import java.util.*;
+
 import javax.baja.control.*;
+import javax.baja.driver.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
@@ -261,6 +263,10 @@ public class TagManager
             // add id
             HRef id = makeComponentRef(comp).getHRef();
             hdb.add("id", HRef.make(id.val, dis));
+
+            // add device
+            if (comp instanceof BDevice)
+                hdb.add("device", comp.getType().getModule().getModuleName());
         }
 
         // add custom tags

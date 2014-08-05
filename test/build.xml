@@ -82,6 +82,16 @@
     </java>
   </target> 
 
+  <!--========== test-schedule ==========-->
+  <target name="test-schedule" depends="make">
+    <java classname="nhaystack.test.NScheduleTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
   <!--========== test-util ==========-->
   <target name="test-util" depends="make">
     <java classname="nhaystack.test.NUtilTest">

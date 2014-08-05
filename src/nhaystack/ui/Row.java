@@ -213,6 +213,12 @@ class Row
             fe.loadValue(BHUnit.make(Resources.getSymbolUnit(str.val).symbol));
             return fe;
         }
+//        else if (name.equals("floor"))
+//        {
+//            BWbFieldEditor fe = new BHFloorFE();
+//            fe.loadValue(BHSchedulable.make((int) num.val));
+//            return fe;
+//        }
         else
         {
             BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);

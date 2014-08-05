@@ -65,6 +65,9 @@ class SpaceManager
         if (comp instanceof BControlPoint)
             return true;
 
+        if (comp instanceof BDevice)
+            return true;
+
         // Return true for components that are annotated with a BHDict.
         BValue haystack = comp.get("haystack");
         if ((haystack != null) && (haystack instanceof BHDict))

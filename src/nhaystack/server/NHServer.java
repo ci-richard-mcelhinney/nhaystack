@@ -21,6 +21,7 @@ import javax.baja.timezone.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 import org.projecthaystack.server.*;
 import nhaystack.*;
 import nhaystack.collection.*;
@@ -37,7 +38,8 @@ public class NHServer extends HServer
     {
         this.service = service;
         this.spaceMgr = new SpaceManager(this);
-        this.cache = new Cache(this);
+        this.schedMgr = new ScheduleManager(this, service);
+        this.cache = new Cache(this, schedMgr);
         this.tagMgr = new TagManager(this, service, spaceMgr, cache);
         this.nav = new Nav(service, spaceMgr, cache, tagMgr);
     }
@@ -756,8 +758,8 @@ public class NHServer extends HServer
 
     void removeBrokenRefs() 
     {
-        if (!cache.initialized()) 
-            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+//        if (!cache.initialized()) 
+//            throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
         if (LOG.isTraceOn()) LOG.trace("BEGIN removeBrokenRefs"); 
 
@@ -933,6 +935,113 @@ public class NHServer extends HServer
     Cache getCache() { return cache; }
     Nav getNav() { return nav; }
     public TagManager getTagManager() { return tagMgr; }
+    ScheduleManager getScheduleManager() { return schedMgr; }
+
+//////////////////////////////////////////////////////////////////////////
+// Schedule
+//////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Read schedule time-series data for given record.
+   */
+  public final HGrid scheduleRead(HRef id)
+  {
+      // lookup entity
+      HDict rec = readById(id);
+
+      // check that entity has "schedule" tag
+      if (rec.missing("schedule"))
+          throw new UnknownNameException("Rec missing 'schedule' tag: " + rec.dis());
+
+      // route to subclass
+      HHisItem[] items = onScheduleRead(rec);
+
+      // build and return result grid
+      HDict meta = new HDictBuilder()
+          .add("id", id)
+          .toDict();
+      return HGridBuilder.hisItemsToGrid(meta, items);
+  }
+
+  /**
+   * Implementation hook for scheduleRead.  The items must be exclusive
+   * of start and inclusive of end time.
+   */
+  protected /*abstract*/ HHisItem[] onScheduleRead(HDict rec)
+  {
+      HGrid grid = (new HZincReader(rec.getStr("schedule"))).readGrid();
+      return HHisItem.gridToItems(grid);
+  }
+
+  /**
+   * Write a set of schedule time-series data to the given point record.
+   * The record must already be defined and must be properly tagged as
+   * a schedule-ized point.  The timestamp timezone must exactly match the
+   * point's configured "tz" tag.  If duplicate or out-of-order items are
+   * inserted then they must be gracefully merged.
+   */
+  public final void scheduleWrite(HRef id, HHisItem[] items)
+  {
+      // lookup entity
+      HDict rec = readById(id);
+
+//      // check that entity has "schedule" tag
+//      if (rec.missing("schedule"))
+//          throw new UnknownNameException("Entity missing 'schedule' tag: " + rec.dis());
+//
+//      // lookup "tz" on entity
+//      HTimeZone tz = null;
+//      if (rec.has("tz")) tz = HTimeZone.make(rec.getStr("tz"), false);
+//      if (tz == null)
+//          throw new UnknownNameException("Rec missing or invalid 'tz' tag: " + rec.dis());
+//
+//      // check tz of items
+//      if (items.length == 0) return;
+//      for (int i=0; i<items.length; ++i)
+//          if (!items[i].ts.tz.equals(tz)) throw new RuntimeException("item.tz != rec.tz: " + items[i].ts.tz + " != " + tz);
+
+      // route to subclass
+      onScheduleWrite(rec, items);
+  }
+
+  /**
+   * Implementation hook for onScheduleWrite.
+   */
+  protected /*abstract*/ void onScheduleWrite(HDict rec, HHisItem[] items)
+  {
+    if (LOG.isTraceOn())
+        LOG.trace("onScheduleWrite " + rec.id());
+
+      BComponent comp = tagMgr.lookupComponent(rec.id());
+      if (comp == null) 
+          throw new BajaRuntimeException("Cannot find component for " + rec.id());
+
+      HDict orig = BHDict.findTagAnnotation(comp);
+      if (orig == null) orig = HDict.EMPTY;
+
+      HDictBuilder hdb = new HDictBuilder();
+      Iterator itr = orig.iterator();
+      while (itr.hasNext())
+      {
+          Map.Entry e = (Map.Entry) itr.next();
+          String name = (String) e.getKey();
+          HVal val = (HVal) e.getValue();
+
+          if (name.equals("schedule")) continue;
+          if (name.equals("tz") && items.length > 0) continue;
+          hdb.add(name, val);
+      }
+
+      HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
+      hdb.add("schedule", HZincWriter.gridToString(schedule));
+      if (items.length > 0)
+          hdb.add("tz", items[0].ts.tz.toString());
+
+      if (comp.get("haystack") == null)
+          comp.add("haystack", BHDict.make(hdb.toDict()));
+      else
+          comp.set("haystack", BHDict.make(hdb.toDict()));
+  }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 
@@ -956,8 +1065,10 @@ public class NHServer extends HServer
         HStdOps.hisRead,
         HStdOps.hisWrite,
         HStdOps.invokeAction,
-        new NHServerOps.ExtendedRead(),
-        new NHServerOps.Extended(),
+        new NHServerOps.ExtendedReadOp(),
+        new NHServerOps.ExtendedOp(),
+        new NHServerOps.ScheduleReadOp(),
+        new NHServerOps.ScheduleWriteOp(),
     };
 
     private final HashMap watches = new HashMap();
@@ -967,5 +1078,6 @@ public class NHServer extends HServer
     private final Cache cache;
     private final Nav nav;
     private final TagManager tagMgr;
+    private final ScheduleManager schedMgr;
 }
 

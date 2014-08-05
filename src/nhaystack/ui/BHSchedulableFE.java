@@ -22,7 +22,7 @@ import nhaystack.*;
 import nhaystack.res.*;
 
 /**
-  * BHSchedulableFE edits a haystack unit.
+  * BHSchedulableFE edits a haystack schedulable.
   */
 public class BHSchedulableFE extends BWbFieldEditor
 {
