@@ -45,6 +45,12 @@ public class ScheduleManager
 
     void makePointEvents(BControlPoint[] points)
     {
+        if (ticket != null)
+        {
+            LOG.trace("Canceling a ticket at " + ticketTs + " for " + ticketId);
+            ticket.cancel();
+            ticket = null;
+        }
         for (int i = 0; i < points.length; i++)
             makePointEvent(points[i]);
     }
@@ -63,9 +69,9 @@ public class ScheduleManager
         BControlPoint point = (BControlPoint) server.getTagManager().lookupComponent(id);
         HDict tags = BHDict.findTagAnnotation(point);
 
-System.out.println("ScheduleManager.applySchedule: " + 
-    event.getId() + ", " + event.getValue() + ", " + 
-    point.getSlotPath());
+//System.out.println("ScheduleManager.applySchedule: " + 
+//    event.getId() + ", " + event.getValue() + ", " + 
+//    point.getSlotPath());
 
         // set the point
         HDictBuilder hdb = new HDictBuilder();
@@ -91,8 +97,28 @@ System.out.println("ScheduleManager.applySchedule: " +
     {
         if (items.length == 0) return;
 
+        HTimeZone tz = items[0].ts.tz;
+        long curMillis = System.currentTimeMillis();
+
+        // compute sunday of this week
+        HDateTime now = HDateTime.make(curMillis, tz);
+        HDateTime sunday = HDateTime.make(
+            now.date.minusDays(now.date.weekday()-1), 
+            HTime.MIDNIGHT, tz);
+
+        // try this week
+        if (!scheduleWeeklyTicket(id, normalizeWeek(items, sunday), curMillis))
+        {
+            // maybe next week
+            sunday = HDateTime.make(sunday.date.plusDays(7), HTime.MIDNIGHT, tz);
+            scheduleWeeklyTicket(id, normalizeWeek(items, sunday), curMillis);
+        }
+    }
+
+    private boolean scheduleWeeklyTicket(HRef id, HHisItem[] items, long curMillis)
+    {
         BTimeZone tz = TypeUtil.toBajaTimeZone(items[0].ts.tz);
-        BAbsTime now = BAbsTime.make(System.currentTimeMillis(), tz);
+        BAbsTime now = BAbsTime.make(curMillis, tz);
 
         // try to find an item from the future
         for (int i = 0; i < items.length; i++)
@@ -107,8 +133,9 @@ System.out.println("ScheduleManager.applySchedule: " +
                 if (LOG.isTraceOn())
                     LOG.trace("Scheduling a ticket at " + item.ts + " for " + id);
                 
-                // TODO save this thing so we can cancel it
-                Clock.Ticket ticket = Clock.schedule(
+                ticketTs = item.ts;
+                ticketId = id;
+                ticket = Clock.schedule(
                     service, 
                     absTime,
                     BNHaystackService.applySchedule,
@@ -116,9 +143,44 @@ System.out.println("ScheduleManager.applySchedule: " +
                         BHRef.make(id),
                         TypeUtil.toBajaSimple(item.val)));
 
-                return;
+                return true;
             }
         }
+
+        return false;
+    }
+
+    /**
+      * Make sure all of the items are scheduled to happen this week.  
+      */
+    private HHisItem[] normalizeWeek(HHisItem[] items, HDateTime thisSun)
+    {
+        if (items.length == 0) throw new IllegalStateException();
+
+        HTimeZone tz = items[0].ts.tz;
+        HHisItem[] future = new HHisItem[items.length];
+
+        // compute sunday of next week
+        HDateTime nextSun = HDateTime.make(
+            thisSun.date.plusDays(7), 
+            HTime.MIDNIGHT, tz);
+
+        for (int i = 0; i < items.length; i++)
+        {
+            HDateTime ts = items[i].ts;
+
+            // subtract weeks until we are before next sunday
+            while (ts.millis() >= nextSun.millis())
+                ts = HDateTime.make(ts.date.minusDays(7), ts.time, tz);
+
+            // add weeks until we are after this sunday
+            while (ts.millis() < thisSun.millis())
+                ts = HDateTime.make(ts.date.plusDays(7), ts.time, tz);
+
+            future[i] = HHisItem.make(ts, items[i].val);
+        }
+
+        return future;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -129,5 +191,8 @@ System.out.println("ScheduleManager.applySchedule: " +
 
     private final NHServer server;
     private final BNHaystackService service;
+    private Clock.Ticket ticket = null;
+    private HDateTime ticketTs = null;
+    private HRef ticketId = null;
 }
 
