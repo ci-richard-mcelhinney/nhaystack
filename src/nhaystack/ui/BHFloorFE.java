@@ -57,7 +57,7 @@ public class BHFloorFE extends BWbFieldEditor
         setContent(ep);
 
         linkTo(prefix, BDropDown.valueModified, BWbPlugin.setModified);
-        linkTo(suffix, BTextField.actionPerformed, BWbPlugin.setModified);
+        linkTo(suffix, BTextField.textModified, BWbPlugin.setModified);
     }
 
     protected void doSetReadonly(boolean readonly)
@@ -78,20 +78,20 @@ public class BHFloorFE extends BWbFieldEditor
         }
         else
         {
-            boolean isCustom = false;
+            boolean found = false;
             for (int i = 0; i < PREFIXES.length; i++)
             {
                 if (str.startsWith(PREFIXES[i]))
                 {
                     prefix.setSelectedItem(PREFIXES[i]);
-                    suffix.setText(str.substring(PREFIXES[i].length()));
-                    isCustom = true;
+                    suffix.setText(str.substring(PREFIXES[i].length()+1));
+                    found = true;
                     break;
                 }
             }
 
             // Custom
-            if (!isCustom)
+            if (!found)
             {
                 prefix.setSelectedItem(CUSTOM);
                 suffix.setText(str);
@@ -113,7 +113,7 @@ public class BHFloorFE extends BWbFieldEditor
             return BHFloor.make(b);
 
         else
-            return BHFloor.make(a + b);
+            return BHFloor.make(a + " " + b);
     }
 
     public void setEnabled(boolean enabled)

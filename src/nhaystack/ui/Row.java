@@ -223,6 +223,10 @@ class Row
         {
             BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
             fe.loadValue(BString.make(str.val));
+
+            if (name.equals("weeklySchedule"))
+                fe.setReadonly(true);
+
             return fe;
         }
     }
