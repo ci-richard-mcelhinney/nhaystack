@@ -204,13 +204,14 @@ public class BHDictEditor extends BEdgePane
                     BHTimeZone tz = (BHTimeZone) row.fe.saveValue();
                     builder.add(name, tz.getTimeZone().name);
                 }
+                else if (name.equals("floorName"))
+                {
+                    BHFloor floor = (BHFloor) row.fe.saveValue();
+                    builder.add(name, floor.getFloor());
+                }
                 else
                 {
                     BString str = (BString) row.fe.saveValue();
-
-                    if (name.equals("floorName") && str.equals(BString.DEFAULT))
-                        continue;
-
                     builder.add(name, str.getString());
                 }
             }

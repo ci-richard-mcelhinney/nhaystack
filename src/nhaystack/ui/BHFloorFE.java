@@ -47,13 +47,9 @@ public class BHFloorFE extends BWbFieldEditor
     public BHFloorFE()
     {
         BList list = prefix.getList();
-        list.addItem("Floor");
-        list.addItem("Basement");
-        list.addItem("Ground Floor");
-        list.addItem("Mezzanine");
-        list.addItem("Roof");
-        list.addItem("Utility");
-        list.addItem("Custom");
+        for (int i = 0; i < PREFIXES.length; i++)
+            list.addItem(PREFIXES[i]);
+        list.addItem(CUSTOM);
 
         BEdgePane ep = new BEdgePane();
         ep.setLeft(prefix);
@@ -67,6 +63,7 @@ public class BHFloorFE extends BWbFieldEditor
     protected void doSetReadonly(boolean readonly)
     {
         prefix.setEnabled(!readonly);
+        suffix.setEnabled(!readonly);
     }
 
     protected void doLoadValue(BObject value, Context cx) throws Exception
@@ -81,23 +78,42 @@ public class BHFloorFE extends BWbFieldEditor
         }
         else
         {
-            int n = str.indexOf(":");
-            prefix.setSelectedItem(str.substring(0, n));
-            suffix.setText(str.substring(n + 1));
+            boolean isCustom = false;
+            for (int i = 0; i < PREFIXES.length; i++)
+            {
+                if (str.startsWith(PREFIXES[i]))
+                {
+                    prefix.setSelectedItem(PREFIXES[i]);
+                    suffix.setText(str.substring(PREFIXES[i].length()));
+                    isCustom = true;
+                    break;
+                }
+            }
+
+            // Custom
+            if (!isCustom)
+            {
+                prefix.setSelectedItem(CUSTOM);
+                suffix.setText(str);
+            }
         }
     }
 
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
-        throw new IllegalStateException();
-//        if (!getEnabled()) throw new IllegalStateException();
-//
-//        String str = (String) prefix.getSelectedItem();
-//
-//        if (str.equals(LEX.getText("none")))
-//            return BHFloor.DEFAULT;
-//        else
-//            return BHFloor.make(Integer.parseInt(str));
+        if (!getEnabled()) throw new IllegalStateException();
+
+        String a = (String) prefix.getSelectedItem();
+        String b = (String) suffix.getText();
+
+        if (a.equals("Floor") && b.equals(""))
+            return BHFloor.DEFAULT;
+
+        else if (a.equals(CUSTOM))
+            return BHFloor.make(b);
+
+        else
+            return BHFloor.make(a + b);
     }
 
     public void setEnabled(boolean enabled)
@@ -112,6 +128,17 @@ public class BHFloorFE extends BWbFieldEditor
 ////////////////////////////////////////////////////////////////
 
     private static final Lexicon LEX = Lexicon.make("nhaystack");
+
+    private static final String[] PREFIXES = new String[]
+    { 
+        "Floor",
+        "Basement",
+        "Ground Floor",
+        "Mezzanine",
+        "Roof",
+        "Utility",
+    };
+    private static final String CUSTOM = "Custom";
 
     private BListDropDown prefix = new BListDropDown();
     private BTextField suffix = new BTextField();
