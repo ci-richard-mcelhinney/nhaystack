@@ -83,7 +83,7 @@ System.out.println("ScheduleManager.applySchedule: " +
     private HHisItem[] hisItems(BControlPoint point)
     {
         HDict tags = BHDict.findTagAnnotation(point);
-        HGrid grid = (new HZincReader(tags.getStr("schedule"))).readGrid();
+        HGrid grid = (new HZincReader(tags.getStr("weeklySchedule"))).readGrid();
         return HHisItem.gridToItems(grid);
     }
 

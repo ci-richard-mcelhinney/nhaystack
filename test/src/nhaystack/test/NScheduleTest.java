@@ -80,18 +80,18 @@ public class NScheduleTest extends NTest
         HZincReader zr = new HZincReader(
             "ver:\"2.0\" id:@S.Winterfell.Equip1.BooleanWritable\n" +
             "ts,val\n" +
-            "2014-07-03T18:59:00-04:00 New_York,F\n" +
-            "2014-07-03T18:59:05-04:00 New_York,T\n" +
-            "2014-07-03T18:59:10-04:00 New_York,F\n" +
-            "2014-07-03T18:59:15-04:00 New_York,F\n" +
-            "2014-07-03T18:59:20-04:00 New_York,T\n" +
-            "2014-07-03T18:59:25-04:00 New_York,F\n" +
-            "2014-07-03T18:59:30-04:00 New_York,F\n" +
-            "2014-07-03T18:59:35-04:00 New_York,F\n" +
-            "2014-07-03T18:59:40-04:00 New_York,F\n" +
-            "2014-07-03T18:59:45-04:00 New_York,T\n" +
-            "2014-07-03T18:59:50-04:00 New_York,F\n" +
-            "2014-07-03T18:59:55-04:00 New_York,F\n");
+            "2014-08-05T11:18:00-04:00 New_York,F\n" +
+            "2014-08-05T11:18:05-04:00 New_York,T\n" +
+            "2014-08-05T11:18:10-04:00 New_York,F\n" +
+            "2014-08-05T11:18:15-04:00 New_York,T\n" +
+            "2014-08-05T11:18:20-04:00 New_York,F\n" +
+            "2014-08-05T11:18:25-04:00 New_York,T\n" +
+            "2014-08-05T11:18:30-04:00 New_York,F\n" +
+            "2014-08-05T11:18:35-04:00 New_York,T\n" +
+            "2014-08-05T11:18:40-04:00 New_York,F\n" +
+            "2014-08-05T11:18:45-04:00 New_York,T\n" +
+            "2014-08-05T11:18:50-04:00 New_York,F\n" +
+            "2014-08-05T11:18:55-04:00 New_York,T\n");
         client.call("scheduleWrite", zr.readGrid());
 
 //        HGrid readGrid = scheduleRead(client, id, HDateTimeRange.lastYear(HTimeZone.DEFAULT));

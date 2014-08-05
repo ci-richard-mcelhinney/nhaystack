@@ -254,7 +254,7 @@ class Cache
                 // BControlPoints always have tags generated
                 if (tags == null) tags = HDict.EMPTY;
 
-                if (tags.has("schedule") && tags.has("schedulable"))
+                if (tags.has("weeklySchedule") && tags.has("schedulable"))
                     scheduledPoints.add(point);
 
                 // save remote point 

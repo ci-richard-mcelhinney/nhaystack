@@ -949,9 +949,9 @@ public class NHServer extends HServer
       // lookup entity
       HDict rec = readById(id);
 
-      // check that entity has "schedule" tag
-      if (rec.missing("schedule"))
-          throw new UnknownNameException("Rec missing 'schedule' tag: " + rec.dis());
+      // check that entity has "weeklySchedule" tag
+      if (rec.missing("weeklySchedule"))
+          throw new UnknownNameException("Rec missing 'weeklySchedule' tag: " + rec.dis());
 
       // route to subclass
       HHisItem[] items = onScheduleRead(rec);
@@ -969,7 +969,7 @@ public class NHServer extends HServer
    */
   protected /*abstract*/ HHisItem[] onScheduleRead(HDict rec)
   {
-      HGrid grid = (new HZincReader(rec.getStr("schedule"))).readGrid();
+      HGrid grid = (new HZincReader(rec.getStr("weeklySchedule"))).readGrid();
       return HHisItem.gridToItems(grid);
   }
 
@@ -977,24 +977,23 @@ public class NHServer extends HServer
    * Write a set of schedule time-series data to the given point record.
    * The record must already be defined and must be properly tagged as
    * a schedule-ized point.  The timestamp timezone must exactly match the
-   * point's configured "tz" tag.  If duplicate or out-of-order items are
-   * inserted then they must be gracefully merged.
+   * point's configured "tz" tag.  
    */
   public final void scheduleWrite(HRef id, HHisItem[] items)
   {
       // lookup entity
       HDict rec = readById(id);
 
-//      // check that entity has "schedule" tag
-//      if (rec.missing("schedule"))
-//          throw new UnknownNameException("Entity missing 'schedule' tag: " + rec.dis());
-//
+//      // check that entity has "weeklySchedule" tag
+//      if (rec.missing("weeklySchedule"))
+//          throw new UnknownNameException("Entity missing 'weeklySchedule' tag: " + rec.dis());
+
 //      // lookup "tz" on entity
 //      HTimeZone tz = null;
 //      if (rec.has("tz")) tz = HTimeZone.make(rec.getStr("tz"), false);
 //      if (tz == null)
 //          throw new UnknownNameException("Rec missing or invalid 'tz' tag: " + rec.dis());
-//
+
 //      // check tz of items
 //      if (items.length == 0) return;
 //      for (int i=0; i<items.length; ++i)
@@ -1027,13 +1026,13 @@ public class NHServer extends HServer
           String name = (String) e.getKey();
           HVal val = (HVal) e.getValue();
 
-          if (name.equals("schedule")) continue;
+          if (name.equals("weeklySchedule")) continue;
           if (name.equals("tz") && items.length > 0) continue;
           hdb.add(name, val);
       }
 
       HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
-      hdb.add("schedule", HZincWriter.gridToString(schedule));
+      hdb.add("weeklySchedule", HZincWriter.gridToString(schedule));
       if (items.length > 0)
           hdb.add("tz", items[0].ts.tz.toString());
 
