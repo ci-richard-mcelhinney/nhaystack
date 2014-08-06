@@ -164,9 +164,13 @@ class NHServerOps
         if (params.has("returnResultRows"))
             returnResultRows = params.getBool("returnResultRows");
 
+        String ids = null;
+        if (params.has("ids"))
+            ids = params.getStr("ids");
+
         HDict newTags = new HZincReader(tags).readDict();
 
-        BComponent[] targets = getFilterComponents(server, targetFilter);
+        BComponent[] targets = getFilterComponents(server, targetFilter, ids);
         HDict[] rows = new HDict[targets.length];
         for (int i = 0; i < targets.length; i++)
         {
@@ -228,8 +232,12 @@ class NHServerOps
     {
         String targetFilter = params.getStr("targetFilter");
 
+        String ids = null;
+        if (params.has("ids"))
+            ids = params.getStr("ids");
+
         int count = 0;
-        BComponent[] targets = getFilterComponents(server, targetFilter);
+        BComponent[] targets = getFilterComponents(server, targetFilter, ids);
         for (int i = 0; i < targets.length; i++)
         {
             BComponent target = targets[i];
@@ -251,6 +259,10 @@ class NHServerOps
     private static HGrid addEquips(NHServer server, HRow params)
     {
         String targetFilter = params.getStr("targetFilter");
+
+        String ids = null;
+        if (params.has("ids"))
+            ids = params.getStr("ids");
 
         HRef siteRef = null;
         if (params.has("siteName"))
@@ -277,7 +289,7 @@ class NHServerOps
         }
 
         int count = 0;
-        BComponent[] targets = getFilterComponents(server, targetFilter);
+        BComponent[] targets = getFilterComponents(server, targetFilter, ids);
         for (int i = 0; i < targets.length; i++)
         {
             BComponent target = targets[i];
@@ -323,8 +335,12 @@ class NHServerOps
         String searchText = params.getStr("searchText");
         String replaceText = params.getStr("replaceText");
 
+        String ids = null;
+        if (params.has("ids"))
+            ids = params.getStr("ids");
+
         int count = 0;
-        BComponent[] comps = getFilterComponents(server, filter);
+        BComponent[] comps = getFilterComponents(server, filter, ids);
         for (int i = 0; i < comps.length; i++)
         {
             BComponent comp = comps[i];
@@ -607,20 +623,87 @@ class NHServerOps
 // utils
 ////////////////////////////////////////////////////////////////
 
-    private static BComponent[] getFilterComponents(NHServer server, String filter)
+    private static BComponent[] getFilterComponents(NHServer server, String filter, String ids)
     {
-        Array arr = new Array(BComponent.class);
+        HServer hserver = server;
 
-        HGrid grid = server.readAll(filter);
-        for (int i = 0; i < grid.numRows(); i++)
+        // if there is an id list, parse it and look up all the recs
+        if ((ids != null) && (ids.length() > 0))
         {
-            HStr slotPath = (HStr) grid.row(i).get("axSlotPath", false);
-            if (slotPath != null)
-                arr.add(BOrd.make("station:|" + slotPath.val).get(
-                        server.getService(), null));
+            HRef refs[] = parseIdList(ids);
+            if (refs.length > 0)
+            {
+                Array dictArr = new Array(HDict.class);
+                for (int i = 0; i < refs.length; i++)
+                {
+                    HDict dict = server.readById(refs[i]);
+                    if (dict != null) dictArr.add(dict);
+                }
+
+                // filter against the recs
+                hserver = new HDictFilter((HDict[]) dictArr.trim()); 
+            }
         }
 
-        return (BComponent[]) arr.trim();
+        // filter against either the entire database, or the id list recs
+        Array compArr = new Array(BComponent.class);
+        if ((filter != null) && (filter.length() > 0))
+        {
+            HGrid grid = hserver.readAll(filter);
+            for (int i = 0; i < grid.numRows(); i++)
+            {
+                HStr slotPath = (HStr) grid.row(i).get("axSlotPath", false);
+                if (slotPath != null)
+                    compArr.add(BOrd.make("station:|" + slotPath.val).get(
+                            server.getService(), null));
+            }
+        }
+
+        return (BComponent[]) compArr.trim();
+    }
+
+    // this class just provides an iterator() so that we can filter against a list of ids
+    private static class HDictFilter extends HServer
+    {
+        private final List list;
+        private HDictFilter(HDict[] dicts) { this.list = Arrays.asList(dicts); }
+
+        protected Iterator iterator() { return list.iterator(); }
+
+        // HProj
+        protected HDict onReadById(HRef id) { throw new UnsupportedOperationException(); }
+
+        // HServer
+        public HOp[] ops() { throw new UnsupportedOperationException(); }
+        protected HDict onAbout() { throw new UnsupportedOperationException(); }
+        protected HGrid onNav(String navId) { throw new UnsupportedOperationException(); }
+        protected HDict onNavReadByUri(HUri uri) { throw new UnsupportedOperationException(); }
+        protected HWatch onWatchOpen(String dis) { throw new UnsupportedOperationException(); }
+        protected HWatch[] onWatches() { throw new UnsupportedOperationException(); }
+        protected HWatch onWatch(String id) { throw new UnsupportedOperationException(); }
+        protected HGrid onPointWriteArray(HDict rec) { throw new UnsupportedOperationException(); }
+        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur) { throw new UnsupportedOperationException(); }
+        protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range) { throw new UnsupportedOperationException(); }
+        protected void onHisWrite(HDict rec, HHisItem[] items) { throw new UnsupportedOperationException(); }
+        protected HGrid onInvokeAction(HDict rec, String action, HDict args) { throw new UnsupportedOperationException(); }
+    }
+
+    private static HRef[] parseIdList(String ids)
+    {
+        int len = ids.length();
+
+        if ((ids.charAt(0) != '[') || (ids.charAt(len-1) != ']'))
+            throw new IllegalStateException(ids + " is malformed.");
+
+        if (ids.equals("[,]")) return new HRef[0];
+
+        String[] tokens = TextUtil.split(ids.substring(1, len-1), ',');
+
+        HRef[] refs = new HRef[tokens.length];
+        for (int i = 0; i < tokens.length; i++)
+            refs[i] = HRef.make(tokens[i]);
+
+        return refs;
     }
 
     static HRef valToId(HServer db, HVal val)
