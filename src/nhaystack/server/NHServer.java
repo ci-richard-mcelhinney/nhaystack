@@ -552,6 +552,13 @@ public class NHServer extends HServer
                         BBoolean bool = (BBoolean) value;
                         val = HBool.make(bool.getBoolean());
                     }
+                    else if (recType.is(BEnumTrendRecord.TYPE))
+                    {
+                        BDynamicEnum dyn = (BDynamicEnum) value;
+                        BFacets facets = (BFacets) cfg.get("valueFacets");
+                        BEnumRange er = (BEnumRange) facets.get("range");
+                        val = HStr.make(er.getTag(dyn.getOrdinal()));
+                    }
                     else
                     {
                         val = HStr.make(value.toString());
