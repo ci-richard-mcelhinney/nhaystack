@@ -18,7 +18,8 @@ import org.projecthaystack.util.*;
  */
 public class NScheduleTest extends NTest
 {
-    final String URI = "http://localhost/haystack/";
+    //final String URI = "http://localhost/haystack/";
+    final String URI = "http://192.168.1.125/haystack/";
     HClient client;
 
 //////////////////////////////////////////////////////////////////////////
@@ -45,57 +46,36 @@ public class NScheduleTest extends NTest
 
     void verifySchedule() throws Exception
     {
-//        HDictBuilder meta = new HDictBuilder();
-//        meta.add("id", ref);
-//        HGrid grid = HGridBuilder.dictsToGrid(meta.toDict(), new HDict[] {}); 
-//        grid.dump();
-
         HRef id = HRef.make("S.Winterfell.Equip1.BooleanWritable");
 
 //        HZincReader zr = new HZincReader(
 //            "ver:\"2.0\" id:@S.Winterfell.Equip1.BooleanWritable\n" +
 //            "ts,val\n" +
-//            "2013-09-26T00:00:00-04:00 New_York,F\n" +
-//            "2013-09-26T08:15:00-04:00 New_York,T\n" +
-//            "2013-09-26T18:00:00-04:00 New_York,F\n" +
-//            "2013-09-27T00:00:00-04:00 New_York,F\n" +
-//            "2013-09-27T08:15:00-04:00 New_York,T\n" +
-//            "2013-09-27T18:00:00-04:00 New_York,F\n" +
-//            "2013-09-28T00:00:00-04:00 New_York,F\n" +
-//            "2013-09-29T00:00:00-04:00 New_York,F\n" +
-//            "2013-09-30T00:00:00-04:00 New_York,F\n" +
-//            "2013-09-30T08:15:00-04:00 New_York,T\n" +
-//            "2013-09-30T18:00:00-04:00 New_York,F\n" +
-//            "2013-10-01T00:00:00-04:00 New_York,F\n" +
-//            "2013-10-01T08:15:00-04:00 New_York,T\n" +
-//            "2013-10-01T18:00:00-04:00 New_York,F\n" +
-//            "2013-10-02T00:00:00-04:00 New_York,F\n" +
-//            "2013-10-02T08:15:00-04:00 New_York,T\n" +
-//            "2013-10-02T18:00:00-04:00 New_York,F\n" +
-//            "2013-10-03T00:00:00-04:00 New_York,F\n" +
-//            "2013-10-03T08:15:00-04:00 New_York,T\n" +
-//            "2013-10-03T18:00:00-04:00 New_York,F\n");
+//            "2014-07-29T13:55:00-04:00 New_York,F\n" +
+//            "2014-07-29T13:55:05-04:00 New_York,T\n" +
+//            "2014-07-29T13:55:10-04:00 New_York,F\n" +
+//            "2014-07-29T13:55:15-04:00 New_York,T\n" +
+//            "2014-07-29T13:55:20-04:00 New_York,F\n" +
+//            "2014-07-29T13:55:25-04:00 New_York,T\n" +
+//            "2014-07-29T13:55:30-04:00 New_York,F\n" +
+//            "2014-07-29T13:55:35-04:00 New_York,T\n" +
+//            "2014-07-29T13:55:40-04:00 New_York,F\n" +
+//            "2014-07-29T13:55:45-04:00 New_York,T\n" +
+//            "2014-07-29T13:55:50-04:00 New_York,F\n" +
+//            "2014-07-29T13:55:55-04:00 New_York,T\n");
 //        client.call("scheduleWrite", zr.readGrid());
 
         HZincReader zr = new HZincReader(
             "ver:\"2.0\" id:@S.Winterfell.Equip1.BooleanWritable\n" +
             "ts,val\n" +
-            "2014-07-29T13:55:00-04:00 New_York,F\n" +
-            "2014-07-29T13:55:05-04:00 New_York,T\n" +
-            "2014-07-29T13:55:10-04:00 New_York,F\n" +
-            "2014-07-29T13:55:15-04:00 New_York,T\n" +
-            "2014-07-29T13:55:20-04:00 New_York,F\n" +
-            "2014-07-29T13:55:25-04:00 New_York,T\n" +
-            "2014-07-29T13:55:30-04:00 New_York,F\n" +
-            "2014-07-29T13:55:35-04:00 New_York,T\n" +
-            "2014-07-29T13:55:40-04:00 New_York,F\n" +
-            "2014-07-29T13:55:45-04:00 New_York,T\n" +
-            "2014-07-29T13:55:50-04:00 New_York,F\n" +
-            "2014-07-29T13:55:55-04:00 New_York,T\n");
+            "2014-07-21T18:00:00-04:00 New_York,F\n" +
+            "2014-07-22T18:00:00-04:00 New_York,T\n" +
+            "2014-07-23T18:00:00-04:00 New_York,F\n" +
+            "2014-07-24T18:00:00-04:00 New_York,T\n" +
+            "2014-07-25T18:00:00-04:00 New_York,F\n" +
+            "2014-07-26T18:00:00-04:00 New_York,T\n" +
+            "2014-07-27T18:00:00-04:00 New_York,F\n");
         client.call("scheduleWrite", zr.readGrid());
-
-//        HGrid readGrid = scheduleRead(client, id, HDateTimeRange.lastYear(HTimeZone.DEFAULT));
-//readGrid.dump();
     }
 
 ////////////////////////////////////////////////////////////////

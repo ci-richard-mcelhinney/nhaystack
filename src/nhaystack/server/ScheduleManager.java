@@ -180,6 +180,16 @@ public class ScheduleManager
             future[i] = HHisItem.make(ts, items[i].val);
         }
 
+        Arrays.sort(
+            future,
+            new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    HHisItem h1 = (HHisItem) o1;
+                    HHisItem h2 = (HHisItem) o2;
+                    return (int) (h1.ts.millis() - h2.ts.millis());
+                }
+            });
+
         return future;
     }
 
