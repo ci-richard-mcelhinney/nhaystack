@@ -357,6 +357,7 @@ public class BNHaystackServer
         }
         catch (Exception e)
         {
+            resetClient();
             pingFail(e.getMessage());
             throw new BajaRuntimeException(e);
         }
