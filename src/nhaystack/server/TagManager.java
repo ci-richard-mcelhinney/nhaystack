@@ -84,6 +84,11 @@ public class TagManager
       */
     public BComponent lookupComponent(HRef id)
     {
+        return doLookupComponent(id, true);
+    }
+
+    BComponent doLookupComponent(HRef id, boolean mustBeVisible)
+    {
         NHRef nh = NHRef.make(id);
 
         // component space
@@ -97,6 +102,9 @@ public class TagManager
 
             BComponent comp = (BComponent) ord.get(service, null);
             if (comp == null) return null;
+
+            if (!mustBeVisible) return comp;
+
             return spaceMgr.isVisibleComponent(comp) ? comp : null;
         }
         // history space
@@ -112,6 +120,9 @@ public class TagManager
             BIHistory history = service.getHistoryDb().getHistory(hid);
             if (history == null) return null;
             BHistoryConfig cfg = history.getConfig();
+
+            if (!mustBeVisible) return cfg;
+
             return spaceMgr.isVisibleHistory(cfg) ? cfg : null;
         }
         // sep space

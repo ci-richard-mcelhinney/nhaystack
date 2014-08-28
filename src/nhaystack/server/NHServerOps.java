@@ -130,6 +130,9 @@ class NHServerOps
             if      (function.equals("addHaystackSlots"))    result = addHaystackSlots    (server, params);
             else if (function.equals("addEquips"))           result = addEquips           (server, params);
             else if (function.equals("applyBatchTags"))      result = applyBatchTags      (server, params);
+            else if (function.equals("copyEquipTags"))       result = copyEquipTags       (server, params);
+            else if (function.equals("delete"))              result = delete              (server, params);
+            else if (function.equals("deleteHaystackSlot"))  result = deleteHaystackSlot  (server, params);
             else if (function.equals("findDuplicatePoints")) result = findDuplicatePoints (server, params);
             else if (function.equals("rebuildCache"))        result = rebuildCache        (server, params);
             else if (function.equals("searchAndReplace"))    result = searchAndReplace    (server, params);
@@ -150,6 +153,139 @@ class NHServerOps
             if (LOG.isTraceOn()) LOG.trace(name() + " " + function + " end, " + (Clock.ticks()-ticks) + "ms.");
             return result;
         }
+    }
+
+    /**
+      * copyEquipTags
+      */
+    private static HGrid copyEquipTags(NHServer server, HRow params)
+    {
+        // TODO: consider relativizing the slot paths, and forcing them to match,
+        // rather than just going by point name as we do now.
+
+        try
+        {
+            HRef fromId = HRef.make(params.getStr("fromEquip"));
+            HRef toIds[] = parseIdList(params.getStr("toEquips"));
+
+            BHEquip from = (BHEquip) server.getTagManager().lookupComponent(fromId);
+            BComponent[] to = lookupComponents(server.getTagManager(), toIds);
+
+            // equips
+            for (int i = 0; i < to.length; i++)
+            {
+                if (to[i] instanceof BHEquip)
+                {
+                    ((BHEquip) to[i]).setHaystack(cloneDict(from.getHaystack()));
+                }
+                else
+                {
+                    BHEquip toEquip = (BHEquip) to[i].get("equip");
+                    if (toEquip == null)
+                    {
+                        toEquip = new BHEquip();
+                        to[i].add("equip", toEquip);
+                    }
+
+                    toEquip.setHaystack(cloneDict(from.getHaystack()));
+                }
+            }
+
+            // points
+            Map pointDictMap = new HashMap();
+            collectPointDicts((BComponent) from.getParent(), pointDictMap);
+            for (int i = 0; i < to.length; i++)
+            {
+                BComponent comp = (to[i] instanceof BHEquip) ? 
+                    (BComponent) to[i].getParent() : to[i];
+                applyPointDicts(comp, pointDictMap);
+            }
+
+            // done
+            return HGrid.EMPTY;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+      * applyPointDicts
+      */
+    private static void applyPointDicts(BComponent comp, Map pointDictMap)
+    {
+        if (comp instanceof BControlPoint)
+        {
+            HDict dict = (HDict) pointDictMap.get(comp.getName());
+            if (dict != null)
+            {
+                if (comp.get("haystack") == null)
+                    comp.add("haystack", BHDict.make(dict));
+                else
+                    comp.set("haystack", BHDict.make(dict));
+            }
+        }
+        else
+        {
+            BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
+            for (int i = 0; i < kids.length; i++)
+                applyPointDicts(kids[i], pointDictMap);
+        }
+    }
+
+    /**
+      * collectPointDicts
+      */
+    private static void collectPointDicts(BComponent comp, Map pointDictMap)
+    {
+        if (comp instanceof BControlPoint)
+        {
+            HDict dict = BHDict.findTagAnnotation(comp);
+            if (dict != null)
+            {
+                pointDictMap.put(comp.getName(), dict);
+            }
+        }
+        else
+        {
+            BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
+            for (int i = 0; i < kids.length; i++)
+                collectPointDicts(kids[i], pointDictMap);
+        }
+    }
+
+    /**
+      * cloneDict
+      */
+    private static BHDict cloneDict(BHDict dict)
+    {
+        try
+        {
+            return (BHDict) 
+                BHDict.DEFAULT.decodeFromString(
+                    dict.encodeToString());
+        }
+        catch (Exception e)
+        {
+            throw new BajaRuntimeException(e);
+        }
+    }
+
+    /**
+      * lookupComponents
+      */
+    private static BComponent[] lookupComponents(TagManager tagMgr, HRef[] ids)
+    {
+        Array compArr = new Array(BComponent.class);
+        for (int i = 0; i < ids.length; i++)
+        {
+            BComponent comp = tagMgr.doLookupComponent(ids[i], false);
+            if (comp != null)
+                compArr.add(comp);
+        }
+        return (BComponent[]) compArr.trim();
     }
 
     /**
@@ -250,6 +386,72 @@ class NHServerOps
 
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("rowsChanged", HNum.make(count));
+        return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
+      * delete
+      */
+    private static HGrid delete(NHServer server, HRow params)
+    {
+        String ids = params.getStr("ids");
+
+        int count = 0;
+        BComponent[] targets = getFilterComponents(server, "", ids);
+        for (int i = 0; i < targets.length; i++)
+        {
+            if (targets[i] instanceof BHTagged)
+            {
+                BComponent parent = (BComponent) targets[i].getParent();
+                parent.remove(targets[i].getName());
+
+                count++;
+            }
+            else
+            {
+                Property prop = targets[i].getProperty("haystack");
+                if (prop == null) continue;
+
+                if (prop.isDynamic())
+                    targets[i].remove("haystack");
+                else
+                    targets[i].set("haystack", BHDict.DEFAULT);
+
+                count++;
+            }
+        }
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(targets.length));
+        return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
+      * deleteHaystackSlot
+      */
+    private static HGrid deleteHaystackSlot(NHServer server, HRow params)
+    {
+        String ids = params.getStr("ids");
+
+        int count = 0;
+        BComponent[] targets = getFilterComponents(server, "", ids);
+        for (int i = 0; i < targets.length; i++)
+        {
+            Property prop = targets[i].getProperty("haystack");
+            if (prop == null) continue;
+
+            if (prop.isDynamic()) {
+                targets[i].remove("haystack");
+                count++;
+            }
+            else {
+                targets[i].set("haystack", BHDict.DEFAULT);
+                count++;
+            }
+        }
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(targets.length));
         return HGridBuilder.dictToGrid(hdb.toDict());
     }
 
@@ -626,6 +828,9 @@ class NHServerOps
     private static BComponent[] getFilterComponents(NHServer server, String filter, String ids)
     {
         HServer hserver = server;
+        TagManager tagMgr = server.getTagManager();
+
+        Array compArr = new Array(BComponent.class);
 
         // if there is an id list, parse it and look up all the recs
         if ((ids != null) && (ids.length() > 0))
@@ -636,8 +841,13 @@ class NHServerOps
                 Array dictArr = new Array(HDict.class);
                 for (int i = 0; i < refs.length; i++)
                 {
-                    HDict dict = server.readById(refs[i]);
-                    if (dict != null) dictArr.add(dict);
+                    BComponent comp = tagMgr.doLookupComponent(refs[i], false);
+
+                    if (comp != null)
+                    {
+                        compArr.add(comp);
+                        dictArr.add(tagMgr.createTags(comp));
+                    }
                 }
 
                 // filter against the recs
@@ -646,9 +856,9 @@ class NHServerOps
         }
 
         // filter against either the entire database, or the id list recs
-        Array compArr = new Array(BComponent.class);
         if ((filter != null) && (filter.length() > 0))
         {
+            compArr.clear();
             HGrid grid = hserver.readAll(filter);
             for (int i = 0; i < grid.numRows(); i++)
             {
