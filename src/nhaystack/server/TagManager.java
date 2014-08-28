@@ -822,12 +822,26 @@ public class TagManager
         if ((range == null) || (range.isNull()))
             return "";
 
+        // get the ordinals
+        int[] ords = range.getOrdinals();
+        if (ords == null || ords.length == 0) return "";
+
+        // sort, and get max 
+        Arrays.sort(ords);
+        int max = ords[ords.length-1];
+
+        // store the ordinals in a set
+        Set ordSet = new HashSet();
+        for (int i = 0; i < ords.length; i++)
+            ordSet.add(new Integer(ords[i]));
+
+        // return string encoding, possibly with a bunch of extra commas
         StringBuffer sb = new StringBuffer();
-        int[] ord = range.getOrdinals();
-        for (int i = 0; i < ord.length; i++)
+        for (int i = 0; i <= max; i++)
         {
             if (i > 0) sb.append(",");
-            sb.append(range.get(i).getTag());
+            if (ordSet.contains(new Integer(i)))
+                sb.append(range.get(i).getTag());
         }
         return sb.toString();
     }
