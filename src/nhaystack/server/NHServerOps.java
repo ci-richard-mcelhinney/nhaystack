@@ -700,36 +700,59 @@ class NHServerOps
       */
     private static HGrid findDuplicatePoints(NHServer server, HRow params)
     {
+        boolean annotatedOnly = true;
+        if (params.has("annotatedOnly"))
+            annotatedOnly = params.getBool("annotatedOnly");
+
         Cache cache = server.getCache();
 
-        Array arr = new Array(HDict.class);
+        Array result = new Array(HDict.class);
         BHEquip[] equips = cache.getAllEquips();
         for (int i = 0; i < equips.length; i++)
         {
             BControlPoint[] points = cache.getEquipPoints(equips[i]);
 
-            HRef[] refs = new HRef[points.length]; 
-            for (int j = 0; j < points.length; j++)
-                refs[j] = cache.lookupSepRefByComponent(points[j]).getHRef();
-            SortUtil.sort(refs);
-
-            int a = 0;
-            while (a < refs.length - 1)
+            // only included annotated points
+            if (annotatedOnly)
             {
-                if (refs[a].val.equals(refs[a+1].val))
+                Array pointArr = new Array(BControlPoint.class);
+                for (int j = 0; j < points.length; j++)
+                    if (BHDict.findTagAnnotation(points[j]) != null)
+                        pointArr.add(points[j]);
+                points = (BControlPoint[]) pointArr.trim();
+            }
+
+            Map map = new HashMap();
+            for (int j = 0; j < points.length; j++)
+            {
+                NHRef nref = cache.lookupSepRefByComponent(points[j]);
+                if (nref == null) continue;
+                HRef ref = nref.getHRef();
+                Array pointArr = (Array) map.get(ref);
+                if (pointArr == null)
+                    map.put(ref, pointArr = new Array(BControlPoint.class));
+                pointArr.add(points[j]);
+            }
+
+            Iterator it = map.entrySet().iterator();
+            while (it.hasNext())
+            {
+                Map.Entry entry = (Map.Entry) it.next();
+                HRef ref = (HRef) entry.getKey();
+                Array pointArr = (Array) entry.getValue();
+
+                if (pointArr.size() > 1)
                 {
-                    arr.add(makeDuplicateDict(refs[a], points[a]));
-                    arr.add(makeDuplicateDict(refs[a], points[a+1]));
-                    int b = a+2;
-                    while ((b < refs.length) && refs[a].val.equals(refs[b].val))
-                        arr.add(makeDuplicateDict(refs[a], points[b++]));
-                    a = b;
+                    for (int j = 0; j < pointArr.size(); j++)
+                    {
+                        BControlPoint point = (BControlPoint) pointArr.get(j);
+                        result.add(makeDuplicateDict(ref, point));
+                    }
                 }
-                else a++;
             }
         }
 
-        return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
+        return HGridBuilder.dictsToGrid((HDict[]) result.trim());
     }
 
     private static HDict makeDuplicateDict(HRef ref, BControlPoint point)
