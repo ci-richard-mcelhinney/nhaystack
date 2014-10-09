@@ -822,35 +822,44 @@ public class TagManager
         if ((range == null) || (range.isNull()))
             return "";
 
-        // get the ordinals
+        StringBuffer sb = new StringBuffer();
         int[] ords = range.getOrdinals();
-        if (ords == null || ords.length == 0) return "";
-
-        // sort, and get max 
-        Arrays.sort(ords);
-        int max = ords[ords.length-1];
-
-        // hard code to a max of 127
-        if (max > ENUM_MAX_VALUE)
-            max = ENUM_MAX_VALUE;
-
-        // store the ordinals in a set
-        Set ordSet = new HashSet();
         for (int i = 0; i < ords.length; i++)
         {
-            if (ords[i] >= 0) // skip negative values for now
-                ordSet.add(new Integer(ords[i]));
-        }
-
-        // return string encoding, possibly with a bunch of extra commas
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i <= max; i++)
-        {
             if (i > 0) sb.append(",");
-            if (ordSet.contains(new Integer(i)))
-                sb.append(range.get(i).getTag());
+            sb.append(range.get(i).getTag());
         }
         return sb.toString();
+
+//        // get the ordinals
+//        int[] ords = range.getOrdinals();
+//        if (ords == null || ords.length == 0) return "";
+//
+//        // sort, and get max 
+//        Arrays.sort(ords);
+//        int max = ords[ords.length-1];
+//
+//        // hard code to a max of 127
+//        if (max > ENUM_MAX_VALUE)
+//            max = ENUM_MAX_VALUE;
+//
+//        // store the ordinals in a set
+//        Set ordSet = new HashSet();
+//        for (int i = 0; i < ords.length; i++)
+//        {
+//            if (ords[i] >= 0) // skip negative values for now
+//                ordSet.add(new Integer(ords[i]));
+//        }
+//
+//        // return string encoding, possibly with a bunch of extra commas
+//        StringBuffer sb = new StringBuffer();
+//        for (int i = 0; i <= max; i++)
+//        {
+//            if (i > 0) sb.append(",");
+//            if (ordSet.contains(new Integer(i)))
+//                sb.append(range.get(i).getTag());
+//        }
+//        return sb.toString();
     }
 
     private static int getTrendRecordKind(Type trendRecType)
@@ -917,7 +926,7 @@ public class TagManager
     private static final int ENUM_KIND    =  2;
     private static final int STRING_KIND  =  3;
 
-    private static final int ENUM_MAX_VALUE = 127;
+//    private static final int ENUM_MAX_VALUE = 127;
 
     private final NHServer server;
     private final BNHaystackService service;

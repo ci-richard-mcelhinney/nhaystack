@@ -353,7 +353,7 @@ public class NHServer extends HServer
             //   - val: current value at level or null
             //   - who: who last controlled the value at this level
 
-            Map lastWrite = getLastWrite(point);
+            String[] who = getLinkWho(point);
             HDict[] result = new HDict[17];
             for (int i = 0; i < 17; i++)
             {
@@ -364,9 +364,8 @@ public class NHServer extends HServer
                 if (vals[i] != null)
                     hd.add("val", vals[i]);
 
-                HDict lw = (HDict) lastWrite.get(level);
-                if (lw != null)
-                    hd.add("who", lw.getStr("who"));
+                if (who[i].length() > 0)
+                    hd.add("who", who[i]);
 
                 result[i] = hd.toDict();
             }
@@ -377,6 +376,53 @@ public class NHServer extends HServer
             e.printStackTrace();
             throw e;
         }
+    }
+
+    /**
+      * get the source for each link that is connected to [in1..in16, fallback]
+      */
+    private String[] getLinkWho(BControlPoint point)
+    {
+        String[] who = new String[17];
+        for (int i = 0; i < 17; i++)
+            who[i] = "";
+
+        BLink[] links = point.getLinks();
+        for (int i = 0; i < links.length; i++)
+        {
+            String target = links[i].getTargetSlot().getName();
+            Integer level = (Integer) POINT_PROP_LEVELS.get(target);
+            if (level != null)
+            {
+                who[level.intValue()-1] +=
+                    (links[i].getSourceComponent().getSlotPath() + "/" + 
+                     links[i].getSourceSlot().getName());
+            }
+        }
+
+        return who;
+    }
+
+    private static Map POINT_PROP_LEVELS = new HashMap();
+    static
+    {
+        POINT_PROP_LEVELS.put("in1",  new Integer(1));
+        POINT_PROP_LEVELS.put("in2",  new Integer(2));
+        POINT_PROP_LEVELS.put("in3",  new Integer(3));
+        POINT_PROP_LEVELS.put("in4",  new Integer(4));
+        POINT_PROP_LEVELS.put("in5",  new Integer(5));
+        POINT_PROP_LEVELS.put("in6",  new Integer(6));
+        POINT_PROP_LEVELS.put("in7",  new Integer(7));
+        POINT_PROP_LEVELS.put("in8",  new Integer(8));
+        POINT_PROP_LEVELS.put("in9",  new Integer(9));
+        POINT_PROP_LEVELS.put("in10", new Integer(10));
+        POINT_PROP_LEVELS.put("in11", new Integer(11));
+        POINT_PROP_LEVELS.put("in12", new Integer(12));
+        POINT_PROP_LEVELS.put("in13", new Integer(13));
+        POINT_PROP_LEVELS.put("in14", new Integer(14));
+        POINT_PROP_LEVELS.put("in15", new Integer(15));
+        POINT_PROP_LEVELS.put("in16", new Integer(16));
+        POINT_PROP_LEVELS.put("fallback", new Integer(17));
     }
   
     /**
@@ -857,27 +903,6 @@ public class NHServer extends HServer
                 LAST_WRITE, 
                 BHGrid.make(grid));
         }
-    }
-
-    /**
-      * get the last write
-      */
-    private static Map getLastWrite(BControlPoint point)
-    {
-        Map map = new HashMap();
-
-        BHGrid bgrid = (BHGrid) point.get(LAST_WRITE);
-        if (bgrid != null) 
-        {
-            HGrid grid = bgrid.getGrid();
-            for (int i = 0; i < grid.numRows(); i++)
-            {
-                HDict row = grid.row(i);
-                map.put(row.get("level"), row);
-            }
-        }
-
-        return map;
     }
 
     private static HGrid saveLastWriteToGrid(HGrid grid, int level, String who)
