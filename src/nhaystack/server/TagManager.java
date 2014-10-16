@@ -684,7 +684,12 @@ public class TagManager
 
             case ENUM_KIND:
                 BEnumPoint ep = (BEnumPoint) point;
-                return HStr.make(ep.getEnum().toString());
+                BEnum e = ep.getEnum();
+
+                BFacets facets = (BFacets) ep.getEnumFacets();
+                BEnumRange er = (BEnumRange) facets.get("range");
+
+                return HStr.make(er.getTag(e.getOrdinal()));
 
             case STRING_KIND:
                 BStringPoint sp = (BStringPoint) point;
