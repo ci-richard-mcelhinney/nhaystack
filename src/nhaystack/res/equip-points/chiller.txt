@@ -1,3 +1,13 @@
+** Run/Status **
+run cmd
+run sensor
+enable cmd
+load cmd
+load sensor
+efficiency sensor
+power sensor
+energy sensor
+
 **Chilled water to/from AHUs**
 chilled water leaving temp sensor
 chilled water leaving temp sp
@@ -21,7 +31,6 @@ condenser water entering flow sensor
 condenser water valve isolation cmd
 
 **Misc Internal**
-efficiency
 condenser cmd
 condenser refrig temp sensor
 condenser refrig pressure sensor
