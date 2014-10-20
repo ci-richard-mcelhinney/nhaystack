@@ -496,9 +496,46 @@ public class NHServer extends HServer
                 }
                 else
                 {
-                    HStr str = (HStr) val;
+                    String str = ((HStr) val).val;
                     BEnumRange range = (BEnumRange) point.getFacets().get(BFacets.RANGE);
-                    se.setValue(range.get(str.val));
+                    BEnum enm = range.get(str);
+
+////System.out.println("onPointWrite aaa " + 
+////    range + ", " + str + ", " + se.getValue().getClass() + ", " + se.getValue());
+//
+//                    BEnum enm = null;
+//
+//                    // use uncapitalized tags
+//                    Set tags = findRangeTags(range, false);
+////System.out.println("onPointWrite bbb " + str + ", " + tags);
+//                    if (tags.contains(str))
+//                    {
+////System.out.println("onPointWrite ccc " + str + ", " + tags);
+//                        enm = range.get(str);
+//                    }
+//                    // use capitalized tags
+//                    else {
+//                        String cap = TextUtil.capitalize(str);
+//
+//                        tags = findRangeTags(range, true);
+////System.out.println("onPointWrite ddd " + cap + ", " + tags);
+//                        if (tags.contains(cap))
+//                        {
+////System.out.println("onPointWrite eee " + cap + ", " + tags);
+//                            enm = range.get(cap);
+//                        }
+//                        else
+//                        {
+//                            int[] ord = range.getOrdinals();
+//                            Map map = new HashMap();
+//                            for (int i = 0; i < ord.length; i++)
+//                                map.put(new Integer(ord[i]), range.getTag(ord[i]));
+//
+//                            throw new IllegalStateException("Cannot find enum '" + str + "' in range " + map);
+//                        }
+//                    }
+
+                    se.setValue(enm);
                     se.setStatus(BStatus.ok);
                 }
 
@@ -529,6 +566,19 @@ public class NHServer extends HServer
             throw e;
         }
     }
+
+//    private Set findRangeTags(BEnumRange range, boolean capitalize)
+//    {
+//        Set set = new HashSet();
+//
+//        int[] ord = range.getOrdinals();
+//        for (int i = 0; i < ord.length; i++)
+//            set.add(capitalize ? 
+//                TextUtil.capitalize(range.getTag(ord[i])) :
+//                range.getTag(ord[i]));
+//
+//        return set;
+//    }
 
     /**
       * Read the history for the given BComponent.
@@ -840,10 +890,12 @@ public class NHServer extends HServer
                     // try to resolve the ref
                     try
                     {
-                        tagMgr.lookupComponent((HRef) val);
+                        BComponent lookup = tagMgr.lookupComponent((HRef) val);
+                        if (lookup == null)
+                            throw new IllegalStateException("Cannot find component for " + val);
                     }
                     // failed!
-                    catch (UnresolvedException ue)
+                    catch (Exception e2)
                     {
                         LOG.warning(
                             "broken ref '" + name + "' found in " + 

@@ -68,7 +68,9 @@ public class TagManager
             HVal val = (HVal) entry.getValue();
 
             if (val instanceof HRef)
+            {
                 hdb.add(name, convertAnnotatedRefTag((HRef) val));
+            }
             else
                 hdb.add(name, val);
         }
@@ -408,6 +410,8 @@ public class TagManager
     private HRef convertAnnotatedRefTag(HRef ref)
     {
         BComponent comp = lookupComponent(ref);
+        if (comp == null)
+            throw new IllegalStateException("Cannot look up ref for " + ref);
         return makeComponentRef(comp).getHRef();
     }
 
@@ -689,7 +693,15 @@ public class TagManager
                 BFacets facets = (BFacets) ep.getEnumFacets();
                 BEnumRange er = (BEnumRange) facets.get("range");
 
-                return HStr.make(er.getTag(e.getOrdinal()));
+                if (er == null)
+                {
+                    LOG.error("No 'range' facets found for point " + point.getSlotPath());
+                    return HStr.make("INVALID_ENUM");
+                }
+                else
+                {
+                    return HStr.make(er.getTag(e.getOrdinal()));
+                }
 
             case STRING_KIND:
                 BStringPoint sp = (BStringPoint) point;
@@ -832,7 +844,7 @@ public class TagManager
         for (int i = 0; i < ords.length; i++)
         {
             if (i > 0) sb.append(",");
-            sb.append(range.get(i).getTag());
+            sb.append(range.get(ords[i]).getTag());
         }
         return sb.toString();
     }
