@@ -25,9 +25,10 @@ import nhaystack.site.*;
   */
 class Cache
 {
-    Cache(NHServer server)
+    Cache(NHServer server, ScheduleManager schedMgr)
     {
         this.server = server;
+        this.schedMgr = schedMgr;
     }
 
     /**
@@ -38,17 +39,21 @@ class Cache
         long t0 = Clock.ticks();
         LOG.message("Begin cache rebuild.");
 
-        LOG.trace("Rebuild cache, pass 1 of 4..."); 
+        LOG.trace("Rebuild cache: step 1 of 5..."); 
         rebuildComponentCache_firstPass();
 
-        LOG.trace("Rebuild cache, pass 2 of 4..."); 
+        LOG.trace("Rebuild cache: step 2 of 5..."); 
         rebuildComponentCache_secondPass();
 
-        LOG.trace("Rebuild cache, pass 3 of 4..."); 
+        LOG.trace("Rebuild cache: step 3 of 5..."); 
         rebuildHistoryCache_firstPass();
 
-        LOG.trace("Rebuild cache, pass 4 of 4..."); 
+        LOG.trace("Rebuild cache: step 4 of 5..."); 
         rebuildHistoryCache_secondPass();
+        initialized = true;
+
+        LOG.trace("Rebuild cache: step 5 of 5..."); 
+        schedMgr.makePointEvents((BControlPoint[]) scheduledPoints.trim());
 
         lastRebuildTime = BAbsTime.now();
         long t1 = Clock.ticks();
@@ -60,8 +65,6 @@ class Cache
         stats.setNumPoints(numPoints);
         stats.setLastCacheRebuildDuration(lastRebuildDuration);
         stats.setLastCacheRebuildTime(lastRebuildTime);
-
-        initialized = true;
     }
 
     /**
@@ -207,6 +210,7 @@ class Cache
         equipPoints = new HashMap();
         sepRefToComp = new HashMap();
         compToSepRef = new HashMap();
+        scheduledPoints = new Array(BControlPoint.class);
 
         Array sitesArr = new Array(BHSite.class);
         Array equipsArr = new Array(BHEquip.class);
@@ -249,6 +253,9 @@ class Cache
 
                 // BControlPoints always have tags generated
                 if (tags == null) tags = HDict.EMPTY;
+
+                if (tags.has("weeklySchedule") && tags.has("schedulable"))
+                    scheduledPoints.add(point);
 
                 // save remote point 
                 if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 
@@ -462,6 +469,7 @@ class Cache
     private static final Log LOG = Log.getLog("nhaystack");
 
     private final NHServer server;
+    private final ScheduleManager schedMgr;
     private boolean initialized = false;
 
     private Map remoteToConfig = null; // RemotePoint -> BHistoryConfig
@@ -479,6 +487,8 @@ class Cache
 
     private Map sepRefToComp = null; // NHRef -> BComponent
     private Map compToSepRef = null; // BComponent -> NHRef
+
+    private Array scheduledPoints = null; // BControlPoint
 
     private int numSites = 0;
     private int numEquips = 0;

@@ -142,6 +142,7 @@ public class BHEquip extends BHTagged
     {
         HDictBuilder hd = new HDictBuilder();
         hd.add("siteRef", HRef.make("null"));
+        hd.add("floorName", HStr.make(""));
         ESSENTIALS = hd.toDict();
     }
 }

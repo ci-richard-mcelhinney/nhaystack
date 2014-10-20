@@ -21,6 +21,7 @@ import javax.baja.timezone.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;
+import org.projecthaystack.io.*;
 import org.projecthaystack.server.*;
 import nhaystack.*;
 import nhaystack.collection.*;
@@ -37,7 +38,8 @@ public class NHServer extends HServer
     {
         this.service = service;
         this.spaceMgr = new SpaceManager(this);
-        this.cache = new Cache(this);
+        this.schedMgr = new ScheduleManager(this, service);
+        this.cache = new Cache(this, schedMgr);
         this.tagMgr = new TagManager(this, service, spaceMgr, cache);
         this.nav = new Nav(service, spaceMgr, cache, tagMgr);
     }
@@ -351,7 +353,7 @@ public class NHServer extends HServer
             //   - val: current value at level or null
             //   - who: who last controlled the value at this level
 
-            Map lastWrite = getLastWrite(point);
+            String[] who = getLinkWho(point);
             HDict[] result = new HDict[17];
             for (int i = 0; i < 17; i++)
             {
@@ -362,9 +364,8 @@ public class NHServer extends HServer
                 if (vals[i] != null)
                     hd.add("val", vals[i]);
 
-                HDict lw = (HDict) lastWrite.get(level);
-                if (lw != null)
-                    hd.add("who", lw.getStr("who"));
+                if (who[i].length() > 0)
+                    hd.add("who", who[i]);
 
                 result[i] = hd.toDict();
             }
@@ -375,6 +376,53 @@ public class NHServer extends HServer
             e.printStackTrace();
             throw e;
         }
+    }
+
+    /**
+      * get the source for each link that is connected to [in1..in16, fallback]
+      */
+    private String[] getLinkWho(BControlPoint point)
+    {
+        String[] who = new String[17];
+        for (int i = 0; i < 17; i++)
+            who[i] = "";
+
+        BLink[] links = point.getLinks();
+        for (int i = 0; i < links.length; i++)
+        {
+            String target = links[i].getTargetSlot().getName();
+            Integer level = (Integer) POINT_PROP_LEVELS.get(target);
+            if (level != null)
+            {
+                who[level.intValue()-1] +=
+                    (links[i].getSourceComponent().getSlotPath() + "/" + 
+                     links[i].getSourceSlot().getName());
+            }
+        }
+
+        return who;
+    }
+
+    private static Map POINT_PROP_LEVELS = new HashMap();
+    static
+    {
+        POINT_PROP_LEVELS.put("in1",  new Integer(1));
+        POINT_PROP_LEVELS.put("in2",  new Integer(2));
+        POINT_PROP_LEVELS.put("in3",  new Integer(3));
+        POINT_PROP_LEVELS.put("in4",  new Integer(4));
+        POINT_PROP_LEVELS.put("in5",  new Integer(5));
+        POINT_PROP_LEVELS.put("in6",  new Integer(6));
+        POINT_PROP_LEVELS.put("in7",  new Integer(7));
+        POINT_PROP_LEVELS.put("in8",  new Integer(8));
+        POINT_PROP_LEVELS.put("in9",  new Integer(9));
+        POINT_PROP_LEVELS.put("in10", new Integer(10));
+        POINT_PROP_LEVELS.put("in11", new Integer(11));
+        POINT_PROP_LEVELS.put("in12", new Integer(12));
+        POINT_PROP_LEVELS.put("in13", new Integer(13));
+        POINT_PROP_LEVELS.put("in14", new Integer(14));
+        POINT_PROP_LEVELS.put("in15", new Integer(15));
+        POINT_PROP_LEVELS.put("in16", new Integer(16));
+        POINT_PROP_LEVELS.put("fallback", new Integer(17));
     }
   
     /**
@@ -448,9 +496,46 @@ public class NHServer extends HServer
                 }
                 else
                 {
-                    HStr str = (HStr) val;
+                    String str = ((HStr) val).val;
                     BEnumRange range = (BEnumRange) point.getFacets().get(BFacets.RANGE);
-                    se.setValue(range.get(str.val));
+                    BEnum enm = range.get(str);
+
+////System.out.println("onPointWrite aaa " + 
+////    range + ", " + str + ", " + se.getValue().getClass() + ", " + se.getValue());
+//
+//                    BEnum enm = null;
+//
+//                    // use uncapitalized tags
+//                    Set tags = findRangeTags(range, false);
+////System.out.println("onPointWrite bbb " + str + ", " + tags);
+//                    if (tags.contains(str))
+//                    {
+////System.out.println("onPointWrite ccc " + str + ", " + tags);
+//                        enm = range.get(str);
+//                    }
+//                    // use capitalized tags
+//                    else {
+//                        String cap = TextUtil.capitalize(str);
+//
+//                        tags = findRangeTags(range, true);
+////System.out.println("onPointWrite ddd " + cap + ", " + tags);
+//                        if (tags.contains(cap))
+//                        {
+////System.out.println("onPointWrite eee " + cap + ", " + tags);
+//                            enm = range.get(cap);
+//                        }
+//                        else
+//                        {
+//                            int[] ord = range.getOrdinals();
+//                            Map map = new HashMap();
+//                            for (int i = 0; i < ord.length; i++)
+//                                map.put(new Integer(ord[i]), range.getTag(ord[i]));
+//
+//                            throw new IllegalStateException("Cannot find enum '" + str + "' in range " + map);
+//                        }
+//                    }
+
+                    se.setValue(enm);
                     se.setStatus(BStatus.ok);
                 }
 
@@ -481,6 +566,19 @@ public class NHServer extends HServer
             throw e;
         }
     }
+
+//    private Set findRangeTags(BEnumRange range, boolean capitalize)
+//    {
+//        Set set = new HashSet();
+//
+//        int[] ord = range.getOrdinals();
+//        for (int i = 0; i < ord.length; i++)
+//            set.add(capitalize ? 
+//                TextUtil.capitalize(range.getTag(ord[i])) :
+//                range.getTag(ord[i]));
+//
+//        return set;
+//    }
 
     /**
       * Read the history for the given BComponent.
@@ -549,6 +647,13 @@ public class NHServer extends HServer
                     {
                         BBoolean bool = (BBoolean) value;
                         val = HBool.make(bool.getBoolean());
+                    }
+                    else if (recType.is(BEnumTrendRecord.TYPE))
+                    {
+                        BDynamicEnum dyn = (BDynamicEnum) value;
+                        BFacets facets = (BFacets) cfg.get("valueFacets");
+                        BEnumRange er = (BEnumRange) facets.get("range");
+                        val = HStr.make(er.getTag(dyn.getOrdinal()));
                     }
                     else
                     {
@@ -756,8 +861,8 @@ public class NHServer extends HServer
 
     void removeBrokenRefs() 
     {
-        if (!cache.initialized()) 
-            throw new IllegalStateException(Cache.NOT_INITIALIZED);
+//        if (!cache.initialized()) 
+//            throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
         if (LOG.isTraceOn()) LOG.trace("BEGIN removeBrokenRefs"); 
 
@@ -785,10 +890,12 @@ public class NHServer extends HServer
                     // try to resolve the ref
                     try
                     {
-                        tagMgr.lookupComponent((HRef) val);
+                        BComponent lookup = tagMgr.lookupComponent((HRef) val);
+                        if (lookup == null)
+                            throw new IllegalStateException("Cannot find component for " + val);
                     }
                     // failed!
-                    catch (UnresolvedException ue)
+                    catch (Exception e2)
                     {
                         LOG.warning(
                             "broken ref '" + name + "' found in " + 
@@ -848,27 +955,6 @@ public class NHServer extends HServer
                 LAST_WRITE, 
                 BHGrid.make(grid));
         }
-    }
-
-    /**
-      * get the last write
-      */
-    private static Map getLastWrite(BControlPoint point)
-    {
-        Map map = new HashMap();
-
-        BHGrid bgrid = (BHGrid) point.get(LAST_WRITE);
-        if (bgrid != null) 
-        {
-            HGrid grid = bgrid.getGrid();
-            for (int i = 0; i < grid.numRows(); i++)
-            {
-                HDict row = grid.row(i);
-                map.put(row.get("level"), row);
-            }
-        }
-
-        return map;
     }
 
     private static HGrid saveLastWriteToGrid(HGrid grid, int level, String who)
@@ -933,6 +1019,112 @@ public class NHServer extends HServer
     Cache getCache() { return cache; }
     Nav getNav() { return nav; }
     public TagManager getTagManager() { return tagMgr; }
+    ScheduleManager getScheduleManager() { return schedMgr; }
+
+//////////////////////////////////////////////////////////////////////////
+// Schedule
+//////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Read schedule time-series data for given record.
+   */
+  public final HGrid scheduleRead(HRef id)
+  {
+      // lookup entity
+      HDict rec = readById(id);
+
+      // check that entity has "weeklySchedule" tag
+      if (rec.missing("weeklySchedule"))
+          throw new UnknownNameException("Rec missing 'weeklySchedule' tag: " + rec.dis());
+
+      // route to subclass
+      HHisItem[] items = onScheduleRead(rec);
+
+      // build and return result grid
+      HDict meta = new HDictBuilder()
+          .add("id", id)
+          .toDict();
+      return HGridBuilder.hisItemsToGrid(meta, items);
+  }
+
+  /**
+   * Implementation hook for scheduleRead.  The items must be exclusive
+   * of start and inclusive of end time.
+   */
+  protected /*abstract*/ HHisItem[] onScheduleRead(HDict rec)
+  {
+      HGrid grid = (new HZincReader(rec.getStr("weeklySchedule"))).readGrid();
+      return HHisItem.gridToItems(grid);
+  }
+
+  /**
+   * Write a set of schedule time-series data to the given point record.
+   * The record must already be defined and must be properly tagged as
+   * a schedule-ized point.  The timestamp timezone must exactly match the
+   * point's configured "tz" tag.  
+   */
+  public final void scheduleWrite(HRef id, HHisItem[] items)
+  {
+      // lookup entity
+      HDict rec = readById(id);
+
+//      // check that entity has "weeklySchedule" tag
+//      if (rec.missing("weeklySchedule"))
+//          throw new UnknownNameException("Entity missing 'weeklySchedule' tag: " + rec.dis());
+
+//      // lookup "tz" on entity
+//      HTimeZone tz = null;
+//      if (rec.has("tz")) tz = HTimeZone.make(rec.getStr("tz"), false);
+//      if (tz == null)
+//          throw new UnknownNameException("Rec missing or invalid 'tz' tag: " + rec.dis());
+
+//      // check tz of items
+//      if (items.length == 0) return;
+//      for (int i=0; i<items.length; ++i)
+//          if (!items[i].ts.tz.equals(tz)) throw new RuntimeException("item.tz != rec.tz: " + items[i].ts.tz + " != " + tz);
+
+      // route to subclass
+      onScheduleWrite(rec, items);
+  }
+
+  /**
+   * Implementation hook for onScheduleWrite.
+   */
+  protected /*abstract*/ void onScheduleWrite(HDict rec, HHisItem[] items)
+  {
+    if (LOG.isTraceOn())
+        LOG.trace("onScheduleWrite " + rec.id());
+
+      BComponent comp = tagMgr.lookupComponent(rec.id());
+      if (comp == null) 
+          throw new BajaRuntimeException("Cannot find component for " + rec.id());
+
+      HDict orig = BHDict.findTagAnnotation(comp);
+      if (orig == null) orig = HDict.EMPTY;
+
+      HDictBuilder hdb = new HDictBuilder();
+      Iterator itr = orig.iterator();
+      while (itr.hasNext())
+      {
+          Map.Entry e = (Map.Entry) itr.next();
+          String name = (String) e.getKey();
+          HVal val = (HVal) e.getValue();
+
+          if (name.equals("weeklySchedule")) continue;
+          if (name.equals("tz") && items.length > 0) continue;
+          hdb.add(name, val);
+      }
+
+      HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
+      hdb.add("weeklySchedule", HZincWriter.gridToString(schedule));
+      if (items.length > 0)
+          hdb.add("tz", items[0].ts.tz.toString());
+
+      if (comp.get("haystack") == null)
+          comp.add("haystack", BHDict.make(hdb.toDict()));
+      else
+          comp.set("haystack", BHDict.make(hdb.toDict()));
+  }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 
@@ -956,8 +1148,10 @@ public class NHServer extends HServer
         HStdOps.hisRead,
         HStdOps.hisWrite,
         HStdOps.invokeAction,
-        new NHServerOps.ExtendedRead(),
-        new NHServerOps.Extended(),
+        new NHServerOps.ExtendedReadOp(),
+        new NHServerOps.ExtendedOp(),
+        new NHServerOps.ScheduleReadOp(),
+        new NHServerOps.ScheduleWriteOp(),
     };
 
     private final HashMap watches = new HashMap();
@@ -967,5 +1161,6 @@ public class NHServer extends HServer
     private final Cache cache;
     private final Nav nav;
     private final TagManager tagMgr;
+    private final ScheduleManager schedMgr;
 }
 

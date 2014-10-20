@@ -239,11 +239,13 @@ public class Nav
         }
         else
         {
-            hdb.add("id", TagManager.makeSlotPathRef(comp).getHRef());
             hdb.add("dis", comp.getDisplayName(null));
             hdb.add("axType", comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
         }
+
+        // always use a slot path ref
+        hdb.add("id", TagManager.makeSlotPathRef(comp).getHRef());
 
         return hdb.toDict();
     }

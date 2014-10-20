@@ -9,7 +9,9 @@
 package nhaystack.server;
 
 import java.util.*;
+
 import javax.baja.control.*;
+import javax.baja.driver.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
@@ -66,7 +68,9 @@ public class TagManager
             HVal val = (HVal) entry.getValue();
 
             if (val instanceof HRef)
+            {
                 hdb.add(name, convertAnnotatedRefTag((HRef) val));
+            }
             else
                 hdb.add(name, val);
         }
@@ -82,6 +86,11 @@ public class TagManager
       */
     public BComponent lookupComponent(HRef id)
     {
+        return doLookupComponent(id, true);
+    }
+
+    BComponent doLookupComponent(HRef id, boolean mustBeVisible)
+    {
         NHRef nh = NHRef.make(id);
 
         // component space
@@ -95,6 +104,9 @@ public class TagManager
 
             BComponent comp = (BComponent) ord.get(service, null);
             if (comp == null) return null;
+
+            if (!mustBeVisible) return comp;
+
             return spaceMgr.isVisibleComponent(comp) ? comp : null;
         }
         // history space
@@ -110,6 +122,9 @@ public class TagManager
             BIHistory history = service.getHistoryDb().getHistory(hid);
             if (history == null) return null;
             BHistoryConfig cfg = history.getConfig();
+
+            if (!mustBeVisible) return cfg;
+
             return spaceMgr.isVisibleHistory(cfg) ? cfg : null;
         }
         // sep space
@@ -261,6 +276,10 @@ public class TagManager
             // add id
             HRef id = makeComponentRef(comp).getHRef();
             hdb.add("id", HRef.make(id.val, dis));
+
+            // add device
+            if (comp instanceof BDevice)
+                hdb.add("device", comp.getType().getModule().getModuleName());
         }
 
         // add custom tags
@@ -391,6 +410,8 @@ public class TagManager
     private HRef convertAnnotatedRefTag(HRef ref)
     {
         BComponent comp = lookupComponent(ref);
+        if (comp == null)
+            throw new IllegalStateException("Cannot look up ref for " + ref);
         return makeComponentRef(comp).getHRef();
     }
 
@@ -667,7 +688,20 @@ public class TagManager
 
             case ENUM_KIND:
                 BEnumPoint ep = (BEnumPoint) point;
-                return HStr.make(ep.getEnum().toString());
+                BEnum e = ep.getEnum();
+
+                BFacets facets = (BFacets) ep.getEnumFacets();
+                BEnumRange er = (BEnumRange) facets.get("range");
+
+                if (er == null)
+                {
+                    LOG.error("No 'range' facets found for point " + point.getSlotPath());
+                    return HStr.make("INVALID_ENUM");
+                }
+                else
+                {
+                    return HStr.make(er.getTag(e.getOrdinal()));
+                }
 
             case STRING_KIND:
                 BStringPoint sp = (BStringPoint) point;
@@ -806,11 +840,11 @@ public class TagManager
             return "";
 
         StringBuffer sb = new StringBuffer();
-        int[] ord = range.getOrdinals();
-        for (int i = 0; i < ord.length; i++)
+        int[] ords = range.getOrdinals();
+        for (int i = 0; i < ords.length; i++)
         {
             if (i > 0) sb.append(",");
-            sb.append(range.get(i).getTag());
+            sb.append(range.get(ords[i]).getTag());
         }
         return sb.toString();
     }

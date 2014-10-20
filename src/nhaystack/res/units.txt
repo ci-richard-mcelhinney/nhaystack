@@ -240,6 +240,7 @@ milligram,mg
 gram,g
 ounce,oz
 pound,lb
+kilopound,klb
 metric_ton,ton
 short_ton,t
 
@@ -250,6 +251,7 @@ kilograms_per_hour,kg/h
 pounds_per_minute,lb/min
 pounds_per_hour,lb/h
 pounds_per_second,lb/s
+kilopounds_per_hour,klb/h
 grams_per_second,g/s
 grams_per_minute,g/min
 metric_tons_per_hour,ton/h
@@ -264,10 +266,12 @@ kilowatt,kW
 megawatt,MW
 gigawatt,GW
 btus_per_hour,BTU/h
+therms_per_hour,therm/h
 horsepower,hp
 foot_pounds_per_second,ftlbs/sec
 tons_refrigeration,tonref
 kilobtus_per_hour,kBTU/h
+megabtus_per_hour,MBTU/h,MMBTU/h
 joules_per_hour,J/h
 kilojoules_per_hour,kJ/h
 megajoules_per_hour,MJ/h
@@ -366,6 +370,7 @@ cubic_inch,in³
 cubic_foot,ft³
 cubic_yard,yd³
 gallon,gal
+kilogallon,kgal
 quart,qt
 pint,pt
 fluid_ounce,fl_oz

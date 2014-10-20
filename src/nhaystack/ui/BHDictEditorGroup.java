@@ -87,13 +87,18 @@ public class BHDictEditorGroup extends BScrollPane
         optionalTags.keySet().removeAll(allPossibleAuto);
         optionalTags.keySet().removeAll(defaultEssentials.keySet());
 
-        // points need 'equipRef' to show up in essentials.
+        // points need 'equipRef' and 'schedulable' to show up in essentials.
         if (all.has("point"))
         {
             if (optionalTags.containsKey("equipRef"))
                 essentialTags.put("equipRef", optionalTags.remove("equipRef"));
             else
                 essentialTags.put("equipRef", BHRef.DEFAULT.getRef());
+
+            if (optionalTags.containsKey("schedulable"))
+                essentialTags.put("schedulable", optionalTags.remove("schedulable"));
+            else
+                essentialTags.put("schedulable", HNum.make(BHSchedulable.DEFAULT.getPriority()));
         }
 
         //////////////////////

@@ -79,6 +79,12 @@ public class BNHaystackService
             fetchAutoGenTags(): BString
                 -- fetch the tags that the server auto-generates.
                 flags { operator, hidden }
+
+            applySchedule(event: BHScheduleEvent)
+                -- apply the schedule now that the ticket has expired
+                flags { operator, async, hidden }
+                default {[ new BHScheduleEvent() ]}
+
             initializeHaystack()
                 -- Initialize nhaystack
                 flags { operator, async }
@@ -92,8 +98,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(2630361953)1.0$ @*/
-/* Generated Mon Jun 02 12:17:17 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1993024726)1.0$ @*/
+/* Generated Thu Jul 03 16:20:34 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
@@ -420,6 +426,24 @@ public class BNHaystackService
   public BString fetchAutoGenTags() { return (BString)invoke(fetchAutoGenTags,null,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "applySchedule"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>applySchedule</code> action.
+   * apply the schedule now that the ticket has expired
+   * @see nhaystack.server.BNHaystackService#applySchedule()
+   */
+  public static final Action applySchedule = newAction(Flags.OPERATOR|Flags.ASYNC|Flags.HIDDEN,new BHScheduleEvent(),null);
+  
+  /**
+   * Invoke the <code>applySchedule</code> action.
+   * apply the schedule now that the ticket has expired
+   * @see nhaystack.server.BNHaystackService#applySchedule
+   */
+  public void applySchedule(BHScheduleEvent event) { invoke(applySchedule,event,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "initializeHaystack"
 ////////////////////////////////////////////////////////////////
   
@@ -589,7 +613,8 @@ public class BNHaystackService
     {             
         if ((action == initializeHaystack) || 
             (action == rebuildCache) || 
-            (action == removeBrokenRefs))
+            (action == removeBrokenRefs) ||
+            (action == applySchedule))
         {
             return postAsyncChore(
                 new WorkerInvocation(
@@ -645,6 +670,11 @@ public class BNHaystackService
     {
         BNHaystackRemoveBrokenRefsJob job = new BNHaystackRemoveBrokenRefsJob(this);
         return job.submit(null);
+    }
+
+    public void doApplySchedule(BHScheduleEvent event) 
+    {
+        server.getScheduleManager().applySchedule(event);
     }
 
 ////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-kw sensor
-kwh sensor
+power sensor
+energy sensor
 current sensor
 current phase sensor
 volt sensor
