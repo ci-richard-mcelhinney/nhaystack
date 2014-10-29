@@ -302,13 +302,13 @@ public class TagManager
         hdb.add("id", id);
 
         // curVal
+        BStatus status = point.getStatus();
         HDict tags = BHDict.findTagAnnotation(point);
         if (tags == null) tags = HDict.EMPTY;
-        HVal curVal = makeCurVal(point, tags);
-        hdb.add("curVal", curVal);
+        HVal curVal = makeCurVal(point, status, tags);
+        if (curVal != null) hdb.add("curVal", curVal);
 
         // curStatus
-        BStatus status = point.getStatus();
         HStr curStatus = makeCurStatus(status);
         hdb.add("curStatus", curStatus);
 
@@ -508,11 +508,11 @@ public class TagManager
             hdb.add("writable");
 
         // curVal
-        HVal curVal = makeCurVal(point, tags);
+        BStatus status = point.getStatus();
+        HVal curVal = makeCurVal(point, status, tags);
         if (curVal != null) hdb.add("curVal", curVal);
 
         // curStatus
-        BStatus status = point.getStatus();
         HStr curStatus = makeCurStatus(status);
         if (curStatus != null) hdb.add("curStatus", curStatus);
 
@@ -660,8 +660,11 @@ public class TagManager
     /**
       * create a curVal for a point
       */
-    private static HVal makeCurVal(BControlPoint point, HDict tags)
+    private static HVal makeCurVal(BControlPoint point, BStatus status, HDict tags)
     {
+        if (status.isNull()) return null;
+        if (!makeCurStatus(status).val.equals("ok")) return null;
+
         switch(getControlPointKind(point))
         {
             case NUMERIC_KIND:
@@ -721,10 +724,11 @@ public class TagManager
         else if (status.isDisabled()) return HStr.make("disabled");
         else if (status.isFault())    return HStr.make("fault");
         else if (status.isDown())     return HStr.make("down");
-        else if (status.isNull())     return HStr.make("unknown");
+//        else if (status.isNull())     return HStr.make("unknown");
 
         // these qualify as "ok" for curStatus
         else if (status.isOverridden() ||
+                 status.isNull() ||
                  status.isAlarm() ||
                  status.isStale() ||
                  status.isUnackedAlarm())
