@@ -419,10 +419,12 @@ public class BNHaystackServer
         }
         catch (QueueFullException e)
         {
+            e.printStackTrace();
             LOG.error(getHaystackUrl() + " Cannot enqueue chore " + chore + ": QueueFullException");
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             LOG.error(getHaystackUrl() + " Cannot enqueue chore " + chore + ": " + e.getMessage());
         }
         return null;

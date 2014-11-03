@@ -104,11 +104,33 @@ public class BNHaystackHistoryImport extends BHistoryImport
         String choreName = "HistoryImportExecute:" + getId();
         BNHaystackServer server = server();
 
-        return server.postAsyncChore(
-            new WorkerInvocation(
-                server.getWorker(),
-                choreName,
-                new Invocation(this, action, value, cx)));
+        try 
+        {
+            if (!server.isRunning()) 
+                throw new BajaRuntimeException("server not running.");
+
+            if (!server.getEnabled())
+                throw new BajaRuntimeException("server disabled.");
+
+            if (server.getNetwork().isDisabled())
+                throw new BajaRuntimeException("network disabled.");
+
+            server.getWorker().enqueueChore(
+                new WorkerInvocation(
+                    server.getWorker(),
+                    choreName,
+                    new Invocation(this, action, value, cx)));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            executeInProgress(); // to fake out the state machine
+            executeFail(e.getMessage());
+        }
+        finally
+        {
+            return null;
+        }
     }
 
     public final void doExecute()
