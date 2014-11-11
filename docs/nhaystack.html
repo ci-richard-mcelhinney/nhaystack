@@ -205,6 +205,33 @@ linkage by analyzing the relationships between imported ControlPoints found
 under a NiagaraPointDeviceExt, imported NiagaraHistoryImports found under a 
 NiagaraHistoryDeviceExt, and the Histories found in the station's HistorySpace.</p>
 
+<h4>2.3 curVal and curStatus</h4>
+
+<p>If NHaystack creates a <a href="http://project-haystack.org/tag/cur">cur</a> tag, then it will also create a
+<a href="http://project-haystack.org/tag/curStatus">curStatus</a> tag, and (usually) a <a href="http://project-haystack.org/tag/curVal">curVal</a> tag.</p>
+
+<p>In AX, a Status value is a set of flags, and at least in theory a given Status
+can contain any combination of the flags.  However, in the haystack tagging
+system, <code>curStatus</code> always only has exactly one value -- one of "ok", "fault",
+"down", "disabled", or "unknown".</p>
+
+<p>NHaystack translates from an AX Status to curStatus by checking the following
+AX Status flags in order:</p>
+
+<pre><code>AX ok       maps to `curStatus`:"ok"
+AX disabled maps to `curStatus`:"disabled"
+AX fault    maps to `curStatus`:"fault"
+AX down     maps to `curStatus`:"down
+</code></pre>
+
+<p><em>Anything else</em> (overridden, null, alarm, stale, unackedAlarm) is simply
+translated into <code>curStatus</code>:"ok".</p>
+
+<p>NHaystack creates a <code>curVal</code> tag <em>only</em> if <code>curStatus</code> is "ok" <em>and</em> the AX
+status is not null. This means that if a point in AX has the "null" status flag
+set, then it will be reported with a curStatus of "ok", but it will simply not
+have a curVal.</p>
+
 <h3>3. Tagging via the "haystack" slot</h3>
 
 <p>For many use cases of NHaystack, you will not need to do any explicit tagging
@@ -554,7 +581,7 @@ the remote server is running FIN|Stack or SkySpark.  If the remote server is an
 AX station that is running nhaystack-as-a-server, then the uriPath should 
 simply be "haystack".</p>
 
-<p>After you've configure the NHaystackServer, manually do a ping to make sure its
+<p>After you've configured the NHaystackServer, manually do a ping to make sure its
 connected.  Once connectivity has been established, you can go to the "points" 
 and "histories" folders of the NHaystackServer object, and discover points and 
 histories just like any other Niagara driver.</p>

@@ -193,6 +193,32 @@ linkage by analyzing the relationships between imported ControlPoints found
 under a NiagaraPointDeviceExt, imported NiagaraHistoryImports found under a 
 NiagaraHistoryDeviceExt, and the Histories found in the station's HistorySpace.
 
+#### 2.3 curVal and curStatus
+
+If NHaystack creates a [cur][cur] tag, then it will also create a
+[curStatus][curStatus] tag, and (usually) a [curVal][curVal] tag.
+
+In AX, a Status value is a set of flags, and at least in theory a given Status
+can contain any combination of the flags.  However, in the haystack tagging
+system, `curStatus` always only has exactly one value -- one of "ok", "fault",
+"down", "disabled", or "unknown".
+
+NHaystack translates from an AX Status to curStatus by checking the following
+AX Status flags in order:
+
+    AX ok       maps to `curStatus`:"ok"
+    AX disabled maps to `curStatus`:"disabled"
+    AX fault    maps to `curStatus`:"fault"
+    AX down     maps to `curStatus`:"down
+
+*Anything else* (overridden, null, alarm, stale, unackedAlarm) is simply
+translated into `curStatus`:"ok".
+
+NHaystack creates a `curVal` tag *only* if `curStatus` is "ok" *and* the AX
+status is not null. This means that if a point in AX has the "null" status flag
+set, then it will be reported with a curStatus of "ok", but it will simply not
+have a curVal.
+
 ### 3. Tagging via the "haystack" slot
 
 For many use cases of NHaystack, you will not need to do any explicit tagging
@@ -544,4 +570,7 @@ enum tag is stored as a 'range' facet on the AX ControlPoint.
 [rec]: http://project-haystack.org/doc/TagModel#entities
 [structure]: http://project-haystack.org/doc/Structure
 [hisRead]: http://project-haystack.org/doc/Ops#hisRead
+[cur]: http://project-haystack.org/tag/cur
+[curStatus]: http://project-haystack.org/tag/curStatus
+[curVal]: http://project-haystack.org/tag/curVal
 
