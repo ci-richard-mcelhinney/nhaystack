@@ -55,6 +55,10 @@ public class BNHaystackServer
             alarmSourceInfo: BAlarmSourceInfo
                 flags { hidden }
                 default {[ new BAlarmSourceInfo() ]}
+
+            leaseInterval: BRelTime
+                 -- The amount of time that objects in watches are leased.
+                default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
         }
         actions  
         {  
@@ -64,8 +68,8 @@ public class BNHaystackServer
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(2474489210)1.0$ @*/
-/* Generated Fri Apr 18 12:50:39 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(647880274)1.0$ @*/
+/* Generated Wed Nov 26 15:11:47 EST 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
@@ -250,6 +254,32 @@ public class BNHaystackServer
    * @see nhaystack.driver.BNHaystackServer#alarmSourceInfo
    */
   public void setAlarmSourceInfo(BAlarmSourceInfo v) { set(alarmSourceInfo,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "leaseInterval"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>leaseInterval</code> property.
+   * The amount of time that objects in watches are leased.
+   * @see nhaystack.driver.BNHaystackServer#getLeaseInterval
+   * @see nhaystack.driver.BNHaystackServer#setLeaseInterval
+   */
+  public static final Property leaseInterval = newProperty(0, BRelTime.make(2 * BRelTime.MINUTE.getMillis()),null);
+  
+  /**
+   * Get the <code>leaseInterval</code> property.
+   * The amount of time that objects in watches are leased.
+   * @see nhaystack.driver.BNHaystackServer#leaseInterval
+   */
+  public BRelTime getLeaseInterval() { return (BRelTime)get(leaseInterval); }
+  
+  /**
+   * Set the <code>leaseInterval</code> property.
+   * The amount of time that objects in watches are leased.
+   * @see nhaystack.driver.BNHaystackServer#leaseInterval
+   */
+  public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "submitLearnHistoriesJob"
@@ -452,7 +482,9 @@ public class BNHaystackServer
     public synchronized HWatch getHaystackWatch() 
     {
         if ((hwatch == null) || !hwatch.isOpen())
-            hwatch = getHaystackClient().watchOpen(getHaystackUrl());
+            hwatch = getHaystackClient().watchOpen(
+                getHaystackUrl(),
+                HNum.make(getLeaseInterval().getMillis(), "ms"));
 
         return hwatch;
     }

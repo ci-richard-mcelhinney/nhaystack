@@ -196,7 +196,7 @@ public class NHServer extends HServer
     /**
       * Open a new watch.
       */
-    public HWatch onWatchOpen(String dis)
+    public HWatch onWatchOpen(String dis, HNum lease)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -207,9 +207,7 @@ public class NHServer extends HServer
         try
         {
             NHWatch watch = new NHWatch(
-                this, 
-                dis, 
-                service.getLeaseInterval().getMillis());
+                this, dis, lease.millis());
 
             synchronized(watches) 
             { 
@@ -433,7 +431,8 @@ public class NHServer extends HServer
         int level, 
         HVal val, 
         String who, 
-        HNum dur) // ignore this for now
+        HNum dur, // ignore this for now
+        HHisItem[] schedItems)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);

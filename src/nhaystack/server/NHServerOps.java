@@ -911,11 +911,11 @@ class NHServerOps
         protected HDict onAbout() { throw new UnsupportedOperationException(); }
         protected HGrid onNav(String navId) { throw new UnsupportedOperationException(); }
         protected HDict onNavReadByUri(HUri uri) { throw new UnsupportedOperationException(); }
-        protected HWatch onWatchOpen(String dis) { throw new UnsupportedOperationException(); }
+        protected HWatch onWatchOpen(String dis, HNum lease) { throw new UnsupportedOperationException(); }
         protected HWatch[] onWatches() { throw new UnsupportedOperationException(); }
         protected HWatch onWatch(String id) { throw new UnsupportedOperationException(); }
         protected HGrid onPointWriteArray(HDict rec) { throw new UnsupportedOperationException(); }
-        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur) { throw new UnsupportedOperationException(); }
+        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HHisItem[] schedItems) { throw new UnsupportedOperationException(); }
         protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range) { throw new UnsupportedOperationException(); }
         protected void onHisWrite(HDict rec, HHisItem[] items) { throw new UnsupportedOperationException(); }
         protected HGrid onInvokeAction(HDict rec, String action, HDict args) { throw new UnsupportedOperationException(); }
