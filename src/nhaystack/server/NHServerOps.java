@@ -12,6 +12,7 @@ import java.util.*;
 import javax.baja.control.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.security.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
@@ -21,6 +22,7 @@ import org.projecthaystack.server.*;
 
 import nhaystack.*;
 import nhaystack.site.*;
+import nhaystack.util.*;
 
 /**
   * Custom Ops for NHServer
@@ -127,21 +129,25 @@ class NHServerOps
             if (LOG.isTraceOn()) LOG.trace(name() + " " + function + " begin");
 
             HGrid result = HGrid.EMPTY;
-            if      (function.equals("addHaystackSlots"))    result = addHaystackSlots    (server, params);
-            else if (function.equals("addEquips"))           result = addEquips           (server, params);
-            else if (function.equals("applyBatchTags"))      result = applyBatchTags      (server, params);
-            else if (function.equals("copyEquipTags"))       result = copyEquipTags       (server, params);
-            else if (function.equals("delete"))              result = delete              (server, params);
-            else if (function.equals("deleteHaystackSlot"))  result = deleteHaystackSlot  (server, params);
-            else if (function.equals("findDuplicatePoints")) result = findDuplicatePoints (server, params);
+
+            // write
+            if      (function.equals("addHaystackSlots"))   result = addHaystackSlots   (server, params);
+            else if (function.equals("addEquips"))          result = addEquips          (server, params);
+            else if (function.equals("applyBatchTags"))     result = applyBatchTags     (server, params);
+            else if (function.equals("copyEquipTags"))      result = copyEquipTags      (server, params);
+            else if (function.equals("delete"))             result = delete             (server, params);
+            else if (function.equals("deleteHaystackSlot")) result = deleteHaystackSlot (server, params);
+            else if (function.equals("searchAndReplace"))   result = searchAndReplace   (server, params);
+
+            // invoke
             else if (function.equals("rebuildCache"))        result = rebuildCache        (server, params);
-            else if (function.equals("searchAndReplace"))    result = searchAndReplace    (server, params);
+
+            // read
+            else if (function.equals("findDuplicatePoints")) result = findDuplicatePoints (server, params);
+            else if (function.equals("pullPropTags"))        result = pullPropTags        (server, req);
             else if (function.equals("showPointsInWatch"))   result = showPointsInWatch   (server, params);
             else if (function.equals("showWatches"))         result = showWatches         (server, params);
             else if (function.equals("uniqueTags"))          result = uniqueTags          (server, params);
-
-            // pullPropTags needs the whole request grid, not just the parameters
-            else if (function.equals("pullPropTags")) result = pullPropTags(server, req);
 
             else 
             {
@@ -165,6 +171,8 @@ class NHServerOps
 
         try
         {
+            Context cx = ThreadContext.getContext(Thread.currentThread());
+
             HRef fromId = HRef.make(params.getStr("fromEquip"));
             HRef toIds[] = parseIdList(params.getStr("toEquips"));
 
@@ -193,12 +201,12 @@ class NHServerOps
 
             // points
             Map pointDictMap = new HashMap();
-            collectPointDicts((BComponent) from.getParent(), pointDictMap);
+            collectPointDicts((BComponent) from.getParent(), pointDictMap, cx);
             for (int i = 0; i < to.length; i++)
             {
                 BComponent comp = (to[i] instanceof BHEquip) ? 
                     (BComponent) to[i].getParent() : to[i];
-                applyPointDicts(comp, pointDictMap);
+                applyPointDicts(comp, pointDictMap, cx);
             }
 
             // done
@@ -214,8 +222,12 @@ class NHServerOps
     /**
       * applyPointDicts
       */
-    private static void applyPointDicts(BComponent comp, Map pointDictMap)
+    private static void applyPointDicts(BComponent comp, Map pointDictMap, Context cx)
     {
+        // check permissions on this Thread's saved context
+        if (!TypeUtil.canWrite(comp, cx) || !TypeUtil.canRead(comp, cx)) 
+            throw new PermissionException("Cannot write");
+
         if (comp instanceof BControlPoint)
         {
             HDict dict = (HDict) pointDictMap.get(comp.getName());
@@ -231,15 +243,19 @@ class NHServerOps
         {
             BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
             for (int i = 0; i < kids.length; i++)
-                applyPointDicts(kids[i], pointDictMap);
+                applyPointDicts(kids[i], pointDictMap, cx);
         }
     }
 
     /**
       * collectPointDicts
       */
-    private static void collectPointDicts(BComponent comp, Map pointDictMap)
+    private static void collectPointDicts(BComponent comp, Map pointDictMap, Context cx)
     {
+        // check permissions on this Thread's saved context
+        if (!TypeUtil.canRead(comp, cx)) 
+            throw new PermissionException("Cannot write");
+
         if (comp instanceof BControlPoint)
         {
             HDict dict = BHDict.findTagAnnotation(comp);
@@ -252,7 +268,7 @@ class NHServerOps
         {
             BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
             for (int i = 0; i < kids.length; i++)
-                collectPointDicts(kids[i], pointDictMap);
+                collectPointDicts(kids[i], pointDictMap, cx);
         }
     }
 
@@ -278,10 +294,15 @@ class NHServerOps
       */
     private static BComponent[] lookupComponents(TagManager tagMgr, HRef[] ids)
     {
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+
         Array compArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
             BComponent comp = tagMgr.doLookupComponent(ids[i], false);
+            if (!TypeUtil.canWrite(comp, cx)) 
+                throw new PermissionException("Cannot write to " + ids[i]); 
+
             if (comp != null)
                 compArr.add(comp);
         }
@@ -460,6 +481,8 @@ class NHServerOps
       */
     private static HGrid addEquips(NHServer server, HRow params)
     {
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+
         String targetFilter = params.getStr("targetFilter");
 
         String ids = null;
@@ -476,7 +499,11 @@ class NHServerOps
             if (siteGrid == null)
             {
                 BComponent root = (BComponent) 
-                    BOrd.make("slot:/").get(server.getService(), null);
+                    BOrd.make("slot:/").get(server.getService(), cx);
+
+                // check permissions on this Thread's saved context
+                if (!TypeUtil.canWrite(root, cx)) 
+                    throw new PermissionException("Cannot write");
 
                 BHSite site = new BHSite();
                 root.add(siteName, site);
@@ -522,6 +549,11 @@ class NHServerOps
       */
     private static HGrid rebuildCache(NHServer server, HRow params)
     {
+        // check permissions on this Thread's saved context
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        if (!TypeUtil.canInvoke(server.getService(), cx)) 
+            throw new PermissionException("Cannot invoke rebuildCache");
+
         server.getService().invoke(
             BNHaystackService.rebuildCache, null, null);
 
@@ -854,6 +886,7 @@ class NHServerOps
         TagManager tagMgr = server.getTagManager();
 
         Array compArr = new Array(BComponent.class);
+        Context cx = ThreadContext.getContext(Thread.currentThread());
 
         // if there is an id list, parse it and look up all the recs
         if ((ids != null) && (ids.length() > 0))
@@ -865,6 +898,8 @@ class NHServerOps
                 for (int i = 0; i < refs.length; i++)
                 {
                     BComponent comp = tagMgr.doLookupComponent(refs[i], false);
+                    if (!TypeUtil.canWrite(comp, cx)) 
+                        throw new PermissionException("Cannot write to " + refs[i]); 
 
                     if (comp != null)
                     {
@@ -911,11 +946,11 @@ class NHServerOps
         protected HDict onAbout() { throw new UnsupportedOperationException(); }
         protected HGrid onNav(String navId) { throw new UnsupportedOperationException(); }
         protected HDict onNavReadByUri(HUri uri) { throw new UnsupportedOperationException(); }
-        protected HWatch onWatchOpen(String dis) { throw new UnsupportedOperationException(); }
+        protected HWatch onWatchOpen(String dis, HNum lease) { throw new UnsupportedOperationException(); }
         protected HWatch[] onWatches() { throw new UnsupportedOperationException(); }
         protected HWatch onWatch(String id) { throw new UnsupportedOperationException(); }
         protected HGrid onPointWriteArray(HDict rec) { throw new UnsupportedOperationException(); }
-        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur) { throw new UnsupportedOperationException(); }
+        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HHisItem[] schedItems) { throw new UnsupportedOperationException(); }
         protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range) { throw new UnsupportedOperationException(); }
         protected void onHisWrite(HDict rec, HHisItem[] items) { throw new UnsupportedOperationException(); }
         protected HGrid onInvokeAction(HDict rec, String action, HDict args) { throw new UnsupportedOperationException(); }

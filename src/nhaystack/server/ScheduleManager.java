@@ -79,7 +79,7 @@ public class ScheduleManager
         HDict rec = hdb.toDict();
         int level = tags.getInt("schedulable");
         HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue());
-        server.onPointWrite(rec, level, val, "", null);
+        server.onPointWrite(rec, level, val, "", null, null);
 
         // try to make another ticket
         HHisItem[] items = hisItems(point);

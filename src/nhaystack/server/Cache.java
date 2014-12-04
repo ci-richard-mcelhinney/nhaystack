@@ -36,35 +36,49 @@ class Cache
       */
     synchronized void rebuild(BNHaystackStats stats)
     {
-        long t0 = Clock.ticks();
-        LOG.message("Begin cache rebuild.");
+        Thread thread = Thread.currentThread();
+        Context cx = ThreadContext.getContext(thread);
 
-        LOG.trace("Rebuild cache: step 1 of 5..."); 
-        rebuildComponentCache_firstPass();
+        // rebuildCache runs 'permissionless', so lets remove the
+        // current context and then put it back in when we are done
+        if (cx != null) ThreadContext.removeContext(thread);
 
-        LOG.trace("Rebuild cache: step 2 of 5..."); 
-        rebuildComponentCache_secondPass();
+        try
+        {
+            long t0 = Clock.ticks();
+            LOG.message("Begin cache rebuild.");
 
-        LOG.trace("Rebuild cache: step 3 of 5..."); 
-        rebuildHistoryCache_firstPass();
+            LOG.trace("Rebuild cache: step 1 of 5..."); 
+            rebuildComponentCache_firstPass();
 
-        LOG.trace("Rebuild cache: step 4 of 5..."); 
-        rebuildHistoryCache_secondPass();
-        initialized = true;
+            LOG.trace("Rebuild cache: step 2 of 5..."); 
+            rebuildComponentCache_secondPass();
 
-        LOG.trace("Rebuild cache: step 5 of 5..."); 
-        schedMgr.makePointEvents((BControlPoint[]) scheduledPoints.trim());
+            LOG.trace("Rebuild cache: step 3 of 5..."); 
+            rebuildHistoryCache_firstPass();
 
-        lastRebuildTime = BAbsTime.now();
-        long t1 = Clock.ticks();
-        LOG.message("End cache rebuild " + (t1-t0) + "ms.");
-        lastRebuildDuration = BRelTime.make(t1-t0);
+            LOG.trace("Rebuild cache: step 4 of 5..."); 
+            rebuildHistoryCache_secondPass();
+            initialized = true;
 
-        stats.setNumSites(numSites);
-        stats.setNumEquips(numEquips);
-        stats.setNumPoints(numPoints);
-        stats.setLastCacheRebuildDuration(lastRebuildDuration);
-        stats.setLastCacheRebuildTime(lastRebuildTime);
+            LOG.trace("Rebuild cache: step 5 of 5..."); 
+            schedMgr.makePointEvents((BControlPoint[]) scheduledPoints.trim());
+
+            lastRebuildTime = BAbsTime.now();
+            long t1 = Clock.ticks();
+            LOG.message("End cache rebuild " + (t1-t0) + "ms.");
+            lastRebuildDuration = BRelTime.make(t1-t0);
+
+            stats.setNumSites(numSites);
+            stats.setNumEquips(numEquips);
+            stats.setNumPoints(numPoints);
+            stats.setLastCacheRebuildDuration(lastRebuildDuration);
+            stats.setLastCacheRebuildTime(lastRebuildTime);
+        }
+        finally
+        {
+            if (cx != null) ThreadContext.putContext(thread, cx);
+        }
     }
 
     /**
@@ -355,8 +369,6 @@ class Cache
             String siteNav = Nav.makeNavName(site, siteTags);
             NHRef siteRef = TagManager.makeSepRef(new String[] { siteNav });
 
-//System.out.println(">>>>: " + site.getSlotPath() + ", " + siteRef.getHRef());
-
             // save bi-directional lookup for site
             sepRefToComp.put(siteRef, site);
             compToSepRef.put(site, siteRef);
@@ -375,8 +387,6 @@ class Cache
                 HDict equipTags = equip.getHaystack().getDict();
                 String equipNav = Nav.makeNavName(equip, equipTags);
                 NHRef equipRef = TagManager.makeSepRef(new String[] { siteNav, equipNav });
-
-//System.out.println(">>>>: " + equip.getSlotPath() + ", " + equipRef.getHRef());
 
                 // save bi-directional lookup for equip
                 sepRefToComp.put(equipRef, equip);
@@ -397,8 +407,6 @@ class Cache
                     if (pointTags == null) pointTags = HDict.EMPTY;
                     String pointNav = Nav.makeNavName(point, pointTags);
                     NHRef pointRef = TagManager.makeSepRef(new String[] { siteNav, equipNav, pointNav });
-
-//System.out.println(">>>>: " + point.getSlotPath() + ", " + pointRef.getHRef());
 
                     // save bi-directional lookup for point
                     sepRefToComp.put(pointRef, point);

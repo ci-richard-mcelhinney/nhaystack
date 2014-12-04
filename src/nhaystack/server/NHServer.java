@@ -9,12 +9,14 @@
 package nhaystack.server;
 
 import java.util.*;
+
 import javax.baja.collection.*;
 import javax.baja.control.*;
 import javax.baja.control.enums.*;
 import javax.baja.history.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.security.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.timezone.*;
@@ -196,7 +198,7 @@ public class NHServer extends HServer
     /**
       * Open a new watch.
       */
-    public HWatch onWatchOpen(String dis)
+    public HWatch onWatchOpen(String dis, HNum lease)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -207,9 +209,7 @@ public class NHServer extends HServer
         try
         {
             NHWatch watch = new NHWatch(
-                this, 
-                dis, 
-                service.getLeaseInterval().getMillis());
+                this, dis, lease.millis());
 
             synchronized(watches) 
             { 
@@ -433,7 +433,8 @@ public class NHServer extends HServer
         int level, 
         HVal val, 
         String who, 
-        HNum dur) // ignore this for now
+        HNum dur, // ignore this for now
+        HHisItem[] schedItems)
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -448,6 +449,12 @@ public class NHServer extends HServer
         try
         {
             BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());
+
+            // check permissions on this Thread's saved context
+            Context cx = ThreadContext.getContext(Thread.currentThread());
+
+            if (!TypeUtil.canWrite(point, cx)) 
+                throw new PermissionException("Cannot write to " + rec.id()); 
 
             if (point instanceof BNumericWritable)
             {
@@ -500,41 +507,6 @@ public class NHServer extends HServer
                     BEnumRange range = (BEnumRange) point.getFacets().get(BFacets.RANGE);
                     BEnum enm = range.get(str);
 
-////System.out.println("onPointWrite aaa " + 
-////    range + ", " + str + ", " + se.getValue().getClass() + ", " + se.getValue());
-//
-//                    BEnum enm = null;
-//
-//                    // use uncapitalized tags
-//                    Set tags = findRangeTags(range, false);
-////System.out.println("onPointWrite bbb " + str + ", " + tags);
-//                    if (tags.contains(str))
-//                    {
-////System.out.println("onPointWrite ccc " + str + ", " + tags);
-//                        enm = range.get(str);
-//                    }
-//                    // use capitalized tags
-//                    else {
-//                        String cap = TextUtil.capitalize(str);
-//
-//                        tags = findRangeTags(range, true);
-////System.out.println("onPointWrite ddd " + cap + ", " + tags);
-//                        if (tags.contains(cap))
-//                        {
-////System.out.println("onPointWrite eee " + cap + ", " + tags);
-//                            enm = range.get(cap);
-//                        }
-//                        else
-//                        {
-//                            int[] ord = range.getOrdinals();
-//                            Map map = new HashMap();
-//                            for (int i = 0; i < ord.length; i++)
-//                                map.put(new Integer(ord[i]), range.getTag(ord[i]));
-//
-//                            throw new IllegalStateException("Cannot find enum '" + str + "' in range " + map);
-//                        }
-//                    }
-
                     se.setValue(enm);
                     se.setStatus(BStatus.ok);
                 }
@@ -566,19 +538,6 @@ public class NHServer extends HServer
             throw e;
         }
     }
-
-//    private Set findRangeTags(BEnumRange range, boolean capitalize)
-//    {
-//        Set set = new HashSet();
-//
-//        int[] ord = range.getOrdinals();
-//        for (int i = 0; i < ord.length; i++)
-//            set.add(capitalize ? 
-//                TextUtil.capitalize(range.getTag(ord[i])) :
-//                range.getTag(ord[i]));
-//
-//        return set;
-//    }
 
     /**
       * Read the history for the given BComponent.
@@ -693,8 +652,13 @@ public class NHServer extends HServer
             LOG.trace("onHisWrite " + rec.id());
 
         BHistoryConfig cfg = tagMgr.lookupHistoryConfig(rec.id());
-        BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
 
+        // check permissions on this Thread's saved context
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        if (!TypeUtil.canWrite(cfg, cx)) 
+            throw new PermissionException("Cannot write to " + rec.id()); 
+
+        BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
         String kind = rec.getStr("kind");
         for (int i = 0; i < items.length; i++)
             history.append(
@@ -716,6 +680,11 @@ public class NHServer extends HServer
         try
         {
             BComponent comp = tagMgr.lookupComponent(rec.id());
+
+            // check permissions on this Thread's saved context
+            Context cx = ThreadContext.getContext(Thread.currentThread());
+            if (!TypeUtil.canInvoke(comp, cx)) 
+                throw new PermissionException("Cannot invoke on " + rec.id()); 
 
             Action[] actions = comp.getActionsArray();
             for (int i = 0; i < actions.length; i++)

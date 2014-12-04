@@ -34,9 +34,6 @@ public class BNHaystackService
     {
         properties
         {
-            leaseInterval: BRelTime
-                 -- The amount of time that objects in watches are leased.
-                default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
             showLinkedHistories: boolean
                  -- Whether to show BHistoryConfigs that are linked to a BControlPoint 
                 default{[ false ]} 
@@ -98,34 +95,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1993024726)1.0$ @*/
-/* Generated Thu Jul 03 16:20:34 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
-
-////////////////////////////////////////////////////////////////
-// Property "leaseInterval"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>leaseInterval</code> property.
-   * The amount of time that objects in watches are leased.
-   * @see nhaystack.server.BNHaystackService#getLeaseInterval
-   * @see nhaystack.server.BNHaystackService#setLeaseInterval
-   */
-  public static final Property leaseInterval = newProperty(0, BRelTime.make(2 * BRelTime.MINUTE.getMillis()),null);
-  
-  /**
-   * Get the <code>leaseInterval</code> property.
-   * The amount of time that objects in watches are leased.
-   * @see nhaystack.server.BNHaystackService#leaseInterval
-   */
-  public BRelTime getLeaseInterval() { return (BRelTime)get(leaseInterval); }
-  
-  /**
-   * Set the <code>leaseInterval</code> property.
-   * The amount of time that objects in watches are leased.
-   * @see nhaystack.server.BNHaystackService#leaseInterval
-   */
-  public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
+/*@ $nhaystack.server.BNHaystackService(162149796)1.0$ @*/
+/* Generated Wed Nov 26 15:11:47 EST 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"

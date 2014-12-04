@@ -32,8 +32,8 @@ public class BHFloorFE extends BWbFieldEditor
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHFloorFE(1332306162)1.0$ @*/
-/* Generated Wed Jun 25 09:16:11 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHFloorFE(4213971270)1.0$ @*/
+/* Generated Wed Nov 26 15:11:47 EST 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

@@ -9,6 +9,7 @@ package nhaystack.util;
 
 import java.util.*;
 
+import javax.baja.security.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.timezone.*;
@@ -150,6 +151,43 @@ public abstract class TypeUtil
         if (curStatus.val.equals("unknown"))  return BStatus.nullStatus;
 
         throw new IllegalStateException("Cannot convert " + curStatus.val + " to BStatus");
+    }
+
+////////////////////////////////////////////////////////////////
+// permissions
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Check if the permissions for the component allow us to read
+      */
+    public static boolean canRead(BComponent comp, Context cx)
+    {          
+        BPermissions perm = comp.getPermissions(cx);
+        return 
+            perm.has(BPermissions.OPERATOR_READ) ||
+            perm.has(BPermissions.ADMIN_READ);
+    }
+
+    /**
+      * Check if the permissions for the component allow us to write
+      */
+    public static boolean canWrite(BComponent comp, Context cx)
+    {          
+        BPermissions perm = comp.getPermissions(cx);
+        return 
+            perm.has(BPermissions.OPERATOR_WRITE) ||
+            perm.has(BPermissions.ADMIN_WRITE);
+    }
+
+    /**
+      * Check if the permissions for the component allow us to invoke
+      */
+    public static boolean canInvoke(BComponent comp, Context cx)
+    {          
+        BPermissions perm = comp.getPermissions(cx);
+        return 
+            perm.has(BPermissions.OPERATOR_INVOKE) ||
+            perm.has(BPermissions.ADMIN_INVOKE);
     }
 }
 
