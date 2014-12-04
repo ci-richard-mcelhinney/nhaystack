@@ -69,7 +69,9 @@ public class TagManager
 
             if (val instanceof HRef)
             {
-                hdb.add(name, convertAnnotatedRefTag((HRef) val));
+                HRef ref = convertAnnotatedRefTag((HRef) val);
+                if (ref != null)
+                    hdb.add(name, ref);
             }
             else
                 hdb.add(name, val);
@@ -410,8 +412,12 @@ public class TagManager
     private HRef convertAnnotatedRefTag(HRef ref)
     {
         BComponent comp = lookupComponent(ref);
+
+        // note: its possible for the component to be null if e.g. its not
+        // visible under the current Context.
         if (comp == null)
-            throw new IllegalStateException("Cannot look up ref for " + ref);
+            return null;
+
         return makeComponentRef(comp).getHRef();
     }
 
@@ -540,12 +546,18 @@ public class TagManager
         {
             BComponent equip = lookupComponent((HRef) tags.get("equipRef"));
 
-            // try to look up  siteRef too
-            HDict equipTags = BHDict.findTagAnnotation(equip);
-            if (equipTags.has("siteRef"))
-                hdb.add(
-                    "siteRef", 
-                    convertAnnotatedRefTag(equipTags.getRef("siteRef")));
+            if (equip != null)
+            {
+                // try to look up siteRef too
+                HDict equipTags = BHDict.findTagAnnotation(equip);
+
+                if (equipTags.has("siteRef"))
+                {
+                    HRef siteRef = convertAnnotatedRefTag(equipTags.getRef("siteRef"));
+                    if (siteRef != null)
+                        hdb.add("siteRef", siteRef);
+                }
+            }
         }
         // maybe we've cached an implicit equipRef
         else
@@ -558,9 +570,11 @@ public class TagManager
                 // try to look up  siteRef too
                 HDict equipTags = BHDict.findTagAnnotation(equip);
                 if (equipTags.has("siteRef"))
-                    hdb.add(
-                        "siteRef", 
-                        convertAnnotatedRefTag(equipTags.getRef("siteRef")));
+                {
+                    HRef siteRef = convertAnnotatedRefTag(equipTags.getRef("siteRef"));
+                    if (siteRef != null)
+                        hdb.add("siteRef", siteRef);
+                }
             }
         }
     }

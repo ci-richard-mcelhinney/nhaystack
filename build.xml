@@ -14,23 +14,24 @@
     preferredSymbol = "nh"
     description = "Niagara Haystack"
     vendor = "Project Haystack"
-    vendorVersion = "1.2.2.2" 
+    vendorVersion = "1.2.3.3" 
 >
 
     <!-- Dependencies -->
-    <dependency name="alarm"     vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="baja"      vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="bajaui"    vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="bql"       vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="control"   vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="driver"    vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="file"      vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="fox"       vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="gx"        vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="history"   vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="net"       vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="web"       vendor="Tridium" vendorVersion="3.5"/>
-    <dependency name="workbench" vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="alarm"      vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="baja"       vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="bajaui"     vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="bql"        vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="concurrent" vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="control"    vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="driver"     vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="file"       vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="fox"        vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="gx"         vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="history"    vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="net"        vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="web"        vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="workbench"  vendor="Tridium" vendorVersion="3.5"/>
 
     <!-- Packages -->
     <package name="nhaystack"                      doc="true"/>

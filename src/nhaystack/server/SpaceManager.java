@@ -24,6 +24,7 @@ import org.projecthaystack.*;
 import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.site.*;
+import nhaystack.util.*;
 
 /**
   * SpaceManager does various tasks associated with the ComponentSpace and
@@ -56,6 +57,11 @@ class SpaceManager
       */
     boolean isVisibleComponent(BComponent comp)
     {
+        // check permissions on this Thread's saved context
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        if (!TypeUtil.canRead(comp, cx)) 
+            return false;
+
         // Return true for components that have been 
         // annotated with a BHDict instance.
         if (comp instanceof BHTagged) 
@@ -269,6 +275,11 @@ class SpaceManager
       */
     boolean isVisibleHistory(BHistoryConfig cfg)
     {
+        // check permissions on this Thread's saved context
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        if (!TypeUtil.canRead(cfg, cx)) 
+            return false;
+
         // annotated 
         HDict dict = BHDict.findTagAnnotation(cfg);
         if (dict != null && !dict.isEmpty())
