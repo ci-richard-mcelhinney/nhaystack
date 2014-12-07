@@ -817,7 +817,10 @@ public class TagManager
         if (facets == null) 
             return null;
 
-        BUnit unit = (BUnit)facets.get(BFacets.UNITS);
+        BObject obj = facets.get(BFacets.UNITS);
+        if (!(obj instanceof BUnit)) return null;
+
+        BUnit unit = (BUnit) obj;
         if ((unit == null) || (unit.isNull()))
             return null;
 
