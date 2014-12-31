@@ -1,0 +1,117 @@
+<!--
+  Copyright (c) 2012, J2 Innovations
+  Licensed under the Academic Free License version 3.0
+ 
+  History:
+    21 Dec 2012  Mike Jarmy  Creation
+-->
+
+<project default="make" basedir=".">
+
+  <property environment="env"/>
+
+  <!--========== nuke ==========-->
+  <target name="nuke">
+    <delete dir="staging"/>    
+    <delete dir="jars"/>    
+  </target>
+  
+  <!--========== clean ==========-->
+  <target name="clean">
+    <delete dir="staging"/>    
+  </target>
+
+  <!--========== compile ==========-->
+  <target name="compile">  
+
+    <mkdir dir="staging"/>    
+
+    <javac
+      srcdir="src"
+      destdir="staging"
+      debug="on"
+      includeantruntime="false">
+      <compilerarg value="-Xlint:deprecation"/>
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="lib/servlet.jar" />
+        <pathelement location="../ext/haystack.jar" />
+      </classpath>
+    </javac>
+
+  </target>
+
+  <!--========== jar ==========-->
+  <target name="jar">
+    <mkdir dir="jars"/>    
+    <jar 
+      destfile="jars/nhaystack_test.jar" 
+      basedir="staging" />
+  </target>
+
+  <!--========== make ==========-->
+  <target name="make" depends="clean,compile,jar"/>
+
+  <!--========== test-simple ==========-->
+  <target name="test-simple" depends="make">
+    <java classname="nhaystack.test.NSimpleClientTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-sup ==========-->
+  <target name="test-sup" depends="make">
+    <java classname="nhaystack.test.NSupervisorClientTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-his ==========-->
+  <target name="test-his" depends="make">
+    <java classname="nhaystack.test.NHisTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-schedule ==========-->
+  <target name="test-schedule" depends="make">
+    <java classname="nhaystack.test.NScheduleTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-invoke ==========-->
+  <target name="test-invoke" depends="make">
+    <java classname="nhaystack.test.NInvokeTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-util ==========-->
+  <target name="test-util" depends="make">
+    <java classname="nhaystack.test.NUtilTest">
+      <classpath>
+        <pathelement location="${env.NIAGARA_AX}/modules/baja.jar" />
+        <pathelement location="${env.NIAGARA_AX}/modules/oro.jar" />
+        <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+</project>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bajaObjectGraph version="1.0">
+<p h="1" m="b=baja" t="b:UnrestrictedFolder">
+ <!-- /NHaystackService -->
+ <p n="NHaystackService" h="2" m="nh=nhaystack" t="nh:NHaystackService">
+  <p n="servlet" h="3" t="nh:NHaystackServlet">
+   <p n="servletName" v="haystack"/>
+  </p>
+  <p n="timeZoneAliases" h="7" t="nh:TimeZoneAliasFolder">
+  </p>
+  <p n="worker" h="8" t="nh:NHaystackWorker">
+  </p>
+ </p>
+ <!-- /site -->
+ <p n="site" h="4" t="nh:HSite">
+ </p>
+ <!-- /equip -->
+ <p n="equip" h="5" t="nh:HEquip">
+ </p>
+ <!-- /timeZoneAlias -->
+ <p n="timeZoneAlias" h="6" t="nh:TimeZoneAlias">
+ </p>
+ <!-- /driver -->
+ <p n="driver" h="9" t="b:UnrestrictedFolder">
+  <!-- /driver/NHaystackNetwork -->
+  <p n="NHaystackNetwork" h="23" t="nh:NHaystackNetwork">
+   <p n="alarmSourceInfo" h="24" m="a=alarm" t="a:AlarmSourceInfo">
+    <p n="toOffnormalText" v="%lexicon(driver:pingFail)%"/>
+    <p n="toNormalText" v="%lexicon(driver:pingSuccess)%"/>
+   </p>
+   <p n="monitor" h="25" m="d=driver" t="d:PingMonitor">
+   </p>
+   <p n="tuningPolicies" h="26" t="d:TuningPolicyMap">
+    <p n="defaultPolicy" h="27" t="d:TuningPolicy">
+    </p>
+   </p>
+   <p n="pollScheduler" h="28" t="nh:NHaystackPollScheduler">
+   </p>
+  </p>
+  <!-- /driver/NHaystackServer -->
+  <p n="NHaystackServer" h="29" t="nh:NHaystackServer">
+   <p n="alarmSourceInfo" h="2a" t="a:AlarmSourceInfo">
+   </p>
+   <p n="histories" h="2b" t="nh:NHaystackHistoryDeviceExt">
+    <p n="retryTrigger" h="2c" m="c=control" t="c:TimeTrigger">
+     <p n="triggerMode" t="c:IntervalTriggerMode" v="false;00:00:00.000;23:59:59.999;900000;7f"/>
+    </p>
+   </p>
+   <p n="points" h="2d" t="nh:NHaystackPointDeviceExt">
+   </p>
+   <p n="worker" h="2e" t="nh:NHaystackWorker">
+   </p>
+  </p>
+  <!-- /driver/NHaystackServerFolder -->
+  <p n="NHaystackServerFolder" h="d" t="nh:NHaystackServerFolder">
+  </p>
+  <!-- /driver/NHaystackPointfolder -->
+  <p n="NHaystackPointfolder" h="2f" t="nh:NHaystackPointFolder">
+  </p>
+ </p>
+</p>
+</bajaObjectGraph>
