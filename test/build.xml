@@ -92,6 +92,16 @@
     </java>
   </target> 
 
+  <!--========== test-invoke ==========-->
+  <target name="test-invoke" depends="make">
+    <java classname="nhaystack.test.NInvokeTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
   <!--========== test-util ==========-->
   <target name="test-util" depends="make">
     <java classname="nhaystack.test.NUtilTest">
