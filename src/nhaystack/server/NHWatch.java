@@ -11,6 +11,7 @@ import java.util.*;
 
 import javax.baja.control.*;
 import javax.baja.log.*;
+import javax.baja.schedule.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
@@ -92,7 +93,7 @@ class NHWatch extends HWatch
             .toDict();
 
         Array response = new Array(HDict.class);
-        Array pointArr = new Array(BControlPoint.class);
+        Array pointArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
             HRef id = (HRef) ids[i];
@@ -104,9 +105,9 @@ class NHWatch extends HWatch
                 // no such component -- treat 'checked' as if it were false, since
                 // 'checked' is handled on the client side.
                 //
-                // we also ignore anything that's not a control point.
+                // we also ignore anything that's not a control point or schedule.
                 //
-                if ((comp == null) || !(comp instanceof BControlPoint))
+                if ((comp == null) || !((comp instanceof BControlPoint) || (comp instanceof BWeeklySchedule)))
                 {
                     if (LOG.isTraceOn())
                         LOG.warning("NHWatch.sub " + watchId + " cannot subscribe to " + id);
@@ -116,10 +117,9 @@ class NHWatch extends HWatch
                 // found
                 else
                 {
-                    BControlPoint point = (BControlPoint) comp;
-                    pointArr.add(point);
-                    HDict cov = server.getTagManager().createPointCovTags(point);
-                    allSubscribed.put(point, cov);
+                    pointArr.add(comp);
+                    HDict cov = server.getTagManager().createComponentCovTags(comp);
+                    allSubscribed.put(comp, cov);
                     response.add(cov);
                 }
             }
@@ -131,7 +131,7 @@ class NHWatch extends HWatch
             }
         }
 
-        subscriber.subscribe((BControlPoint[]) pointArr.trim(), 0, null);
+        subscriber.subscribe((BComponent[]) pointArr.trim(), 0, null);
 
         HGrid grid = HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
 
@@ -156,7 +156,7 @@ class NHWatch extends HWatch
 
         scheduleLeaseTimeout();
 
-        Array pointArr = new Array(BControlPoint.class);
+        Array pointArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
             HRef id = (HRef) ids[i];
@@ -174,7 +174,7 @@ class NHWatch extends HWatch
         }
 
         // unsubscribe
-        BControlPoint[] points = (BControlPoint[]) pointArr.trim();
+        BComponent[] points = (BComponent[]) pointArr.trim();
         subscriber.unsubscribe(points, null);
     }
 
@@ -228,8 +228,8 @@ class NHWatch extends HWatch
         Iterator itr = allSubscribed.keySet().iterator();
         while (itr.hasNext())
         {
-            BControlPoint point = (BControlPoint) itr.next();
-            HDict dict = server.getTagManager().createPointCovTags(point);
+            BComponent point = (BComponent) itr.next();
+            HDict dict = server.getTagManager().createComponentCovTags(point);
 
             response.add(dict);
             allSubscribed.put(point, dict);
@@ -291,8 +291,7 @@ class NHWatch extends HWatch
                 if (event.getSlotName().equals("out") && // we only care about the "out" slot
                     allSubscribed.containsKey(comp))     // and lets double check that we are really subscribed
                 {
-                    BControlPoint point = (BControlPoint) comp;
-                    HDict cov = server.getTagManager().createPointCovTags(point);
+                    HDict cov = server.getTagManager().createComponentCovTags(comp);
                     nextPoll.put(comp, cov);
                 }
             }
@@ -309,8 +308,8 @@ class NHWatch extends HWatch
         Iterator itr = allSubscribed.keySet().iterator();
         while (itr.hasNext())
         {
-            BControlPoint point = (BControlPoint) itr.next();
-            HDict dict = server.getTagManager().createPointCovTags(point);
+            BComponent point = (BComponent) itr.next();
+            HDict dict = server.getTagManager().createComponentCovTags(point);
             arr.add(dict);
         }
         return (HDict[]) arr.trim();

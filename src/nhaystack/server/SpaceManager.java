@@ -17,6 +17,7 @@ import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.schedule.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
@@ -62,17 +63,10 @@ class SpaceManager
         if (!TypeUtil.canRead(comp, cx)) 
             return false;
 
-        // Return true for components that have been 
-        // annotated with a BHDict instance.
-        if (comp instanceof BHTagged) 
-            return true;
-
-        // Return true for BControlPoints.
-        if (comp instanceof BControlPoint)
-            return true;
-
-        if (comp instanceof BDevice)
-            return true;
+        if (comp instanceof BHTagged) return true;
+        if (comp instanceof BControlPoint) return true;
+        if (comp instanceof BDevice) return true;
+        if (comp instanceof BWeeklySchedule) return true;
 
         // Return true for components that are annotated with a BHDict.
         BValue haystack = comp.get("haystack");

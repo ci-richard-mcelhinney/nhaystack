@@ -742,16 +742,16 @@ class NHServerOps
         BHEquip[] equips = cache.getAllEquips();
         for (int i = 0; i < equips.length; i++)
         {
-            BControlPoint[] points = cache.getEquipPoints(equips[i]);
+            BComponent[] points = cache.getEquipPoints(equips[i]);
 
             // only included annotated points
             if (annotatedOnly)
             {
-                Array pointArr = new Array(BControlPoint.class);
+                Array pointArr = new Array(BComponent.class);
                 for (int j = 0; j < points.length; j++)
                     if (BHDict.findTagAnnotation(points[j]) != null)
                         pointArr.add(points[j]);
-                points = (BControlPoint[]) pointArr.trim();
+                points = (BComponent[]) pointArr.trim();
             }
 
             Map map = new HashMap();
@@ -762,7 +762,7 @@ class NHServerOps
                 HRef ref = nref.getHRef();
                 Array pointArr = (Array) map.get(ref);
                 if (pointArr == null)
-                    map.put(ref, pointArr = new Array(BControlPoint.class));
+                    map.put(ref, pointArr = new Array(BComponent.class));
                 pointArr.add(points[j]);
             }
 
@@ -777,7 +777,7 @@ class NHServerOps
                 {
                     for (int j = 0; j < pointArr.size(); j++)
                     {
-                        BControlPoint point = (BControlPoint) pointArr.get(j);
+                        BComponent point = (BComponent) pointArr.get(j);
                         result.add(makeDuplicateDict(ref, point));
                     }
                 }
@@ -787,7 +787,7 @@ class NHServerOps
         return HGridBuilder.dictsToGrid((HDict[]) result.trim());
     }
 
-    private static HDict makeDuplicateDict(HRef ref, BControlPoint point)
+    private static HDict makeDuplicateDict(HRef ref, BComponent point)
     {
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("id", ref);
@@ -831,51 +831,51 @@ class NHServerOps
         return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
     }
 
-//////////////////////////////////////////////////////////////////////////
-// ScheduleRead
-//////////////////////////////////////////////////////////////////////////
-
-    static class ScheduleReadOp extends HOp
-    {
-        public String name() { return "scheduleRead"; }
-        public String summary() { return "Read time series from point schedule"; }
-        public HGrid onService(HServer db, HGrid req) throws Exception
-        {
-            NHServer server = (NHServer) db;
-            if (!server.getCache().initialized()) 
-                throw new IllegalStateException(Cache.NOT_INITIALIZED);
-
-            if (req.isEmpty()) throw new Exception("Request has no rows");
-            HRow row = req.row(0);
-            HRef id = valToId(db, row.get("id"));
-
-            return server.scheduleRead(id);
-        }
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// ScheduleWriteOp
-//////////////////////////////////////////////////////////////////////////
-
-    static class ScheduleWriteOp extends HOp
-    {
-        public String name() { return "scheduleWrite"; }
-        public String summary() { return "Write time series data to point schedule"; }
-        public HGrid onService(HServer db, HGrid req) throws Exception
-        {
-            NHServer server = (NHServer) db;
-            if (!server.getCache().initialized()) 
-                throw new IllegalStateException(Cache.NOT_INITIALIZED);
-
-            if (req.isEmpty()) throw new Exception("Request has no rows");
-            HRef id = valToId(db, req.meta().get("id"));
-
-            HHisItem[] items = HHisItem.gridToItems(req);
-            server.scheduleWrite(id, items);
-            return HGrid.EMPTY;
-        }
-    }
-
+////////////////////////////////////////////////////////////////////////////
+//// ScheduleRead
+////////////////////////////////////////////////////////////////////////////
+//
+//    static class ScheduleReadOp extends HOp
+//    {
+//        public String name() { return "scheduleRead"; }
+//        public String summary() { return "Read time series from point schedule"; }
+//        public HGrid onService(HServer db, HGrid req) throws Exception
+//        {
+//            NHServer server = (NHServer) db;
+//            if (!server.getCache().initialized()) 
+//                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+//
+//            if (req.isEmpty()) throw new Exception("Request has no rows");
+//            HRow row = req.row(0);
+//            HRef id = valToId(db, row.get("id"));
+//
+//            return server.scheduleRead(id);
+//        }
+//    }
+//
+////////////////////////////////////////////////////////////////////////////
+//// ScheduleWriteOp
+////////////////////////////////////////////////////////////////////////////
+//
+//    static class ScheduleWriteOp extends HOp
+//    {
+//        public String name() { return "scheduleWrite"; }
+//        public String summary() { return "Write time series data to point schedule"; }
+//        public HGrid onService(HServer db, HGrid req) throws Exception
+//        {
+//            NHServer server = (NHServer) db;
+//            if (!server.getCache().initialized()) 
+//                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+//
+//            if (req.isEmpty()) throw new Exception("Request has no rows");
+//            HRef id = valToId(db, req.meta().get("id"));
+//
+//            HHisItem[] items = HHisItem.gridToItems(req);
+//            server.scheduleWrite(id, items);
+//            return HGrid.EMPTY;
+//        }
+//    }
+//
 ////////////////////////////////////////////////////////////////
 // utils
 ////////////////////////////////////////////////////////////////
@@ -950,7 +950,7 @@ class NHServerOps
         protected HWatch[] onWatches() { throw new UnsupportedOperationException(); }
         protected HWatch onWatch(String id) { throw new UnsupportedOperationException(); }
         protected HGrid onPointWriteArray(HDict rec) { throw new UnsupportedOperationException(); }
-        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HHisItem[] schedItems) { throw new UnsupportedOperationException(); }
+        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HDict ops) { throw new UnsupportedOperationException(); }
         protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range) { throw new UnsupportedOperationException(); }
         protected void onHisWrite(HDict rec, HHisItem[] items) { throw new UnsupportedOperationException(); }
         protected HGrid onInvokeAction(HDict rec, String action, HDict args) { throw new UnsupportedOperationException(); }

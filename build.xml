@@ -30,6 +30,7 @@
     <dependency name="gx"         vendor="Tridium" vendorVersion="3.5"/>
     <dependency name="history"    vendor="Tridium" vendorVersion="3.5"/>
     <dependency name="net"        vendor="Tridium" vendorVersion="3.5"/>
+    <dependency name="schedule"   vendor="Tridium" vendorVersion="3.5"/>
     <dependency name="web"        vendor="Tridium" vendorVersion="3.5"/>
     <dependency name="workbench"  vendor="Tridium" vendorVersion="3.5"/>
 

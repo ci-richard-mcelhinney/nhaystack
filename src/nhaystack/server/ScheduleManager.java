@@ -14,11 +14,13 @@ import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.schedule.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.timezone.*;
 import javax.baja.units.*;
 import javax.baja.util.*;
+import com.tridium.util.backport.concurrent.ConcurrentHashMap;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
@@ -33,7 +35,7 @@ import nhaystack.util.*;
   * ScheduleManager does various task associated with generating tags
   * and looking things up based on ids, etc.
   */
-public class ScheduleManager
+class ScheduleManager
 {
     ScheduleManager(
         NHServer server,
@@ -43,56 +45,204 @@ public class ScheduleManager
         this.service = service;
     }
 
-    void makePointEvents(BControlPoint[] points)
+    /**
+      * this gets called during 'rebuildCache()'
+      */
+    void makePointEvents(BComponent[] points)
     {
-        if (ticket != null)
-        {
-            LOG.trace("Canceling a ticket at " + ticketTs + " for " + ticketId);
-            ticket.cancel();
-            ticket = null;
-        }
         for (int i = 0; i < points.length; i++)
-            makePointEvent(points[i]);
+        {
+            HRef id = server.getTagManager().makeComponentRef(points[i]).getHRef();
+
+            // cancel any existing ticket
+            Clock.Ticket ticket = (Clock.Ticket) ticketById.remove(id);
+            if (ticket != null) 
+            {
+                ticket.cancel();
+            }
+
+            // make a new ticket
+            makeTicketFromItems(id, hisItems(points[i]));
+        }
     }
 
-    void makePointEvent(BControlPoint point)
-    {
-        HRef id = server.getTagManager().makeComponentRef(point).getHRef();
-        HHisItem[] items = hisItems(point);
-        makeTicketFromItems(id, items);
-    }
-
+    /**
+      * Apply the given schedule to its parent point, by calling onPointWrite
+      */
     void applySchedule(BHScheduleEvent event)
     {
-        HRef id = event.getId().getRef();
-
-        BControlPoint point = (BControlPoint) server.getTagManager().lookupComponent(id);
-        HDict tags = BHDict.findTagAnnotation(point);
-
-//System.out.println("ScheduleManager.applySchedule: " + 
-//    event.getId() + ", " + event.getValue() + ", " + 
-//    point.getSlotPath());
-
-        // set the point
-        HDictBuilder hdb = new HDictBuilder();
-        hdb.add("id", id);
-        HDict rec = hdb.toDict();
-        int level = tags.getInt("schedulable");
-        HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue());
-        server.onPointWrite(rec, level, val, "", null, null);
-
-        // try to make another ticket
-        HHisItem[] items = hisItems(point);
-        makeTicketFromItems(id, items);
+//        HRef id = event.getId().getRef();
+//
+//        BComponent point = (BComponent) server.getTagManager().lookupComponent(id);
+//        HDict tags = BHDict.findTagAnnotation(point);
+//
+////System.out.println("ScheduleManager.applySchedule: " + 
+////    event.getId() + ", " + event.getValue() + ", " + 
+////    point.getSlotPath());
+//
+//        // set the point
+//        HDictBuilder hdb = new HDictBuilder();
+//        hdb.add("id", id);
+//        HDict rec = hdb.toDict();
+//        int level = tags.getInt("schedulable");
+//        HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue());
+//        server.onPointWrite(rec, level, val, "", null);
+//
+//        // remove existing ticket
+//        ticketById.remove(id);
+//
+//        // try to make another ticket
+//        makeTicketFromItems(id, hisItems(point));
     }
 
-    private HHisItem[] hisItems(BControlPoint point)
+    protected void onScheduleWrite(HDict rec, HHisItem[] items)
+    {
+        ////////////////////////////////////////////////////////////////
+        for (int i = 0; i < items.length; i++)
+            System.out.println(i + ", " + items[i]);
+        ////////////////////////////////////////////////////////////////
+
+        BComponent comp = server.getTagManager().lookupComponent(rec.id());
+        if (comp == null) 
+            throw new BajaRuntimeException("Cannot find component for " + rec.id());
+
+        if (comp instanceof BControlPoint)
+            writePointSchedule((BControlPoint) comp, items);
+        else if (comp instanceof BWeeklySchedule)
+            writeWeeklySchedule((BWeeklySchedule) comp, items);
+        else
+            throw new BajaRuntimeException("Cannot write schedule to " + comp.getSlotPath());
+    }
+
+////////////////////////////////////////////////////////////////
+// private
+////////////////////////////////////////////////////////////////
+
+    private void writePointSchedule(BControlPoint point, HHisItem[] items)
+    {
+        HDict orig = BHDict.findTagAnnotation(point);
+        if (orig == null) orig = HDict.EMPTY;
+
+        HDictBuilder hdb = new HDictBuilder();
+        Iterator itr = orig.iterator();
+        while (itr.hasNext())
+        {
+            Map.Entry e = (Map.Entry) itr.next();
+            String name = (String) e.getKey();
+            HVal val = (HVal) e.getValue();
+
+            if (name.equals("weeklySchedule")) continue;
+            if (name.equals("tz") && items.length > 0) continue;
+            hdb.add(name, val);
+        }
+
+        HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
+        hdb.add("weeklySchedule", HZincWriter.gridToString(schedule));
+        if (items.length > 0)
+            hdb.add("tz", items[0].ts.tz.toString());
+
+        if (point.get("haystack") == null)
+            point.add("haystack", BHDict.make(hdb.toDict()));
+        else
+            point.set("haystack", BHDict.make(hdb.toDict()));
+    } 
+
+    private void writeWeeklySchedule(BWeeklySchedule sched, HHisItem[] items)
+    {
+        items = ScheduleManager.normalizeWeek(items);
+        BWeekSchedule week = new BWeekSchedule();
+
+        for (int i = 0; i < items.length; i++)
+        {
+            BSimple value = TypeUtil.toBajaSimple(items[i].val);
+
+            // skip values that correspond to the schedule's default output
+            if (value.equals(sched.getDefaultOutput())) continue;
+            BStatusValue sv = makeStatusValue(value, BStatus.ok);
+
+            // start
+            BTime start = BTime.make(
+                BAbsTime.make(
+                    items[i].ts.millis(), 
+                    TypeUtil.toBajaTimeZone(items[i].ts.tz)));
+
+            // finish (just before midnight if its the last one)
+            BTime finish = null;
+            if (i < items.length-1)
+            {
+                finish = BTime.make(
+                    BAbsTime.make(
+                        items[i+1].ts.millis(), 
+                        TypeUtil.toBajaTimeZone(items[i+1].ts.tz)));
+            }
+            else
+            {
+                finish = BTime.make(23, 59, 59, 999);
+            }
+
+            // apply to the appropriate weekday
+            switch (items[i].ts.date.weekday())
+            {
+                case 1: week.getSunday()    .add(start, finish, sv, null); break;
+                case 2: week.getMonday()    .add(start, finish, sv, null); break;
+                case 3: week.getTuesday()   .add(start, finish, sv, null); break;
+                case 4: week.getWednesday() .add(start, finish, sv, null); break;
+                case 5: week.getThursday()  .add(start, finish, sv, null); break;
+                case 6: week.getFriday()    .add(start, finish, sv, null); break;
+                case 7: week.getSaturday()  .add(start, finish, sv, null); break;
+
+                default: 
+                    throw new IllegalStateException();
+            }
+        }
+
+        sched.getSchedule().set("week", week);
+    }
+
+    /**
+      * Make sure all of the items are scheduled to happen this week.  
+      */
+    private static HHisItem[] normalizeWeek(HHisItem[] items)
+    {
+        HTimeZone tz = items[0].ts.tz;
+        long curMillis = System.currentTimeMillis();
+
+        // compute sunday of this week
+        HDateTime now = HDateTime.make(curMillis, tz);
+        HDateTime sunday = HDateTime.make(
+            now.date.minusDays(now.date.weekday()-1), 
+            HTime.MIDNIGHT, tz);
+
+        return doNormalizeWeek(items, sunday);
+    }
+
+    private static BStatusValue makeStatusValue(BValue value, BStatus status)
+    {
+        if (value instanceof BIBoolean) 
+            return new BStatusBoolean(((BIBoolean)value).getBoolean(), status);
+
+        if (value instanceof BINumeric) 
+            return new BStatusNumeric(((BINumeric)value).getNumeric(), status);
+
+        if (value instanceof BIEnum) 
+            return new BStatusEnum(((BIEnum)value).getEnum(), status);
+
+        return new BStatusString(value.toString(), status);
+    }
+
+    /**
+      * read the HHisItems from the 'weeklySchedule' tag
+      */
+    private static HHisItem[] hisItems(BComponent point)
     {
         HDict tags = BHDict.findTagAnnotation(point);
         HGrid grid = (new HZincReader(tags.getStr("weeklySchedule"))).readGrid();
         return HHisItem.gridToItems(grid);
     }
 
+    /**
+      * create a ticket for the next future HHisItem
+      */
     private void makeTicketFromItems(HRef id, HHisItem[] items)
     {
         if (items.length == 0) return;
@@ -107,14 +257,18 @@ public class ScheduleManager
             HTime.MIDNIGHT, tz);
 
         // try this week
-        if (!scheduleWeeklyTicket(id, normalizeWeek(items, sunday), curMillis))
+        if (!scheduleWeeklyTicket(id, doNormalizeWeek(items, sunday), curMillis))
         {
             // maybe next week
             sunday = HDateTime.make(sunday.date.plusDays(7), HTime.MIDNIGHT, tz);
-            scheduleWeeklyTicket(id, normalizeWeek(items, sunday), curMillis);
+            scheduleWeeklyTicket(id, doNormalizeWeek(items, sunday), curMillis);
         }
     }
 
+    /**
+      * Attempt to schedule something for this week from the given HHisItems.
+      * If there is nothing available, then  
+      */
     private boolean scheduleWeeklyTicket(HRef id, HHisItem[] items, long curMillis)
     {
         BTimeZone tz = TypeUtil.toBajaTimeZone(items[0].ts.tz);
@@ -133,15 +287,15 @@ public class ScheduleManager
                 if (LOG.isTraceOn())
                     LOG.trace("Scheduling a ticket at " + item.ts + " for " + id);
                 
-                ticketTs = item.ts;
-                ticketId = id;
-                ticket = Clock.schedule(
-                    service, 
-                    absTime,
-                    BNHaystackService.applySchedule,
-                    new BHScheduleEvent(
-                        BHRef.make(id),
-                        TypeUtil.toBajaSimple(item.val)));
+                ticketById.put(
+                    id, 
+                    Clock.schedule(
+                        service, 
+                        absTime,
+                        BNHaystackService.applySchedule,
+                        new BHScheduleEvent(
+                            BHRef.make(id),
+                            TypeUtil.toBajaSimple(item.val))));
 
                 return true;
             }
@@ -153,7 +307,7 @@ public class ScheduleManager
     /**
       * Make sure all of the items are scheduled to happen this week.  
       */
-    private HHisItem[] normalizeWeek(HHisItem[] items, HDateTime thisSun)
+    private static HHisItem[] doNormalizeWeek(HHisItem[] items, HDateTime thisSun)
     {
         if (items.length == 0) throw new IllegalStateException();
 
@@ -201,8 +355,7 @@ public class ScheduleManager
 
     private final NHServer server;
     private final BNHaystackService service;
-    private Clock.Ticket ticket = null;
-    private HDateTime ticketTs = null;
-    private HRef ticketId = null;
+
+    private final ConcurrentHashMap ticketById = new ConcurrentHashMap(); // <HRef,Clock.Ticket>
 }
 

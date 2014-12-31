@@ -124,7 +124,7 @@ public class Nav
                         HDict equipTags = tagMgr.createComponentTags(equips[j]);
                         String equipName = equipTags.getStr("navName");
 
-                        BControlPoint[] points = cache.getNavEquipPoints(
+                        BComponent[] points = cache.getNavEquipPoints(
                             makeEquipNavId(siteName, equipName));
 
                         if (points.length == 0)
@@ -383,11 +383,10 @@ public class Nav
         Array dicts = new Array(HDict.class);
 
         String equipNav = makeEquipNavId(siteName, equipName);
-        BControlPoint[] points = cache.getNavEquipPoints(equipNav);
+        BComponent[] points = cache.getNavEquipPoints(equipNav);
         for (int i = 0; i < points.length; i++)
         {
-            BControlPoint point = points[i];
-            if (!TypeUtil.canRead(point, cx)) continue;
+            BComponent point = points[i];
 
             HDictBuilder hd = new HDictBuilder();
             hd.add(tagMgr.createComponentTags(point));

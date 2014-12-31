@@ -434,8 +434,10 @@ public class NHServer extends HServer
         HVal val, 
         String who, 
         HNum dur, // ignore this for now
-        HHisItem[] schedItems)
+        HDict ops)
+//        HHisItem[] schedItems)
     {
+System.out.println("onPointWrite: " + ops);
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
@@ -994,106 +996,106 @@ public class NHServer extends HServer
 // Schedule
 //////////////////////////////////////////////////////////////////////////
 
-  /**
-   * Read schedule time-series data for given record.
-   */
-  public final HGrid scheduleRead(HRef id)
-  {
-      // lookup entity
-      HDict rec = readById(id);
-
-      // check that entity has "weeklySchedule" tag
-      if (rec.missing("weeklySchedule"))
-          throw new UnknownNameException("Rec missing 'weeklySchedule' tag: " + rec.dis());
-
-      // route to subclass
-      HHisItem[] items = onScheduleRead(rec);
-
-      // build and return result grid
-      HDict meta = new HDictBuilder()
-          .add("id", id)
-          .toDict();
-      return HGridBuilder.hisItemsToGrid(meta, items);
-  }
-
-  /**
-   * Implementation hook for scheduleRead.  The items must be exclusive
-   * of start and inclusive of end time.
-   */
-  protected /*abstract*/ HHisItem[] onScheduleRead(HDict rec)
-  {
-      HGrid grid = (new HZincReader(rec.getStr("weeklySchedule"))).readGrid();
-      return HHisItem.gridToItems(grid);
-  }
-
-  /**
-   * Write a set of schedule time-series data to the given point record.
-   * The record must already be defined and must be properly tagged as
-   * a schedule-ized point.  The timestamp timezone must exactly match the
-   * point's configured "tz" tag.  
-   */
-  public final void scheduleWrite(HRef id, HHisItem[] items)
-  {
-      // lookup entity
-      HDict rec = readById(id);
-
+//  /**
+//   * Read schedule time-series data for given record.
+//   */
+//  public final HGrid scheduleRead(HRef id)
+//  {
+//      // lookup entity
+//      HDict rec = readById(id);
+//
 //      // check that entity has "weeklySchedule" tag
 //      if (rec.missing("weeklySchedule"))
-//          throw new UnknownNameException("Entity missing 'weeklySchedule' tag: " + rec.dis());
-
-//      // lookup "tz" on entity
-//      HTimeZone tz = null;
-//      if (rec.has("tz")) tz = HTimeZone.make(rec.getStr("tz"), false);
-//      if (tz == null)
-//          throw new UnknownNameException("Rec missing or invalid 'tz' tag: " + rec.dis());
-
-//      // check tz of items
-//      if (items.length == 0) return;
-//      for (int i=0; i<items.length; ++i)
-//          if (!items[i].ts.tz.equals(tz)) throw new RuntimeException("item.tz != rec.tz: " + items[i].ts.tz + " != " + tz);
-
-      // route to subclass
-      onScheduleWrite(rec, items);
-  }
-
-  /**
-   * Implementation hook for onScheduleWrite.
-   */
-  protected /*abstract*/ void onScheduleWrite(HDict rec, HHisItem[] items)
-  {
-    if (LOG.isTraceOn())
-        LOG.trace("onScheduleWrite " + rec.id());
-
-      BComponent comp = tagMgr.lookupComponent(rec.id());
-      if (comp == null) 
-          throw new BajaRuntimeException("Cannot find component for " + rec.id());
-
-      HDict orig = BHDict.findTagAnnotation(comp);
-      if (orig == null) orig = HDict.EMPTY;
-
-      HDictBuilder hdb = new HDictBuilder();
-      Iterator itr = orig.iterator();
-      while (itr.hasNext())
-      {
-          Map.Entry e = (Map.Entry) itr.next();
-          String name = (String) e.getKey();
-          HVal val = (HVal) e.getValue();
-
-          if (name.equals("weeklySchedule")) continue;
-          if (name.equals("tz") && items.length > 0) continue;
-          hdb.add(name, val);
-      }
-
-      HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
-      hdb.add("weeklySchedule", HZincWriter.gridToString(schedule));
-      if (items.length > 0)
-          hdb.add("tz", items[0].ts.tz.toString());
-
-      if (comp.get("haystack") == null)
-          comp.add("haystack", BHDict.make(hdb.toDict()));
-      else
-          comp.set("haystack", BHDict.make(hdb.toDict()));
-  }
+//          throw new UnknownNameException("Rec missing 'weeklySchedule' tag: " + rec.dis());
+//
+//      // route to subclass
+//      HHisItem[] items = onScheduleRead(rec);
+//
+//      // build and return result grid
+//      HDict meta = new HDictBuilder()
+//          .add("id", id)
+//          .toDict();
+//      return HGridBuilder.hisItemsToGrid(meta, items);
+//  }
+//
+//  /**
+//   * Implementation hook for scheduleRead.  The items must be exclusive
+//   * of start and inclusive of end time.
+//   */
+//  protected /*abstract*/ HHisItem[] onScheduleRead(HDict rec)
+//  {
+//      HGrid grid = (new HZincReader(rec.getStr("weeklySchedule"))).readGrid();
+//      return HHisItem.gridToItems(grid);
+//  }
+//
+//  /**
+//   * Write a set of schedule time-series data to the given point record.
+//   * The record must already be defined and must be properly tagged as
+//   * a schedule-ized point.  The timestamp timezone must exactly match the
+//   * point's configured "tz" tag.  
+//   */
+//  public final void scheduleWrite(HRef id, HHisItem[] items)
+//  {
+//      // lookup entity
+//      HDict rec = readById(id);
+//
+////      // check that entity has "weeklySchedule" tag
+////      if (rec.missing("weeklySchedule"))
+////          throw new UnknownNameException("Entity missing 'weeklySchedule' tag: " + rec.dis());
+//
+////      // lookup "tz" on entity
+////      HTimeZone tz = null;
+////      if (rec.has("tz")) tz = HTimeZone.make(rec.getStr("tz"), false);
+////      if (tz == null)
+////          throw new UnknownNameException("Rec missing or invalid 'tz' tag: " + rec.dis());
+//
+////      // check tz of items
+////      if (items.length == 0) return;
+////      for (int i=0; i<items.length; ++i)
+////          if (!items[i].ts.tz.equals(tz)) throw new RuntimeException("item.tz != rec.tz: " + items[i].ts.tz + " != " + tz);
+//
+//      // route to subclass
+//      onScheduleWrite(rec, items);
+//  }
+//
+//  /**
+//   * Implementation hook for onScheduleWrite.
+//   */
+//  protected /*abstract*/ void onScheduleWrite(HDict rec, HHisItem[] items)
+//  {
+//    if (LOG.isTraceOn())
+//        LOG.trace("onScheduleWrite " + rec.id());
+//
+//      BComponent comp = tagMgr.lookupComponent(rec.id());
+//      if (comp == null) 
+//          throw new BajaRuntimeException("Cannot find component for " + rec.id());
+//
+//      HDict orig = BHDict.findTagAnnotation(comp);
+//      if (orig == null) orig = HDict.EMPTY;
+//
+//      HDictBuilder hdb = new HDictBuilder();
+//      Iterator itr = orig.iterator();
+//      while (itr.hasNext())
+//      {
+//          Map.Entry e = (Map.Entry) itr.next();
+//          String name = (String) e.getKey();
+//          HVal val = (HVal) e.getValue();
+//
+//          if (name.equals("weeklySchedule")) continue;
+//          if (name.equals("tz") && items.length > 0) continue;
+//          hdb.add(name, val);
+//      }
+//
+//      HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
+//      hdb.add("weeklySchedule", HZincWriter.gridToString(schedule));
+//      if (items.length > 0)
+//          hdb.add("tz", items[0].ts.tz.toString());
+//
+//      if (comp.get("haystack") == null)
+//          comp.add("haystack", BHDict.make(hdb.toDict()));
+//      else
+//          comp.set("haystack", BHDict.make(hdb.toDict()));
+//  }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 
@@ -1119,8 +1121,6 @@ public class NHServer extends HServer
         HStdOps.invokeAction,
         new NHServerOps.ExtendedReadOp(),
         new NHServerOps.ExtendedOp(),
-        new NHServerOps.ScheduleReadOp(),
-        new NHServerOps.ScheduleWriteOp(),
     };
 
     private final HashMap watches = new HashMap();

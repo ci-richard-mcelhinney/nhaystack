@@ -12,6 +12,7 @@ import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.schedule.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
@@ -61,8 +62,8 @@ class Cache
             rebuildHistoryCache_secondPass();
             initialized = true;
 
-            LOG.trace("Rebuild cache: step 5 of 5..."); 
-            schedMgr.makePointEvents((BControlPoint[]) scheduledPoints.trim());
+        LOG.trace("Rebuild cache: step 5 of 5..."); 
+        schedMgr.makePointEvents((BComponent[]) scheduledPoints.trim());
 
             lastRebuildTime = BAbsTime.now();
             long t1 = Clock.ticks();
@@ -107,7 +108,7 @@ class Cache
     /**
       * Return the implicit 'equip' for the point, or null.
       */
-    synchronized BHEquip getImplicitEquip(BControlPoint point)
+    synchronized BHEquip getImplicitEquip(BComponent point)
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
@@ -144,7 +145,7 @@ class Cache
     /**
       * Get all the points associated with the given equip navId.
       */
-    synchronized BControlPoint[] getNavEquipPoints(String equipNav)
+    synchronized BComponent[] getNavEquipPoints(String equipNav)
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
@@ -155,12 +156,12 @@ class Cache
     /**
       * Get all the points associated with the given equip.
       */
-    synchronized BControlPoint[] getEquipPoints(BHEquip equip)
+    synchronized BComponent[] getEquipPoints(BHEquip equip)
     {
         Array arr = (Array) equipPoints.get(equip);
         return (arr == null) ?  
-            new BControlPoint[0] : 
-            (BControlPoint[]) arr.trim();
+            new BComponent[0] : 
+            (BComponent[]) arr.trim();
     }
 
     /**
@@ -224,7 +225,7 @@ class Cache
         equipPoints = new HashMap();
         sepRefToComp = new HashMap();
         compToSepRef = new HashMap();
-        scheduledPoints = new Array(BControlPoint.class);
+        scheduledPoints = new Array(BComponent.class);
 
         Array sitesArr = new Array(BHSite.class);
         Array equipsArr = new Array(BHEquip.class);
@@ -295,6 +296,32 @@ class Cache
                     }
                 }
             }
+            // schedule
+            else if (comp instanceof BWeeklySchedule)
+            {
+                BWeeklySchedule sched = (BWeeklySchedule) comp;
+                numPoints++;
+
+                // BAbstractSchedules always have tags generated
+                if (tags == null) tags = HDict.EMPTY;
+
+                // explicit equip
+                if (tags.has("equipRef"))
+                {
+                    HRef ref = tags.getRef("equipRef");
+                    BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
+                    addPointToEquip(equip, sched);
+                }
+                // implicit equip
+                else
+                {
+                    if (curImplicitEquip != null)
+                    {
+                        addPointToEquip(curImplicitEquip, sched);
+                        implicitEquips.put(sched, curImplicitEquip);
+                    }
+                }
+            }
             // auto-tagged site and equip
             else if (comp instanceof BHTagged)
             {
@@ -320,11 +347,11 @@ class Cache
         numEquips = equips.length;
     }
 
-    private void addPointToEquip(BHEquip equip, BControlPoint point)
+    private void addPointToEquip(BHEquip equip, BComponent point)
     {
         Array arr = (Array) equipPoints.get(equip);
         if (arr == null)
-            equipPoints.put(equip, arr = new Array(BControlPoint.class));
+            equipPoints.put(equip, arr = new Array(BComponent.class));
         arr.add(point);
     }
 
@@ -394,13 +421,13 @@ class Cache
 
                 // lookup points for equip
                 arr = (Array) equipPoints.get(equip);
-                BControlPoint[] points = (arr == null) ?  
-                    new BControlPoint[0] : (BControlPoint[]) arr.trim();
+                BComponent[] points = (arr == null) ?  
+                    new BComponent[0] : (BComponent[]) arr.trim();
 
                 // iterate through points for equip
                 for (int k = 0; k < points.length; k++)
                 {
-                    BControlPoint point = points[k];
+                    BComponent point = points[k];
 
                     // make ref for point
                     HDict pointTags = BHDict.findTagAnnotation(point);
@@ -481,22 +508,22 @@ class Cache
     private boolean initialized = false;
 
     private Map remoteToConfig = null; // RemotePoint -> BHistoryConfig
-    private Map remoteToPoint  = null; // RemotePoint -> BControlPoint
+    private Map remoteToPoint  = null; // RemotePoint -> BComponent
     private Map navHistories   = null; // stationName -> Array<BHistoryConfig>
 
     private BHSite[] sites = new BHSite[0];
     private BHEquip[] equips = new BHEquip[0];
 
-    private Map implicitEquips = null; // BControlPoint -> BHEquip
+    private Map implicitEquips = null; // BComponent -> BHEquip
     private Map siteNavs       = null; // String -> BHSite
     private Map equipNavs      = null; // String -> BHEquip
     private Map siteEquips     = null; // BHSite -> Array<BHEquip>
-    private Map equipPoints    = null; // BHEquip -> Array<BControlPoint>
+    private Map equipPoints    = null; // BHEquip -> Array<BComponent>
 
     private Map sepRefToComp = null; // NHRef -> BComponent
     private Map compToSepRef = null; // BComponent -> NHRef
 
-    private Array scheduledPoints = null; // BControlPoint
+    private Array scheduledPoints = null; // BComponent
 
     private int numSites = 0;
     private int numEquips = 0;
