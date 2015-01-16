@@ -594,7 +594,7 @@ public class TagManager
         if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
 
         // actions tag
-        if (point.isWritablePoint())
+        if (point.isWritablePoint() || tags.has("writable"))
         {
             HGrid actionsGrid = createPointActions(point, pointKind);
             if (actionsGrid != null)
@@ -619,6 +619,9 @@ public class TagManager
         
         hdb.add("point");
         hdb.add("cur");
+
+        // schedules are writable
+        hdb.add("writable");
 
         // point kind tags
         int pointKind = getControlPointKind(point);
@@ -713,16 +716,17 @@ public class TagManager
                 addPointAction(point, arr, "auto",              "pointAuto($self)");
                 addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride($self, $val)");
                 addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto($self)");
+                addPointAction(point, arr, "set",               "pointSetDef($self, $val)");
                 break;
 
             case BOOLEAN_KIND:
                 addPointAction(point, arr, "active",   "pointOverride($self, true, $duration)");
                 addPointAction(point, arr, "inactive", "pointOverride($self, false, $duration)");
                 addPointAction(point, arr, "auto",     "pointAuto($self)");
-
                 addPointAction(point, arr, "emergencyActive",   "pointEmergencyOverride($self, true, $duration)");
                 addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride($self, false, $duration)");
                 addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto($self)");
+                addPointAction(point, arr, "set",               "pointSetDef($self, $val)");
                 break;
         }
 

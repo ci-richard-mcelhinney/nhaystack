@@ -50,6 +50,10 @@ class ScheduleManager
       */
     void makePointEvents(BComponent[] points)
     {
+System.out.println("ScheduleManager.makePointEvents " + points.length);
+for (int i = 0; i < points.length; i++)
+    System.out.println("    " + points[i].getSlotPath());
+
         for (int i = 0; i < points.length; i++)
         {
             HRef id = server.getTagManager().makeComponentRef(points[i]).getHRef();
@@ -71,36 +75,53 @@ class ScheduleManager
       */
     void applySchedule(BHScheduleEvent event)
     {
-//        HRef id = event.getId().getRef();
-//
-//        BComponent point = (BComponent) server.getTagManager().lookupComponent(id);
-//        HDict tags = BHDict.findTagAnnotation(point);
-//
-////System.out.println("ScheduleManager.applySchedule: " + 
-////    event.getId() + ", " + event.getValue() + ", " + 
-////    point.getSlotPath());
-//
-//        // set the point
-//        HDictBuilder hdb = new HDictBuilder();
-//        hdb.add("id", id);
-//        HDict rec = hdb.toDict();
-//        int level = tags.getInt("schedulable");
-//        HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue());
-//        server.onPointWrite(rec, level, val, "", null);
-//
-//        // remove existing ticket
-//        ticketById.remove(id);
-//
-//        // try to make another ticket
-//        makeTicketFromItems(id, hisItems(point));
+        HRef id = event.getId().getRef();
+
+        BComponent point = (BComponent) server.getTagManager().lookupComponent(id);
+        HDict tags = BHDict.findTagAnnotation(point);
+
+System.out.println("ScheduleManager.applySchedule: " + 
+    event.getId() + ", " + event.getValue() + ", " + 
+    point.getSlotPath());
+
+        // set the point
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("id", id);
+        HDict rec = hdb.toDict();
+        int level = tags.getInt("schedulable");
+        HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue());
+        server.onPointWrite(rec, level, val, "", null, null);
+
+        // remove existing ticket
+        ticketById.remove(id);
+
+        // try to make another ticket
+        makeTicketFromItems(id, hisItems(point));
     }
 
-    protected void onScheduleWrite(HDict rec, HHisItem[] items)
+    /**
+      * fish the HHisItems out of the opts from pointWrite().
+      */
+    HHisItem[] getOpsSchedule(HDict opts)
     {
-        ////////////////////////////////////////////////////////////////
-        for (int i = 0; i < items.length; i++)
-            System.out.println(i + ", " + items[i]);
-        ////////////////////////////////////////////////////////////////
+        if (opts == null) return null;
+        if (!opts.has("schedule")) return null;
+
+        String zinc = TextUtil.replace(opts.getStr("schedule"), "\\n", "\n");
+        HZincReader reader = new HZincReader(zinc);
+        return HHisItem.gridToItems(reader.readGrid());
+    }
+
+    /**
+      * Write a schedule
+      */
+    void onScheduleWrite(HDict rec, HHisItem[] items)
+    {
+//////////////////////////////////////////////////////////////
+//System.out.println("ScheduleManager.onScheduleWrite: " + rec.id());
+//for (int i = 0; i < items.length; i++)
+//    System.out.println(i + ", " + items[i]);
+//////////////////////////////////////////////////////////////
 
         BComponent comp = server.getTagManager().lookupComponent(rec.id());
         if (comp == null) 
@@ -145,6 +166,9 @@ class ScheduleManager
             point.add("haystack", BHDict.make(hdb.toDict()));
         else
             point.set("haystack", BHDict.make(hdb.toDict()));
+
+        HRef id = server.getTagManager().makeComponentRef(point).getHRef();
+        makeTicketFromItems(id, items);
     } 
 
     private void writeWeeklySchedule(BWeeklySchedule sched, HHisItem[] items)
@@ -245,6 +269,7 @@ class ScheduleManager
       */
     private void makeTicketFromItems(HRef id, HHisItem[] items)
     {
+System.out.println("ScheduleManager.makeTicketFromItems: " + id);
         if (items.length == 0) return;
 
         HTimeZone tz = items[0].ts.tz;
@@ -271,14 +296,19 @@ class ScheduleManager
       */
     private boolean scheduleWeeklyTicket(HRef id, HHisItem[] items, long curMillis)
     {
-        BTimeZone tz = TypeUtil.toBajaTimeZone(items[0].ts.tz);
-        BAbsTime now = BAbsTime.make(curMillis, tz);
+        HDateTime now = HDateTime.now(items[0].ts.tz);
+System.out.println("ScheduleManager.scheduleWeeklyTicket: aaa " + id + ", " + now + ", " + now.millis());
 
         // try to find an item from the future
         for (int i = 0; i < items.length; i++)
         {
             HHisItem item = items[i];
-            if (item.ts.millis() > now.getMillis())
+
+System.out.println("ScheduleManager.scheduleWeeklyTicket: bbb " + 
+    id + ", " + item.ts + ", " + item.ts.millis() + ", " + 
+    (item.ts.millis() > now.millis()));
+
+            if (item.ts.millis() > now.millis())
             {
                 BAbsTime absTime = BAbsTime.make(
                     item.ts.millis(), 
@@ -286,7 +316,7 @@ class ScheduleManager
 
                 if (LOG.isTraceOn())
                     LOG.trace("Scheduling a ticket at " + item.ts + " for " + id);
-                
+
                 ticketById.put(
                     id, 
                     Clock.schedule(
@@ -356,6 +386,7 @@ class ScheduleManager
     private final NHServer server;
     private final BNHaystackService service;
 
-    private final ConcurrentHashMap ticketById = new ConcurrentHashMap(); // <HRef,Clock.Ticket>
+    // <HRef,Clock.Ticket>
+    private final ConcurrentHashMap ticketById = new ConcurrentHashMap(); 
 }
 

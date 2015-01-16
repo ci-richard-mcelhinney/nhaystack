@@ -35,7 +35,6 @@
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="lib/servlet.jar" />
-        <pathelement location="../ext/haystack.jar" />
       </classpath>
     </javac>
 
