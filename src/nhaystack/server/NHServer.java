@@ -16,6 +16,7 @@ import javax.baja.control.enums.*;
 import javax.baja.history.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.schedule.*;
 import javax.baja.security.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
@@ -73,7 +74,6 @@ public class NHServer extends HServer
             LOG.trace("onAbout");
 
         try
-
         {
             HDictBuilder hd = new HDictBuilder();
 
@@ -281,11 +281,27 @@ public class NHServer extends HServer
         if (LOG.isTraceOn())
             LOG.trace("onPointWriteArray " + rec.id());
 
+
+        BComponent comp = tagMgr.lookupComponent(rec.id());
+
+        if (comp instanceof BControlPoint)
+            return doControlPointArray((BControlPoint) comp);
+
+        else if (comp instanceof BWeeklySchedule)
+            return doScheduleArray((BWeeklySchedule) comp);
+
+        else
+            throw new BajaRuntimeException("pointWriteArray() failed for " + comp.getSlotPath());
+    }
+
+    /**
+      * return point array for BControlPoint
+      */
+    private HGrid doControlPointArray(BControlPoint point)
+    {
         try
         {
             HVal[] vals = new HVal[17];
-
-            BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());
 
             // Numeric
             if (point instanceof BNumericWritable)
@@ -379,6 +395,14 @@ public class NHServer extends HServer
     }
 
     /**
+      * return point array for BWeeklySchedule
+      */
+    private HGrid doScheduleArray(BWeeklySchedule sched)
+    {
+        return HGrid.EMPTY;
+    }
+
+    /**
       * get the source for each link that is connected to [in1..in16, fallback]
       */
     private String[] getLinkWho(BControlPoint point)
@@ -434,10 +458,8 @@ public class NHServer extends HServer
         HVal val, 
         String who, 
         HNum dur, // ignore this for now
-        HDict ops)
-//        HHisItem[] schedItems)
+        HDict opts)
     {
-System.out.println("onPointWrite: " + ops);
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
@@ -446,8 +468,24 @@ System.out.println("onPointWrite: " + ops);
               "id:"    + rec.id() + ", " +
               "level:" + level    + ", " +
               "val:"   + val      + ", " +
-              "who:"   + who);
+              "who:"   + who      + ", " +
+              "dur:"   + dur      + ", " +
+              "opts:"   + ((opts == null) ? "null" : opts.toZinc()));
 
+        HHisItem[] schedItems = schedMgr.getOpsSchedule(opts);
+        if (schedItems == null)
+            doPointWrite(rec, level, val, who, dur);
+        else
+            schedMgr.onScheduleWrite(rec, schedItems);
+    }
+
+    private void doPointWrite(
+        HDict rec, 
+        int level, 
+        HVal val, 
+        String who, 
+        HNum dur) // ignore this for now
+    {
         try
         {
             BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());

@@ -62,8 +62,8 @@ class Cache
             rebuildHistoryCache_secondPass();
             initialized = true;
 
-        LOG.trace("Rebuild cache: step 5 of 5..."); 
-        schedMgr.makePointEvents((BComponent[]) scheduledPoints.trim());
+            LOG.trace("Rebuild cache: step 5 of 5..."); 
+            schedMgr.makePointEvents((BComponent[]) scheduledPoints.trim());
 
             lastRebuildTime = BAbsTime.now();
             long t1 = Clock.ticks();

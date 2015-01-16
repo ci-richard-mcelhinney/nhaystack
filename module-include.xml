@@ -15,7 +15,6 @@
     <type name="HGrid"        class="nhaystack.BHGrid"/>
     <type name="HNum"         class="nhaystack.BHNum"/>
     <type name="HRef"         class="nhaystack.BHRef"/>
-    <type name="HSchedulable" class="nhaystack.BHSchedulable"/>
     <type name="HTimeZone"    class="nhaystack.BHTimeZone"/>
     <type name="HUnit"        class="nhaystack.BHUnit"/>
 
@@ -91,7 +90,6 @@
     <type name="HDictFE"        class="nhaystack.ui.BHDictFE">        <agent><on type="nhaystack:HDict"/>        </agent></type>
     <type name="HFloorFE"       class="nhaystack.ui.BHFloorFE">       <agent><on type="nhaystack:HFloor"/>       </agent></type>
     <type name="HNumFE"         class="nhaystack.ui.BHNumFE">         <agent><on type="nhaystack:HNum"/>         </agent></type>
-    <type name="HSchedulableFE" class="nhaystack.ui.BHSchedulableFE"> <agent><on type="nhaystack:HSchedulable"/> </agent></type>
     <type name="HTimeZoneFE"    class="nhaystack.ui.BHTimeZoneFE">    <agent><on type="nhaystack:HTimeZone"/>    </agent></type>
     <type name="HUnitFE"        class="nhaystack.ui.BHUnitFE">        <agent><on type="nhaystack:HUnit"/>        </agent></type>
 

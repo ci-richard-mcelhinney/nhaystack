@@ -95,10 +95,10 @@ public class BHDictEditorGroup extends BScrollPane
             else
                 essentialTags.put("equipRef", BHRef.DEFAULT.getRef());
 
-            if (optionalTags.containsKey("schedulable"))
-                essentialTags.put("schedulable", optionalTags.remove("schedulable"));
-            else
-                essentialTags.put("schedulable", HNum.make(BHSchedulable.DEFAULT.getPriority()));
+//            if (optionalTags.containsKey("schedulable"))
+//                essentialTags.put("schedulable", optionalTags.remove("schedulable"));
+//            else
+//                essentialTags.put("schedulable", HNum.make(BHSchedulable.DEFAULT.getPriority()));
         }
 
         //////////////////////

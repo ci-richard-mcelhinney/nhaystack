@@ -203,6 +203,7 @@ public abstract class TypeUtil
             BHistoryDatabase historyDb = (BHistoryDatabase) 
                 BOrd.make("history:").get(); 
             BIHistory his = historyDb.getHistory(cfg.getId());
+            if (his == null) return BPermissions.DEFAULT;
             return his.getPermissions(cx);
         }
         else
