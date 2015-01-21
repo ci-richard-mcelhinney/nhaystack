@@ -44,6 +44,8 @@ public abstract class TypeUtil
                 Unit unit = Resources.getSymbolUnit(num.unit);
                 if (unit.quantity.equals("time"))
                     return makeRelTime(num, unit);
+                else
+                    return BDouble.make(num.val); 
             }
         }
         else if (val instanceof HBool)
@@ -101,13 +103,15 @@ public abstract class TypeUtil
         // NOTE we can't use args.size(), because if args is an HRow,
         // the size() can be non-zero even if args.iterator().hasNext() is false.
 
+        BValue def = action.getParameterDefault();
+
         // null
-        if (args == null || !args.iterator().hasNext())
+        if (def == null)
         {
             return null;
         }
         // simple
-        else if (args.size() == 1)
+        else if (def instanceof BSimple)
         {
             Map.Entry e = (Map.Entry) args.iterator().next();
             HVal val = (HVal) e.getValue();
@@ -123,7 +127,7 @@ public abstract class TypeUtil
         // complex
         else
         {
-            BComplex cpx = (BComplex) action.getParameterDefault();
+            BComplex cpx = (BComplex) def;
 
             // Set each slot in the BComplex to a dict entry.
             // Note that we do not currently support nesting structs within structs.

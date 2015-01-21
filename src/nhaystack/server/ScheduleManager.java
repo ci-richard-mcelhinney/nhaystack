@@ -50,10 +50,6 @@ class ScheduleManager
       */
     void makePointEvents(BComponent[] points)
     {
-System.out.println("ScheduleManager.makePointEvents " + points.length);
-for (int i = 0; i < points.length; i++)
-    System.out.println("    " + points[i].getSlotPath());
-
         for (int i = 0; i < points.length; i++)
         {
             HRef id = server.getTagManager().makeComponentRef(points[i]).getHRef();
@@ -80,10 +76,6 @@ for (int i = 0; i < points.length; i++)
         BComponent point = (BComponent) server.getTagManager().lookupComponent(id);
         HDict tags = BHDict.findTagAnnotation(point);
 
-System.out.println("ScheduleManager.applySchedule: " + 
-    event.getId() + ", " + event.getValue() + ", " + 
-    point.getSlotPath());
-
         // set the point
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("id", id);
@@ -102,14 +94,16 @@ System.out.println("ScheduleManager.applySchedule: " +
     /**
       * fish the HHisItems out of the opts from pointWrite().
       */
-    HHisItem[] getOpsSchedule(HDict opts)
+    HHisItem[] getOptionsSchedule(HDict opts)
     {
         if (opts == null) return null;
         if (!opts.has("schedule")) return null;
 
         String zinc = TextUtil.replace(opts.getStr("schedule"), "\\n", "\n");
         HZincReader reader = new HZincReader(zinc);
-        return HHisItem.gridToItems(reader.readGrid());
+        HGrid grid = reader.readGrid();
+        HHisItem[] items = HHisItem.gridToItems(grid);
+        return items;
     }
 
     /**
@@ -117,22 +111,22 @@ System.out.println("ScheduleManager.applySchedule: " +
       */
     void onScheduleWrite(HDict rec, HHisItem[] items)
     {
-//////////////////////////////////////////////////////////////
-//System.out.println("ScheduleManager.onScheduleWrite: " + rec.id());
-//for (int i = 0; i < items.length; i++)
-//    System.out.println(i + ", " + items[i]);
-//////////////////////////////////////////////////////////////
-
         BComponent comp = server.getTagManager().lookupComponent(rec.id());
         if (comp == null) 
             throw new BajaRuntimeException("Cannot find component for " + rec.id());
 
         if (comp instanceof BControlPoint)
+        {
             writePointSchedule((BControlPoint) comp, items);
+        }
         else if (comp instanceof BWeeklySchedule)
+        {
             writeWeeklySchedule((BWeeklySchedule) comp, items);
+        }
         else
+        {
             throw new BajaRuntimeException("Cannot write schedule to " + comp.getSlotPath());
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -173,15 +167,17 @@ System.out.println("ScheduleManager.applySchedule: " +
 
     private void writeWeeklySchedule(BWeeklySchedule sched, HHisItem[] items)
     {
-        items = ScheduleManager.normalizeWeek(items);
+        items = normalizeWeek(items);
+
         BWeekSchedule week = new BWeekSchedule();
+        BValue defaultValue = sched.getDefaultOutput().getValueValue();
 
         for (int i = 0; i < items.length; i++)
         {
             BSimple value = TypeUtil.toBajaSimple(items[i].val);
 
             // skip values that correspond to the schedule's default output
-            if (value.equals(sched.getDefaultOutput())) continue;
+            if (value.equals(defaultValue)) continue;
             BStatusValue sv = makeStatusValue(value, BStatus.ok);
 
             // start
@@ -269,7 +265,6 @@ System.out.println("ScheduleManager.applySchedule: " +
       */
     private void makeTicketFromItems(HRef id, HHisItem[] items)
     {
-System.out.println("ScheduleManager.makeTicketFromItems: " + id);
         if (items.length == 0) return;
 
         HTimeZone tz = items[0].ts.tz;
@@ -297,16 +292,11 @@ System.out.println("ScheduleManager.makeTicketFromItems: " + id);
     private boolean scheduleWeeklyTicket(HRef id, HHisItem[] items, long curMillis)
     {
         HDateTime now = HDateTime.now(items[0].ts.tz);
-System.out.println("ScheduleManager.scheduleWeeklyTicket: aaa " + id + ", " + now + ", " + now.millis());
 
         // try to find an item from the future
         for (int i = 0; i < items.length; i++)
         {
             HHisItem item = items[i];
-
-System.out.println("ScheduleManager.scheduleWeeklyTicket: bbb " + 
-    id + ", " + item.ts + ", " + item.ts.millis() + ", " + 
-    (item.ts.millis() > now.millis()));
 
             if (item.ts.millis() > now.millis())
             {
@@ -342,16 +332,27 @@ System.out.println("ScheduleManager.scheduleWeeklyTicket: bbb " +
         if (items.length == 0) throw new IllegalStateException();
 
         HTimeZone tz = items[0].ts.tz;
-        HHisItem[] future = new HHisItem[items.length];
+        Array futureArr = new Array(HHisItem.class);
 
         // compute sunday of next week
         HDateTime nextSun = HDateTime.make(
             thisSun.date.plusDays(7), 
             HTime.MIDNIGHT, tz);
 
+        long startMillis = -1;
         for (int i = 0; i < items.length; i++)
         {
+            // Skip null values.  This is a workaround for a bug in finstack.
+            if (items[i].val == null) continue;
+
             HDateTime ts = items[i].ts;
+
+            // Skip values that happen greater than a week in the future
+            // This way we don't end up normalizing values that 'wrap-around'.
+            if (startMillis == -1)
+                startMillis = ts.millis();
+            else if ((ts.millis() - startMillis) > MILLIS_IN_WEEK)
+                continue;
 
             // subtract weeks until we are before next sunday
             while (ts.millis() >= nextSun.millis())
@@ -361,8 +362,10 @@ System.out.println("ScheduleManager.scheduleWeeklyTicket: bbb " +
             while (ts.millis() < thisSun.millis())
                 ts = HDateTime.make(ts.date.plusDays(7), ts.time, tz);
 
-            future[i] = HHisItem.make(ts, items[i].val);
+            futureArr.add(HHisItem.make(ts, items[i].val));
         }
+
+        HHisItem[] future = (HHisItem[]) futureArr.trim();
 
         Arrays.sort(
             future,
@@ -380,6 +383,8 @@ System.out.println("ScheduleManager.scheduleWeeklyTicket: bbb " +
 ////////////////////////////////////////////////////////////////
 // attribs 
 ////////////////////////////////////////////////////////////////
+
+    private static final long MILLIS_IN_WEEK = BRelTime.MILLIS_IN_DAY * 7;
 
     private static final Log LOG = Log.getLog("nhaystack");
 
