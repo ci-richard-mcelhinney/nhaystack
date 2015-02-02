@@ -53,6 +53,9 @@ public class BNHaystackService
                 default{[ false ]}
             initializationDelayTime: BRelTime 
                 default{[ BRelTime.DEFAULT ]}
+            foxLeaseInterval: BRelTime 
+                flags { hidden }
+                default{[ BRelTime.makeMinutes(2) ]}
         }
         actions
         {
@@ -95,8 +98,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(162149796)1.0$ @*/
-/* Generated Wed Nov 26 15:11:47 EST 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1880521100)1.0$ @*/
+/* Generated Sun Feb 01 09:41:07 EST 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -287,6 +290,29 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#initializationDelayTime
    */
   public void setInitializationDelayTime(BRelTime v) { set(initializationDelayTime,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "foxLeaseInterval"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>foxLeaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#getFoxLeaseInterval
+   * @see nhaystack.server.BNHaystackService#setFoxLeaseInterval
+   */
+  public static final Property foxLeaseInterval = newProperty(Flags.HIDDEN, BRelTime.makeMinutes(2),null);
+  
+  /**
+   * Get the <code>foxLeaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#foxLeaseInterval
+   */
+  public BRelTime getFoxLeaseInterval() { return (BRelTime)get(foxLeaseInterval); }
+  
+  /**
+   * Set the <code>foxLeaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#foxLeaseInterval
+   */
+  public void setFoxLeaseInterval(BRelTime v) { set(foxLeaseInterval,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"

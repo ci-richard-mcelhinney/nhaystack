@@ -10,8 +10,10 @@ package nhaystack.server;
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
 import javax.baja.driver.*;
+import javax.baja.fox.*;
 import javax.baja.history.*;
 import javax.baja.naming.*;
+import javax.baja.security.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
@@ -111,7 +113,7 @@ class RemotePoint
             slotPath.getBody().hashCode();
     }
 
-    private static BDevice findParentDevice(BComplex cpx)
+    static BDevice findParentDevice(BComplex cpx)
     {
         if (cpx == null) return null;
         if (cpx instanceof BDevice) return (BDevice) cpx;

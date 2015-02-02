@@ -712,27 +712,27 @@ public class TagManager
             case NUMERIC_KIND:
             case ENUM_KIND:
             case STRING_KIND:
-                if (point.isWritablePoint())
-                {
+//                if (point.isWritablePoint())
+//                {
                     addPointAction(point, arr, "override",          "pointOverride($self, $val, $duration)");
                     addPointAction(point, arr, "auto",              "pointAuto($self)");
                     addPointAction(point, arr, "emergencyOverride", "pointEmergencyOverride($self, $val)");
                     addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto($self)");
                     addPointAction(point, arr, "set",               "pointSetDef($self, $val)");
-                }
-                else
-                {
-                    addPointAction(point, arr, "override",          "finNHaystackInvoke($self, \"override\", {value: $val, duration: $duration})");
-                    addPointAction(point, arr, "auto",              "finNHaystackInvoke($self, \"auto\")");
-                    addPointAction(point, arr, "emergencyOverride", "finNHaystackInvoke($self, \"emergencyOverride\", {value: $val})");
-                    addPointAction(point, arr, "emergencyAuto",     "finNHaystackInvoke($self, \"emergencyAuto\")");
-                    addPointAction(point, arr, "set",               "finNHaystackInvoke($self, \"set\", {value: $val})");
-                }
+//                }
+//                else
+//                {
+//                    addPointAction(point, arr, "override",          "finNHaystackInvoke($self, \"override\", {value: $val, duration: $duration})");
+//                    addPointAction(point, arr, "auto",              "finNHaystackInvoke($self, \"auto\")");
+//                    addPointAction(point, arr, "emergencyOverride", "finNHaystackInvoke($self, \"emergencyOverride\", {value: $val})");
+//                    addPointAction(point, arr, "emergencyAuto",     "finNHaystackInvoke($self, \"emergencyAuto\")");
+//                    addPointAction(point, arr, "set",               "finNHaystackInvoke($self, \"set\", {value: $val})");
+//                }
                 break;
 
             case BOOLEAN_KIND:
-                if (point.isWritablePoint())
-                {
+//                if (point.isWritablePoint())
+//                {
                     addPointAction(point, arr, "active",            "pointOverride($self, true, $duration)");
                     addPointAction(point, arr, "inactive",          "pointOverride($self, false, $duration)");
                     addPointAction(point, arr, "auto",              "pointAuto($self)");
@@ -740,17 +740,17 @@ public class TagManager
                     addPointAction(point, arr, "emergencyInactive", "pointEmergencyOverride($self, false, $duration)");
                     addPointAction(point, arr, "emergencyAuto",     "pointEmergencyAuto($self)");
                     addPointAction(point, arr, "set",               "pointSetDef($self, $val)");
-                }
-                else
-                {
-                    addPointAction(point, arr, "active",            "finNHaystackInvoke($self, \"active\", {duration: $duration})");
-                    addPointAction(point, arr, "inactive",          "finNHaystackInvoke($self, \"inactive\", {duration: $duration})");
-                    addPointAction(point, arr, "auto",              "finNHaystackInvoke($self, \"auto\")");
-                    addPointAction(point, arr, "emergencyActive",   "finNHaystackInvoke($self, \"emergencyActive\")");
-                    addPointAction(point, arr, "emergencyInactive", "finNHaystackInvoke($self, \"emergencyInactive\")");
-                    addPointAction(point, arr, "emergencyAuto",     "finNHaystackInvoke($self, \"emergencyAuto\")");
-                    addPointAction(point, arr, "set",               "finNHaystackInvoke($self, \"set\", {value: $val})");
-                }
+//                }
+//                else
+//                {
+//                    addPointAction(point, arr, "active",            "finNHaystackInvoke($self, \"active\", {duration: $duration})");
+//                    addPointAction(point, arr, "inactive",          "finNHaystackInvoke($self, \"inactive\", {duration: $duration})");
+//                    addPointAction(point, arr, "auto",              "finNHaystackInvoke($self, \"auto\")");
+//                    addPointAction(point, arr, "emergencyActive",   "finNHaystackInvoke($self, \"emergencyActive\")");
+//                    addPointAction(point, arr, "emergencyInactive", "finNHaystackInvoke($self, \"emergencyInactive\")");
+//                    addPointAction(point, arr, "emergencyAuto",     "finNHaystackInvoke($self, \"emergencyAuto\")");
+//                    addPointAction(point, arr, "set",               "finNHaystackInvoke($self, \"set\", {value: $val})");
+//                }
 
                 break;
         }
