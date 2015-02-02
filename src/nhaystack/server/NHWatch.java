@@ -344,7 +344,7 @@ class NHWatch extends HWatch
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Log LOG = Log.getLog("nhaystack.watch");
 
     private final NHServer server;
     private final String dis;
