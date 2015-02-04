@@ -51,7 +51,7 @@ public class Nav
         String navName = BFormat.format(format, comp);
         navName = SlotPath.escape(navName);
 
-        return PathUtil.fromNiagaraPath(navName);
+        return SlotUtil.fromNiagara(navName);
     }
 
 ////////////////////////////////////////////////////////////////

@@ -102,7 +102,7 @@ public class TagManager
         {
             BOrd ord = BOrd.make("station:|" + 
                 (nh.getSpace().equals(NHRef.COMP) ? 
-                    "slot:" + PathUtil.toNiagaraPath(nh.getPath()) : 
+                    "slot:" + SlotUtil.toNiagara(nh.getPath()) : 
                     Base64.URI.decodeUTF8(nh.getPath())));
 
             BComponent comp = (BComponent) ord.get(service, null);
@@ -119,7 +119,7 @@ public class TagManager
         {
             BHistoryId hid = BHistoryId.make(
                 nh.getSpace().equals(NHRef.HIS) ? 
-                    "/" + PathUtil.toNiagaraPath(nh.getPath()) :
+                    "/" + SlotUtil.toNiagara(nh.getPath()) :
                     Base64.URI.decodeUTF8(nh.getPath()));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
@@ -168,7 +168,7 @@ public class TagManager
     {
         String path = comp.getSlotPath().toString();
         path = removePrefix(path, "slot:/");
-        path = PathUtil.fromNiagaraPath(path);
+        path = SlotUtil.fromNiagara(path);
 
         return NHRef.make(NHRef.COMP, path);
     }
@@ -177,7 +177,7 @@ public class TagManager
     {
         return NHRef.make(
             NHRef.SEP, 
-            PathUtil.fromNiagaraPath(
+            SlotUtil.fromNiagara(
                 TextUtil.join(navPath, '/')));
     }
 
@@ -266,7 +266,8 @@ public class TagManager
 
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
-            hdb.add("axSlotPath", comp.getSlotPath().toString());
+            if (comp.getSlotPath() != null)
+                hdb.add("axSlotPath", comp.getSlotPath().toString());
 
             // points get special treatment
             if (comp instanceof BControlPoint)
@@ -784,7 +785,7 @@ public class TagManager
     {
         String path = cfg.getId().toString();
         path = removePrefix(path, "/");
-        path = PathUtil.fromNiagaraPath(path);
+        path = SlotUtil.fromNiagara(path);
 
         return NHRef.make(NHRef.HIS, path);
     }
@@ -854,7 +855,7 @@ public class TagManager
                 else
                 {
                     BStatusEnum se = (BStatusEnum) sv;
-                    return HStr.make(er.getTag(se.getEnum().getOrdinal()));
+                    return HStr.make(SlotUtil.fromNiagara(er.getTag(se.getEnum().getOrdinal())));
                 }
 
             case STRING_KIND:
@@ -992,7 +993,7 @@ public class TagManager
         for (int i = 0; i < ords.length; i++)
         {
             if (i > 0) sb.append(",");
-            sb.append(range.get(ords[i]).getTag());
+            sb.append(SlotUtil.fromNiagara(range.get(ords[i]).getTag()));
         }
         return sb.toString();
     }

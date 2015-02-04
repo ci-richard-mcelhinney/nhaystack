@@ -89,7 +89,7 @@ public abstract class TypeUtil
         }
         else if (simple instanceof BEnum)
         {
-            return HStr.make(((BEnum) simple).getTag());
+            return HStr.make(SlotUtil.fromNiagara(((BEnum) simple).getTag()));
         }
         else
             throw new IllegalStateException("Cannot convert " + simple.getClass());
