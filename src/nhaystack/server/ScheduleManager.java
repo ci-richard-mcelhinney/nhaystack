@@ -174,10 +174,23 @@ class ScheduleManager
 
         for (int i = 0; i < items.length; i++)
         {
-            BSimple value = TypeUtil.toBajaSimple(items[i].val);
+            BSimple value = makeScheduleValue(sched, items[i]);
+
+            // for enums, you have to compare ordinal value, because for
+            // some reason the defaultValue does not have its tag set properly
+            if (sched instanceof BEnumSchedule)
+            {
+                BEnum defaultEnm = (BEnum) defaultValue;
+                BEnum enm = (BEnum) value;
+                if (defaultEnm.getOrdinal() == enm.getOrdinal())
+                    continue;
+            }
+            else
+            {
+                if (value.equals(defaultValue)) continue;
+            }
 
             // skip values that correspond to the schedule's default output
-            if (value.equals(defaultValue)) continue;
             BStatusValue sv = makeStatusValue(value, BStatus.ok);
 
             // start
@@ -217,6 +230,21 @@ class ScheduleManager
         }
 
         sched.getSchedule().set("week", week);
+    }
+
+    private static BSimple makeScheduleValue(BWeeklySchedule sched, HHisItem item)
+    {
+        if (sched instanceof BEnumSchedule)
+        {
+            String str = SlotUtil.toNiagara(((HStr) item.val).val);
+            BFacets facets = sched.getFacets();
+            BEnumRange range = (BEnumRange) facets.get(BFacets.RANGE);
+            return range.get(str);
+        }
+        else
+        {
+            return TypeUtil.toBajaSimple(item.val);
+        }
     }
 
     /**
