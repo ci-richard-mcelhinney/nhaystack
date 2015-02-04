@@ -22,8 +22,8 @@ public class NUtilTest extends NTest
 
     void verifyPath(String axPath, String hPath) throws Exception
     {
-        verifyEq(PathUtil.fromNiagaraPath(axPath), hPath);
-        verifyEq(PathUtil.toNiagaraPath(hPath), axPath);
+        verifyEq(SlotUtil.fromNiagara(axPath), hPath);
+        verifyEq(SlotUtil.toNiagara(hPath), axPath);
 
     }
 
