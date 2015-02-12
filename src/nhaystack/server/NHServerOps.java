@@ -21,6 +21,7 @@ import org.projecthaystack.io.*;
 import org.projecthaystack.server.*;
 
 import nhaystack.*;
+import nhaystack.collection.*;
 import nhaystack.site.*;
 import nhaystack.util.*;
 
@@ -131,13 +132,14 @@ class NHServerOps
             HGrid result = HGrid.EMPTY;
 
             // write
-            if      (function.equals("addHaystackSlots"))   result = addHaystackSlots   (server, params);
-            else if (function.equals("addEquips"))          result = addEquips          (server, params);
-            else if (function.equals("applyBatchTags"))     result = applyBatchTags     (server, params);
-            else if (function.equals("copyEquipTags"))      result = copyEquipTags      (server, params);
-            else if (function.equals("delete"))             result = delete             (server, params);
-            else if (function.equals("deleteHaystackSlot")) result = deleteHaystackSlot (server, params);
-            else if (function.equals("searchAndReplace"))   result = searchAndReplace   (server, params);
+            if      (function.equals("addHaystackSlots"))    result = addHaystackSlots    (server, params);
+            else if (function.equals("addEquips"))           result = addEquips           (server, params);
+            else if (function.equals("applyBatchTags"))      result = applyBatchTags      (server, params);
+            else if (function.equals("copyEquipTags"))       result = copyEquipTags       (server, params);
+            else if (function.equals("delete"))              result = delete              (server, params);
+            else if (function.equals("deleteHaystackSlot"))  result = deleteHaystackSlot  (server, params);
+            else if (function.equals("searchAndReplace"))    result = searchAndReplace    (server, params);
+            else if (function.equals("makeDynamicWritable")) result = makeDynamicWritable (server);
 
             // invoke
             else if (function.equals("rebuildCache"))        result = rebuildCache        (server, params);
@@ -158,6 +160,60 @@ class NHServerOps
 
             if (LOG.isTraceOn()) LOG.trace(name() + " " + function + " end, " + (Clock.ticks()-ticks) + "ms.");
             return result;
+        }
+    }
+
+    /**
+      * makeDynamicWritable
+      */
+    private static HGrid makeDynamicWritable(NHServer server)
+    {
+        try
+        {
+            Iterator itr = new ComponentTreeIterator(
+                (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
+            outer: while (itr.hasNext())
+            {
+                BComponent comp = (BComponent) itr.next();
+
+                // look for control points
+                if (!(comp instanceof BControlPoint)) continue;
+
+                // but they must be non-writable
+                if (comp instanceof BIWritablePoint) continue;
+
+                // and have at least one dynamic action that is not hidden
+                Action[] actions = comp.getActionsArray();
+                for (int i = 0; i < actions.length; i++)
+                {
+                    if (actions[i].isDynamic() && !Flags.isHidden(comp, actions[i]))
+                    {
+                        // add haystack slot if its missing
+                        if (comp.get("haystack") == null) 
+                            comp.add("haystack", BHDict.DEFAULT);
+
+                        // add 'writable' if its missing
+                        HDict origTags = ((BHDict) comp.get("haystack")).getDict();
+                        if (!origTags.has("writable"))
+                        {
+                            LOG.message("adding 'writable' to " + comp.getSlotPath());
+                            HDict newTags = new HZincReader("writable").readDict();
+                            HDict row = applyTagsToDict(origTags, newTags);
+                            comp.set("haystack", BHDict.make(row));
+                        }
+
+                        continue outer;
+                    }
+                }
+            }
+
+            // done
+            return HGrid.EMPTY;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -335,35 +391,9 @@ class NHServerOps
             if (target.get("haystack") == null) continue;
             if (!(target.get("haystack") instanceof BHDict)) continue;
 
-            HDictBuilder hdb = new HDictBuilder();
-
-            // add orig tags
             HDict origTags = ((BHDict) target.get("haystack")).getDict();
-            Iterator it = origTags.iterator();
-            while (it.hasNext())
-            {
-                Map.Entry e = (Map.Entry) it.next();
-                String key = (String) e.getKey();
-                HVal   val = (HVal)   e.getValue();
 
-                HVal rem = (HVal) newTags.get(key, false);
-                if (!(rem != null && rem.equals(REMOVE)))
-                    hdb.add(key, val);
-            }
-
-            // add new tags
-            it = newTags.iterator();
-            while (it.hasNext())
-            {
-                Map.Entry e = (Map.Entry) it.next();
-                String key = (String) e.getKey();
-                HVal   val = (HVal)   e.getValue();
-
-                if (!val.equals(REMOVE))
-                    hdb.add(key, val);
-            }
-
-            HDict row = hdb.toDict();
+            HDict row = applyTagsToDict(origTags, newTags);
             target.set("haystack", BHDict.make(row));
             rows[i] = row;
         }
@@ -380,6 +410,41 @@ class NHServerOps
             result = HGridBuilder.dictToGrid(hdb.toDict());
         }
         return result;
+    }
+
+    /**
+      * applyTagsToDict
+      */
+    private static HDict applyTagsToDict(HDict origTags, HDict newTags)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+
+        // add orig tags
+        Iterator it = origTags.iterator();
+        while (it.hasNext())
+        {
+            Map.Entry e = (Map.Entry) it.next();
+            String key = (String) e.getKey();
+            HVal   val = (HVal)   e.getValue();
+
+            HVal rem = (HVal) newTags.get(key, false);
+            if (!(rem != null && rem.equals(REMOVE)))
+                hdb.add(key, val);
+        }
+
+        // add new tags
+        it = newTags.iterator();
+        while (it.hasNext())
+        {
+            Map.Entry e = (Map.Entry) it.next();
+            String key = (String) e.getKey();
+            HVal   val = (HVal)   e.getValue();
+
+            if (!val.equals(REMOVE))
+                hdb.add(key, val);
+        }
+
+        return hdb.toDict();
     }
 
     /**
