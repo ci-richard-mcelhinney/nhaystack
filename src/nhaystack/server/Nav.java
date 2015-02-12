@@ -267,6 +267,8 @@ public class Nav
 
     private HGrid onHisNav(String navId)
     {
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+
         // distinct station names
         if (navId.equals("his:/"))
         {
@@ -276,12 +278,14 @@ public class Nav
             for (int i = 0; i < stationNames.length; i++)
             {
                 String stationName = stationNames[i];
-
-                HDictBuilder hd = new HDictBuilder();
-                hd.add("navId", "his:/" + stationName);
-                hd.add("dis", stationName);
-                hd.add("stationName", stationName);
-                dicts.add(hd.toDict());
+                if (getAccessibleHistoryConfigs(stationName, cx).length > 0)
+                {
+                    HDictBuilder hd = new HDictBuilder();
+                    hd.add("navId", "his:/" + stationName);
+                    hd.add("dis", stationName);
+                    hd.add("stationName", stationName);
+                    dicts.add(hd.toDict());
+                }
             }
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
@@ -289,21 +293,30 @@ public class Nav
         // histories that go with station
         else if (navId.startsWith("his:/"))
         {
-            Context cx = ThreadContext.getContext(Thread.currentThread());
-
             String stationName = navId.substring("his:/".length());
-            BHistoryConfig[] configs = cache.getNavHistories(stationName);
+
+            BHistoryConfig[] configs = getAccessibleHistoryConfigs(stationName, cx);
 
             Array dicts = new Array(HDict.class);
             for (int i = 0; i < configs.length; i++)
-            {
-                if (TypeUtil.canRead(configs[i], cx)) 
-                    dicts.add(tagMgr.createHistoryTags(configs[i]));
-            }
+                dicts.add(tagMgr.createHistoryTags(configs[i]));
             return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
         }
 
         else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
+    }
+
+    private BHistoryConfig[] getAccessibleHistoryConfigs(String stationName, Context cx)
+    {
+        BHistoryConfig[] configs = cache.getNavHistories(stationName);
+
+        Array arr = new Array(BHistoryConfig.class);
+        for (int i = 0; i < configs.length; i++)
+        {
+            if (TypeUtil.canRead(configs[i], cx)) 
+                arr.add(configs[i]);
+        }
+        return (BHistoryConfig[]) arr.trim();
     }
 
     private HGrid onSepNav(String navId)
