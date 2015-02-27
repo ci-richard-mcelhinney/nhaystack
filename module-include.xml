@@ -25,6 +25,9 @@
     <type name="NHaystackServer"        class="nhaystack.driver.BNHaystackServer"/>
     <type name="NHaystackServerFolder"  class="nhaystack.driver.BNHaystackServerFolder"/>
 
+    <!-- nhaystack.driver.alarm -->
+    <type name="NHaystackAlarmRecipient"  class="nhaystack.driver.alarm.BNHaystackAlarmRecipient"  />
+
     <!-- nhaystack.driver.history -->
     <type name="NHaystackHistoryDeviceExt"  class="nhaystack.driver.history.BNHaystackHistoryDeviceExt"  />
     <type name="NHaystackHistoryImport"     class="nhaystack.driver.history.BNHaystackHistoryImport"     />
