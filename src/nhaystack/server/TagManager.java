@@ -781,7 +781,7 @@ public class TagManager
         arr.add(hdb.toDict());
     }
 
-    private static NHRef makeHistoryRef(BHistoryConfig cfg)
+    static NHRef makeHistoryRef(BHistoryConfig cfg)
     {
         String path = cfg.getId().toString();
         path = removePrefix(path, "/");
