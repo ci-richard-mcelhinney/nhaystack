@@ -274,6 +274,18 @@ class SpaceManager
         if (!TypeUtil.canRead(cfg, cx)) 
             return false;
 
+        // make sure the history name is valid. This is a workaround for a bug
+        // in third-party software.
+        try
+        {
+            TagManager.makeHistoryRef(cfg);
+        }
+        catch (Exception e)
+        {
+            LOG.error("Invalid history name: " + cfg.getId());
+            return false;
+        }
+
         // annotated 
         HDict dict = BHDict.findTagAnnotation(cfg);
         if (dict != null && !dict.isEmpty())
