@@ -171,7 +171,7 @@ public class BNHaystackWorker
             WorkerChore tail = (WorkerChore) queue.tail();
 
             // Attempt to merge the chore into the tail.
-            if (tail.merge(chore))
+            if (tail != null && tail.merge(chore))
             {
                 // merge succeeded
                 if (log.isTraceOn()) 
