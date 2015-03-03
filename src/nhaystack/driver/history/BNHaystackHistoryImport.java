@@ -10,6 +10,7 @@ package nhaystack.driver.history;
 import javax.baja.driver.history.*;
 import javax.baja.history.*;
 import javax.baja.history.db.*;
+import javax.baja.log.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -124,8 +125,6 @@ public class BNHaystackHistoryImport extends BHistoryImport
         catch (Exception e)
         {
             e.printStackTrace();
-            executeInProgress(); // to fake out the state machine
-            executeFail(e.getMessage());
         }
         finally
         {
@@ -138,12 +137,13 @@ public class BNHaystackHistoryImport extends BHistoryImport
         executeInProgress();
         try
         {
-            HClient client = server().getHaystackClient();
-
             // set up config
             BHistoryService service = (BHistoryService)Sys.getService(BHistoryService.TYPE);
             BHistoryDatabase db = service.getDatabase();
             BHistoryId id = getHistoryId();
+
+            if (LOG.isTraceOn())
+                LOG.trace("historyImport.doExecute begin " + id);
 
             BHistoryConfig localCfg = makeLocalConfig(createConfig());
 
@@ -162,6 +162,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
             HDateTimeRange range = HDateTimeRange.make(dt.toZinc(), tz);
 
             // import records
+            HClient client = server().getHaystackClient();
             HGrid hisItems = client.hisRead(getId().getRef(), range);
             for (int i = 0; i < hisItems.numRows(); i++)
             {
@@ -171,10 +172,14 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 history.append(makeTrendRecord(getKind(), ts, val));
             }
 
+            if (LOG.isTraceOn())
+                LOG.trace("historyImport.doExecute end " + id + ": imported " + hisItems.numRows() + " rows.");
+
             executeOk();
         }
         catch (Exception e)
         {
+            LOG.trace("historyImport.doExecute fail " + id);
             e.printStackTrace();
             executeFail(e.getMessage());
         }
@@ -248,4 +253,10 @@ public class BNHaystackHistoryImport extends BHistoryImport
 
     public String getKind() { return getImportedTags().getDict().getStr("kind"); }
     public String getTz()   { return getImportedTags().getDict().getStr("tz");   }
+
+////////////////////////////////////////////////////////////////
+// attribs
+////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack.driver");
 }
