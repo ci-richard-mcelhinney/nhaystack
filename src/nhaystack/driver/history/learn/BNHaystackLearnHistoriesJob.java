@@ -13,6 +13,7 @@ import javax.baja.history.*;
 import javax.baja.job.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
+import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
@@ -65,6 +66,8 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
         NameGenerator nameGen = new NameGenerator();
         Map entries = new TreeMap();
 
+        //Map deviceNames = new HashMap();
+
         HClient client = server.getHaystackClient();
         HGrid grid = client.readAll("his");
         for (int i = 0; i < grid.numRows(); i++)
@@ -74,17 +77,16 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = SlotPath.escape(nameGen.makeUniqueName(row.dis()));
+                String name = row.getStr("navName");
+                name = TextUtil.replace(name, " ", "_");
+                name = SlotPath.escape(nameGen.makeUniqueName(name));
+
+//                String deviceName = fetchDeviceName(client, deviceNames, row);
 
                 BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
-
                 entry.setId(BHRef.make(row.id()));
                 entry.setImportedTags(BHTags.make(row));
-
-                entry.setHistoryId(
-                    BHistoryId.make(
-                        Sys.getStation().getStationName(),
-                        name));
+                entry.setHistoryId(BHistoryId.make(server.getName(), name));
 
                 entries.put(name, entry);
             }
@@ -98,6 +100,21 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             add(name, entry);
         }
     }
+
+//    private String fetchDeviceName(HClient client, Map deviceNames, HRow row)
+//    {
+//        if (!row.has("equipRef")) 
+//            return Sys.getStation().getStationName();
+//
+//        HRef equipRef = row.getRef("equipRef");
+//        if (deviceNames.containsKey(equipRef))
+//            return (String) deviceNames.get(equipRef);
+//
+//        HDict equip = client.readById(equipRef);
+//        String name = equip.getStr("navName");
+//        deviceNames.put(equipRef, name);
+//        return name;
+//    }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
