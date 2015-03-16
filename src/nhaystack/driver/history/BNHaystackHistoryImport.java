@@ -117,9 +117,10 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 throw new BajaRuntimeException("network disabled.");
 
             server.getWorker().enqueueChore(
-                new WorkerInvocation(
+                new DescriptorInvocation(
                     server.getWorker(),
                     choreName,
+                    this,
                     new Invocation(this, action, value, cx)));
         }
         catch (Exception e)
