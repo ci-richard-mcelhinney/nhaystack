@@ -194,7 +194,7 @@ public class TagManager
       *
       * This method never returns null.
       */
-    HDict createTags(BComponent comp)
+    public HDict createTags(BComponent comp)
     {
         return (comp instanceof BHistoryConfig) ?
             createHistoryTags((BHistoryConfig) comp) :

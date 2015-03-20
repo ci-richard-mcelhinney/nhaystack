@@ -31,13 +31,12 @@ public class BNHaystackAlarmRecipient
         properties
         {
             haystackServer: BOrd default{[ BOrd.DEFAULT ]}
-            haystackServers: BOrdList default{[ BOrdList.DEFAULT ]}
         }
     }
    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(3819306821)1.0$ @*/
-/* Generated Mon Mar 09 15:46:06 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(2355764136)1.0$ @*/
+/* Generated Fri Mar 20 15:36:04 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackServer"
@@ -63,29 +62,6 @@ public class BNHaystackAlarmRecipient
   public void setHaystackServer(BOrd v) { set(haystackServer,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "haystackServers"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>haystackServers</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getHaystackServers
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setHaystackServers
-   */
-  public static final Property haystackServers = newProperty(0, BOrdList.DEFAULT,null);
-  
-  /**
-   * Get the <code>haystackServers</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackServers
-   */
-  public BOrdList getHaystackServers() { return (BOrdList)get(haystackServers); }
-  
-  /**
-   * Set the <code>haystackServers</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackServers
-   */
-  public void setHaystackServers(BOrdList v) { set(haystackServers,v,null); }
-
-////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -94,48 +70,67 @@ public class BNHaystackAlarmRecipient
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    public void handleAlarm(BAlarmRecord alarmRecord)
+    public void handleAlarm(BAlarmRecord alarm)
     {
-System.out.println("handleAlarm: aaa " + alarmRecord);
-
-        // look up the point
-        BOrd sourceOrd = alarmRecord.getSource().get(0);
-        BComponent ext = (BComponent) sourceOrd.get(this, null);
-        BControlPoint point = (BControlPoint) ext.getParent();
-
-        // look up the ref
-        BNHaystackService service = (BNHaystackService)
-            Sys.getService(BNHaystackService.TYPE);
-        NHRef id = service.getHaystackServer().getTagManager().makeComponentRef(point);
-        HGridBuilder gb = new HGridBuilder();
-        HGrid req = HGridBuilder.dictToGrid(
-            new HDictBuilder().add("id", id.getHRef()).toDict());
-
-System.out.println("handleAlarm: bbb " + point.getSlotPath());
-req.dump();
-
-        // send an alarm to the server
-        BNHaystackServer server = (BNHaystackServer) 
-            getHaystackServer().get(this, null);
-        HClient client = server.getHaystackClient();
-
-        switch(alarmRecord.getSourceState().getOrdinal())
+        try
         {
-            case BSourceState.FAULT:
-                client.call("finToAlarm", req);
-                break;
-            case BSourceState.NORMAL:
-                client.call("finToNormal", req);
-                break;
-            default:
-                LOG.warning(
-                    "Cannot process alarm source state " + 
-                    alarmRecord.getSourceState()  + ", " + point.getSlotPath()); 
-//    offnormal,
-//    fault,
-//    alert
+            // look up the point
+            BOrd sourceOrd = alarm.getSource().get(0);
+            BComponent ext = (BComponent) sourceOrd.get(this, null);
+            BControlPoint point = (BControlPoint) ext.getParent();
+
+//System.out.println("handleAlarm: " + alarm + ", " + point.getSlotPath());
+
+            // look up the ref
+            BNHaystackService service = (BNHaystackService)
+                Sys.getService(BNHaystackService.TYPE);
+            NHRef id = service.getHaystackServer().getTagManager().makeComponentRef(point);
+
+//            // build the tags.  we really only need this for curVal
+//            HDict tags = service.getHaystackServer().getTagManager().createTags(point);
+
+            // build the request
+            HDictBuilder hdb = new HDictBuilder();
+            hdb.add("sourceId",     id.getHRef().toZinc());
+            hdb.add("alarmClass",   alarm.getAlarmClass());
+            hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
+//            hdb.add("alarmValue",   tags.get("curVal"));
+            hdb.add("priority",     alarm.getPriority());
+            hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
+            hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+
+            HGrid req = HGridBuilder.dictToGrid(hdb.toDict());
+
+            // send an alarm to the server
+            BNHaystackServer server = (BNHaystackServer) 
+                getHaystackServer().get(this, null);
+            HClient client = server.getHaystackClient();
+
+            switch(alarm.getSourceState().getOrdinal())
+            {
+                case BSourceState.OFFNORMAL:
+                case BSourceState.FAULT:
+                    client.call("finToAlarm", req);
+                    break;
+                case BSourceState.NORMAL:
+                    client.call("finToNormal", req);
+                    break;
+                default:
+                    LOG.warning(
+                        "Cannot process alarm source state " + 
+                        alarm.getSourceState()  + ", " + point.getSlotPath()); 
+            }
         }
-System.out.println("handleAlarm: ccc");
+        catch (Exception e)
+        {
+            throw new BajaRuntimeException(e);
+        }
+    }
+
+    private String getAlarmFacet(BAlarmRecord alarm, String facetName)
+    {
+        BObject obj = alarm.getAlarmData().get(facetName);
+        return (obj == null) ? "" : obj.toString();
     }
 
 ////////////////////////////////////////////////////////////////
