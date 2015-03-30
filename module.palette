@@ -57,6 +57,9 @@
   <!-- /driver/NHaystackPointfolder -->
   <p n="NHaystackPointfolder" h="2f" t="nh:NHaystackPointFolder">
   </p>
+  <!-- /driver/NHaystackAlarmRecipient -->
+  <p n="NHaystackAlarmRecipient" h="30" t="nh:NHaystackAlarmRecipient">
+  </p>
  </p>
 </p>
 </bajaObjectGraph>
