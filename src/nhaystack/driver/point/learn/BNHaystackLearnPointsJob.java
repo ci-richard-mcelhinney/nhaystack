@@ -10,6 +10,7 @@ package nhaystack.driver.point.learn;
 import java.util.*;
 
 import javax.baja.job.*;
+import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -112,16 +113,24 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
     private BFacets makeNumberFacets(HDict rec)
     {
-        if (!rec.has("unit")) return BFacets.NULL;
+        try
+        {
+            if (!rec.has("unit")) return BFacets.NULL;
 
-        String unit = rec.getStr("unit");
-        if (unit.toLowerCase().equals("none"))
+            String unit = rec.getStr("unit");
+            if (unit.toLowerCase().equals("none"))
+                return BFacets.NULL;
+
+            return BFacets.make(
+                BFacets.UNITS,
+                Resources.toBajaUnit(
+                    Resources.getSymbolUnit(unit)));
+        }
+        catch (Exception e)
+        {
+            LOG.error("LearnPoints: Cannot make units for " + rec);
             return BFacets.NULL;
-
-        return BFacets.make(
-            BFacets.UNITS,
-            Resources.toBajaUnit(
-                Resources.getSymbolUnit(unit)));
+        }
     }
 
     private BFacets makeStrFacets(HDict rec)
@@ -139,6 +148,8 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack.driver");
 
     private BNHaystackServer server = null;
 }

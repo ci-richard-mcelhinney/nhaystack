@@ -77,18 +77,19 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             String kind = row.getStr("kind");
             if (kind.equals("Bool") || kind.equals("Number"))
             {
-                String name = row.getStr("navName");
-                name = TextUtil.replace(name, " ", "_");
-                name = SlotPath.escape(nameGen.makeUniqueName(name));
+                String name = hisName(row);
+                if (name != null)
+                {
+                    name = TextUtil.replace(name, " ", "_");
+                    name = SlotPath.escape(nameGen.makeUniqueName(name));
 
-//                String deviceName = fetchDeviceName(client, deviceNames, row);
+                    BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
+                    entry.setId(BHRef.make(row.id()));
+                    entry.setImportedTags(BHTags.make(row));
+                    entry.setHistoryId(BHistoryId.make(server.getName(), name));
 
-                BNHaystackHistoryEntry entry = new BNHaystackHistoryEntry();
-                entry.setId(BHRef.make(row.id()));
-                entry.setImportedTags(BHTags.make(row));
-                entry.setHistoryId(BHistoryId.make(server.getName(), name));
-
-                entries.put(name, entry);
+                    entries.put(name, entry);
+                }
             }
         }
 
@@ -99,6 +100,13 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             BNHaystackHistoryEntry entry = (BNHaystackHistoryEntry) entries.get(name);
             add(name, entry);
         }
+    }
+
+    private String hisName(HRow row)
+    {
+        if (row.has("navName")) return row.getStr("navName");
+        if (row.has("dis")) return row.getStr("dis");
+        return null;
     }
 
 //    private String fetchDeviceName(HClient client, Map deviceNames, HRow row)

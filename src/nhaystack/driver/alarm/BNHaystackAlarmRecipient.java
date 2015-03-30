@@ -79,27 +79,32 @@ public class BNHaystackAlarmRecipient
             BComponent ext = (BComponent) sourceOrd.get(this, null);
             BControlPoint point = (BControlPoint) ext.getParent();
 
-//System.out.println("handleAlarm: " + alarm + ", " + point.getSlotPath());
-
             // look up the ref
-            BNHaystackService service = (BNHaystackService)
-                Sys.getService(BNHaystackService.TYPE);
+            BNHaystackService service = (BNHaystackService) Sys.getService(BNHaystackService.TYPE);
             NHRef id = service.getHaystackServer().getTagManager().makeComponentRef(point);
 
-//            // build the tags.  we really only need this for curVal
-//            HDict tags = service.getHaystackServer().getTagManager().createTags(point);
+//System.out.println("BNHaystackServer.handleAlarm: " + alarm + ", " + point.getSlotPath() + ", " + id.getHRef().toZinc());
+
+            // look up the extra tags on the alarm class, if any
+            BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
+            HDict extraTags = BHDict.findTagAnnotation(
+                alarmService.lookupAlarmClass(
+                    alarm.getAlarmClass()));
+            if (extraTags == null)
+                extraTags = HDict.EMPTY;
 
             // build the request
             HDictBuilder hdb = new HDictBuilder();
             hdb.add("sourceId",     id.getHRef().toZinc());
             hdb.add("alarmClass",   alarm.getAlarmClass());
             hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
-//            hdb.add("alarmValue",   tags.get("curVal"));
             hdb.add("priority",     alarm.getPriority());
             hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
             hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
 
-            HGrid req = HGridBuilder.dictToGrid(hdb.toDict());
+            HGrid req = HGridBuilder.dictsToGrid(
+                new HDict[] { hdb.toDict(), extraTags });
+//req.dump();
 
             // send an alarm to the server
             BNHaystackServer server = (BNHaystackServer) 
