@@ -585,6 +585,7 @@ public class TagManager
         // curStatus
         HStr curStatus = makeCurStatus(point.getStatus());
         if (curStatus != null) hdb.add("curStatus", curStatus);
+        hdb.add("axStatus", axStatus(point.getStatus()));
 
         // minVal, maxVal, precision
         BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
@@ -604,6 +605,24 @@ public class TagManager
 
         // siteRef, equipRef
         addSiteEquipTags(point, hdb, tags);
+    }
+
+    private static String axStatus(BStatus status)
+    {
+        if (status.isOk()) return "ok";
+
+        StringBuffer sb = new StringBuffer();
+        if (status.isDisabled())     sb.append("disabled")     .append(',');
+        if (status.isFault())        sb.append("fault")        .append(',');
+        if (status.isDown())         sb.append("down")         .append(',');
+        if (status.isAlarm())        sb.append("alarm")        .append(',');
+        if (status.isStale())        sb.append("stale")        .append(',');
+        if (status.isOverridden())   sb.append("overridden")   .append(',');
+        if (status.isNull())         sb.append("null")         .append(',');
+        if (status.isUnackedAlarm()) sb.append("unackedAlarm") .append(',');
+
+        sb.setLength(sb.length()-1);
+        return sb.toString();
     }
 
     /**
@@ -1021,15 +1040,7 @@ public class TagManager
         "axPointRef",
         "axSlotPath", 
         "axType",         
-
-        "axAlarm",
-        "axDisabled",
-        "axDown",
-        "axFault",
-        "axNull",
-        "axOverridden",
-        "axStale",
-        "axUnackedAlarm",
+        "axStatus",
 
         "actions",    
         "cur",          
