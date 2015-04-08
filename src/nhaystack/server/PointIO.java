@@ -94,9 +94,30 @@ class PointIO
 
             HHisItem[] schedItems = schedMgr.getOptionsSchedule(opts);
             if (schedItems == null)
-                onControlPointWrite(rec, level, val, who, dur);
+            {
+                BComponent comp = tagMgr.lookupComponent(rec.id());
+                if (comp == null) 
+                    throw new BajaRuntimeException("Cannot find component for " + rec.id());
+
+                if (comp instanceof BControlPoint)
+                {
+                    BControlPoint point = (BControlPoint) comp;
+                    onControlPointWrite(point, rec, level, val, who, dur);
+                }
+                else if (comp instanceof BWeeklySchedule)
+                {
+                    LOG.trace("ignoring write to " + comp.getSlotPath());
+                    return;
+                }
+                else
+                {
+                    throw new BajaRuntimeException("Cannot write to " + comp.getSlotPath());
+                }
+            }
             else
+            {
                 schedMgr.onScheduleWrite(rec, schedItems);
+            }
         }
         catch (RuntimeException e)
         {
@@ -321,6 +342,7 @@ class PointIO
     }
 
     private void onControlPointWrite(
+        BControlPoint point,
         HDict rec, 
         int level, 
         HVal val, 
@@ -328,21 +350,10 @@ class PointIO
         HNum dur) // ignore this for now
     throws Exception
     {
-        BComponent comp = tagMgr.lookupComponent(rec.id());
-
         // check permissions on this Thread's saved context
         Context cx = ThreadContext.getContext(Thread.currentThread());
-        if (!TypeUtil.canWrite(comp, cx)) 
+        if (!TypeUtil.canWrite(point, cx)) 
             throw new PermissionException("Cannot write to " + rec.id()); 
-
-        // make sure its a control point
-        if (!(comp instanceof BControlPoint))
-        {
-            LOG.error("cannot write to " + comp.getSlotPath() + ", misconfigured.");
-            return;
-        }
-
-        BControlPoint point = (BControlPoint) comp;
 
         // if its writable, just go ahead and do the write
         if (point instanceof BIWritablePoint)
