@@ -360,27 +360,20 @@ class ScheduleManager
         if (items.length == 0) throw new IllegalStateException();
 
         HTimeZone tz = items[0].ts.tz;
-        Array futureArr = new Array(HHisItem.class);
+        Array arr = new Array(HHisItem.class);
+        Set timestamps = new HashSet();
 
         // compute sunday of next week
         HDateTime nextSun = HDateTime.make(
             thisSun.date.plusDays(7), 
             HTime.MIDNIGHT, tz);
 
-        long startMillis = -1;
         for (int i = 0; i < items.length; i++)
         {
-            // Skip null values.  This is a workaround for a bug in finstack.
+            // Skip null values
             if (items[i].val == null) continue;
 
             HDateTime ts = items[i].ts;
-
-            // Skip values that happen greater than a week in the future
-            // This way we don't end up normalizing values that 'wrap-around'.
-            if (startMillis == -1)
-                startMillis = ts.millis();
-            else if ((ts.millis() - startMillis) > MILLIS_IN_WEEK)
-                continue;
 
             // subtract weeks until we are before next sunday
             while (ts.millis() >= nextSun.millis())
@@ -390,13 +383,18 @@ class ScheduleManager
             while (ts.millis() < thisSun.millis())
                 ts = HDateTime.make(ts.date.plusDays(7), ts.time, tz);
 
-            futureArr.add(HHisItem.make(ts, items[i].val));
+            // Skip timestamps that we've already seen.
+            // This way we don't end up normalizing values that 'wrap-around'.
+            if (timestamps.contains(ts)) continue;
+
+            arr.add(HHisItem.make(ts, items[i].val));
+            timestamps.add(ts);
         }
 
-        HHisItem[] future = (HHisItem[]) futureArr.trim();
+        HHisItem[] result = (HHisItem[]) arr.trim();
 
         Arrays.sort(
-            future,
+            result,
             new Comparator() {
                 public int compare(Object o1, Object o2) {
                     HHisItem h1 = (HHisItem) o1;
@@ -405,7 +403,7 @@ class ScheduleManager
                 }
             });
 
-        return future;
+        return result;
     }
 
 ////////////////////////////////////////////////////////////////
