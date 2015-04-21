@@ -50,15 +50,19 @@
    </p>
    <p n="worker" h="2e" t="nh:NHaystackWorker">
    </p>
+   <p n="structureSettings" h="31" t="nh:StructureSettings">
+   </p>
   </p>
   <!-- /driver/NHaystackServerFolder -->
   <p n="NHaystackServerFolder" h="d" t="nh:NHaystackServerFolder">
   </p>
-  <!-- /driver/NHaystackPointfolder -->
-  <p n="NHaystackPointfolder" h="2f" t="nh:NHaystackPointFolder">
+  <!-- /driver/NHaystackPointFolder -->
+  <p n="NHaystackPointFolder" h="2f" t="nh:NHaystackPointFolder">
   </p>
   <!-- /driver/NHaystackAlarmRecipient -->
   <p n="NHaystackAlarmRecipient" h="30" t="nh:NHaystackAlarmRecipient">
+  </p>
+  <p n="PointGrouping" t="nh:PointGrouping">
   </p>
  </p>
 </p>

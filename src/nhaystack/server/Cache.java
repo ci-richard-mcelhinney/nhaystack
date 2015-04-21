@@ -273,11 +273,8 @@ class Cache
                     scheduledPoints.add(point);
 
                 // save remote point 
-                if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 
-                {
-                    RemotePoint remote = RemotePoint.fromControlPoint(point);
-                    if (remote != null) remoteToPoint.put(remote, point);
-                }
+                RemotePoint remote = RemotePoint.fromControlPoint(point);
+                if (remote != null) remoteToPoint.put(remote, point);
 
                 // explicit equip
                 if (tags.has("equipRef"))

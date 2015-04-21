@@ -20,6 +20,7 @@ import org.projecthaystack.client.*;
 
 import nhaystack.*;
 import nhaystack.driver.*;
+import nhaystack.driver.point.learn.*;
 import nhaystack.util.*;
 import nhaystack.worker.*;
 
@@ -138,6 +139,19 @@ public class BNHaystackHistoryImport extends BHistoryImport
         executeInProgress();
         try
         {
+            // set units
+            HDict tags = getImportedTags().getDict();
+            BFacets facets = BNHaystackLearnPointsJob.makeNumberFacets(tags);
+
+            if (!facets.equals(BFacets.NULL))
+            {
+                BComponent override = getConfigOverrides();
+                if (override.get("valueFacets") == null)
+                    override.add("valueFacets", facets);
+                else
+                    override.set("valueFacets", facets);
+            }
+
             // set up config
             BHistoryService service = (BHistoryService)Sys.getService(BHistoryService.TYPE);
             BHistoryDatabase db = service.getDatabase();
