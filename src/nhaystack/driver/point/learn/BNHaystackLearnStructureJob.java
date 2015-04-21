@@ -92,6 +92,11 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
         {
             HClient client = server.getHaystackClient();
             traverse(client, HUri.make("equip:/"), server.getPoints());
+
+            // rebuild cache
+            BNHaystackService service = (BNHaystackService) Sys.getService(BNHaystackService.TYPE);
+            BNHaystackRebuildCacheJob job = new BNHaystackRebuildCacheJob(service);
+            job.run(null);
         }
         catch (Exception e)
         {
