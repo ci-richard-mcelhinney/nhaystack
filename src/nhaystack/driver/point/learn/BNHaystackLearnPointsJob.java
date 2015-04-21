@@ -73,19 +73,11 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         {
             HRow row = grid.row(i);
 
-            String kind = row.getStr("kind");
             String name = SlotPath.escape(nameGen.makeUniqueName(row.dis()));
 
             BNHaystackPointEntry entry = new BNHaystackPointEntry();
 
-            if      (kind.equals("Bool"))   entry.setFacets(makeBoolFacets(row));
-            else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
-            else if (kind.equals("Str"))    
-            {
-                BFacets facets = makeStrFacets(row);
-                if (facets != null) entry.setFacets(facets);
-            }
-
+            entry.setFacets(makePointFacets(row));
             entry.setId(BHRef.make(row.id()));
             entry.setImportedTags(BHTags.make(row));
 
@@ -101,7 +93,16 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         }
     }
 
-    private BFacets makeBoolFacets(HDict rec)
+    static BFacets makePointFacets(HDict rec)
+    {
+        String kind = rec.getStr("kind");
+        if      (kind.equals("Bool"))   return makeBoolFacets(rec);
+        else if (kind.equals("Number")) return makeNumberFacets(rec);
+        else if (kind.equals("Str"))    return makeStrFacets(rec);
+        else return BFacets.NULL;
+    }
+
+    private static BFacets makeBoolFacets(HDict rec)
     {
         if (!rec.has("enum")) return BFacets.NULL;
 
@@ -111,7 +112,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         return BFacets.makeBoolean(tokens[1], tokens[0]); 
     }
 
-    private BFacets makeNumberFacets(HDict rec)
+    public static BFacets makeNumberFacets(HDict rec)
     {
         try
         {
@@ -128,19 +129,19 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         }
         catch (Exception e)
         {
-            LOG.error("LearnPoints: Cannot make units for " + rec);
+            LOG.error("Cannot make units for " + rec);
             return BFacets.NULL;
         }
     }
 
-    private BFacets makeStrFacets(HDict rec)
+    private static BFacets makeStrFacets(HDict rec)
     {
         if (!rec.has("enum")) return BFacets.NULL;
 
         String[] tokens = TextUtil.split(rec.getStr("enum"), ',');
 
         for (int i = 0; i < tokens.length; i++)
-            if (!SlotPath.isValidName(tokens[i])) return null;
+            if (!SlotPath.isValidName(tokens[i])) return BFacets.NULL;
 
         return BFacets.makeEnum(BEnumRange.make(tokens));
     }

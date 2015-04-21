@@ -24,6 +24,8 @@
     <type name="NHaystackPollScheduler" class="nhaystack.driver.BNHaystackPollScheduler"/>
     <type name="NHaystackServer"        class="nhaystack.driver.BNHaystackServer"/>
     <type name="NHaystackServerFolder"  class="nhaystack.driver.BNHaystackServerFolder"/>
+    <type name="StructureSettings"      class="nhaystack.driver.BStructureSettings"/>
+    <type name="PointGrouping"          class="nhaystack.driver.BPointGrouping"/>
 
     <!-- nhaystack.driver.alarm -->
     <type name="NHaystackAlarmRecipient"  class="nhaystack.driver.alarm.BNHaystackAlarmRecipient"  />
@@ -56,14 +58,15 @@
     <type name="NHaystackStrWritable"    class="nhaystack.driver.point.BNHaystackStrWritable"    />
 
     <!-- nhaystack.driver.point.learn -->
-    <type name="NHaystackLearnPointsJob"  class="nhaystack.driver.point.learn.BNHaystackLearnPointsJob"  />
-    <type name="NHaystackPointEntry"      class="nhaystack.driver.point.learn.BNHaystackPointEntry"      />
+    <type name="NHaystackLearnPointsJob" class="nhaystack.driver.point.learn.BNHaystackLearnPointsJob" />
+    <type name="NHaystackPointEntry" class="nhaystack.driver.point.learn.BNHaystackPointEntry" />
     <type name="NHaystackPointManager" class="nhaystack.driver.point.learn.BNHaystackPointManager" >
         <agent>
             <on type="nhaystack:NHaystackPointDeviceExt"/>
             <on type="nhaystack:NHaystackPointFolder"/>
         </agent>
     </type>
+    <type name="NHaystackLearnStructureJob"  class="nhaystack.driver.point.learn.BNHaystackLearnStructureJob"  />
 
     <type name="HTagsDialog" class="nhaystack.driver.ui.BHTagsDialog" />
     <type name="HTagsFE" class="nhaystack.driver.ui.BHTagsFE"> <agent><on type="nhaystack:HTags"/> </agent></type>

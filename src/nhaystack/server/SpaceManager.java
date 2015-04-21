@@ -146,9 +146,10 @@ class SpaceManager
         {
             BControlPoint point = points[i];
 
-            // Check for a NiagaraProxyExt
+            // check for remote point
+            if (!RemotePoint.isRemotePoint(point)) continue;
+
             BAbstractProxyExt proxyExt = point.getProxyExt();
-            if (!proxyExt.getType().is(RemotePoint.NIAGARA_PROXY_EXT)) continue;
 
             // "pointId" seems to always contain the slotPath on 
             // the remote host.
@@ -236,7 +237,7 @@ class SpaceManager
         if (historyExt != null) return historyExt.getHistoryConfig();
 
         // look for history that goes with a proxied point (if any)
-        if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 
+        if (RemotePoint.isRemotePoint(point))
             return lookupRemoteHistory(point);
         else 
             return null;

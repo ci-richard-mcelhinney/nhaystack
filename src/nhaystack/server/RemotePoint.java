@@ -17,6 +17,9 @@ import javax.baja.security.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
+import nhaystack.driver.*;
+import nhaystack.driver.point.*;
+
 /**
   * A RemotePoint represents a point that is present in
   * in a NiagaraNetwork.  A RemotePoint always has either an 
@@ -26,15 +29,34 @@ import javax.baja.util.*;
 class RemotePoint
 {
     /**
+      * Return whether the point is remote
+      */
+    static boolean isRemotePoint(BControlPoint point)
+    {
+        if (point.getProxyExt().getType().is(NIAGARA_PROXY_EXT)) return true;
+        if (point.getProxyExt() instanceof BNHaystackProxyExt) return true;
+        return false;
+    }
+
+    /**
+      * Return whether the point is remote
+      */
+    private static boolean isRemoteDevice(BDevice device)
+    {
+        if (device.getType().is(NIAGARA_STATION)) return true;
+        if (device instanceof BNHaystackServer) return true;
+        return false;
+    }
+
+    /**
       * Create a RemotePoint from a BControlPoint, or return null.
       * The BControlPoint must be an imported point.
       */
     static RemotePoint fromControlPoint(BControlPoint point)
     {
-        // Check for a NiagaraProxyExt
+        if (!isRemotePoint(point)) return null;
+
         BAbstractProxyExt proxyExt = point.getProxyExt();
-        if (!proxyExt.getType().is(NIAGARA_PROXY_EXT)) 
-            throw new IllegalStateException();
 
         // "pointId" seems to always contain the slotPath on 
         // the remote host.
@@ -50,7 +72,7 @@ class RemotePoint
         // Find the ancestor NiagaraStation
         BDevice device = findParentDevice(point);
         if (device == null) return null;
-        if (!device.getType().is(NIAGARA_STATION)) return null;
+        if (!isRemoteDevice(device)) return null;
 
         // We are sure the point is proxied.  
         return new RemotePoint(device.getName(), slotPath);
@@ -169,8 +191,8 @@ class RemotePoint
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    static final Type NIAGARA_PROXY_EXT;
-    static final Type NIAGARA_STATION;
+    private static final Type NIAGARA_PROXY_EXT;
+    private static final Type NIAGARA_STATION;
     static
     {
         NIAGARA_PROXY_EXT = BTypeSpec.make("niagaraDriver:NiagaraProxyExt") .getResolvedType();
