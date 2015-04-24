@@ -31,12 +31,13 @@ public class BNHaystackAlarmRecipient
         properties
         {
             haystackServer: BOrd default{[ BOrd.DEFAULT ]}
+            miscAlarmId: String default{[ "" ]}
         }
     }
    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(2355764136)1.0$ @*/
-/* Generated Fri Mar 20 15:36:04 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(4247559078)1.0$ @*/
+/* Generated Thu Apr 23 14:52:01 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackServer"
@@ -62,6 +63,29 @@ public class BNHaystackAlarmRecipient
   public void setHaystackServer(BOrd v) { set(haystackServer,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "miscAlarmId"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>miscAlarmId</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getMiscAlarmId
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setMiscAlarmId
+   */
+  public static final Property miscAlarmId = newProperty(0, "",null);
+  
+  /**
+   * Get the <code>miscAlarmId</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmId
+   */
+  public String getMiscAlarmId() { return getString(miscAlarmId); }
+  
+  /**
+   * Set the <code>miscAlarmId</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmId
+   */
+  public void setMiscAlarmId(String v) { setString(miscAlarmId,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -77,34 +101,15 @@ public class BNHaystackAlarmRecipient
             // look up the point
             BOrd sourceOrd = alarm.getSource().get(0);
             BComponent ext = (BComponent) sourceOrd.get(this, null);
-            BControlPoint point = (BControlPoint) ext.getParent();
+            BComponent parent = (BComponent) ext.getParent();
 
-            // look up the ref
-            BNHaystackService service = (BNHaystackService) Sys.getService(BNHaystackService.TYPE);
-            NHRef id = service.getHaystackServer().getTagManager().makeComponentRef(point);
+            if (LOG.isTraceOn())
+                LOG.trace("handleAlarm: " + alarm + ", " + ext.getSlotPath());
 
-//System.out.println("BNHaystackServer.handleAlarm: " + alarm + ", " + point.getSlotPath() + ", " + id.getHRef().toZinc());
-
-            // look up the extra tags on the alarm class, if any
-            BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
-            HDict extraTags = BHDict.findTagAnnotation(
-                alarmService.lookupAlarmClass(
-                    alarm.getAlarmClass()));
-            if (extraTags == null)
-                extraTags = HDict.EMPTY;
-
-            // build the request
-            HDictBuilder hdb = new HDictBuilder();
-            hdb.add("sourceId",     id.getHRef().toZinc());
-            hdb.add("alarmClass",   alarm.getAlarmClass());
-            hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
-            hdb.add("priority",     alarm.getPriority());
-            hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
-            hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
-
-            HGrid req = HGridBuilder.dictsToGrid(
-                new HDict[] { hdb.toDict(), extraTags });
-//req.dump();
+            // create request either for a point, or for "miscellaneous"
+            HGrid req = (parent instanceof BControlPoint) ?
+                createPointAlarmRequest(alarm, (BControlPoint) parent) :
+                createMiscAlarmRequest(alarm, parent);
 
             // send an alarm to the server
             BNHaystackServer server = (BNHaystackServer) 
@@ -123,13 +128,66 @@ public class BNHaystackAlarmRecipient
                 default:
                     LOG.warning(
                         "Cannot process alarm source state " + 
-                        alarm.getSourceState()  + ", " + point.getSlotPath()); 
+                        alarm.getSourceState()  + ", " + parent.getSlotPath()); 
             }
         }
         catch (Exception e)
         {
             throw new BajaRuntimeException(e);
         }
+    }
+
+    private HGrid createPointAlarmRequest(BAlarmRecord alarm, BControlPoint point)
+    throws Exception
+    {
+        // look up the ref
+        BNHaystackService service = (BNHaystackService) Sys.getService(BNHaystackService.TYPE);
+        NHRef id = service.getHaystackServer().getTagManager().makeComponentRef(point);
+
+        // build the request
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("isMisc",       HBool.FALSE);
+        hdb.add("sourceId",     id.getHRef().toZinc());
+
+        hdb.add("alarmClass",   alarm.getAlarmClass());
+        hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
+        hdb.add("priority",     alarm.getPriority());
+        hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+
+        return HGridBuilder.dictsToGrid(
+            new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
+    }
+
+    private HGrid createMiscAlarmRequest(BAlarmRecord alarm, BComponent comp)
+    throws Exception
+    {
+        // build the request
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("isMisc",       HBool.TRUE);
+        hdb.add("sourceId",     getMiscAlarmId());
+
+        hdb.add("alarmClass",   alarm.getAlarmClass());
+        hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
+        hdb.add("priority",     alarm.getPriority());
+        hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+
+        return HGridBuilder.dictsToGrid(
+            new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
+    }
+
+    private HDict fetchAlarmClassTags(BAlarmRecord alarm)
+    {
+        // look up the extra tags on the alarm class, if any
+        BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
+        HDict extraTags = BHDict.findTagAnnotation(
+            alarmService.lookupAlarmClass(
+                alarm.getAlarmClass()));
+        if (extraTags == null)
+            extraTags = HDict.EMPTY;
+
+        return extraTags;
     }
 
     private String getAlarmFacet(BAlarmRecord alarm, String facetName)
