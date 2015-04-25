@@ -93,11 +93,11 @@
     <type name="HDictEditorGroup" class="nhaystack.ui.BHDictEditorGroup"/>
     <type name="MarkerSet"        class="nhaystack.ui.BMarkerSet"/>
 
-    <type name="HDictFE"        class="nhaystack.ui.BHDictFE">        <agent><on type="nhaystack:HDict"/>        </agent></type>
-    <type name="HFloorFE"       class="nhaystack.ui.BHFloorFE">       <agent><on type="nhaystack:HFloor"/>       </agent></type>
-    <type name="HNumFE"         class="nhaystack.ui.BHNumFE">         <agent><on type="nhaystack:HNum"/>         </agent></type>
-    <type name="HTimeZoneFE"    class="nhaystack.ui.BHTimeZoneFE">    <agent><on type="nhaystack:HTimeZone"/>    </agent></type>
-    <type name="HUnitFE"        class="nhaystack.ui.BHUnitFE">        <agent><on type="nhaystack:HUnit"/>        </agent></type>
+    <type name="HDictFE"     class="nhaystack.ui.BHDictFE">     <agent><on type="nhaystack:HDict"/>     </agent></type>
+    <type name="HFloorFE"    class="nhaystack.ui.BHFloorFE">    <agent><on type="nhaystack:HFloor"/>    </agent></type>
+    <type name="HNumFE"      class="nhaystack.ui.BHNumFE">      <agent><on type="nhaystack:HNum"/>      </agent></type>
+    <type name="HTimeZoneFE" class="nhaystack.ui.BHTimeZoneFE"> <agent><on type="nhaystack:HTimeZone"/> </agent></type>
+    <type name="HUnitFE"     class="nhaystack.ui.BHUnitFE">     <agent><on type="nhaystack:HUnit"/>     </agent></type>
 
     <type name="EquipRefFE" class="nhaystack.ui.BEquipRefFE"/>
     <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>
@@ -110,7 +110,9 @@
         <agent><on type="nhaystack:NHaystackService"/></agent></type>
 
     <!-- nhaystack.worker -->
-    <type name="INHaystackWorkerParent" class="nhaystack.worker.BINHaystackWorkerParent"/>
-    <type name="NHaystackWorker"        class="nhaystack.worker.BNHaystackWorker"/>
+    <type name="INHaystackWorker"          class="nhaystack.worker.BINHaystackWorker"/>
+    <type name="INHaystackWorkerParent"    class="nhaystack.worker.BINHaystackWorkerParent"/>
+    <type name="NHaystackThreadPoolWorker" class="nhaystack.worker.BNHaystackThreadPoolWorker"/>
+    <type name="NHaystackWorker"           class="nhaystack.worker.BNHaystackWorker"/>
 
 </types>

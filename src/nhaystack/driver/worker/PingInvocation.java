@@ -17,7 +17,7 @@ import nhaystack.worker.*;
   */
 public final class PingInvocation extends DriverChore
 {
-    public PingInvocation(BNHaystackWorker worker, String name, Invocation invocation) 
+    public PingInvocation(BNHaystackThreadPoolWorker worker, String name, Invocation invocation) 
     { 
         super(worker, name);
         this.invocation = invocation;

@@ -18,7 +18,7 @@ import org.projecthaystack.client.*;
   */
 public abstract class WorkerChore implements Runnable
 {
-    public WorkerChore(BNHaystackWorker worker, String name) 
+    public WorkerChore(BINHaystackWorker worker, String name) 
     { 
         this.worker = worker;
         this.name = name; 
@@ -82,6 +82,6 @@ public abstract class WorkerChore implements Runnable
 // attributes
 ////////////////////////////////////////////////////////////////
 
-    public final BNHaystackWorker worker;
+    public final BINHaystackWorker worker;
     public final String name;
 }

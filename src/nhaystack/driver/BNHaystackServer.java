@@ -51,6 +51,7 @@ public class BNHaystackServer
             pollFrequency: BPollFrequency default{[ BPollFrequency.normal ]}
 
             worker: BNHaystackWorker default{[ new BNHaystackWorker() ]}
+            threadPoolWorker: BNHaystackThreadPoolWorker default{[ new BNHaystackThreadPoolWorker() ]}
 
             alarmSourceInfo: BAlarmSourceInfo
                 flags { hidden }
@@ -72,8 +73,8 @@ public class BNHaystackServer
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(2174077671)1.0$ @*/
-/* Generated Fri Apr 10 09:10:44 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(892073983)1.0$ @*/
+/* Generated Sat Apr 25 09:05:06 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
@@ -235,6 +236,29 @@ public class BNHaystackServer
    * @see nhaystack.driver.BNHaystackServer#worker
    */
   public void setWorker(BNHaystackWorker v) { set(worker,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "threadPoolWorker"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>threadPoolWorker</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getThreadPoolWorker
+   * @see nhaystack.driver.BNHaystackServer#setThreadPoolWorker
+   */
+  public static final Property threadPoolWorker = newProperty(0, new BNHaystackThreadPoolWorker(),null);
+  
+  /**
+   * Get the <code>threadPoolWorker</code> property.
+   * @see nhaystack.driver.BNHaystackServer#threadPoolWorker
+   */
+  public BNHaystackThreadPoolWorker getThreadPoolWorker() { return (BNHaystackThreadPoolWorker)get(threadPoolWorker); }
+  
+  /**
+   * Set the <code>threadPoolWorker</code> property.
+   * @see nhaystack.driver.BNHaystackServer#threadPoolWorker
+   */
+  public void setThreadPoolWorker(BNHaystackThreadPoolWorker v) { set(threadPoolWorker,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "alarmSourceInfo"
@@ -406,9 +430,10 @@ public class BNHaystackServer
 
     protected IFuture postPing()
     {
-        return postAsyncChore(
+        return onPostAsyncChore(
+            getThreadPoolWorker(), 
             new PingInvocation(
-                getWorker(),
+                getThreadPoolWorker(),
                 "Ping:" + getHaystackUrl(),
                 new Invocation(this, ping, null, null)));
     }
@@ -470,10 +495,15 @@ public class BNHaystackServer
 // public
 ////////////////////////////////////////////////////////////////
 
+    public final IFuture postAsyncChore(WorkerChore chore)
+    {
+        return onPostAsyncChore(getWorker(), chore);
+    }
+
     /**
       * Post a chore asynchronously to the worker queue
       */
-    public final IFuture postAsyncChore(WorkerChore chore)
+    private final IFuture onPostAsyncChore(BINHaystackWorker worker, WorkerChore chore)
     {
         if (!isRunning()) return null;
 
@@ -493,8 +523,7 @@ public class BNHaystackServer
 
         try
         {
-            // the worker is responsible for coalescing tasks
-            getWorker().enqueueChore(chore);
+            worker.enqueueChore(chore);
         }
         catch (QueueFullException e)
         {

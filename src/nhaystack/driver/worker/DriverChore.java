@@ -16,7 +16,7 @@ import nhaystack.worker.*;
   */
 public abstract class DriverChore extends WorkerChore
 {
-    public DriverChore(BNHaystackWorker worker, String name) 
+    public DriverChore(BINHaystackWorker worker, String name) 
     {
         super(worker, name);
     }

@@ -13,15 +13,15 @@ import javax.baja.sys.*;
 import javax.baja.util.*;
 
 /**
-  * BNHaystackWorker is a BWorker that serves nhaystack.
+  * BNHaystackThreadPoolWorker is a BWorker that serves nhaystack.
   */
-public class BNHaystackWorker
-  extends BWorker
-  implements BINHaystackWorker
+public class BNHaystackThreadPoolWorker
+    extends BThreadPoolWorker
+    implements BINHaystackWorker
 {
     /*-
 
-    class BNHaystackWorker
+    class BNHaystackThreadPoolWorker
     {
         properties
         {
@@ -33,8 +33,8 @@ public class BNHaystackWorker
 
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.worker.BNHaystackWorker(1126374167)1.0$ @*/
-/* Generated Sun Jun 01 13:38:16 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.worker.BNHaystackThreadPoolWorker(2268244792)1.0$ @*/
+/* Generated Sat Apr 25 09:05:06 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "maxQueueSize"
@@ -43,22 +43,22 @@ public class BNHaystackWorker
   /**
    * Slot for the <code>maxQueueSize</code> property.
    * the size of the queue
-   * @see nhaystack.worker.BNHaystackWorker#getMaxQueueSize
-   * @see nhaystack.worker.BNHaystackWorker#setMaxQueueSize
+   * @see nhaystack.worker.BNHaystackThreadPoolWorker#getMaxQueueSize
+   * @see nhaystack.worker.BNHaystackThreadPoolWorker#setMaxQueueSize
    */
   public static final Property maxQueueSize = newProperty(0, 5000,null);
   
   /**
    * Get the <code>maxQueueSize</code> property.
    * the size of the queue
-   * @see nhaystack.worker.BNHaystackWorker#maxQueueSize
+   * @see nhaystack.worker.BNHaystackThreadPoolWorker#maxQueueSize
    */
   public int getMaxQueueSize() { return getInt(maxQueueSize); }
   
   /**
    * Set the <code>maxQueueSize</code> property.
    * the size of the queue
-   * @see nhaystack.worker.BNHaystackWorker#maxQueueSize
+   * @see nhaystack.worker.BNHaystackThreadPoolWorker#maxQueueSize
    */
   public void setMaxQueueSize(int v) { setInt(maxQueueSize,v,null); }
 
@@ -67,7 +67,7 @@ public class BNHaystackWorker
 ////////////////////////////////////////////////////////////////
   
   public Type getType() { return TYPE; }
-  public static final Type TYPE = Sys.loadType(BNHaystackWorker.class);
+  public static final Type TYPE = Sys.loadType(BNHaystackThreadPoolWorker.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
@@ -88,7 +88,7 @@ public class BNHaystackWorker
             {
                 stopWorker();
                 queue = new Queue(getMaxQueueSize());
-                worker = new Worker(queue);
+                worker = new ThreadPoolWorker(queue);
                 startWorker();
             }
         }
@@ -108,7 +108,7 @@ public class BNHaystackWorker
         if (worker == null)
         {
             queue = new Queue(getMaxQueueSize());
-            worker = new Worker(queue);
+            worker = new ThreadPoolWorker(queue);
         }
         return worker;
     }
@@ -125,7 +125,7 @@ public class BNHaystackWorker
 
     protected String getWorkerThreadName()
     {
-        return "NHaystackWorker:" + ((BComponent) getParent()).getSlotPath();
+        return "NHaystackThreadPoolWorker:" + ((BComponent) getParent()).getSlotPath();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -148,7 +148,7 @@ public class BNHaystackWorker
         if (status.isDisabled() || status.isFault())
         {
             if (log.isTraceOn()) 
-                log.trace("Chore IGNORE " + chore + " -- " + status);
+                log.trace("Pool Chore IGNORE " + chore + " -- " + status);
             return;
         }
 
@@ -156,14 +156,14 @@ public class BNHaystackWorker
         if (status.isDown() && !chore.isPing())
         {
             if (log.isTraceOn()) 
-                log.trace("Chore IGNORE " + chore + " -- " + status);
+                log.trace("Pool Chore IGNORE " + chore + " -- " + status);
             return;
         }
 
         if (queue.size() == 0)
         {
             if (log.isTraceOn()) 
-                log.trace("Chore ENQUEUE " + chore);
+                log.trace("Pool Chore ENQUEUE " + chore);
             queue.enqueue(chore);
         }
         else
@@ -176,13 +176,13 @@ public class BNHaystackWorker
             {
                 // merge succeeded
                 if (log.isTraceOn()) 
-                    log.trace("Chore MERGE " + chore);
+                    log.trace("Pool Chore MERGE " + chore);
             }
             // else the merge did not happen, so enqueue the chore
             else
             {
                 if (log.isTraceOn()) 
-                    log.trace("Chore ENQUEUE " + chore);
+                    log.trace("Pool Chore ENQUEUE " + chore);
                 queue.enqueue(chore);
             }
         }
@@ -193,5 +193,5 @@ public class BNHaystackWorker
 ////////////////////////////////////////////////////////////////
 
     private Queue queue = null;
-    private Worker worker = null;
+    private ThreadPoolWorker worker = null;
 }
