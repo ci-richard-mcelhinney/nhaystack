@@ -182,9 +182,12 @@ public class BNHaystackHistoryImport extends BHistoryImport
             for (int i = 0; i < hisItems.numRows(); i++)
             {
                 HRow row = hisItems.row(i);
-                HDateTime ts = (HDateTime) row.get("ts");
-                HVal val = row.get("val");
-                history.append(makeTrendRecord(getKind(), ts, val));
+                if (row.has("ts") && row.has("val"))
+                {
+                    HDateTime ts = (HDateTime) row.get("ts");
+                    HVal val = row.get("val");
+                    history.append(makeTrendRecord(getKind(), ts, val));
+                }
             }
 
             if (LOG.isTraceOn())
