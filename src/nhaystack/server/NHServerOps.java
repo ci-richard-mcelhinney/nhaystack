@@ -315,10 +315,9 @@ class NHServerOps
         if (comp instanceof BControlPoint)
         {
             HDict dict = BHDict.findTagAnnotation(comp);
-            if (dict != null)
-            {
-                pointDictMap.put(comp.getName(), dict);
-            }
+            pointDictMap.put(
+                comp.getName(), 
+                dict == null ? dict : HDict.EMPTY);
         }
         else
         {
