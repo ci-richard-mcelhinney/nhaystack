@@ -18,6 +18,7 @@ import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
+import org.projecthaystack.io.*;
 import nhaystack.*;
 import nhaystack.driver.*;
 import nhaystack.server.*;
@@ -32,12 +33,13 @@ public class BNHaystackAlarmRecipient
         {
             haystackServer: BOrd default{[ BOrd.DEFAULT ]}
             miscAlarmId: String default{[ "" ]}
+            haystackConnRef: String default{[ "" ]}
         }
     }
    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(4247559078)1.0$ @*/
-/* Generated Thu Apr 23 14:52:01 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(3640000689)1.0$ @*/
+/* Generated Thu Apr 30 08:35:05 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackServer"
@@ -84,6 +86,29 @@ public class BNHaystackAlarmRecipient
    * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmId
    */
   public void setMiscAlarmId(String v) { setString(miscAlarmId,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "haystackConnRef"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>haystackConnRef</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getHaystackConnRef
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setHaystackConnRef
+   */
+  public static final Property haystackConnRef = newProperty(0, "",null);
+  
+  /**
+   * Get the <code>haystackConnRef</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackConnRef
+   */
+  public String getHaystackConnRef() { return getString(haystackConnRef); }
+  
+  /**
+   * Set the <code>haystackConnRef</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackConnRef
+   */
+  public void setHaystackConnRef(String v) { setString(haystackConnRef,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -146,14 +171,15 @@ public class BNHaystackAlarmRecipient
 
         // build the request
         HDictBuilder hdb = new HDictBuilder();
-        hdb.add("isMisc",       HBool.FALSE);
-        hdb.add("sourceId",     id.getHRef().toZinc());
+        hdb.add("isMisc",   HBool.FALSE);
+        hdb.add("sourceId", id.getHRef().toZinc());
 
-        hdb.add("alarmClass",   alarm.getAlarmClass());
-        hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
-        hdb.add("priority",     alarm.getPriority());
-        hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
-        hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("alarmClass",      alarm.getAlarmClass());
+        hdb.add("alarmUuid",       alarm.getUuid().encodeToString());
+        hdb.add("priority",        alarm.getPriority());
+        hdb.add("alarmText",       getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions",    getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
@@ -164,14 +190,15 @@ public class BNHaystackAlarmRecipient
     {
         // build the request
         HDictBuilder hdb = new HDictBuilder();
-        hdb.add("isMisc",       HBool.TRUE);
-        hdb.add("sourceId",     getMiscAlarmId());
+        hdb.add("isMisc",   HBool.TRUE);
+        hdb.add("sourceId", getMiscAlarmId());
 
-        hdb.add("alarmClass",   alarm.getAlarmClass());
-        hdb.add("alarmUuid",    alarm.getUuid().encodeToString());
-        hdb.add("priority",     alarm.getPriority());
-        hdb.add("alarmText",    getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
-        hdb.add("instructions", getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("alarmClass",      alarm.getAlarmClass());
+        hdb.add("alarmUuid",       alarm.getUuid().encodeToString());
+        hdb.add("priority",        alarm.getPriority());
+        hdb.add("alarmText",       getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions",    getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
