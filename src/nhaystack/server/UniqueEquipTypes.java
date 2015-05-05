@@ -47,9 +47,10 @@ public class UniqueEquipTypes
             HDict equipTags = server.getTagManager().createTags(equips[i]);
             Set pointNames = findPointNames(server, (BHEquip) equips[i]);
 
-            EquipType type = (EquipType) typeMap.get(pointNames);
+            String key = pointNames.toString();
+            EquipType type = (EquipType) typeMap.get(key);
             if (type == null)
-                typeMap.put(pointNames, type = new EquipType(pointNames));
+                typeMap.put(key, type = new EquipType(pointNames));
 
             type.equips.add(equips[i]);
             type.equipTags.add(equipTags);
@@ -90,17 +91,18 @@ public class UniqueEquipTypes
             n++;
         }
 
-        // compute the similarities (this is exponentially slow!!!)
+        // compute the similarities 
+        // NOTE: this is O(n**2)!!!!
         for (int i = 0; i < types.length; i++)
         {
-            EquipType a = types[i];
+            EquipType a= types[i];
             a.similarity[i] = 1;
             for (int j = i+1; j < types.length; j++)
             {
                 EquipType b = types[j];
-                double similarity = a.jaccardIndex(b); 
-                a.similarity[j] = similarity;
-                b.similarity[i] = similarity;
+                double sml = a.jaccardIndex(b); 
+                a.similarity[j] = sml;
+                b.similarity[i] = sml;
             }
         }
 
@@ -118,10 +120,10 @@ public class UniqueEquipTypes
             hdb.add("id", HRef.make("type" + padZero(i,3)));
             hdb.add("numEquips", type.equipTags.size());
             hdb.add("numPoints", type.pointNames.size());
-            hdb.add("equipTags", type.listOfEquipIds());
+            hdb.add("equipIds", type.listOfEquipIds());
             hdb.add("equipType", i);
 
-            hdb.add("similarTypes", type.similarTypes(i, percentMatch));
+            type.addSimilarTypes(hdb, i, percentMatch, types);
 
             arr.add(hdb.toDict());
         }
@@ -170,6 +172,7 @@ public class UniqueEquipTypes
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < equipTags.size(); i++)
             {
+                if (i > 0) sb.append(",");
                 HDict tags = (HDict) equipTags.get(i);
                 sb.append("@");
                 sb.append(tags.id());
@@ -180,22 +183,29 @@ public class UniqueEquipTypes
         /**
           * return a list of the types which are similar to this type
           */
-        String similarTypes(int thisType, double percentMatch)
+        void addSimilarTypes(
+            HDictBuilder hdb, int thisType, 
+            double percentMatch, EquipType[] types)
         {
-            double d = percentMatch / 100;
+            double dblPerc = percentMatch / 100;
 
-            StringBuffer sb = new StringBuffer();
+            StringBuffer st = new StringBuffer();
             int n = 0;
             for (int i = 0; i < similarity.length; i++)
             {
-                if ((i != thisType) && (similarity[i] >= d))
+                // similar
+                if ((i != thisType) && (similarity[i] >= dblPerc))
                 {
-                    if (n++ > 0) sb.append(", ");
-                    sb.append("@type" + padZero(i,3));
-                    sb.append(" (" + ((int) (similarity[i] * 100)) + "%)");
+                    if (n++ > 0) st.append(", ");
+                    st.append("@type" + padZero(i,3));
+                    st.append(" (" + ((int) (similarity[i] * 100)) + "%)");
+
+                    hdb.add("type"+padZero(i,3)+"Missing", diffTypes(this, types[i]));
+                    hdb.add("type"+padZero(i,3)+"Has",     diffTypes(types[i], this));
                 }
             }
-            return sb.toString();
+
+            hdb.add("similarTypes", st.toString());
         }
 
         /**
@@ -218,6 +228,22 @@ public class UniqueEquipTypes
         List equips;
         List equipTags;
         double[] similarity; // percentage
+    }
+
+    static String diffTypes(EquipType a, EquipType b)
+    {
+        StringBuffer sb = new StringBuffer();
+
+        Set s = new TreeSet(a.pointNames); 
+        s.removeAll(b.pointNames);
+        int n = 0;
+        Iterator it = s.iterator();
+        while (it.hasNext())
+        {
+            if (n++ > 0) sb.append(",");
+            sb.append(it.next());
+        }
+        return sb.toString();
     }
 
 ////////////////////////////////////////////////////////////////
