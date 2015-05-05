@@ -231,26 +231,34 @@ class NHServerOps
             Context cx = ThreadContext.getContext(Thread.currentThread());
 
             HRef fromId = HRef.make(params.getStr("fromEquip"));
-            HRef toIds[] = parseIdList(params.getStr("toEquips"));
+            String targetFilter = "equip and (" + params.getStr("targetFilter") + ")";
+            String toEquips = null;
+            if (params.has("toEquips"))
+                toEquips = params.getStr("toEquips");
 
             BHEquip from = (BHEquip) server.getTagManager().lookupComponent(fromId);
-            BComponent[] to = lookupComponents(server.getTagManager(), toIds);
+            BComponent[] to = getFilterComponents(server, targetFilter, toEquips);
 
             // equips
             for (int i = 0; i < to.length; i++)
             {
                 if (to[i] instanceof BHEquip)
                 {
-                    ((BHEquip) to[i]).setHaystack(cloneDict(from.getHaystack()));
+                    BHEquip toEquip = (BHEquip) to[i];
+                    if (toEquip == from) continue;
+
+                    toEquip.setHaystack(cloneDict(from.getHaystack()));
                 }
                 else
                 {
                     BHEquip toEquip = (BHEquip) to[i].get("equip");
+
                     if (toEquip == null)
                     {
                         toEquip = new BHEquip();
                         to[i].add("equip", toEquip);
                     }
+                    else if (toEquip == from) continue;
 
                     toEquip.setHaystack(cloneDict(from.getHaystack()));
                 }
