@@ -80,6 +80,8 @@
     <type name="NHaystackStats"               class="nhaystack.server.BNHaystackStats"/>
     <type name="TimeZoneAlias"                class="nhaystack.server.BTimeZoneAlias"/>
     <type name="TimeZoneAliasFolder"          class="nhaystack.server.BTimeZoneAliasFolder"/>
+    <type name="UniqueEquipTypeArgs"          class="nhaystack.server.BUniqueEquipTypeArgs"/>
+    <type name="UniqueEquipTypeJob"           class="nhaystack.server.BUniqueEquipTypeJob"/>
 
     <!-- nhaystack.site -->
     <type name="HEquip"  class="nhaystack.site.BHEquip"/>
