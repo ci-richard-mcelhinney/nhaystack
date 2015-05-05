@@ -150,6 +150,7 @@ class NHServerOps
             else if (function.equals("showPointsInWatch"))   result = showPointsInWatch   (server, params);
             else if (function.equals("showWatches"))         result = showWatches         (server, params);
             else if (function.equals("uniqueTags"))          result = uniqueTags          (server, params);
+            else if (function.equals("uniqueEquipTypes"))    result = uniqueEquipTypes    (server);
 
             else 
             {
@@ -258,6 +259,7 @@ class NHServerOps
             // points
             Map pointDictMap = new HashMap();
             collectPointDicts((BComponent) from.getParent(), pointDictMap, cx);
+
             for (int i = 0; i < to.length; i++)
             {
                 BComponent comp = (to[i] instanceof BHEquip) ? 
@@ -315,9 +317,8 @@ class NHServerOps
         if (comp instanceof BControlPoint)
         {
             HDict dict = BHDict.findTagAnnotation(comp);
-            pointDictMap.put(
-                comp.getName(), 
-                dict == null ? dict : HDict.EMPTY);
+            if (dict != null)
+                pointDictMap.put(comp.getName(), dict);
         }
         else
         {
@@ -895,56 +896,24 @@ class NHServerOps
         return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
     }
 
-////////////////////////////////////////////////////////////////////////////
-//// ScheduleRead
-////////////////////////////////////////////////////////////////////////////
-//
-//    static class ScheduleReadOp extends HOp
-//    {
-//        public String name() { return "scheduleRead"; }
-//        public String summary() { return "Read time series from point schedule"; }
-//        public HGrid onService(HServer db, HGrid req) throws Exception
-//        {
-//            NHServer server = (NHServer) db;
-//            if (!server.getCache().initialized()) 
-//                throw new IllegalStateException(Cache.NOT_INITIALIZED);
-//
-//            if (req.isEmpty()) throw new Exception("Request has no rows");
-//            HRow row = req.row(0);
-//            HRef id = valToId(db, row.get("id"));
-//
-//            return server.scheduleRead(id);
-//        }
-//    }
-//
-////////////////////////////////////////////////////////////////////////////
-//// ScheduleWriteOp
-////////////////////////////////////////////////////////////////////////////
-//
-//    static class ScheduleWriteOp extends HOp
-//    {
-//        public String name() { return "scheduleWrite"; }
-//        public String summary() { return "Write time series data to point schedule"; }
-//        public HGrid onService(HServer db, HGrid req) throws Exception
-//        {
-//            NHServer server = (NHServer) db;
-//            if (!server.getCache().initialized()) 
-//                throw new IllegalStateException(Cache.NOT_INITIALIZED);
-//
-//            if (req.isEmpty()) throw new Exception("Request has no rows");
-//            HRef id = valToId(db, req.meta().get("id"));
-//
-//            HHisItem[] items = HHisItem.gridToItems(req);
-//            server.scheduleWrite(id, items);
-//            return HGrid.EMPTY;
-//        }
-//    }
-//
+    /**
+      * uniqueEquipTypes
+      */
+    private static HGrid uniqueEquipTypes(NHServer server)
+    {
+        BHGrid grid = (BHGrid) server.getService().get(BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES);
+        if (grid == null)
+            throw new IllegalStateException(
+                "'" + BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES + "' not found.");
+
+        return grid.getGrid();
+    }
+
 ////////////////////////////////////////////////////////////////
 // utils
 ////////////////////////////////////////////////////////////////
 
-    private static BComponent[] getFilterComponents(NHServer server, String filter, String ids)
+    public static BComponent[] getFilterComponents(NHServer server, String filter, String ids)
     {
         HServer hserver = server;
         TagManager tagMgr = server.getTagManager();

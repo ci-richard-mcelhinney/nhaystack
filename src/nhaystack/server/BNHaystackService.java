@@ -80,6 +80,11 @@ public class BNHaystackService
                 -- fetch the tags that the server auto-generates.
                 flags { operator, hidden }
 
+            findUniqueEquipTypes(args: BUniqueEquipTypeArgs): BOrd
+                -- find all the unique equip types
+                flags { operator, async, hidden }
+                default {[ new BUniqueEquipTypeArgs() ]}
+
             applySchedule(event: BHScheduleEvent)
                 -- apply the schedule now that the ticket has expired
                 flags { operator, async, hidden }
@@ -98,8 +103,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1880521100)1.0$ @*/
-/* Generated Sun Feb 01 09:41:07 EST 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1101742462)1.0$ @*/
+/* Generated Mon May 04 14:25:30 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -423,6 +428,24 @@ public class BNHaystackService
   public BString fetchAutoGenTags() { return (BString)invoke(fetchAutoGenTags,null,null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "findUniqueEquipTypes"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>findUniqueEquipTypes</code> action.
+   * find all the unique equip types
+   * @see nhaystack.server.BNHaystackService#findUniqueEquipTypes()
+   */
+  public static final Action findUniqueEquipTypes = newAction(Flags.OPERATOR|Flags.ASYNC|Flags.HIDDEN,new BUniqueEquipTypeArgs(),null);
+  
+  /**
+   * Invoke the <code>findUniqueEquipTypes</code> action.
+   * find all the unique equip types
+   * @see nhaystack.server.BNHaystackService#findUniqueEquipTypes
+   */
+  public BOrd findUniqueEquipTypes(BUniqueEquipTypeArgs args) { return (BOrd)invoke(findUniqueEquipTypes,args,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "applySchedule"
 ////////////////////////////////////////////////////////////////
   
@@ -611,6 +634,7 @@ public class BNHaystackService
         if ((action == initializeHaystack) || 
             (action == rebuildCache) || 
             (action == removeBrokenRefs) ||
+            (action == findUniqueEquipTypes) ||
             (action == applySchedule))
         {
             return postAsyncChore(
@@ -672,6 +696,13 @@ public class BNHaystackService
     public void doApplySchedule(BHScheduleEvent event) 
     {
         server.getScheduleManager().applySchedule(event);
+    }
+
+    public BOrd doFindUniqueEquipTypes(BUniqueEquipTypeArgs args)
+    {
+        BUniqueEquipTypeJob job = new BUniqueEquipTypeJob(
+            this, args.getFilter(), args.getPercentMatch());
+        return job.submit(null);
     }
 
 ////////////////////////////////////////////////////////////////
