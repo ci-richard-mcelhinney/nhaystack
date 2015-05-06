@@ -50,11 +50,12 @@ public class BUniqueEquipTypeJob extends BSimpleJob
     public BUniqueEquipTypeJob() {}
 
     public BUniqueEquipTypeJob(
-        BNHaystackService service, String filter, double percentMatch) 
+        BNHaystackService service, String filter, double percentMatch, boolean applyTags) 
     {
         this.service = service;
         this.filter = filter;
         this.percentMatch = percentMatch;
+        this.applyTags = applyTags;
     }
 
     public void doCancel(Context ctx) 
@@ -71,7 +72,8 @@ public class BUniqueEquipTypeJob extends BSimpleJob
         BComponent[] equips = NHServerOps.getFilterComponents(
             server, "equip and (" + filter + ")", null);
         if (equips.length > 0)
-            grid = (new UniqueEquipTypes(server)).createTypes(equips, filter, percentMatch);
+            grid = (new UniqueEquipTypes(server)).createTypes(
+                equips, filter, percentMatch, applyTags);
 
         if (service.get(UNIQUE_EQUIP_TYPES) == null)
             service.add(UNIQUE_EQUIP_TYPES, BHGrid.make(grid));
@@ -88,4 +90,5 @@ public class BUniqueEquipTypeJob extends BSimpleJob
     private BNHaystackService service = null;
     private String filter;
     private double percentMatch;
+    private boolean applyTags;
 }

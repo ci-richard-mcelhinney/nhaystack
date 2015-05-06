@@ -38,7 +38,7 @@ public class UniqueEquipTypes
     /**
       * uniqueEquipTypes
       */
-    public HGrid createTypes(BComponent[] equips, String filter, double percentMatch)
+    public HGrid createTypes(BComponent[] equips, String filter, double percentMatch, boolean applyTags)
     {
         // find all the distinct types
         Map typeMap = new HashMap();
@@ -72,21 +72,24 @@ public class UniqueEquipTypes
             type.similarity = new double[typeMap.size()];
 
             // update tags with type
-            for (int i = 0; i < type.equips.size(); i++)
+            if (applyTags)
             {
-                BComponent equip = (BComponent) type.equips.get(i);
-                HDict tags = BHDict.findTagAnnotation(equip);
-                if (tags == null) tags = HDict.EMPTY;
+                for (int i = 0; i < type.equips.size(); i++)
+                {
+                    BComponent equip = (BComponent) type.equips.get(i);
+                    HDict tags = BHDict.findTagAnnotation(equip);
+                    if (tags == null) tags = HDict.EMPTY;
 
-                HDictBuilder hdb = new HDictBuilder();
-                hdb.add(tags);
-                hdb.add("equipType", n);
-                BHDict hd = BHDict.make(hdb.toDict());
+                    HDictBuilder hdb = new HDictBuilder();
+                    hdb.add(tags);
+                    hdb.add("equipType", n);
+                    BHDict hd = BHDict.make(hdb.toDict());
 
-                if (equip.get("haystack") == null)
-                    equip.add("haystack", hd);
-                else
-                    equip.set("haystack", hd);
+                    if (equip.get("haystack") == null)
+                        equip.add("haystack", hd);
+                    else
+                        equip.set("haystack", hd);
+                }
             }
             n++;
         }

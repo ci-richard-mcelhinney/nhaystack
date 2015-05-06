@@ -18,12 +18,13 @@ public class BUniqueEquipTypeArgs extends BStruct
         {
             filter: String default{[ "equip" ]}
             percentMatch: int default{[ 80 ]}
+            applyTags: boolean default{[ false ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BUniqueEquipTypeArgs(1301521084)1.0$ @*/
-/* Generated Mon May 04 13:59:46 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BUniqueEquipTypeArgs(99543646)1.0$ @*/
+/* Generated Wed May 06 09:30:55 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "filter"
@@ -70,6 +71,29 @@ public class BUniqueEquipTypeArgs extends BStruct
    * @see nhaystack.server.BUniqueEquipTypeArgs#percentMatch
    */
   public void setPercentMatch(int v) { setInt(percentMatch,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "applyTags"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>applyTags</code> property.
+   * @see nhaystack.server.BUniqueEquipTypeArgs#getApplyTags
+   * @see nhaystack.server.BUniqueEquipTypeArgs#setApplyTags
+   */
+  public static final Property applyTags = newProperty(0, false,null);
+  
+  /**
+   * Get the <code>applyTags</code> property.
+   * @see nhaystack.server.BUniqueEquipTypeArgs#applyTags
+   */
+  public boolean getApplyTags() { return getBoolean(applyTags); }
+  
+  /**
+   * Set the <code>applyTags</code> property.
+   * @see nhaystack.server.BUniqueEquipTypeArgs#applyTags
+   */
+  public void setApplyTags(boolean v) { setBoolean(applyTags,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
