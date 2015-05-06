@@ -701,7 +701,7 @@ public class BNHaystackService
     public BOrd doFindUniqueEquipTypes(BUniqueEquipTypeArgs args)
     {
         BUniqueEquipTypeJob job = new BUniqueEquipTypeJob(
-            this, args.getFilter(), args.getPercentMatch());
+            this, args.getFilter(), args.getPercentMatch(), args.getApplyTags());
         return job.submit(null);
     }
 
