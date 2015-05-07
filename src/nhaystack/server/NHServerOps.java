@@ -396,8 +396,11 @@ class NHServerOps
         for (int i = 0; i < targets.length; i++)
         {
             BComponent target = targets[i];
-            if (target.get("haystack") == null) continue;
-            if (!(target.get("haystack") instanceof BHDict)) continue;
+
+            if (target.get("haystack") == null) 
+                target.add("haystack", BHDict.DEFAULT);
+            else if (!(target.get("haystack") instanceof BHDict)) 
+                continue;
 
             HDict origTags = ((BHDict) target.get("haystack")).getDict();
 
