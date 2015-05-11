@@ -16,7 +16,7 @@ import nhaystack.driver.*;
   * BNHaystackPointFolder organizes haystack points underneath a
   * BNHaystackPointDeviceExt.
   */
-public class BNHaystackPointFolder extends BPointFolder 
+public class BNHaystackPointFolder extends BPointFolder
 {
     /*-
     class BNHaystackPointFolder
@@ -54,5 +54,7 @@ public class BNHaystackPointFolder extends BPointFolder
         return 
             (comp instanceof BNHaystackPointDeviceExt) ||
             (comp instanceof BNHaystackPointFolder);
+//            (comp instanceof BNHaystackPointFolder) ||
+//            (comp instanceof BNHaystackNetwork);
     }
 }

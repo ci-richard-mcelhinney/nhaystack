@@ -21,6 +21,7 @@ import org.projecthaystack.io.*;
 import org.projecthaystack.server.*;
 
 import nhaystack.*;
+import nhaystack.collection.*;
 import nhaystack.site.*;
 import nhaystack.util.*;
 
@@ -131,13 +132,14 @@ class NHServerOps
             HGrid result = HGrid.EMPTY;
 
             // write
-            if      (function.equals("addHaystackSlots"))   result = addHaystackSlots   (server, params);
-            else if (function.equals("addEquips"))          result = addEquips          (server, params);
-            else if (function.equals("applyBatchTags"))     result = applyBatchTags     (server, params);
-            else if (function.equals("copyEquipTags"))      result = copyEquipTags      (server, params);
-            else if (function.equals("delete"))             result = delete             (server, params);
-            else if (function.equals("deleteHaystackSlot")) result = deleteHaystackSlot (server, params);
-            else if (function.equals("searchAndReplace"))   result = searchAndReplace   (server, params);
+            if      (function.equals("addHaystackSlots"))    result = addHaystackSlots    (server, params);
+            else if (function.equals("addEquips"))           result = addEquips           (server, params);
+            else if (function.equals("applyBatchTags"))      result = applyBatchTags      (server, params);
+            else if (function.equals("copyEquipTags"))       result = copyEquipTags       (server, params);
+            else if (function.equals("delete"))              result = delete              (server, params);
+            else if (function.equals("deleteHaystackSlot"))  result = deleteHaystackSlot  (server, params);
+            else if (function.equals("searchAndReplace"))    result = searchAndReplace    (server, params);
+            else if (function.equals("makeDynamicWritable")) result = makeDynamicWritable (server);
 
             // invoke
             else if (function.equals("rebuildCache"))        result = rebuildCache        (server, params);
@@ -148,6 +150,7 @@ class NHServerOps
             else if (function.equals("showPointsInWatch"))   result = showPointsInWatch   (server, params);
             else if (function.equals("showWatches"))         result = showWatches         (server, params);
             else if (function.equals("uniqueTags"))          result = uniqueTags          (server, params);
+            else if (function.equals("uniqueEquipTypes"))    result = uniqueEquipTypes    (server);
 
             else 
             {
@@ -158,6 +161,60 @@ class NHServerOps
 
             if (LOG.isTraceOn()) LOG.trace(name() + " " + function + " end, " + (Clock.ticks()-ticks) + "ms.");
             return result;
+        }
+    }
+
+    /**
+      * makeDynamicWritable
+      */
+    private static HGrid makeDynamicWritable(NHServer server)
+    {
+        try
+        {
+            Iterator itr = new ComponentTreeIterator(
+                (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
+            outer: while (itr.hasNext())
+            {
+                BComponent comp = (BComponent) itr.next();
+
+                // look for control points
+                if (!(comp instanceof BControlPoint)) continue;
+
+                // but they must be non-writable
+                if (comp instanceof BIWritablePoint) continue;
+
+                // and have at least one dynamic action that is not hidden
+                Action[] actions = comp.getActionsArray();
+                for (int i = 0; i < actions.length; i++)
+                {
+                    if (actions[i].isDynamic() && !Flags.isHidden(comp, actions[i]))
+                    {
+                        // add haystack slot if its missing
+                        if (comp.get("haystack") == null) 
+                            comp.add("haystack", BHDict.DEFAULT);
+
+                        // add 'writable' if its missing
+                        HDict origTags = ((BHDict) comp.get("haystack")).getDict();
+                        if (!origTags.has("writable"))
+                        {
+                            LOG.message("adding 'writable' to " + comp.getSlotPath());
+                            HDict newTags = new HZincReader("writable").readDict();
+                            HDict row = applyTagsToDict(origTags, newTags);
+                            comp.set("haystack", BHDict.make(row));
+                        }
+
+                        continue outer;
+                    }
+                }
+            }
+
+            // done
+            return HGrid.EMPTY;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -174,26 +231,34 @@ class NHServerOps
             Context cx = ThreadContext.getContext(Thread.currentThread());
 
             HRef fromId = HRef.make(params.getStr("fromEquip"));
-            HRef toIds[] = parseIdList(params.getStr("toEquips"));
+            String targetFilter = "equip and (" + params.getStr("targetFilter") + ")";
+            String toEquips = null;
+            if (params.has("toEquips"))
+                toEquips = params.getStr("toEquips");
 
             BHEquip from = (BHEquip) server.getTagManager().lookupComponent(fromId);
-            BComponent[] to = lookupComponents(server.getTagManager(), toIds);
+            BComponent[] to = getFilterComponents(server, targetFilter, toEquips);
 
             // equips
             for (int i = 0; i < to.length; i++)
             {
                 if (to[i] instanceof BHEquip)
                 {
-                    ((BHEquip) to[i]).setHaystack(cloneDict(from.getHaystack()));
+                    BHEquip toEquip = (BHEquip) to[i];
+                    if (toEquip == from) continue;
+
+                    toEquip.setHaystack(cloneDict(from.getHaystack()));
                 }
                 else
                 {
                     BHEquip toEquip = (BHEquip) to[i].get("equip");
+
                     if (toEquip == null)
                     {
                         toEquip = new BHEquip();
                         to[i].add("equip", toEquip);
                     }
+                    else if (toEquip == from) continue;
 
                     toEquip.setHaystack(cloneDict(from.getHaystack()));
                 }
@@ -202,6 +267,7 @@ class NHServerOps
             // points
             Map pointDictMap = new HashMap();
             collectPointDicts((BComponent) from.getParent(), pointDictMap, cx);
+
             for (int i = 0; i < to.length; i++)
             {
                 BComponent comp = (to[i] instanceof BHEquip) ? 
@@ -260,9 +326,7 @@ class NHServerOps
         {
             HDict dict = BHDict.findTagAnnotation(comp);
             if (dict != null)
-            {
                 pointDictMap.put(comp.getName(), dict);
-            }
         }
         else
         {
@@ -332,38 +396,15 @@ class NHServerOps
         for (int i = 0; i < targets.length; i++)
         {
             BComponent target = targets[i];
-            if (target.get("haystack") == null) continue;
-            if (!(target.get("haystack") instanceof BHDict)) continue;
 
-            HDictBuilder hdb = new HDictBuilder();
+            if (target.get("haystack") == null) 
+                target.add("haystack", BHDict.DEFAULT);
+            else if (!(target.get("haystack") instanceof BHDict)) 
+                continue;
 
-            // add orig tags
             HDict origTags = ((BHDict) target.get("haystack")).getDict();
-            Iterator it = origTags.iterator();
-            while (it.hasNext())
-            {
-                Map.Entry e = (Map.Entry) it.next();
-                String key = (String) e.getKey();
-                HVal   val = (HVal)   e.getValue();
 
-                HVal rem = (HVal) newTags.get(key, false);
-                if (!(rem != null && rem.equals(REMOVE)))
-                    hdb.add(key, val);
-            }
-
-            // add new tags
-            it = newTags.iterator();
-            while (it.hasNext())
-            {
-                Map.Entry e = (Map.Entry) it.next();
-                String key = (String) e.getKey();
-                HVal   val = (HVal)   e.getValue();
-
-                if (!val.equals(REMOVE))
-                    hdb.add(key, val);
-            }
-
-            HDict row = hdb.toDict();
+            HDict row = applyTagsToDict(origTags, newTags);
             target.set("haystack", BHDict.make(row));
             rows[i] = row;
         }
@@ -380,6 +421,41 @@ class NHServerOps
             result = HGridBuilder.dictToGrid(hdb.toDict());
         }
         return result;
+    }
+
+    /**
+      * applyTagsToDict
+      */
+    private static HDict applyTagsToDict(HDict origTags, HDict newTags)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+
+        // add orig tags
+        Iterator it = origTags.iterator();
+        while (it.hasNext())
+        {
+            Map.Entry e = (Map.Entry) it.next();
+            String key = (String) e.getKey();
+            HVal   val = (HVal)   e.getValue();
+
+            HVal rem = (HVal) newTags.get(key, false);
+            if (!(rem != null && rem.equals(REMOVE)))
+                hdb.add(key, val);
+        }
+
+        // add new tags
+        it = newTags.iterator();
+        while (it.hasNext())
+        {
+            Map.Entry e = (Map.Entry) it.next();
+            String key = (String) e.getKey();
+            HVal   val = (HVal)   e.getValue();
+
+            if (!val.equals(REMOVE))
+                hdb.add(key, val);
+        }
+
+        return hdb.toDict();
     }
 
     /**
@@ -742,16 +818,16 @@ class NHServerOps
         BHEquip[] equips = cache.getAllEquips();
         for (int i = 0; i < equips.length; i++)
         {
-            BControlPoint[] points = cache.getEquipPoints(equips[i]);
+            BComponent[] points = cache.getEquipPoints(equips[i]);
 
             // only included annotated points
             if (annotatedOnly)
             {
-                Array pointArr = new Array(BControlPoint.class);
+                Array pointArr = new Array(BComponent.class);
                 for (int j = 0; j < points.length; j++)
                     if (BHDict.findTagAnnotation(points[j]) != null)
                         pointArr.add(points[j]);
-                points = (BControlPoint[]) pointArr.trim();
+                points = (BComponent[]) pointArr.trim();
             }
 
             Map map = new HashMap();
@@ -762,7 +838,7 @@ class NHServerOps
                 HRef ref = nref.getHRef();
                 Array pointArr = (Array) map.get(ref);
                 if (pointArr == null)
-                    map.put(ref, pointArr = new Array(BControlPoint.class));
+                    map.put(ref, pointArr = new Array(BComponent.class));
                 pointArr.add(points[j]);
             }
 
@@ -777,7 +853,7 @@ class NHServerOps
                 {
                     for (int j = 0; j < pointArr.size(); j++)
                     {
-                        BControlPoint point = (BControlPoint) pointArr.get(j);
+                        BComponent point = (BComponent) pointArr.get(j);
                         result.add(makeDuplicateDict(ref, point));
                     }
                 }
@@ -787,7 +863,7 @@ class NHServerOps
         return HGridBuilder.dictsToGrid((HDict[]) result.trim());
     }
 
-    private static HDict makeDuplicateDict(HRef ref, BControlPoint point)
+    private static HDict makeDuplicateDict(HRef ref, BComponent point)
     {
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("id", ref);
@@ -831,56 +907,24 @@ class NHServerOps
         return HGridBuilder.dictsToGrid((HDict[]) arr.trim());
     }
 
-//////////////////////////////////////////////////////////////////////////
-// ScheduleRead
-//////////////////////////////////////////////////////////////////////////
-
-    static class ScheduleReadOp extends HOp
+    /**
+      * uniqueEquipTypes
+      */
+    private static HGrid uniqueEquipTypes(NHServer server)
     {
-        public String name() { return "scheduleRead"; }
-        public String summary() { return "Read time series from point schedule"; }
-        public HGrid onService(HServer db, HGrid req) throws Exception
-        {
-            NHServer server = (NHServer) db;
-            if (!server.getCache().initialized()) 
-                throw new IllegalStateException(Cache.NOT_INITIALIZED);
+        BHGrid grid = (BHGrid) server.getService().get(BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES);
+        if (grid == null)
+            throw new IllegalStateException(
+                "'" + BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES + "' not found.");
 
-            if (req.isEmpty()) throw new Exception("Request has no rows");
-            HRow row = req.row(0);
-            HRef id = valToId(db, row.get("id"));
-
-            return server.scheduleRead(id);
-        }
-    }
-
-//////////////////////////////////////////////////////////////////////////
-// ScheduleWriteOp
-//////////////////////////////////////////////////////////////////////////
-
-    static class ScheduleWriteOp extends HOp
-    {
-        public String name() { return "scheduleWrite"; }
-        public String summary() { return "Write time series data to point schedule"; }
-        public HGrid onService(HServer db, HGrid req) throws Exception
-        {
-            NHServer server = (NHServer) db;
-            if (!server.getCache().initialized()) 
-                throw new IllegalStateException(Cache.NOT_INITIALIZED);
-
-            if (req.isEmpty()) throw new Exception("Request has no rows");
-            HRef id = valToId(db, req.meta().get("id"));
-
-            HHisItem[] items = HHisItem.gridToItems(req);
-            server.scheduleWrite(id, items);
-            return HGrid.EMPTY;
-        }
+        return grid.getGrid();
     }
 
 ////////////////////////////////////////////////////////////////
 // utils
 ////////////////////////////////////////////////////////////////
 
-    private static BComponent[] getFilterComponents(NHServer server, String filter, String ids)
+    public static BComponent[] getFilterComponents(NHServer server, String filter, String ids)
     {
         HServer hserver = server;
         TagManager tagMgr = server.getTagManager();
@@ -950,7 +994,7 @@ class NHServerOps
         protected HWatch[] onWatches() { throw new UnsupportedOperationException(); }
         protected HWatch onWatch(String id) { throw new UnsupportedOperationException(); }
         protected HGrid onPointWriteArray(HDict rec) { throw new UnsupportedOperationException(); }
-        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HHisItem[] schedItems) { throw new UnsupportedOperationException(); }
+        protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HDict ops) { throw new UnsupportedOperationException(); }
         protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range) { throw new UnsupportedOperationException(); }
         protected void onHisWrite(HDict rec, HHisItem[] items) { throw new UnsupportedOperationException(); }
         protected HGrid onInvokeAction(HDict rec, String action, HDict args) { throw new UnsupportedOperationException(); }

@@ -53,6 +53,9 @@ public class BNHaystackService
                 default{[ false ]}
             initializationDelayTime: BRelTime 
                 default{[ BRelTime.DEFAULT ]}
+            foxLeaseInterval: BRelTime 
+                flags { hidden }
+                default{[ BRelTime.makeMinutes(2) ]}
         }
         actions
         {
@@ -77,6 +80,11 @@ public class BNHaystackService
                 -- fetch the tags that the server auto-generates.
                 flags { operator, hidden }
 
+            findUniqueEquipTypes(args: BUniqueEquipTypeArgs): BOrd
+                -- find all the unique equip types
+                flags { operator, async, hidden }
+                default {[ new BUniqueEquipTypeArgs() ]}
+
             applySchedule(event: BHScheduleEvent)
                 -- apply the schedule now that the ticket has expired
                 flags { operator, async, hidden }
@@ -95,8 +103,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(162149796)1.0$ @*/
-/* Generated Wed Nov 26 15:11:47 EST 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1101742462)1.0$ @*/
+/* Generated Mon May 04 14:25:30 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -289,6 +297,29 @@ public class BNHaystackService
   public void setInitializationDelayTime(BRelTime v) { set(initializationDelayTime,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "foxLeaseInterval"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>foxLeaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#getFoxLeaseInterval
+   * @see nhaystack.server.BNHaystackService#setFoxLeaseInterval
+   */
+  public static final Property foxLeaseInterval = newProperty(Flags.HIDDEN, BRelTime.makeMinutes(2),null);
+  
+  /**
+   * Get the <code>foxLeaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#foxLeaseInterval
+   */
+  public BRelTime getFoxLeaseInterval() { return (BRelTime)get(foxLeaseInterval); }
+  
+  /**
+   * Set the <code>foxLeaseInterval</code> property.
+   * @see nhaystack.server.BNHaystackService#foxLeaseInterval
+   */
+  public void setFoxLeaseInterval(BRelTime v) { set(foxLeaseInterval,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "readById"
 ////////////////////////////////////////////////////////////////
   
@@ -395,6 +426,24 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#fetchAutoGenTags
    */
   public BString fetchAutoGenTags() { return (BString)invoke(fetchAutoGenTags,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "findUniqueEquipTypes"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>findUniqueEquipTypes</code> action.
+   * find all the unique equip types
+   * @see nhaystack.server.BNHaystackService#findUniqueEquipTypes()
+   */
+  public static final Action findUniqueEquipTypes = newAction(Flags.OPERATOR|Flags.ASYNC|Flags.HIDDEN,new BUniqueEquipTypeArgs(),null);
+  
+  /**
+   * Invoke the <code>findUniqueEquipTypes</code> action.
+   * find all the unique equip types
+   * @see nhaystack.server.BNHaystackService#findUniqueEquipTypes
+   */
+  public BOrd findUniqueEquipTypes(BUniqueEquipTypeArgs args) { return (BOrd)invoke(findUniqueEquipTypes,args,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "applySchedule"
@@ -585,6 +634,7 @@ public class BNHaystackService
         if ((action == initializeHaystack) || 
             (action == rebuildCache) || 
             (action == removeBrokenRefs) ||
+            (action == findUniqueEquipTypes) ||
             (action == applySchedule))
         {
             return postAsyncChore(
@@ -646,6 +696,13 @@ public class BNHaystackService
     public void doApplySchedule(BHScheduleEvent event) 
     {
         server.getScheduleManager().applySchedule(event);
+    }
+
+    public BOrd doFindUniqueEquipTypes(BUniqueEquipTypeArgs args)
+    {
+        BUniqueEquipTypeJob job = new BUniqueEquipTypeJob(
+            this, args.getFilter(), args.getPercentMatch(), args.getApplyTags());
+        return job.submit(null);
     }
 
 ////////////////////////////////////////////////////////////////
