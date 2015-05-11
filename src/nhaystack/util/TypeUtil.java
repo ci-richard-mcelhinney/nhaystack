@@ -9,6 +9,9 @@ package nhaystack.util;
 
 import java.util.*;
 
+import javax.baja.history.*;
+import javax.baja.history.db.*;
+import javax.baja.naming.*;
 import javax.baja.security.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
@@ -41,6 +44,8 @@ public abstract class TypeUtil
                 Unit unit = Resources.getSymbolUnit(num.unit);
                 if (unit.quantity.equals("time"))
                     return makeRelTime(num, unit);
+                else
+                    return BDouble.make(num.val); 
             }
         }
         else if (val instanceof HBool)
@@ -84,7 +89,7 @@ public abstract class TypeUtil
         }
         else if (simple instanceof BEnum)
         {
-            return HStr.make(((BEnum) simple).getTag());
+            return HStr.make(SlotUtil.fromNiagara(((BEnum) simple).getTag()));
         }
         else
             throw new IllegalStateException("Cannot convert " + simple.getClass());
@@ -98,13 +103,15 @@ public abstract class TypeUtil
         // NOTE we can't use args.size(), because if args is an HRow,
         // the size() can be non-zero even if args.iterator().hasNext() is false.
 
+        BValue def = action.getParameterDefault();
+
         // null
-        if (args == null || !args.iterator().hasNext())
+        if (def == null)
         {
             return null;
         }
         // simple
-        else if (args.size() == 1)
+        else if (def instanceof BSimple)
         {
             Map.Entry e = (Map.Entry) args.iterator().next();
             HVal val = (HVal) e.getValue();
@@ -120,7 +127,7 @@ public abstract class TypeUtil
         // complex
         else
         {
-            BComplex cpx = (BComplex) action.getParameterDefault();
+            BComplex cpx = (BComplex) def;
 
             // Set each slot in the BComplex to a dict entry.
             // Note that we do not currently support nesting structs within structs.
@@ -162,7 +169,7 @@ public abstract class TypeUtil
       */
     public static boolean canRead(BComponent comp, Context cx)
     {          
-        BPermissions perm = comp.getPermissions(cx);
+        BPermissions perm = permissions(comp, cx);
         return 
             perm.has(BPermissions.OPERATOR_READ) ||
             perm.has(BPermissions.ADMIN_READ);
@@ -173,7 +180,7 @@ public abstract class TypeUtil
       */
     public static boolean canWrite(BComponent comp, Context cx)
     {          
-        BPermissions perm = comp.getPermissions(cx);
+        BPermissions perm = permissions(comp, cx);
         return 
             perm.has(BPermissions.OPERATOR_WRITE) ||
             perm.has(BPermissions.ADMIN_WRITE);
@@ -184,10 +191,29 @@ public abstract class TypeUtil
       */
     public static boolean canInvoke(BComponent comp, Context cx)
     {          
-        BPermissions perm = comp.getPermissions(cx);
+        BPermissions perm = permissions(comp, cx);
         return 
             perm.has(BPermissions.OPERATOR_INVOKE) ||
             perm.has(BPermissions.ADMIN_INVOKE);
+    }
+
+    private static BPermissions permissions(BComponent comp, Context cx)
+    {
+        // For history config, you have to look up the BIHistory
+        // and get the permissions for that.
+        if (comp instanceof BHistoryConfig)
+        {
+            BHistoryConfig cfg = (BHistoryConfig) comp;
+            BHistoryDatabase historyDb = (BHistoryDatabase) 
+                BOrd.make("history:").get(); 
+            BIHistory his = historyDb.getHistory(cfg.getId());
+            if (his == null) return BPermissions.DEFAULT;
+            return his.getPermissions(cx);
+        }
+        else
+        {
+            return comp.getPermissions(cx);
+        }
     }
 }
 

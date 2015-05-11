@@ -59,17 +59,21 @@ public class BNHaystackServer
             leaseInterval: BRelTime
                  -- The amount of time that objects in watches are leased.
                 default{[ BRelTime.make(2 * BRelTime.MINUTE.getMillis()) ]}
+
+            structureSettings: BStructureSettings
+                default {[ new BStructureSettings() ]}
         }
         actions  
         {  
             submitLearnHistoriesJob(): BOrd flags { hidden }
             submitLearnPointsJob():    BOrd flags { hidden }
+            learnStructure(): BOrd
         }  
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(647880274)1.0$ @*/
-/* Generated Wed Nov 26 15:11:47 EST 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServer(2174077671)1.0$ @*/
+/* Generated Mon Apr 27 09:02:40 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
@@ -282,6 +286,29 @@ public class BNHaystackServer
   public void setLeaseInterval(BRelTime v) { set(leaseInterval,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "structureSettings"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>structureSettings</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getStructureSettings
+   * @see nhaystack.driver.BNHaystackServer#setStructureSettings
+   */
+  public static final Property structureSettings = newProperty(0, new BStructureSettings(),null);
+  
+  /**
+   * Get the <code>structureSettings</code> property.
+   * @see nhaystack.driver.BNHaystackServer#structureSettings
+   */
+  public BStructureSettings getStructureSettings() { return (BStructureSettings)get(structureSettings); }
+  
+  /**
+   * Set the <code>structureSettings</code> property.
+   * @see nhaystack.driver.BNHaystackServer#structureSettings
+   */
+  public void setStructureSettings(BStructureSettings v) { set(structureSettings,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Action "submitLearnHistoriesJob"
 ////////////////////////////////////////////////////////////////
   
@@ -312,6 +339,22 @@ public class BNHaystackServer
    * @see nhaystack.driver.BNHaystackServer#submitLearnPointsJob
    */
   public BOrd submitLearnPointsJob() { return (BOrd)invoke(submitLearnPointsJob,null,null); }
+
+////////////////////////////////////////////////////////////////
+// Action "learnStructure"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>learnStructure</code> action.
+   * @see nhaystack.driver.BNHaystackServer#learnStructure()
+   */
+  public static final Action learnStructure = newAction(0,null);
+  
+  /**
+   * Invoke the <code>learnStructure</code> action.
+   * @see nhaystack.driver.BNHaystackServer#learnStructure
+   */
+  public BOrd learnStructure() { return (BOrd)invoke(learnStructure,null,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -363,9 +406,12 @@ public class BNHaystackServer
 
     protected IFuture postPing()
     {
-        return postAsyncChore(
+        BNHaystackNetwork network = getNHaystackNetwork();
+
+        return onPostAsyncChore(
+            network.getThreadPoolWorker(), 
             new PingInvocation(
-                getWorker(),
+                network.getThreadPoolWorker(),
                 "Ping:" + getHaystackUrl(),
                 new Invocation(this, ping, null, null)));
     }
@@ -374,7 +420,9 @@ public class BNHaystackServer
     {
         long begin = Clock.ticks();
         if (LOG.isTraceOn())
-            LOG.trace("Server Ping BEGIN " + getHaystackUrl());
+            LOG.trace(
+                "Server Ping BEGIN " + getHaystackUrl() + ", " + 
+                Thread.currentThread().getName());
 
         if (isDisabled() || isFault())
             return;
@@ -417,14 +465,25 @@ public class BNHaystackServer
         return job.submit(null);
     }
 
+    public BOrd doLearnStructure()
+    {
+        BNHaystackLearnStructureJob job = new BNHaystackLearnStructureJob(this);
+        return job.submit(null);
+    }
+
 ////////////////////////////////////////////////////////////////
 // public
 ////////////////////////////////////////////////////////////////
 
+    public final IFuture postAsyncChore(WorkerChore chore)
+    {
+        return onPostAsyncChore(getWorker(), chore);
+    }
+
     /**
       * Post a chore asynchronously to the worker queue
       */
-    public final IFuture postAsyncChore(WorkerChore chore)
+    private final IFuture onPostAsyncChore(BINHaystackWorker worker, WorkerChore chore)
     {
         if (!isRunning()) return null;
 
@@ -444,8 +503,7 @@ public class BNHaystackServer
 
         try
         {
-            // the worker is responsible for coalescing tasks
-            getWorker().enqueueChore(chore);
+            worker.enqueueChore(chore);
         }
         catch (QueueFullException e)
         {

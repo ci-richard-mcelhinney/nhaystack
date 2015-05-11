@@ -10,6 +10,7 @@ package nhaystack.driver.point.learn;
 import java.util.*;
 
 import javax.baja.job.*;
+import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -72,19 +73,11 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         {
             HRow row = grid.row(i);
 
-            String kind = row.getStr("kind");
             String name = SlotPath.escape(nameGen.makeUniqueName(row.dis()));
 
             BNHaystackPointEntry entry = new BNHaystackPointEntry();
 
-            if      (kind.equals("Bool"))   entry.setFacets(makeBoolFacets(row));
-            else if (kind.equals("Number")) entry.setFacets(makeNumberFacets(row));
-            else if (kind.equals("Str"))    
-            {
-                BFacets facets = makeStrFacets(row);
-                if (facets != null) entry.setFacets(facets);
-            }
-
+            entry.setFacets(makePointFacets(row));
             entry.setId(BHRef.make(row.id()));
             entry.setImportedTags(BHTags.make(row));
 
@@ -100,7 +93,16 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         }
     }
 
-    private BFacets makeBoolFacets(HDict rec)
+    static BFacets makePointFacets(HDict rec)
+    {
+        String kind = rec.getStr("kind");
+        if      (kind.equals("Bool"))   return makeBoolFacets(rec);
+        else if (kind.equals("Number")) return makeNumberFacets(rec);
+        else if (kind.equals("Str"))    return makeStrFacets(rec);
+        else return BFacets.NULL;
+    }
+
+    private static BFacets makeBoolFacets(HDict rec)
     {
         if (!rec.has("enum")) return BFacets.NULL;
 
@@ -110,28 +112,36 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         return BFacets.makeBoolean(tokens[1], tokens[0]); 
     }
 
-    private BFacets makeNumberFacets(HDict rec)
+    public static BFacets makeNumberFacets(HDict rec)
     {
-        if (!rec.has("unit")) return BFacets.NULL;
+        try
+        {
+            if (!rec.has("unit")) return BFacets.NULL;
 
-        String unit = rec.getStr("unit");
-        if (unit.toLowerCase().equals("none"))
+            String unit = rec.getStr("unit");
+            if (unit.toLowerCase().equals("none"))
+                return BFacets.NULL;
+
+            return BFacets.make(
+                BFacets.UNITS,
+                Resources.toBajaUnit(
+                    Resources.getSymbolUnit(unit)));
+        }
+        catch (Exception e)
+        {
+            LOG.error("Cannot make units for " + rec);
             return BFacets.NULL;
-
-        return BFacets.make(
-            BFacets.UNITS,
-            Resources.toBajaUnit(
-                Resources.getSymbolUnit(unit)));
+        }
     }
 
-    private BFacets makeStrFacets(HDict rec)
+    private static BFacets makeStrFacets(HDict rec)
     {
         if (!rec.has("enum")) return BFacets.NULL;
 
         String[] tokens = TextUtil.split(rec.getStr("enum"), ',');
 
         for (int i = 0; i < tokens.length; i++)
-            if (!SlotPath.isValidName(tokens[i])) return null;
+            if (!SlotPath.isValidName(tokens[i])) return BFacets.NULL;
 
         return BFacets.makeEnum(BEnumRange.make(tokens));
     }
@@ -139,6 +149,8 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack.driver");
 
     private BNHaystackServer server = null;
 }

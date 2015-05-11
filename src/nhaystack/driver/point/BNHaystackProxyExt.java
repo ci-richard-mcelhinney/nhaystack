@@ -10,6 +10,7 @@ package nhaystack.driver.point;
 import org.projecthaystack.*;
 
 import javax.baja.driver.point.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
 
 import nhaystack.*;
@@ -36,7 +37,7 @@ public abstract class BNHaystackProxyExt extends BProxyExt
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.point.BNHaystackProxyExt(557806362)1.0$ @*/
-/* Generated Thu Apr 10 16:32:45 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Thu Apr 09 15:16:35 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "id"
@@ -98,12 +99,14 @@ public abstract class BNHaystackProxyExt extends BProxyExt
   
   /**
    * Get the <code>haystackWriteLevel</code> property.
+   * the level to use when writing to haystack
    * @see nhaystack.driver.point.BNHaystackProxyExt#haystackWriteLevel
    */
   public int getHaystackWriteLevel() { return getInt(haystackWriteLevel); }
   
   /**
    * Set the <code>haystackWriteLevel</code> property.
+   * the level to use when writing to haystack
    * @see nhaystack.driver.point.BNHaystackProxyExt#haystackWriteLevel
    */
   public void setHaystackWriteLevel(int v) { setInt(haystackWriteLevel,v,null); }
@@ -134,6 +137,7 @@ public abstract class BNHaystackProxyExt extends BProxyExt
 
     private BNHaystackServer findServer()
     {
+        // traverse upwards
         BComplex comp = getParent();
         while ((comp != null) && (!(comp instanceof BNHaystackServer)))
             comp = comp.getParent();

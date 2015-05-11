@@ -7,7 +7,7 @@
 //
 package nhaystack.util;
 
-public abstract class PathUtil
+public abstract class SlotUtil
 {
     /**
       * Convert an AX path, which may contain '/', or escape sequences like '$20' or '$7f',
@@ -18,7 +18,7 @@ public abstract class PathUtil
       *     '$20' with '-'
       *     '$'   with '~'
       */
-    public static String fromNiagaraPath(String path)
+    public static String fromNiagara(String path)
     {
         StringBuffer sb = new StringBuffer();
         int n = 0;
@@ -66,7 +66,7 @@ public abstract class PathUtil
       *     '-' with '$20'
       *     '~' with '$'
       */
-    public static String toNiagaraPath(String path)
+    public static String toNiagara(String path)
     {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < path.length(); i++)

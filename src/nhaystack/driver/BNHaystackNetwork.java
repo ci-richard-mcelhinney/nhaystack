@@ -12,7 +12,15 @@ import javax.baja.driver.point.*;
 import javax.baja.driver.util.*;
 import javax.baja.sys.*;
 
-public class BNHaystackNetwork extends BDeviceNetwork
+import org.projecthaystack.*;
+import org.projecthaystack.client.*;
+
+import nhaystack.driver.worker.*;
+import nhaystack.worker.*;
+
+public class BNHaystackNetwork 
+    extends BDeviceNetwork
+    implements BINHaystackWorkerParent
 {
     /*-
     class BNHaystackNetwork
@@ -21,12 +29,13 @@ public class BNHaystackNetwork extends BDeviceNetwork
         {
             tuningPolicies: BTuningPolicyMap default{[ new BTuningPolicyMap()        ]}
             pollScheduler:  BPollScheduler   default{[ new BNHaystackPollScheduler() ]}
+            threadPoolWorker: BNHaystackThreadPoolWorker default{[ new BNHaystackThreadPoolWorker() ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackNetwork(4149131371)1.0$ @*/
-/* Generated Mon Apr 07 12:12:20 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackNetwork(3502540996)1.0$ @*/
+/* Generated Mon Apr 27 09:02:40 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "tuningPolicies"
@@ -75,6 +84,29 @@ public class BNHaystackNetwork extends BDeviceNetwork
   public void setPollScheduler(BPollScheduler v) { set(pollScheduler,v,null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "threadPoolWorker"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>threadPoolWorker</code> property.
+   * @see nhaystack.driver.BNHaystackNetwork#getThreadPoolWorker
+   * @see nhaystack.driver.BNHaystackNetwork#setThreadPoolWorker
+   */
+  public static final Property threadPoolWorker = newProperty(0, new BNHaystackThreadPoolWorker(),null);
+  
+  /**
+   * Get the <code>threadPoolWorker</code> property.
+   * @see nhaystack.driver.BNHaystackNetwork#threadPoolWorker
+   */
+  public BNHaystackThreadPoolWorker getThreadPoolWorker() { return (BNHaystackThreadPoolWorker)get(threadPoolWorker); }
+  
+  /**
+   * Set the <code>threadPoolWorker</code> property.
+   * @see nhaystack.driver.BNHaystackNetwork#threadPoolWorker
+   */
+  public void setThreadPoolWorker(BNHaystackThreadPoolWorker v) { set(threadPoolWorker,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -96,5 +128,9 @@ public class BNHaystackNetwork extends BDeviceNetwork
     public boolean isParentLegal(BComponent comp)
     {
         return (comp instanceof BDriverContainer);
+    }
+
+    public void handleNetworkException(WorkerChore chore, CallNetworkException e)
+    {
     }
 }

@@ -15,7 +15,6 @@
     <type name="HGrid"        class="nhaystack.BHGrid"/>
     <type name="HNum"         class="nhaystack.BHNum"/>
     <type name="HRef"         class="nhaystack.BHRef"/>
-    <type name="HSchedulable" class="nhaystack.BHSchedulable"/>
     <type name="HTimeZone"    class="nhaystack.BHTimeZone"/>
     <type name="HUnit"        class="nhaystack.BHUnit"/>
 
@@ -25,6 +24,11 @@
     <type name="NHaystackPollScheduler" class="nhaystack.driver.BNHaystackPollScheduler"/>
     <type name="NHaystackServer"        class="nhaystack.driver.BNHaystackServer"/>
     <type name="NHaystackServerFolder"  class="nhaystack.driver.BNHaystackServerFolder"/>
+    <type name="StructureSettings"      class="nhaystack.driver.BStructureSettings"/>
+    <type name="PointGrouping"          class="nhaystack.driver.BPointGrouping"/>
+
+    <!-- nhaystack.driver.alarm -->
+    <type name="NHaystackAlarmRecipient"  class="nhaystack.driver.alarm.BNHaystackAlarmRecipient"  />
 
     <!-- nhaystack.driver.history -->
     <type name="NHaystackHistoryDeviceExt"  class="nhaystack.driver.history.BNHaystackHistoryDeviceExt"  />
@@ -54,14 +58,15 @@
     <type name="NHaystackStrWritable"    class="nhaystack.driver.point.BNHaystackStrWritable"    />
 
     <!-- nhaystack.driver.point.learn -->
-    <type name="NHaystackLearnPointsJob"  class="nhaystack.driver.point.learn.BNHaystackLearnPointsJob"  />
-    <type name="NHaystackPointEntry"      class="nhaystack.driver.point.learn.BNHaystackPointEntry"      />
+    <type name="NHaystackLearnPointsJob" class="nhaystack.driver.point.learn.BNHaystackLearnPointsJob" />
+    <type name="NHaystackPointEntry" class="nhaystack.driver.point.learn.BNHaystackPointEntry" />
     <type name="NHaystackPointManager" class="nhaystack.driver.point.learn.BNHaystackPointManager" >
         <agent>
             <on type="nhaystack:NHaystackPointDeviceExt"/>
             <on type="nhaystack:NHaystackPointFolder"/>
         </agent>
     </type>
+    <type name="NHaystackLearnStructureJob"  class="nhaystack.driver.point.learn.BNHaystackLearnStructureJob"  />
 
     <type name="HTagsDialog" class="nhaystack.driver.ui.BHTagsDialog" />
     <type name="HTagsFE" class="nhaystack.driver.ui.BHTagsFE"> <agent><on type="nhaystack:HTags"/> </agent></type>
@@ -75,6 +80,8 @@
     <type name="NHaystackStats"               class="nhaystack.server.BNHaystackStats"/>
     <type name="TimeZoneAlias"                class="nhaystack.server.BTimeZoneAlias"/>
     <type name="TimeZoneAliasFolder"          class="nhaystack.server.BTimeZoneAliasFolder"/>
+    <type name="UniqueEquipTypeArgs"          class="nhaystack.server.BUniqueEquipTypeArgs"/>
+    <type name="UniqueEquipTypeJob"           class="nhaystack.server.BUniqueEquipTypeJob"/>
 
     <!-- nhaystack.site -->
     <type name="HEquip"  class="nhaystack.site.BHEquip"/>
@@ -88,12 +95,11 @@
     <type name="HDictEditorGroup" class="nhaystack.ui.BHDictEditorGroup"/>
     <type name="MarkerSet"        class="nhaystack.ui.BMarkerSet"/>
 
-    <type name="HDictFE"        class="nhaystack.ui.BHDictFE">        <agent><on type="nhaystack:HDict"/>        </agent></type>
-    <type name="HFloorFE"       class="nhaystack.ui.BHFloorFE">       <agent><on type="nhaystack:HFloor"/>       </agent></type>
-    <type name="HNumFE"         class="nhaystack.ui.BHNumFE">         <agent><on type="nhaystack:HNum"/>         </agent></type>
-    <type name="HSchedulableFE" class="nhaystack.ui.BHSchedulableFE"> <agent><on type="nhaystack:HSchedulable"/> </agent></type>
-    <type name="HTimeZoneFE"    class="nhaystack.ui.BHTimeZoneFE">    <agent><on type="nhaystack:HTimeZone"/>    </agent></type>
-    <type name="HUnitFE"        class="nhaystack.ui.BHUnitFE">        <agent><on type="nhaystack:HUnit"/>        </agent></type>
+    <type name="HDictFE"     class="nhaystack.ui.BHDictFE">     <agent><on type="nhaystack:HDict"/>     </agent></type>
+    <type name="HFloorFE"    class="nhaystack.ui.BHFloorFE">    <agent><on type="nhaystack:HFloor"/>    </agent></type>
+    <type name="HNumFE"      class="nhaystack.ui.BHNumFE">      <agent><on type="nhaystack:HNum"/>      </agent></type>
+    <type name="HTimeZoneFE" class="nhaystack.ui.BHTimeZoneFE"> <agent><on type="nhaystack:HTimeZone"/> </agent></type>
+    <type name="HUnitFE"     class="nhaystack.ui.BHUnitFE">     <agent><on type="nhaystack:HUnit"/>     </agent></type>
 
     <type name="EquipRefFE" class="nhaystack.ui.BEquipRefFE"/>
     <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>
@@ -106,7 +112,9 @@
         <agent><on type="nhaystack:NHaystackService"/></agent></type>
 
     <!-- nhaystack.worker -->
-    <type name="INHaystackWorkerParent" class="nhaystack.worker.BINHaystackWorkerParent"/>
-    <type name="NHaystackWorker"        class="nhaystack.worker.BNHaystackWorker"/>
+    <type name="INHaystackWorker"          class="nhaystack.worker.BINHaystackWorker"/>
+    <type name="INHaystackWorkerParent"    class="nhaystack.worker.BINHaystackWorkerParent"/>
+    <type name="NHaystackThreadPoolWorker" class="nhaystack.worker.BNHaystackThreadPoolWorker"/>
+    <type name="NHaystackWorker"           class="nhaystack.worker.BNHaystackWorker"/>
 
 </types>

@@ -185,18 +185,9 @@ class Row
 
     private static BWbFieldEditor makeNumFE(String name, HNum num)
     {
-        if (name.equals("schedulable"))
-        {
-            BWbFieldEditor fe = new BHSchedulableFE();
-            fe.loadValue(BHSchedulable.make((int) num.val));
-            return fe;
-        }
-        else 
-        {
-            BWbFieldEditor fe = new BHNumFE();
-            fe.loadValue(BHNum.make(num));
-            return fe;
-        }
+        BWbFieldEditor fe = new BHNumFE();
+        fe.loadValue(BHNum.make(num));
+        return fe;
     }
 
     private static BWbFieldEditor makeStrFE(String name, HStr str)

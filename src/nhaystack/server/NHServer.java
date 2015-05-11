@@ -13,9 +13,11 @@ import java.util.*;
 import javax.baja.collection.*;
 import javax.baja.control.*;
 import javax.baja.control.enums.*;
+import javax.baja.fox.*;
 import javax.baja.history.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.schedule.*;
 import javax.baja.security.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
@@ -44,6 +46,8 @@ public class NHServer extends HServer
         this.cache = new Cache(this, schedMgr);
         this.tagMgr = new TagManager(this, service, spaceMgr, cache);
         this.nav = new Nav(service, spaceMgr, cache, tagMgr);
+        this.foxSessionMgr = new FoxSessionManager();
+        this.pointIO = new PointIO(service, cache, tagMgr, schedMgr, foxSessionMgr);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -73,7 +77,6 @@ public class NHServer extends HServer
             LOG.trace("onAbout");
 
         try
-
         {
             HDictBuilder hd = new HDictBuilder();
 
@@ -203,8 +206,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onWatchOpen " + dis);
+        if (LOG_WATCH.isTraceOn())
+            LOG_WATCH.trace("onWatchOpen " + dis);
 
         try
         {
@@ -234,8 +237,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onWatches");
+        if (LOG_WATCH.isTraceOn())
+            LOG_WATCH.trace("onWatches");
 
         try
         {
@@ -256,8 +259,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onWatch " + id);
+        if (LOG_WATCH.isTraceOn())
+            LOG_WATCH.trace("onWatch " + id);
 
         try
         {
@@ -275,268 +278,16 @@ public class NHServer extends HServer
       */
     public HGrid onPointWriteArray(HDict rec)
     {
-        if (!cache.initialized()) 
-            throw new IllegalStateException(Cache.NOT_INITIALIZED);
-
-        if (LOG.isTraceOn())
-            LOG.trace("onPointWriteArray " + rec.id());
-
-        try
-        {
-            HVal[] vals = new HVal[17];
-
-            BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());
-
-            // Numeric
-            if (point instanceof BNumericWritable)
-            {
-                BNumericWritable nw = (BNumericWritable) point;
-                for (int i = 0; i < 16; i++)
-                {
-                    BStatusNumeric sn = (BStatusNumeric) nw.get("in" + (i+1));
-                    if (!sn.getStatus().isNull())
-                        vals[i] = HNum.make(sn.getValue());
-                }
-                BStatusNumeric sn = (BStatusNumeric) nw.getFallback();
-                if (!sn.getStatus().isNull())
-                    vals[16] = HNum.make(sn.getValue());
-            }
-            // Boolean
-            else if (point instanceof BBooleanWritable)
-            {
-                BBooleanWritable bw = (BBooleanWritable) point;
-                for (int i = 0; i < 16; i++)
-                {
-                    BStatusBoolean sb = (BStatusBoolean) bw.get("in" + (i+1));
-                    if (!sb.getStatus().isNull())
-                        vals[i] = HBool.make(sb.getValue());
-                }
-                BStatusBoolean sb = (BStatusBoolean) bw.getFallback();
-                if (!sb.getStatus().isNull())
-                    vals[16] = HBool.make(sb.getValue());
-            }
-            // Enum
-            else if (point instanceof BEnumWritable)
-            {
-                BEnumWritable ew = (BEnumWritable) point;
-                for (int i = 0; i < 16; i++)
-                {
-                    BStatusEnum se = (BStatusEnum) ew.get("in" + (i+1));
-                    if (!se.getStatus().isNull())
-                        vals[i] = HStr.make(se.getValue().getTag());
-                }
-                BStatusEnum se = (BStatusEnum) ew.getFallback();
-                if (!se.getStatus().isNull())
-                    vals[16] = HStr.make(se.getValue().getTag());
-            }
-            // String
-            else if (point instanceof BStringWritable)
-            {
-                BStringWritable sw = (BStringWritable) point;
-                for (int i = 0; i < 16; i++)
-                {
-                    BStatusString s = (BStatusString) sw.get("in" + (i+1));
-                    if (!s.getStatus().isNull())
-                        vals[i] = HStr.make(s.getValue());
-                }
-                BStatusString s = (BStatusString) sw.getFallback();
-                if (!s.getStatus().isNull())
-                    vals[16] = HStr.make(s.getValue());
-            }
-
-            //////////////////////////////////////////////
-
-            // Return priority array for writable point identified by id.
-            // The grid contains 17 rows with following columns:
-            //   - level: number from 1 - 17 (17 is default)
-            //   - levelDis: human description of level
-            //   - val: current value at level or null
-            //   - who: who last controlled the value at this level
-
-            String[] who = getLinkWho(point);
-            HDict[] result = new HDict[17];
-            for (int i = 0; i < 17; i++)
-            {
-                HDictBuilder hd = new HDictBuilder();
-                HNum level = HNum.make(i+1);
-                hd.add("level", level);
-                hd.add("levelDis", "level " + (i+1)); // TODO?
-                if (vals[i] != null)
-                    hd.add("val", vals[i]);
-
-                if (who[i].length() > 0)
-                    hd.add("who", who[i]);
-
-                result[i] = hd.toDict();
-            }
-            return HGridBuilder.dictsToGrid(result);
-        }
-        catch (RuntimeException e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
+        return pointIO.onPointWriteArray(rec);
     }
 
-    /**
-      * get the source for each link that is connected to [in1..in16, fallback]
-      */
-    private String[] getLinkWho(BControlPoint point)
-    {
-        String[] who = new String[17];
-        for (int i = 0; i < 17; i++)
-            who[i] = "";
-
-        BLink[] links = point.getLinks();
-        for (int i = 0; i < links.length; i++)
-        {
-            String target = links[i].getTargetSlot().getName();
-            Integer level = (Integer) POINT_PROP_LEVELS.get(target);
-            if (level != null)
-            {
-                who[level.intValue()-1] +=
-                    (links[i].getSourceComponent().getSlotPath() + "/" + 
-                     links[i].getSourceSlot().getName());
-            }
-        }
-
-        return who;
-    }
-
-    private static Map POINT_PROP_LEVELS = new HashMap();
-    static
-    {
-        POINT_PROP_LEVELS.put("in1",  new Integer(1));
-        POINT_PROP_LEVELS.put("in2",  new Integer(2));
-        POINT_PROP_LEVELS.put("in3",  new Integer(3));
-        POINT_PROP_LEVELS.put("in4",  new Integer(4));
-        POINT_PROP_LEVELS.put("in5",  new Integer(5));
-        POINT_PROP_LEVELS.put("in6",  new Integer(6));
-        POINT_PROP_LEVELS.put("in7",  new Integer(7));
-        POINT_PROP_LEVELS.put("in8",  new Integer(8));
-        POINT_PROP_LEVELS.put("in9",  new Integer(9));
-        POINT_PROP_LEVELS.put("in10", new Integer(10));
-        POINT_PROP_LEVELS.put("in11", new Integer(11));
-        POINT_PROP_LEVELS.put("in12", new Integer(12));
-        POINT_PROP_LEVELS.put("in13", new Integer(13));
-        POINT_PROP_LEVELS.put("in14", new Integer(14));
-        POINT_PROP_LEVELS.put("in15", new Integer(15));
-        POINT_PROP_LEVELS.put("in16", new Integer(16));
-        POINT_PROP_LEVELS.put("fallback", new Integer(17));
-    }
-  
     /**
       * Implementation hook for pointWrite
       */
     public void onPointWrite(
-        HDict rec, 
-        int level, 
-        HVal val, 
-        String who, 
-        HNum dur, // ignore this for now
-        HHisItem[] schedItems)
+        HDict rec, int level, HVal val, String who, HNum dur, HDict opts)
     {
-        if (!cache.initialized()) 
-            throw new IllegalStateException(Cache.NOT_INITIALIZED);
-
-        if (LOG.isTraceOn())
-            LOG.trace("onPointWrite " + 
-              "id:"    + rec.id() + ", " +
-              "level:" + level    + ", " +
-              "val:"   + val      + ", " +
-              "who:"   + who);
-
-        try
-        {
-            BControlPoint point = (BControlPoint) tagMgr.lookupComponent(rec.id());
-
-            // check permissions on this Thread's saved context
-            Context cx = ThreadContext.getContext(Thread.currentThread());
-
-            if (!TypeUtil.canWrite(point, cx)) 
-                throw new PermissionException("Cannot write to " + rec.id()); 
-
-            if (point instanceof BNumericWritable)
-            {
-                BNumericWritable nw = (BNumericWritable) point;
-                BStatusNumeric sn = nw.getLevel(BPriorityLevel.make(level));
-
-                if (val == null)
-                {
-                    sn.setStatus(BStatus.nullStatus);
-                }
-                else
-                {
-                    HNum num = (HNum) val;
-                    sn.setValue(num.val);
-                    sn.setStatus(BStatus.ok);
-                }
-
-                saveLastWrite(point, level, who);
-            }
-            else if (point instanceof BBooleanWritable)
-            {
-                BBooleanWritable bw = (BBooleanWritable) point;
-                BStatusBoolean sb = bw.getLevel(BPriorityLevel.make(level));
-
-                if (val == null)
-                {
-                    sb.setStatus(BStatus.nullStatus);
-                }
-                else
-                {
-                    HBool bool = (HBool) val;
-                    sb.setValue(bool.val);
-                    sb.setStatus(BStatus.ok);
-                }
-
-                saveLastWrite(point, level, who);
-            }
-            else if (point instanceof BEnumWritable)
-            {
-                BEnumWritable ew = (BEnumWritable) point;
-                BStatusEnum se = ew.getLevel(BPriorityLevel.make(level));
-
-                if (val == null)
-                {
-                    se.setStatus(BStatus.nullStatus);
-                }
-                else
-                {
-                    String str = ((HStr) val).val;
-                    BEnumRange range = (BEnumRange) point.getFacets().get(BFacets.RANGE);
-                    BEnum enm = range.get(str);
-
-                    se.setValue(enm);
-                    se.setStatus(BStatus.ok);
-                }
-
-                saveLastWrite(point, level, who);
-            }
-            else if (point instanceof BStringWritable)
-            {
-                BStringWritable sw = (BStringWritable) point;
-                BStatusString s = sw.getLevel(BPriorityLevel.make(level));
-
-                if (val == null)
-                {
-                    s.setStatus(BStatus.nullStatus);
-                }
-                else
-                {
-                    HStr str = (HStr) val;
-                    s.setValue(str.val);
-                    s.setStatus(BStatus.ok);
-                }
-
-                saveLastWrite(point, level, who);
-            }
-        }
-        catch (RuntimeException e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
+        pointIO.onPointWrite(rec, level, val, who, dur, opts);
     }
 
     /**
@@ -612,7 +363,7 @@ public class NHServer extends HServer
                         BDynamicEnum dyn = (BDynamicEnum) value;
                         BFacets facets = (BFacets) cfg.get("valueFacets");
                         BEnumRange er = (BEnumRange) facets.get("range");
-                        val = HStr.make(er.getTag(dyn.getOrdinal()));
+                        val = HStr.make(SlotUtil.fromNiagara(er.getTag(dyn.getOrdinal())));
                     }
                     else
                     {
@@ -899,61 +650,6 @@ public class NHServer extends HServer
     }
 
 ////////////////////////////////////////////////////////////////
-// private
-////////////////////////////////////////////////////////////////
-
-    /**
-      * save the last point write to a BHGrid slot.
-      */
-    private static void saveLastWrite(BControlPoint point, int level, String who)
-    {
-        BHGrid oldGrid = (BHGrid) point.get(LAST_WRITE);
-
-        if (oldGrid == null)
-        {
-            HGrid grid = saveLastWriteToGrid(HGrid.EMPTY, level, who);
-            point.add(
-                LAST_WRITE, 
-                BHGrid.make(grid),
-                Flags.SUMMARY | Flags.READONLY);
-        }
-        else
-        {
-            HGrid grid = saveLastWriteToGrid(oldGrid.getGrid(), level, who);
-            point.set(
-                LAST_WRITE, 
-                BHGrid.make(grid));
-        }
-    }
-
-    private static HGrid saveLastWriteToGrid(HGrid grid, int level, String who)
-    {
-        // store rows by level
-        Map map = new HashMap();
-        for (int i = 0; i < grid.numRows(); i++)
-        {
-            HDict row = grid.row(i);
-            map.put(row.get("level"), row);
-        }
-
-        // create or replace new row
-        HNum hlevel = HNum.make(level);
-        HDictBuilder db = new HDictBuilder();
-        db.add("level", hlevel);
-        db.add("who", HStr.make(who));
-        map.put(hlevel, db.toDict());
-
-        // create new grid
-        HDict[] dicts = new HDict[map.size()];
-        int n = 0;
-        Iterator it = map.values().iterator();
-        while (it.hasNext())
-            dicts[n++] = (HDict) it.next();
-
-        return HGridBuilder.dictsToGrid(dicts);
-    }
-
-////////////////////////////////////////////////////////////////
 // watches
 ////////////////////////////////////////////////////////////////
 
@@ -983,123 +679,19 @@ public class NHServer extends HServer
 ////////////////////////////////////////////////////////////////
 
     public BNHaystackService getService() { return service; }
+    public TagManager getTagManager() { return tagMgr; }
 
     SpaceManager getSpaceManager() { return spaceMgr; }
     Cache getCache() { return cache; }
     Nav getNav() { return nav; }
-    public TagManager getTagManager() { return tagMgr; }
     ScheduleManager getScheduleManager() { return schedMgr; }
-
-//////////////////////////////////////////////////////////////////////////
-// Schedule
-//////////////////////////////////////////////////////////////////////////
-
-  /**
-   * Read schedule time-series data for given record.
-   */
-  public final HGrid scheduleRead(HRef id)
-  {
-      // lookup entity
-      HDict rec = readById(id);
-
-      // check that entity has "weeklySchedule" tag
-      if (rec.missing("weeklySchedule"))
-          throw new UnknownNameException("Rec missing 'weeklySchedule' tag: " + rec.dis());
-
-      // route to subclass
-      HHisItem[] items = onScheduleRead(rec);
-
-      // build and return result grid
-      HDict meta = new HDictBuilder()
-          .add("id", id)
-          .toDict();
-      return HGridBuilder.hisItemsToGrid(meta, items);
-  }
-
-  /**
-   * Implementation hook for scheduleRead.  The items must be exclusive
-   * of start and inclusive of end time.
-   */
-  protected /*abstract*/ HHisItem[] onScheduleRead(HDict rec)
-  {
-      HGrid grid = (new HZincReader(rec.getStr("weeklySchedule"))).readGrid();
-      return HHisItem.gridToItems(grid);
-  }
-
-  /**
-   * Write a set of schedule time-series data to the given point record.
-   * The record must already be defined and must be properly tagged as
-   * a schedule-ized point.  The timestamp timezone must exactly match the
-   * point's configured "tz" tag.  
-   */
-  public final void scheduleWrite(HRef id, HHisItem[] items)
-  {
-      // lookup entity
-      HDict rec = readById(id);
-
-//      // check that entity has "weeklySchedule" tag
-//      if (rec.missing("weeklySchedule"))
-//          throw new UnknownNameException("Entity missing 'weeklySchedule' tag: " + rec.dis());
-
-//      // lookup "tz" on entity
-//      HTimeZone tz = null;
-//      if (rec.has("tz")) tz = HTimeZone.make(rec.getStr("tz"), false);
-//      if (tz == null)
-//          throw new UnknownNameException("Rec missing or invalid 'tz' tag: " + rec.dis());
-
-//      // check tz of items
-//      if (items.length == 0) return;
-//      for (int i=0; i<items.length; ++i)
-//          if (!items[i].ts.tz.equals(tz)) throw new RuntimeException("item.tz != rec.tz: " + items[i].ts.tz + " != " + tz);
-
-      // route to subclass
-      onScheduleWrite(rec, items);
-  }
-
-  /**
-   * Implementation hook for onScheduleWrite.
-   */
-  protected /*abstract*/ void onScheduleWrite(HDict rec, HHisItem[] items)
-  {
-    if (LOG.isTraceOn())
-        LOG.trace("onScheduleWrite " + rec.id());
-
-      BComponent comp = tagMgr.lookupComponent(rec.id());
-      if (comp == null) 
-          throw new BajaRuntimeException("Cannot find component for " + rec.id());
-
-      HDict orig = BHDict.findTagAnnotation(comp);
-      if (orig == null) orig = HDict.EMPTY;
-
-      HDictBuilder hdb = new HDictBuilder();
-      Iterator itr = orig.iterator();
-      while (itr.hasNext())
-      {
-          Map.Entry e = (Map.Entry) itr.next();
-          String name = (String) e.getKey();
-          HVal val = (HVal) e.getValue();
-
-          if (name.equals("weeklySchedule")) continue;
-          if (name.equals("tz") && items.length > 0) continue;
-          hdb.add(name, val);
-      }
-
-      HGrid schedule = HGridBuilder.hisItemsToGrid(HDict.EMPTY, items);
-      hdb.add("weeklySchedule", HZincWriter.gridToString(schedule));
-      if (items.length > 0)
-          hdb.add("tz", items[0].ts.tz.toString());
-
-      if (comp.get("haystack") == null)
-          comp.add("haystack", BHDict.make(hdb.toDict()));
-      else
-          comp.set("haystack", BHDict.make(hdb.toDict()));
-  }
 
 ////////////////////////////////////////////////////////////////
 // Attributes 
 ////////////////////////////////////////////////////////////////
 
     private static final Log LOG = Log.getLog("nhaystack");
+    private static final Log LOG_WATCH = Log.getLog("nhaystack.watch");
 
     private static final String LAST_WRITE = "haystackLastWrite";
 
@@ -1119,8 +711,6 @@ public class NHServer extends HServer
         HStdOps.invokeAction,
         new NHServerOps.ExtendedReadOp(),
         new NHServerOps.ExtendedOp(),
-        new NHServerOps.ScheduleReadOp(),
-        new NHServerOps.ScheduleWriteOp(),
     };
 
     private final HashMap watches = new HashMap();
@@ -1131,5 +721,7 @@ public class NHServer extends HServer
     private final Nav nav;
     private final TagManager tagMgr;
     private final ScheduleManager schedMgr;
+    private final FoxSessionManager foxSessionMgr;
+    private final PointIO pointIO;
 }
 

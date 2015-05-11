@@ -10,6 +10,7 @@ package nhaystack.driver.history;
 import javax.baja.driver.history.*;
 import javax.baja.history.*;
 import javax.baja.history.db.*;
+import javax.baja.log.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -19,6 +20,7 @@ import org.projecthaystack.client.*;
 
 import nhaystack.*;
 import nhaystack.driver.*;
+import nhaystack.driver.point.learn.*;
 import nhaystack.util.*;
 import nhaystack.worker.*;
 
@@ -116,16 +118,15 @@ public class BNHaystackHistoryImport extends BHistoryImport
                 throw new BajaRuntimeException("network disabled.");
 
             server.getWorker().enqueueChore(
-                new WorkerInvocation(
+                new DescriptorInvocation(
                     server.getWorker(),
                     choreName,
+                    this,
                     new Invocation(this, action, value, cx)));
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            executeInProgress(); // to fake out the state machine
-            executeFail(e.getMessage());
         }
         finally
         {
@@ -138,12 +139,26 @@ public class BNHaystackHistoryImport extends BHistoryImport
         executeInProgress();
         try
         {
-            HClient client = server().getHaystackClient();
+            // set units
+            HDict tags = getImportedTags().getDict();
+            BFacets facets = BNHaystackLearnPointsJob.makeNumberFacets(tags);
+
+            if (!facets.equals(BFacets.NULL))
+            {
+                BComponent override = getConfigOverrides();
+                if (override.get("valueFacets") == null)
+                    override.add("valueFacets", facets);
+                else
+                    override.set("valueFacets", facets);
+            }
 
             // set up config
             BHistoryService service = (BHistoryService)Sys.getService(BHistoryService.TYPE);
             BHistoryDatabase db = service.getDatabase();
             BHistoryId id = getHistoryId();
+
+            if (LOG.isTraceOn())
+                LOG.trace("historyImport.doExecute begin " + id);
 
             BHistoryConfig localCfg = makeLocalConfig(createConfig());
 
@@ -162,19 +177,27 @@ public class BNHaystackHistoryImport extends BHistoryImport
             HDateTimeRange range = HDateTimeRange.make(dt.toZinc(), tz);
 
             // import records
+            HClient client = server().getHaystackClient();
             HGrid hisItems = client.hisRead(getId().getRef(), range);
             for (int i = 0; i < hisItems.numRows(); i++)
             {
                 HRow row = hisItems.row(i);
-                HDateTime ts = (HDateTime) row.get("ts");
-                HVal val = row.get("val");
-                history.append(makeTrendRecord(getKind(), ts, val));
+                if (row.has("ts") && row.has("val"))
+                {
+                    HDateTime ts = (HDateTime) row.get("ts");
+                    HVal val = row.get("val");
+                    history.append(makeTrendRecord(getKind(), ts, val));
+                }
             }
+
+            if (LOG.isTraceOn())
+                LOG.trace("historyImport.doExecute end " + id + ": imported " + hisItems.numRows() + " rows.");
 
             executeOk();
         }
         catch (Exception e)
         {
+            LOG.trace("historyImport.doExecute fail " + id);
             e.printStackTrace();
             executeFail(e.getMessage());
         }
@@ -248,4 +271,10 @@ public class BNHaystackHistoryImport extends BHistoryImport
 
     public String getKind() { return getImportedTags().getDict().getStr("kind"); }
     public String getTz()   { return getImportedTags().getDict().getStr("tz");   }
+
+////////////////////////////////////////////////////////////////
+// attribs
+////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack.driver");
 }

@@ -17,6 +17,7 @@ import javax.baja.history.*;
 import javax.baja.history.ext.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
+import javax.baja.schedule.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.*;
@@ -62,17 +63,10 @@ class SpaceManager
         if (!TypeUtil.canRead(comp, cx)) 
             return false;
 
-        // Return true for components that have been 
-        // annotated with a BHDict instance.
-        if (comp instanceof BHTagged) 
-            return true;
-
-        // Return true for BControlPoints.
-        if (comp instanceof BControlPoint)
-            return true;
-
-        if (comp instanceof BDevice)
-            return true;
+        if (comp instanceof BHTagged) return true;
+        if (comp instanceof BControlPoint) return true;
+        if (comp instanceof BDevice) return true;
+        if (comp instanceof BWeeklySchedule) return true;
 
         // Return true for components that are annotated with a BHDict.
         BValue haystack = comp.get("haystack");
@@ -152,9 +146,10 @@ class SpaceManager
         {
             BControlPoint point = points[i];
 
-            // Check for a NiagaraProxyExt
+            // check for remote point
+            if (!RemotePoint.isRemotePoint(point)) continue;
+
             BAbstractProxyExt proxyExt = point.getProxyExt();
-            if (!proxyExt.getType().is(RemotePoint.NIAGARA_PROXY_EXT)) continue;
 
             // "pointId" seems to always contain the slotPath on 
             // the remote host.
@@ -242,7 +237,7 @@ class SpaceManager
         if (historyExt != null) return historyExt.getHistoryConfig();
 
         // look for history that goes with a proxied point (if any)
-        if (point.getProxyExt().getType().is(RemotePoint.NIAGARA_PROXY_EXT)) 
+        if (RemotePoint.isRemotePoint(point))
             return lookupRemoteHistory(point);
         else 
             return null;
@@ -279,6 +274,18 @@ class SpaceManager
         Context cx = ThreadContext.getContext(Thread.currentThread());
         if (!TypeUtil.canRead(cfg, cx)) 
             return false;
+
+        // make sure the history name is valid. This is a workaround for a bug
+        // in third-party software.
+        try
+        {
+            TagManager.makeHistoryRef(cfg);
+        }
+        catch (Exception e)
+        {
+            LOG.error("Invalid history name: " + cfg.getId());
+            return false;
+        }
 
         // annotated 
         HDict dict = BHDict.findTagAnnotation(cfg);

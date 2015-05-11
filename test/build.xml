@@ -35,7 +35,6 @@
       <classpath>
         <pathelement location="${env.NIAGARA_AX}/modules/nhaystack.jar" />
         <pathelement location="lib/servlet.jar" />
-        <pathelement location="../ext/haystack.jar" />
       </classpath>
     </javac>
 
@@ -85,6 +84,16 @@
   <!--========== test-schedule ==========-->
   <target name="test-schedule" depends="make">
     <java classname="nhaystack.test.NScheduleTest">
+      <classpath>
+        <pathelement location="../ext/haystack.jar" />
+        <pathelement location="jars/nhaystack_test.jar" />
+      </classpath>
+    </java>
+  </target> 
+
+  <!--========== test-invoke ==========-->
+  <target name="test-invoke" depends="make">
+    <java classname="nhaystack.test.NInvokeTest">
       <classpath>
         <pathelement location="../ext/haystack.jar" />
         <pathelement location="jars/nhaystack_test.jar" />
