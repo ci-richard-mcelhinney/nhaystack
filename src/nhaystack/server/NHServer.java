@@ -711,6 +711,7 @@ public class NHServer extends HServer
         HStdOps.invokeAction,
         new NHServerOps.ExtendedReadOp(),
         new NHServerOps.ExtendedOp(),
+        new AlarmAckOp()
     };
 
     private final HashMap watches = new HashMap();
