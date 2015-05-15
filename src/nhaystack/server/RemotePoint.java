@@ -12,6 +12,7 @@ import javax.baja.control.ext.*;
 import javax.baja.driver.*;
 import javax.baja.fox.*;
 import javax.baja.history.*;
+import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.security.*;
 import javax.baja.sys.*;
@@ -60,6 +61,11 @@ class RemotePoint
 
         // "pointId" seems to always contain the slotPath on 
         // the remote host.
+        if (proxyExt.get("pointId") == null)
+        {
+            LOG.warning("Cannot find pointId for " + point.getSlotPath());
+            return null;
+        }
         String slotPath = proxyExt.get("pointId").toString();
 
         // get rid of unneeded "station:" ordQuery
@@ -190,6 +196,8 @@ class RemotePoint
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final Log LOG = Log.getLog("nhaystack");
 
     private static final Type NIAGARA_PROXY_EXT;
     private static final Type NIAGARA_STATION;
