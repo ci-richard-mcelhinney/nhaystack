@@ -200,6 +200,10 @@ class PointIO
                 if (!s.getStatus().isNull())
                     vals[16] = HStr.make(s.getValue());
             }
+            else
+            {
+                throw new IllegalStateException("unknown type: " + point.getType());
+            }
 
             //////////////////////////////////////////////
 
