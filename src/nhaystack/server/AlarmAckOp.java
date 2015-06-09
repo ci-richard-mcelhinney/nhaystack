@@ -41,11 +41,18 @@ req.dump();
             BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
             BAlarmRecord alarm = alarmService.getAlarmDb().getRecord(alarmUuid);
 
-            if (LOG.isTraceOn()) 
-                LOG.trace(name() + " acking " + alarm);
+            if (alarm == null)
+            {
+                LOG.warning(name() + " cannot find alarm with uuid " + alarmUuid);
+            }
+            else
+            {
+                if (LOG.isTraceOn()) 
+                    LOG.trace(name() + " acking " + alarm);
 
-            alarm.ackAlarm();
-            alarmService.ackAlarm(alarm); 
+                alarm.ackAlarm();
+                alarmService.ackAlarm(alarm); 
+            }
 
             return HGrid.EMPTY;
         }
