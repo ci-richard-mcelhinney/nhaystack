@@ -129,7 +129,7 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             BOrd sourceOrd = alarm.getSource().get(0);
             BComponent ext = (BComponent) sourceOrd.get(this, null);
             BComponent parent = (BComponent) ext.getParent();
-            String alarmName = makeAlarmName(ext, alarm);
+            String alarmName = makeAlarmName(ext);
 
             if (LOG.isTraceOn())
                 LOG.trace("handleAlarm: " + alarm + ", " + ext.getSlotPath());
@@ -165,13 +165,13 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         }
     }
 
-    private String makeAlarmName(BComponent ext, BAlarmRecord alarm)
+    private String makeAlarmName(BComponent ext)
     {
         BFormat fmt = (BFormat) ext.get("sourceName");
 
-        // if the extension doesn't have a sourceName, use the alarm class
+        // if the extension doesn't have a sourceName, use slot path
         String name = (fmt == null) ?
-            alarm.getAlarmClass() : 
+            ext.getSlotPath().toString() :
             fmt.format(ext);
 
         // get rid of spaces and such
