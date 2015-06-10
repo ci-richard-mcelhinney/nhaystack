@@ -246,5 +246,5 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 // attribs
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Log LOG = Log.getLog("nhaystack.driverAlarm");
 }
