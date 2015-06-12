@@ -16,6 +16,8 @@ import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
+import com.tridium.util.backport.concurrent.ConcurrentHashMap;
+
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 import org.projecthaystack.io.*;
@@ -33,14 +35,14 @@ public class BNHaystackAlarmRecipient
         properties
         {
             haystackServer: BOrd default{[ BOrd.DEFAULT ]}
-            miscAlarmId: String default{[ "" ]}
+            miscAlarmRef: String default{[ "" ]}
             haystackConnRef: String default{[ "" ]}
         }
     }
    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(3640000689)1.0$ @*/
-/* Generated Thu Apr 30 08:35:05 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(1587153237)1.0$ @*/
+/* Generated Fri Jun 12 08:14:38 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackServer"
@@ -66,27 +68,27 @@ public class BNHaystackAlarmRecipient
   public void setHaystackServer(BOrd v) { set(haystackServer,v,null); }
 
 ////////////////////////////////////////////////////////////////
-// Property "miscAlarmId"
+// Property "miscAlarmRef"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>miscAlarmId</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getMiscAlarmId
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setMiscAlarmId
+   * Slot for the <code>miscAlarmRef</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getMiscAlarmRef
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setMiscAlarmRef
    */
-  public static final Property miscAlarmId = newProperty(0, "",null);
+  public static final Property miscAlarmRef = newProperty(0, "",null);
   
   /**
-   * Get the <code>miscAlarmId</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmId
+   * Get the <code>miscAlarmRef</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmRef
    */
-  public String getMiscAlarmId() { return getString(miscAlarmId); }
+  public String getMiscAlarmRef() { return getString(miscAlarmRef); }
   
   /**
-   * Set the <code>miscAlarmId</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmId
+   * Set the <code>miscAlarmRef</code> property.
+   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmRef
    */
-  public void setMiscAlarmId(String v) { setString(miscAlarmId,v,null); }
+  public void setMiscAlarmRef(String v) { setString(miscAlarmRef,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackConnRef"
@@ -124,40 +126,49 @@ public class BNHaystackAlarmRecipient
     {
         try
         {
-System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            // look up the point
-            BOrd sourceOrd = alarm.getSource().get(0);
-            BComponent ext = (BComponent) sourceOrd.get(this, null);
-            BComponent parent = (BComponent) ext.getParent();
-            String alarmName = makeAlarmName(ext);
-
-            if (LOG.isTraceOn())
-                LOG.trace("handleAlarm: " + alarm + ", " + ext.getSlotPath());
-
-            // create request either for a point, or for "miscellaneous"
-            HGrid req = (parent instanceof BControlPoint) ?
-                createPointAlarmRequest(alarm, (BControlPoint) parent, alarmName) :
-                createMiscAlarmRequest(alarm, parent, alarmName);
-
-            // send an alarm to the server
-            BNHaystackServer server = (BNHaystackServer) 
-                getHaystackServer().get(this, null);
-            HClient client = server.getHaystackClient();
-
-            switch(alarm.getSourceState().getOrdinal())
+            if (isIgnore(alarm.getUuid()))
             {
-                case BSourceState.OFFNORMAL:
-                case BSourceState.FAULT:
-                    client.call("finToAlarm", req);
-                    break;
-                case BSourceState.NORMAL:
-                    client.call("finToNormal", req);
-                    break;
-                default:
-                    LOG.warning(
-                        "Cannot process alarm source state " + 
-                        alarm.getSourceState()  + ", " + parent.getSlotPath()); 
+                if (LOG.isTraceOn())
+                    LOG.trace("handleAlarm: ignoring " + alarm.getUuid());
+                endIgnore(alarm.getUuid());
             }
+            else
+            {
+                // look up the point
+                BOrd sourceOrd = alarm.getSource().get(0);
+                BComponent ext = (BComponent) sourceOrd.get(this, null);
+                BComponent parent = (BComponent) ext.getParent();
+                String alarmName = makeAlarmName(ext);
+
+                if (LOG.isTraceOn())
+                    LOG.trace("handleAlarm: " + alarm.getUuid() + ", " + alarm + ", " + ext.getSlotPath());
+
+                // create request either for a point, or for "miscellaneous"
+                HGrid req = (parent instanceof BControlPoint) ?
+                    createPointAlarmRequest(alarm, (BControlPoint) parent, ext, alarmName) :
+                    createMiscAlarmRequest(alarm, parent, ext, alarmName);
+
+                // send an alarm to the server
+                BNHaystackServer server = (BNHaystackServer) 
+                    getHaystackServer().get(this, null);
+                HClient client = server.getHaystackClient();
+
+                switch(alarm.getSourceState().getOrdinal())
+                {
+                    case BSourceState.OFFNORMAL:
+                    case BSourceState.FAULT:
+                        client.call("finToAlarm", req);
+                        break;
+                    case BSourceState.NORMAL:
+                        client.call("finToNormal", req);
+                        break;
+                    default:
+                        LOG.warning(
+                            "Cannot process alarm source state " + 
+                            alarm.getSourceState()  + ", " + parent.getSlotPath()); 
+                }
+            }
+
         }
         catch (Exception e)
         {
@@ -181,7 +192,11 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         return name;
     }
 
-    private HGrid createPointAlarmRequest(BAlarmRecord alarm, BControlPoint point, String alarmName)
+    private HGrid createPointAlarmRequest(
+        BAlarmRecord alarm, 
+        BControlPoint point, 
+        BComponent ext,
+        String alarmName)
     throws Exception
     {
         // look up the ref
@@ -196,27 +211,31 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         hdb.add("alarmName",       alarmName);
         hdb.add("alarmUuid",       alarm.getUuid().encodeToString());
         hdb.add("priority",        alarm.getPriority());
-        hdb.add("alarmText",       getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
-        hdb.add("instructions",    getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("alarmText",       formatAlarmFacet(alarm, ext, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions",    formatAlarmFacet(alarm, ext, BAlarmRecord.INSTRUCTIONS));
         hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
     }
 
-    private HGrid createMiscAlarmRequest(BAlarmRecord alarm, BComponent comp, String alarmName)
+    private HGrid createMiscAlarmRequest(
+        BAlarmRecord alarm, 
+        BComponent comp, 
+        BComponent ext,
+        String alarmName)
     throws Exception
     {
         // build the request
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("isMisc",   HBool.TRUE);
-        hdb.add("sourceId", getMiscAlarmId());
+        hdb.add("sourceId", getMiscAlarmRef());
 
         hdb.add("alarmName",       alarmName);
         hdb.add("alarmUuid",       alarm.getUuid().encodeToString());
         hdb.add("priority",        alarm.getPriority());
-        hdb.add("alarmText",       getAlarmFacet(alarm, BAlarmRecord.MSG_TEXT));
-        hdb.add("instructions",    getAlarmFacet(alarm, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("alarmText",       formatAlarmFacet(alarm, ext, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions",    formatAlarmFacet(alarm, ext, BAlarmRecord.INSTRUCTIONS));
         hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
 
         return HGridBuilder.dictsToGrid(
@@ -236,15 +255,46 @@ System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         return extraTags;
     }
 
-    private String getAlarmFacet(BAlarmRecord alarm, String facetName)
+    private String formatAlarmFacet(BAlarmRecord alarm, BComponent ext, String facetName)
     {
-        BObject obj = alarm.getAlarmData().get(facetName);
-        return (obj == null) ? "" : obj.toString();
+        BObject obj = alarm.getAlarmFacet(facetName);
+        return (obj == null) ?  "" : BFormat.format(obj.toString(), ext);
+    }
+
+////////////////////////////////////////////////////////////////
+// ignore
+////////////////////////////////////////////////////////////////
+
+    /**
+      * Start ignoring calls to handleAlarm().
+      */
+    public void beginIgnore(BUuid alarmId)
+    {
+        ignore.put(alarmId, alarmId);
+    }
+
+    /**
+      * Return whether or not calls to handleAlarm should be ignored.
+      */
+    private static boolean isIgnore(BUuid alarmId)
+    {
+        boolean result = ignore.containsKey(alarmId);
+        return result;
+    }
+
+    /**
+      * Stop ignoring calls to handleAlarm().
+      */
+    private static void endIgnore(BUuid alarmId)
+    {
+        ignore.remove(alarmId);
     }
 
 ////////////////////////////////////////////////////////////////
 // attribs
 ////////////////////////////////////////////////////////////////
+
+    private static final ConcurrentHashMap ignore = new ConcurrentHashMap();
 
     private static final Log LOG = Log.getLog("nhaystack.driverAlarm");
 }

@@ -14,6 +14,7 @@ import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.server.*;
+import nhaystack.driver.alarm.*;
 
 class AlarmAckOp extends HOp
 {
@@ -21,11 +22,6 @@ class AlarmAckOp extends HOp
     public String summary() { return "Alarm Ack"; }
     public HGrid onService(HServer db, HGrid req)
     {
-System.out.println("--------------------------------------------------------------");
-System.out.println("alarmAck");
-System.out.println();
-req.dump();
-
         NHServer server = (NHServer) db;
         if (!server.getCache().initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
@@ -33,24 +29,36 @@ req.dump();
         try
         {
             HRow params = req.row(0);
-            BUuid alarmUuid = BUuid.make(params.getStr("alarmUuid"));
+            BUuid uuid = BUuid.make(params.getStr("alarmUuid"));
 
             if (LOG.isTraceOn()) 
-                LOG.trace(name() + " alarmUuid:" + alarmUuid);
+                LOG.trace(name() + " alarmUuid:" + uuid);
 
             BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
-            BAlarmRecord alarm = alarmService.getAlarmDb().getRecord(alarmUuid);
+            BAlarmRecord alarm = alarmService.getAlarmDb().getRecord(uuid);
 
             if (alarm == null)
             {
-                LOG.warning(name() + " cannot find alarm with uuid " + alarmUuid);
+                LOG.warning(name() + " cannot find alarm with uuid " + uuid);
             }
             else
             {
                 if (LOG.isTraceOn()) 
                     LOG.trace(name() + " acking " + alarm);
 
+                // We have to ignore the alarm while we are acking it
+                // so we don't get caught in a loop.
+                BAlarmService service = (BAlarmService) Sys.getService(BAlarmService.TYPE);
+                BNHaystackAlarmRecipient[] recips = (BNHaystackAlarmRecipient[]) 
+                    service.getChildren(BNHaystackAlarmRecipient.class);
+                for (int i = 0; i < recips.length; i++)
+                    recips[i].beginIgnore(uuid);
+
+                // ack the alarm
                 alarm.ackAlarm();
+
+                // Route the ack (we will end up ignoring this when it
+                // gets routed to BNHaystackAlarmRecipient instances).
                 alarmService.ackAlarm(alarm); 
             }
 
