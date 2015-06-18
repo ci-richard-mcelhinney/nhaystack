@@ -231,12 +231,18 @@ class NHServerOps
             Context cx = ThreadContext.getContext(Thread.currentThread());
 
             HRef fromId = HRef.make(params.getStr("fromEquip"));
-            String targetFilter = "equip and (" + params.getStr("targetFilter") + ")";
+            String targetFilter = params.getStr("targetFilter");
+            if (targetFilter.equals("id"))
+                targetFilter = "";
+            else
+                targetFilter = "equip and (" + targetFilter + ")";
+
             String toEquips = null;
             if (params.has("toEquips"))
                 toEquips = params.getStr("toEquips");
 
             BHEquip from = (BHEquip) server.getTagManager().lookupComponent(fromId);
+
             BComponent[] to = getFilterComponents(server, targetFilter, toEquips);
 
             // equips
@@ -936,6 +942,7 @@ class NHServerOps
         if ((ids != null) && (ids.length() > 0))
         {
             HRef refs[] = parseIdList(ids);
+
             if (refs.length > 0)
             {
                 Array dictArr = new Array(HDict.class);
