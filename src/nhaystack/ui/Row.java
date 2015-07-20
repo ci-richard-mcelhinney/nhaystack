@@ -233,9 +233,13 @@ class Row
         if (!(BHRef.make(ref).equals(BHRef.DEFAULT)))
         {
             HDict dict = ((BHDict) editor.group().service().invoke(
-                BNHaystackService.readById, BHRef.make(ref))).getDict();
+                    BNHaystackService.readById, BHRef.make(ref))).getDict();
 
-            ord = BOrd.make("station:|" + dict.getStr("axSlotPath"));
+            // workaround for weird problem with axSlotPath
+            if (dict.has("axSlotPath"))
+                ord = BOrd.make("station:|" + dict.getStr("axSlotPath"));
+            else
+                System.out.println("ERROR: " + dict.toZinc() + " does not have axSlotPath.");
         }
 
         // create field editor
