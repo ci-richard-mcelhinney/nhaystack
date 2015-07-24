@@ -10,6 +10,7 @@ package nhaystack.driver.alarm;
 import java.util.*;
 
 import javax.baja.alarm.*;
+import javax.baja.alarm.ext.*;
 import javax.baja.control.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
@@ -122,6 +123,9 @@ public class BNHaystackAlarmRecipient
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
+    /**
+      * handleAlarm
+      */
     public void handleAlarm(BAlarmRecord alarm)
     {
         try
@@ -136,17 +140,22 @@ public class BNHaystackAlarmRecipient
             {
                 // look up the point
                 BOrd sourceOrd = alarm.getSource().get(0);
-                BComponent ext = (BComponent) sourceOrd.get(this, null);
+                BAlarmSourceExt ext = (BAlarmSourceExt) sourceOrd.get(this, null);
                 BComponent parent = (BComponent) ext.getParent();
-                String alarmName = makeAlarmName(ext);
 
                 if (LOG.isTraceOn())
                     LOG.trace("handleAlarm: " + alarm.getUuid() + ", " + alarm + ", " + ext.getSlotPath());
+//dumpAlarmRecord(alarm);
+
+                // create alarm name
+                String alarmName = getAlarmFacetValue(alarm, BAlarmRecord.SOURCE_NAME);
+                alarmName = TextUtil.replace(alarmName, " ", "_");
+                alarmName = SlotUtil.fromNiagara(SlotPath.escape(alarmName));
 
                 // create request either for a point, or for "miscellaneous"
                 HGrid req = (parent instanceof BControlPoint) ?
                     createPointAlarmRequest(alarm, (BControlPoint) parent, ext, alarmName) :
-                    createMiscAlarmRequest(alarm, parent, ext, alarmName);
+                    createMiscAlarmRequest(alarm, ext, alarmName);
 
                 // send an alarm to the server
                 BNHaystackServer server = (BNHaystackServer) 
@@ -176,26 +185,27 @@ public class BNHaystackAlarmRecipient
         }
     }
 
-    private String makeAlarmName(BComponent ext)
+    /**
+      * getAlarmFacetValue
+      */
+    private String getAlarmFacetValue(BAlarmRecord alarm, String key)
     {
-        BFormat fmt = (BFormat) ext.get("sourceName");
+        if (key.equals("sourceOrd"))
+            return alarm.getSource().toString();
 
-        // if the extension doesn't have a sourceName, use slot path
-        String name = (fmt == null) ?
-            ext.getSlotPath().toString() :
-            fmt.format(ext);
-
-        // get rid of spaces and such
-        name = TextUtil.replace(name, " ", "_");
-        name = SlotUtil.fromNiagara(SlotPath.escape(name));
-
-        return name;
+        BFacets facets = alarm.getAlarmData();
+        Object value = facets.get(key);
+        if (value == null) return "";
+        return BFormat.make(value.toString()).format(alarm).toString();
     }
 
+    /**
+      * createPointAlarmRequest
+      */
     private HGrid createPointAlarmRequest(
         BAlarmRecord alarm, 
         BControlPoint point, 
-        BComponent ext,
+        BAlarmSourceExt ext,
         String alarmName)
     throws Exception
     {
@@ -211,18 +221,20 @@ public class BNHaystackAlarmRecipient
         hdb.add("alarmName",       alarmName);
         hdb.add("alarmUuid",       alarm.getUuid().encodeToString());
         hdb.add("priority",        alarm.getPriority());
-        hdb.add("alarmText",       formatAlarmFacet(alarm, ext, BAlarmRecord.MSG_TEXT));
-        hdb.add("instructions",    formatAlarmFacet(alarm, ext, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("alarmText",       getAlarmFacetValue(alarm, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions",    getAlarmFacetValue(alarm, BAlarmRecord.INSTRUCTIONS));
         hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
     }
 
+    /**
+      * createMiscAlarmRequest
+      */
     private HGrid createMiscAlarmRequest(
         BAlarmRecord alarm, 
-        BComponent comp, 
-        BComponent ext,
+        BAlarmSourceExt ext,
         String alarmName)
     throws Exception
     {
@@ -234,14 +246,17 @@ public class BNHaystackAlarmRecipient
         hdb.add("alarmName",       alarmName);
         hdb.add("alarmUuid",       alarm.getUuid().encodeToString());
         hdb.add("priority",        alarm.getPriority());
-        hdb.add("alarmText",       formatAlarmFacet(alarm, ext, BAlarmRecord.MSG_TEXT));
-        hdb.add("instructions",    formatAlarmFacet(alarm, ext, BAlarmRecord.INSTRUCTIONS));
+        hdb.add("alarmText",       getAlarmFacetValue(alarm, BAlarmRecord.MSG_TEXT));
+        hdb.add("instructions",    getAlarmFacetValue(alarm, BAlarmRecord.INSTRUCTIONS));
         hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
     }
 
+    /**
+      * fetchAlarmClassTags
+      */
     private HDict fetchAlarmClassTags(BAlarmRecord alarm)
     {
         // look up the extra tags on the alarm class, if any
@@ -255,10 +270,20 @@ public class BNHaystackAlarmRecipient
         return extraTags;
     }
 
-    private String formatAlarmFacet(BAlarmRecord alarm, BComponent ext, String facetName)
+////////////////////////////////////////////////////////////////
+// debug
+////////////////////////////////////////////////////////////////
+
+    /**
+      * dumpAlarmRecord
+      */
+    private void dumpAlarmRecord(BAlarmRecord alarm)
     {
-        BObject obj = alarm.getAlarmFacet(facetName);
-        return (obj == null) ?  "" : BFormat.format(obj.toString(), ext);
+        System.out.println("--------------------------------------");
+        BFacets facets = alarm.getAlarmData();
+        String[] keys = facets.list();
+        for (int i = 0; i < keys.length; i++)
+            System.out.println(keys[i] + ", " + getAlarmFacetValue(alarm, keys[i]));
     }
 
 ////////////////////////////////////////////////////////////////
