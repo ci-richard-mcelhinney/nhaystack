@@ -140,7 +140,7 @@ public class BNHaystackAlarmRecipient
             {
                 // look up the point
                 BOrd sourceOrd = alarm.getSource().get(0);
-                BAlarmSourceExt ext = (BAlarmSourceExt) sourceOrd.get(this, null);
+                BComponent ext = (BComponent) sourceOrd.get(this, null);
                 BComponent parent = (BComponent) ext.getParent();
 
                 if (LOG.isTraceOn())
@@ -205,7 +205,7 @@ public class BNHaystackAlarmRecipient
     private HGrid createPointAlarmRequest(
         BAlarmRecord alarm, 
         BControlPoint point, 
-        BAlarmSourceExt ext,
+        BComponent ext,
         String alarmName)
     throws Exception
     {
@@ -234,7 +234,7 @@ public class BNHaystackAlarmRecipient
       */
     private HGrid createMiscAlarmRequest(
         BAlarmRecord alarm, 
-        BAlarmSourceExt ext,
+        BComponent ext,
         String alarmName)
     throws Exception
     {
