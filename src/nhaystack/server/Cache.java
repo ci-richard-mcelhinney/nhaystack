@@ -215,6 +215,9 @@ class Cache
 // private -- component space
 ////////////////////////////////////////////////////////////////
 
+    /**
+      * rebuildComponentCache_firstPass
+      */
     private void rebuildComponentCache_firstPass()
     {
         remoteToPoint  = new HashMap();
@@ -229,10 +232,8 @@ class Cache
 
         Array sitesArr = new Array(BHSite.class);
         Array equipsArr = new Array(BHEquip.class);
+        Array implicitEquipStack = new Array(ImplicitEquip.class);
         numPoints = 0;
-
-        BHEquip curImplicitEquip = null;
-        int curImplicitDepth = -1;
 
         ComponentTreeIterator iterator = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
@@ -241,101 +242,31 @@ class Cache
         {
             BComponent comp = (BComponent) iterator.next();
 
-            HDict tags = BHDict.findTagAnnotation(comp);
-
-            // set implicit equip 
+            // push implicit equip 
             Cursor cursor = comp.getProperties();
             if (cursor.next(BHEquip.class))
             {
-                curImplicitEquip = (BHEquip) cursor.get();
-                curImplicitDepth = iterator.getStackDepth();
+                implicitEquipStack.push(
+                    new ImplicitEquip(
+                        (BHEquip) cursor.get(),
+                        iterator.getStackDepth()));
             }
-            // clear implicit equip once it goes out of scope
+            // pop implicit equip once it goes out of scope
             else
             {
-                if (iterator.getStackDepth() <= curImplicitDepth)
+                if (implicitEquipStack.size() > 0)
                 {
-                    curImplicitEquip = null;
-                    curImplicitDepth = -1;
+                    ImplicitEquip ie = (ImplicitEquip) implicitEquipStack.peek();
+                    if (iterator.getStackDepth() <= ie.depth)
+                        implicitEquipStack.pop();
                 }
             }
 
-            // point
-            if (comp instanceof BControlPoint)
-            {
-                BControlPoint point = (BControlPoint) comp;
-                numPoints++;
+            // get cur implicit
+            BHEquip curImplicitEquip = (implicitEquipStack.isEmpty()) ?
+                null : ((ImplicitEquip) implicitEquipStack.peek()).equip;
 
-                // BControlPoints always have tags generated
-                if (tags == null) tags = HDict.EMPTY;
-
-                if (tags.has("weeklySchedule") && tags.has("schedulable"))
-                    scheduledPoints.add(point);
-
-                // save remote point 
-                RemotePoint remote = RemotePoint.fromControlPoint(point);
-                if (remote != null) remoteToPoint.put(remote, point);
-
-                // explicit equip
-                if (tags.has("equipRef"))
-                {
-                    HRef ref = tags.getRef("equipRef");
-                    BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
-                    addPointToEquip(equip, point);
-                }
-                // implicit equip
-                else
-                {
-                    if (curImplicitEquip != null)
-                    {
-                        addPointToEquip(curImplicitEquip, point);
-                        implicitEquips.put(point, curImplicitEquip);
-                    }
-                }
-            }
-            // schedule
-            else if (comp instanceof BWeeklySchedule)
-            {
-                BWeeklySchedule sched = (BWeeklySchedule) comp;
-                numPoints++;
-
-                // BAbstractSchedules always have tags generated
-                if (tags == null) tags = HDict.EMPTY;
-
-                // explicit equip
-                if (tags.has("equipRef"))
-                {
-                    HRef ref = tags.getRef("equipRef");
-                    BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
-                    addPointToEquip(equip, sched);
-                }
-                // implicit equip
-                else
-                {
-                    if (curImplicitEquip != null)
-                    {
-                        addPointToEquip(curImplicitEquip, sched);
-                        implicitEquips.put(sched, curImplicitEquip);
-                    }
-                }
-            }
-            // auto-tagged site and equip
-            else if (comp instanceof BHTagged)
-            {
-                if (comp instanceof BHSite)
-                {
-                    sitesArr.add(comp);
-                    siteNavs.put(
-                        Nav.makeSiteNavId(
-                            Nav.makeNavName(comp, tags)),
-                        comp);
-                }
-                else if (comp instanceof BHEquip)
-                {
-                    equipsArr.add(comp);
-                    processEquip((BHEquip) comp);
-                }
-            }
+            processComponent(comp, sitesArr, equipsArr, curImplicitEquip);
         }
 
         sites  = (BHSite[]) sitesArr.trim();
@@ -344,6 +275,113 @@ class Cache
         numEquips = equips.length;
     }
 
+    /**
+      * ImplicitEquip
+      */
+    static class ImplicitEquip
+    {
+        ImplicitEquip(BHEquip equip, int depth) 
+        {
+            this.equip = equip;
+            this.depth = depth;
+        }
+
+        final BHEquip equip;
+        final int depth;
+    }
+
+    /**
+      * processComponent
+      */
+    private void processComponent(
+        BComponent comp,
+        Array sitesArr,
+        Array equipsArr,
+        BHEquip curImplicitEquip)
+    {
+        HDict tags = BHDict.findTagAnnotation(comp);
+
+        // point
+        if (comp instanceof BControlPoint)
+        {
+            BControlPoint point = (BControlPoint) comp;
+            numPoints++;
+
+            // BControlPoints always have tags generated
+            if (tags == null) tags = HDict.EMPTY;
+
+            if (tags.has("weeklySchedule") && tags.has("schedulable"))
+                scheduledPoints.add(point);
+
+            // save remote point 
+            RemotePoint remote = RemotePoint.fromControlPoint(point);
+            if (remote != null) remoteToPoint.put(remote, point);
+
+            // explicit equip
+            if (tags.has("equipRef"))
+            {
+                HRef ref = tags.getRef("equipRef");
+                BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
+                addPointToEquip(equip, point);
+            }
+            // implicit equip
+            else
+            {
+                if (curImplicitEquip != null)
+                {
+                    addPointToEquip(curImplicitEquip, point);
+                    implicitEquips.put(point, curImplicitEquip);
+                }
+            }
+        }
+        // schedule
+        else if (comp instanceof BWeeklySchedule)
+        {
+            BWeeklySchedule sched = (BWeeklySchedule) comp;
+            numPoints++;
+
+            // BAbstractSchedules always have tags generated
+            if (tags == null) tags = HDict.EMPTY;
+
+            // explicit equip
+            if (tags.has("equipRef"))
+            {
+                HRef ref = tags.getRef("equipRef");
+                BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
+                addPointToEquip(equip, sched);
+            }
+            // implicit equip
+            else
+            {
+                if (curImplicitEquip != null)
+                {
+                    addPointToEquip(curImplicitEquip, sched);
+                    implicitEquips.put(sched, curImplicitEquip);
+                }
+            }
+        }
+        // auto-tagged site and equip
+        else if (comp instanceof BHTagged)
+        {
+            if (comp instanceof BHSite)
+            {
+                sitesArr.add(comp);
+                siteNavs.put(
+                    Nav.makeSiteNavId(
+                        Nav.makeNavName(comp, tags)),
+                    comp);
+            }
+            else if (comp instanceof BHEquip)
+            {
+                equipsArr.add(comp);
+                processEquip((BHEquip) comp);
+            }
+        }
+    }
+
+    /**
+      * addPointToEquip
+      */
     private void addPointToEquip(BHEquip equip, BComponent point)
     {
         Array arr = (Array) equipPoints.get(equip);
@@ -352,6 +390,9 @@ class Cache
         arr.add(point);
     }
 
+    /**
+      * addEquipToSite
+      */
     private void addEquipToSite(BHSite site, BHEquip equip)
     {
         Array arr = (Array) siteEquips.get(site);
@@ -360,6 +401,9 @@ class Cache
         arr.add(equip);
     }
 
+    /**
+      * processEquip
+      */
     private void processEquip(BHEquip equip)
     {
         HDict equipTags = BHDict.findTagAnnotation(equip);
@@ -382,6 +426,9 @@ class Cache
         }
     }
 
+    /**
+      * rebuildComponentCache_secondPass
+      */
     private void rebuildComponentCache_secondPass()
     {
         for (int i = 0; i < sites.length; i++)
@@ -444,6 +491,9 @@ class Cache
 // private -- history space
 ////////////////////////////////////////////////////////////////
 
+    /**
+      * rebuildHistoryCache_firstPass
+      */
     private void rebuildHistoryCache_firstPass()
     {
         remoteToConfig = new HashMap();
@@ -466,6 +516,9 @@ class Cache
         }
     }
 
+    /**
+      * rebuildHistoryCache_secondPass
+      */
     private void rebuildHistoryCache_secondPass()
     {
         Iterator itr = new HistoryDbIterator(server.getService().getHistoryDb());
