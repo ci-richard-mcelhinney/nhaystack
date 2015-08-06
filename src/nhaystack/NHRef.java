@@ -38,7 +38,7 @@ public class NHRef
     }
 
     /**
-      * Make an ID from an HRef.
+      * Make an ID from a space and a path.
       */
     public static NHRef make(String space, String path)
     {

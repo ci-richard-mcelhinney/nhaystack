@@ -139,6 +139,7 @@ class NHServerOps
             else if (function.equals("delete"))              result = delete              (server, params);
             else if (function.equals("deleteHaystackSlot"))  result = deleteHaystackSlot  (server, params);
             else if (function.equals("searchAndReplace"))    result = searchAndReplace    (server, params);
+            else if (function.equals("mapPointsToEquip"))    result = mapPointsToEquip    (server, params);
             else if (function.equals("makeDynamicWritable")) result = makeDynamicWritable (server);
 
             // invoke
@@ -624,6 +625,138 @@ class NHServerOps
         HDictBuilder hdb = new HDictBuilder();
         hdb.add("rowsChanged", HNum.make(count));
         return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
+      * mapPointsToEquip
+      */
+    private static HGrid mapPointsToEquip(NHServer server, HRow params)
+    {
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+
+        String siteNav  = params.getStr("siteNavName");
+        String equipNav = params.getStr("equipNavName");
+        HRef[] pointRefs = parseIdList(params.getStr("ids"));
+
+        // make sure the site and equip really exist
+        HRef siteRef = ensureSite(server, cx, siteNav);
+        HRef equipRef = ensureEquip(server, cx, siteRef, siteNav, equipNav);
+
+        // make every point be a child of the equip
+        for (int i = 0; i < pointRefs.length; i++)
+        {
+            BComponent point = server.getTagManager().lookupComponent(pointRefs[i]);
+            HDictBuilder hdb = new HDictBuilder();
+
+            // add tags from old haystack slot
+            HDict oldDict = BHDict.findTagAnnotation(point);
+            if (oldDict != null)
+                hdb.add(oldDict);
+
+            // add new tags
+            hdb.add("siteRef", siteRef);
+            hdb.add("equipRef", equipRef);
+
+            // set new haystack slot
+            point.set("haystack", BHDict.make(hdb.toDict()));
+        }
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(pointRefs.length));
+        return HGridBuilder.dictToGrid(hdb.toDict());
+    }
+
+    /**
+      * ensureSite
+      */
+    private static HRef ensureSite(NHServer server, Context cx, String siteNav)
+    {
+        HDict navRec = lookupSiteNav(server, siteNav);
+        if (navRec == null)
+        {
+            BComponent root = (BComponent) 
+                BOrd.make("slot:/").get(server.getService(), cx);
+
+            // check permissions on this Thread's saved context
+            if (!TypeUtil.canWrite(root, cx)) 
+                throw new PermissionException("Cannot write");
+
+            BHSite site = new BHSite();
+            root.add(siteNav, site);
+            return HRef.make("C." + siteNav);
+        }
+        else
+        {
+            HRef id = navRec.getRef("id");
+            BHSite site = (BHSite) server.getTagManager().lookupComponent(id);
+            return TagManager.makeSlotPathRef(site).getHRef();
+        }
+    }
+
+    /**
+      * lookupSiteNav
+      */
+    private static HDict lookupSiteNav(NHServer server, String siteNav)
+    {
+        HGrid grid = server.getNav().onNav("sep:/");
+        for (int i = 0; i < grid.numRows(); i++) 
+        {
+            HDict dict = grid.row(i);
+            if (dict.getStr("navName").equals(siteNav))
+                return dict;
+        }
+        return null;
+    }
+
+    /**
+      * ensureEquip
+      */
+    private static HRef ensureEquip(
+        NHServer server, Context cx, 
+        HRef siteRef, String siteNav, String equipNav)
+    {
+        HDict navRec = lookupEquipNav(server, siteNav, equipNav);
+        if (navRec == null)
+        {
+            BHSite site = (BHSite) server.getTagManager().lookupComponent(siteRef);
+
+            // check permissions on this Thread's saved context
+            if (!TypeUtil.canWrite(site, cx)) 
+                throw new PermissionException("Cannot write");
+
+            BHEquip equip = new BHEquip();
+
+            // add site ref to equip tags
+            HDictBuilder hdb = new HDictBuilder();
+            hdb.add("siteRef", siteRef);
+            equip.setHaystack(BHDict.make(hdb.toDict()));
+
+            // add equip underneath site
+            site.add(equipNav, equip);
+            return HRef.make(siteRef.val + "." + equipNav);
+        }
+        else
+        {
+            HRef id = navRec.getRef("id");
+            BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(id);
+            return TagManager.makeSlotPathRef(equip).getHRef();
+        }
+    }
+
+    /**
+      * lookupEquipNav
+      */
+    private static HDict lookupEquipNav(
+        NHServer server, String siteNav, String equipNav)
+    {
+        HGrid grid = server.getNav().onNav("sep:/" + siteNav);
+        for (int i = 0; i < grid.numRows(); i++) 
+        {
+            HDict dict = grid.row(i);
+            if (dict.getStr("navName").equals(equipNav))
+                return dict;
+        }
+        return null;
     }
 
     /**
