@@ -142,6 +142,8 @@ class NHServerOps
             else if (function.equals("mapPointsToEquip"))    result = mapPointsToEquip    (server, params);
             else if (function.equals("makeDynamicWritable")) result = makeDynamicWritable (server);
 
+            else if (function.equals("applyGridTags")) result = applyGridTags (server, req);
+
             // invoke
             else if (function.equals("rebuildCache"))        result = rebuildCache        (server, params);
 
@@ -378,6 +380,58 @@ class NHServerOps
                 compArr.add(comp);
         }
         return (BComponent[]) compArr.trim();
+    }
+
+    /**
+      * applyGridTags
+      */
+    private static HGrid applyGridTags(NHServer server, HGrid request)
+    {
+//System.out.println("========================================================");
+//System.out.println("applyGridTags");
+//request.dump();
+
+        TagManager tagMgr = server.getTagManager();
+
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        for (int i = 1; i < request.numRows(); i++)
+        {
+            HRow row = request.row(i);
+            BComponent comp = tagMgr.doLookupComponent(row.id(), false);
+            if (!TypeUtil.canWrite(comp, cx)) 
+                throw new PermissionException("Cannot write to " + row.id()); 
+
+//System.out.println(">>>: " + comp.getSlotPath() + ", " + row);
+
+            HDictBuilder hdb = new HDictBuilder();
+
+            // add new tags
+            Iterator it = row.iterator();
+            while (it.hasNext())
+            {
+                Map.Entry e = (Map.Entry) it.next();
+                String key = (String) e.getKey();
+                HVal val = (HVal) e.getValue();
+
+                if (key.equals("id"))
+                    continue;
+
+                if (key.equals("function"))
+                    continue;
+
+                hdb.add(key, val);
+            }
+
+            // set haystack
+            if (comp.get("haystack") == null)
+                comp.add("haystack", BHDict.make(hdb.toDict()));
+            else
+                comp.set("haystack", BHDict.make(hdb.toDict()));
+        }
+
+        HDictBuilder hdb = new HDictBuilder();
+        hdb.add("rowsChanged", HNum.make(request.numRows()-1));
+        return HGridBuilder.dictToGrid(hdb.toDict());
     }
 
     /**
