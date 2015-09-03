@@ -712,7 +712,10 @@ class NHServerOps
             hdb.add("equipRef", equipRef);
 
             // set new haystack slot
-            point.set("haystack", BHDict.make(hdb.toDict()));
+            if (point.get("haystack") == null) 
+                point.add("haystack", BHDict.make(hdb.toDict()));
+            else
+                point.set("haystack", BHDict.make(hdb.toDict()));
         }
 
         HDictBuilder hdb = new HDictBuilder();
