@@ -14,7 +14,7 @@ import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.sys.*;
-import javax.baja.util.*;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;
@@ -244,7 +244,7 @@ class Cache
             HDict tags = BHDict.findTagAnnotation(comp);
 
             // set implicit equip 
-            Cursor cursor = comp.getProperties();
+            SlotCursor cursor = comp.getProperties();
             if (cursor.next(BHEquip.class))
             {
                 curImplicitEquip = (BHEquip) cursor.get();

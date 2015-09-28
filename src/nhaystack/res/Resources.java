@@ -12,7 +12,7 @@ import java.util.*;
 
 import javax.baja.sys.*;
 import javax.baja.units.*;
-import javax.baja.util.*;
+import javax.baja.nre.util.*;
 
 /**
   * Resources makes available all the various files downloaded 
