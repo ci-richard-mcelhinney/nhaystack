@@ -21,6 +21,8 @@ niagaraModule {
 }
 
 dependencies {
+  compile fileTree(dir: 'lib', include: ['*.jar'])
+
   compile "Tridium:nre:4.0.14"
   compile "Tridium:alarm-rt:4.0.14"
   compile "Tridium:baja:4.0.14"
