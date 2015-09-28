@@ -15,6 +15,7 @@ import javax.baja.control.*;
 import javax.baja.control.enums.*;
 import javax.baja.fox.*;
 import javax.baja.history.*;
+import javax.baja.history.db.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
@@ -22,14 +23,14 @@ import javax.baja.security.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.timezone.*;
-import javax.baja.util.*;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
 import org.projecthaystack.server.*;
 import nhaystack.*;
 import nhaystack.collection.*;
-import nhaystack.driver.history.*;
+//import nhaystack.driver.history.*;
 import nhaystack.util.*;
 
 /**
@@ -84,12 +85,12 @@ public class NHServer extends HServer
 
             BModule baja = BComponent.TYPE.getModule();
             hd.add("productName",    "Niagara AX");
-            hd.add("productVersion", baja.getVendorVersion().toString());
+//            hd.add("productVersion", baja.getVendorVersion(RuntimeProfile.rt).toString());
             hd.add("productUri",     HUri.make("http://www.tridium.com/"));
 
             BModule module = BNHaystackService.TYPE.getModule();
             hd.add("moduleName",    module.getModuleName());
-            hd.add("moduleVersion", module.getVendorVersion().toString());
+//            hd.add("moduleVersion", module.getVendorVersion(RuntimeProfile.rt).toString());
             hd.add("moduleUri",     HUri.make("https://bitbucket.org/jasondbriggs/nhaystack"));
 
             return hd.toDict();
@@ -318,71 +319,77 @@ public class NHServer extends HServer
             BAbsTime rangeEnd   = BAbsTime.make(range.end.millis(),   cfg.getTimeZone());
 
             // NOTE: be careful, timeQuery() is inclusive of both start and end
-            BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
-            BITable table = (BITable) history.timeQuery(rangeStart, rangeEnd);
-            ColumnList columns = table.getColumns();
-            Column timestampCol = columns.get("timestamp");
-
-            // this will be null if its not a BTrendRecord
-            boolean isTrendRecord = cfg.getRecordType().getResolvedType().is(BTrendRecord.TYPE);
-            Column valueCol = isTrendRecord ? columns.get("value") : null;
-
-            Array arr = new Array(HHisItem.class, table.size());
-            for (int i = 0; i < table.size(); i++)
+            try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
             {
-                BAbsTime timestamp = (BAbsTime) table.get(i, timestampCol);
+                BIHistory history = conn.getHistory(cfg.getId());
 
-                // ignore inclusive start value
-                if (timestamp.equals(rangeStart)) continue;
+                BITable table = (BITable) conn.timeQuery(history, rangeStart, rangeEnd);
+//                ColumnList columns = table.getColumns();
+//                Column timestampCol = columns.get("timestamp");
 
-                // create ts
-                HDateTime ts = HDateTime.make(timestamp.getMillis(), tz);
+                // this will be null if its not a BTrendRecord
+                boolean isTrendRecord = cfg.getRecordType().getResolvedType().is(BTrendRecord.TYPE);
+//                Column valueCol = isTrendRecord ? columns.get("value") : null;
 
-                // create val
-                HVal val = null;
-                if (isTrendRecord)
+                Array arr = new Array(HHisItem.class);
+                try (TableCursor cursor = table.cursor()) 
                 {
-                    // extract value from BTrendRecord
-                    BValue value = (BValue) table.get(i, valueCol);
+                    BHistoryRecord hrec = (BHistoryRecord) cursor.get();
+                    BAbsTime timestamp = (BAbsTime) hrec.get("timestamp");
 
-                    Type recType = cfg.getRecordType().getResolvedType();
-                    if (recType.is(BNumericTrendRecord.TYPE))
+                    // ignore inclusive start value
+                    if (!timestamp.equals(rangeStart))
                     {
-                        BNumber num = (BNumber) value;
-                        val = (unit == null) ? 
-                            HNum.make(num.getDouble()) :
-                            HNum.make(num.getDouble(), unit.val);
-                    }
-                    else if (recType.is(BBooleanTrendRecord.TYPE))
-                    {
-                        BBoolean bool = (BBoolean) value;
-                        val = HBool.make(bool.getBoolean());
-                    }
-                    else if (recType.is(BEnumTrendRecord.TYPE))
-                    {
-                        BDynamicEnum dyn = (BDynamicEnum) value;
-                        BFacets facets = (BFacets) cfg.get("valueFacets");
-                        BEnumRange er = (BEnumRange) facets.get("range");
-                        val = HStr.make(SlotUtil.fromNiagara(er.getTag(dyn.getOrdinal())));
-                    }
-                    else
-                    {
-                        val = HStr.make(value.toString());
+                        // create ts
+                        HDateTime ts = HDateTime.make(timestamp.getMillis(), tz);
+
+                        // create val
+                        HVal val = null;
+                        if (isTrendRecord)
+                        {
+                            // extract value from BTrendRecord
+                            BValue value = (BValue) hrec.get("value");
+
+                            Type recType = cfg.getRecordType().getResolvedType();
+                            if (recType.is(BNumericTrendRecord.TYPE))
+                            {
+                                BNumber num = (BNumber) value;
+                                val = (unit == null) ? 
+                                    HNum.make(num.getDouble()) :
+                                    HNum.make(num.getDouble(), unit.val);
+                            }
+                            else if (recType.is(BBooleanTrendRecord.TYPE))
+                            {
+                                BBoolean bool = (BBoolean) value;
+                                val = HBool.make(bool.getBoolean());
+                            }
+                            else if (recType.is(BEnumTrendRecord.TYPE))
+                            {
+                                BDynamicEnum dyn = (BDynamicEnum) value;
+                                BFacets facets = (BFacets) cfg.get("valueFacets");
+                                BEnumRange er = (BEnumRange) facets.get("range");
+                                val = HStr.make(SlotUtil.fromNiagara(er.getTag(dyn.getOrdinal())));
+                            }
+                            else
+                            {
+                                val = HStr.make(value.toString());
+                            }
+                        }
+                        else
+                        {
+                            // if its not a BTrendRecord, just do a toString() 
+                            // of the whole record
+                            val = HStr.make(hrec.toString());
+                        }
+
+                        // add item
+                        arr.add(HHisItem.make(ts, val));
                     }
                 }
-                else
-                {
-                    // if its not a BTrendRecord, just do a toString() 
-                    // of the whole record
-                    val = HStr.make(table.get(i).toString());
-                }
 
-                // add item
-                arr.add(HHisItem.make(ts, val));
+                // done
+                return (HHisItem[]) arr.trim();
             }
-
-            // done
-            return (HHisItem[]) arr.trim();
         }
         catch (RuntimeException e)
         {
@@ -409,12 +416,16 @@ public class NHServer extends HServer
         if (!TypeUtil.canWrite(cfg, cx)) 
             throw new PermissionException("Cannot write to " + rec.id()); 
 
-        BIHistory history = service.getHistoryDb().getHistory(cfg.getId());
-        String kind = rec.getStr("kind");
-        for (int i = 0; i < items.length; i++)
-            history.append(
-                BNHaystackHistoryImport.makeTrendRecord(
-                    kind, items[i].ts, items[i].val));
+        try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
+        {
+            BIHistory history = conn.getHistory(cfg.getId());
+            String kind = rec.getStr("kind");
+            for (int i = 0; i < items.length; i++)
+                conn.append(
+                    history,
+                    makeTrendRecord(
+                        kind, items[i].ts, items[i].val));
+        }
     }
 
     /**
@@ -672,6 +683,32 @@ public class NHServer extends HServer
     HWatch getWatch(String watchId)
     {
         synchronized(watches) { return (HWatch) watches.get(watchId); }
+    }
+
+////////////////////////////////////////////////////////////////
+// trend record
+////////////////////////////////////////////////////////////////
+
+    public static BTrendRecord makeTrendRecord(String kind, HDateTime ts, HVal val)
+    {
+        BAbsTime abs = BAbsTime.make(
+            ts.millis(), 
+            TypeUtil.toBajaTimeZone(ts.tz));
+
+        if (kind.equals("Bool"))
+        {
+            BBooleanTrendRecord boolTrend = new BBooleanTrendRecord();
+            boolTrend.set(abs, ((HBool) val).val, BStatus.ok);
+            return boolTrend;
+        }
+        else if (kind.equals("Number"))
+        {
+            BNumericTrendRecord numTrend = new BNumericTrendRecord();
+            numTrend.set(abs, ((HNum) val).val, BStatus.ok);
+            return numTrend;
+        }
+
+        else throw new IllegalStateException("Cannot create trend record for kind " + kind);
     }
 
 ////////////////////////////////////////////////////////////////

@@ -17,8 +17,8 @@ import javax.baja.security.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
-import nhaystack.driver.*;
-import nhaystack.driver.point.*;
+//import nhaystack.driver.*;
+//import nhaystack.driver.point.*;
 
 /**
   * A RemotePoint represents a point that is present in
@@ -34,7 +34,7 @@ class RemotePoint
     static boolean isRemotePoint(BControlPoint point)
     {
         if (point.getProxyExt().getType().is(NIAGARA_PROXY_EXT)) return true;
-        if (point.getProxyExt() instanceof BNHaystackProxyExt) return true;
+//        if (point.getProxyExt() instanceof BNHaystackProxyExt) return true;
         return false;
     }
 
@@ -44,7 +44,7 @@ class RemotePoint
     private static boolean isRemoteDevice(BDevice device)
     {
         if (device.getType().is(NIAGARA_STATION)) return true;
-        if (device instanceof BNHaystackServer) return true;
+//        if (device instanceof BNHaystackServer) return true;
         return false;
     }
 

@@ -9,6 +9,7 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.concurrent.*;
 import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
@@ -19,8 +20,7 @@ import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.timezone.*;
 import javax.baja.units.*;
-import javax.baja.util.*;
-import com.tridium.util.backport.concurrent.ConcurrentHashMap;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;

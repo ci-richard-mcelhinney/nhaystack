@@ -14,6 +14,7 @@ import javax.baja.log.*;
 import javax.baja.schedule.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 

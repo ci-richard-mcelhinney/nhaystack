@@ -206,9 +206,13 @@ public abstract class TypeUtil
             BHistoryConfig cfg = (BHistoryConfig) comp;
             BHistoryDatabase historyDb = (BHistoryDatabase) 
                 BOrd.make("history:").get(); 
-            BIHistory his = historyDb.getHistory(cfg.getId());
-            if (his == null) return BPermissions.DEFAULT;
-            return his.getPermissions(cx);
+
+            try (HistorySpaceConnection conn = historyDb.getConnection(null))
+            {
+                BIHistory history = conn.getHistory(cfg.getId());
+                if (history == null) return BPermissions.DEFAULT;
+                return history.getPermissions(cx);
+            }
         }
         else
         {
