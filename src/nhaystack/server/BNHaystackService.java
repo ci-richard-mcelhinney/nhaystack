@@ -102,15 +102,12 @@ public class BNHaystackService
             removeBrokenRefs(): BOrd
                 -- Remove all the invalid refs
                 flags { operator, async }
-
-            foo(url: BString)
-                default {[ BString.DEFAULT ]}
         }
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(819428695)1.0$ @*/
-/* Generated Wed Jun 10 11:05:11 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(1101742462)1.0$ @*/
+/* Generated Tue Oct 06 10:47:13 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -524,22 +521,6 @@ public class BNHaystackService
   public BOrd removeBrokenRefs() { return (BOrd)invoke(removeBrokenRefs,null,null); }
 
 ////////////////////////////////////////////////////////////////
-// Action "foo"
-////////////////////////////////////////////////////////////////
-  
-  /**
-   * Slot for the <code>foo</code> action.
-   * @see nhaystack.server.BNHaystackService#foo()
-   */
-  public static final Action foo = newAction(0,BString.DEFAULT,null);
-  
-  /**
-   * Invoke the <code>foo</code> action.
-   * @see nhaystack.server.BNHaystackService#foo
-   */
-  public void foo(BString url) { invoke(foo,url,null); }
-
-////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -770,25 +751,6 @@ public class BNHaystackService
     protected NHServer createServer()
     {
         return new NHServer(this);
-    }
-
-////////////////////////////////////////////////////////////////
-// foo
-////////////////////////////////////////////////////////////////
-
-    public void doFoo(BString url) throws Exception
-    {
-        System.out.println("--------------------------------------------");
-        System.out.println("foo BEGIN " + url);
-
-        URLConnection conn = new URL(url.toString()).openConnection();
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String line;
-        while ((line = in.readLine()) != null)
-            System.out.println(line);
-        System.out.println(); 
-
-        System.out.println("foo END " + url);
     }
 
 ////////////////////////////////////////////////////////////////
