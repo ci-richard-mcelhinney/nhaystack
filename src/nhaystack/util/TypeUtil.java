@@ -9,6 +9,7 @@ package nhaystack.util;
 
 import java.util.*;
 
+import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.history.db.*;
 import javax.baja.naming.*;
@@ -98,7 +99,7 @@ public abstract class TypeUtil
     /**
       * Convert the args into a parameter that can be used to invoke the Action.
       */
-    public static BValue actionArgsToBaja(HDict args, Action action)
+    public static BValue actionArgsToBaja(HDict args, BComponent comp, Action action)
     {
         // NOTE we can't use args.size(), because if args is an HRow,
         // the size() can be non-zero even if args.iterator().hasNext() is false.
@@ -115,7 +116,19 @@ public abstract class TypeUtil
         {
             Map.Entry e = (Map.Entry) args.iterator().next();
             HVal val = (HVal) e.getValue();
-            BSimple simple = toBajaSimple(val);
+
+            BSimple simple = null;
+            if (comp instanceof BEnumWritable)
+            {
+                String str = SlotUtil.toNiagara(((HStr) val).val);
+                BFacets facets = ((BEnumWritable) comp).getFacets();
+                BEnumRange range = (BEnumRange) facets.get(BFacets.RANGE);
+                simple = range.get(str);
+            }
+            else
+            {
+                simple = toBajaSimple(val);
+            }
 
             if (!simple.getType().is(action.getParameterType()))
                 throw new IllegalStateException(

@@ -444,7 +444,7 @@ public class NHServer extends HServer
                 {
                     BValue result = comp.invoke(
                         actions[i], 
-                        TypeUtil.actionArgsToBaja(args, actions[i]));
+                        TypeUtil.actionArgsToBaja(args, comp, actions[i]));
 
                     if (result == null)
                     {
