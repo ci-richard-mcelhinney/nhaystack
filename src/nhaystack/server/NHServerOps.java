@@ -1150,7 +1150,7 @@ class NHServerOps
                 }
 
                 // filter against the recs
-                hserver = new HDictFilterer((HDict[]) dictArr.trim()); 
+                hserver = new HDictFilterer(server, (HDict[]) dictArr.trim()); 
             }
         }
 
@@ -1174,13 +1174,19 @@ class NHServerOps
     // this class just provides an iterator() so that we can filter against a list of ids
     private static class HDictFilterer extends HServer
     {
+        private final NHServer server;
         private final List list;
-        private HDictFilterer(HDict[] dicts) { this.list = Arrays.asList(dicts); }
+
+        private HDictFilterer(NHServer server, HDict[] dicts) 
+        { 
+            this.server = server;
+            this.list = Arrays.asList(dicts); 
+        }
 
         protected Iterator iterator() { return list.iterator(); }
 
         // HProj
-        protected HDict onReadById(HRef id) { throw new UnsupportedOperationException(); }
+        protected HDict onReadById(HRef id) { return server.onReadById(id); }
 
         // HServer
         public HOp[] ops() { throw new UnsupportedOperationException(); }
