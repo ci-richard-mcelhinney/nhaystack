@@ -74,7 +74,7 @@ public abstract class TypeUtil
             "Cannot convert " + num + " to RelTime");
     }
 
-    public static HVal fromBajaSimple(BSimple simple)
+    public static HVal fromBajaSimple(BSimple simple, boolean translateEnum)
     {
         if (simple instanceof BString)
         {
@@ -90,7 +90,7 @@ public abstract class TypeUtil
         }
         else if (simple instanceof BEnum)
         {
-            return HStr.make(SlotUtil.fromNiagara(((BEnum) simple).getTag()));
+            return HStr.make(SlotUtil.fromEnum(((BEnum) simple).getTag(), translateEnum));
         }
         else
             throw new IllegalStateException("Cannot convert " + simple.getClass());

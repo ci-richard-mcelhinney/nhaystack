@@ -82,4 +82,9 @@ public abstract class SlotUtil
         }
         return sb.toString();
     }
+
+    public static String fromEnum(String value, boolean translate)
+    {
+        return (translate) ? fromNiagara(value) : value;
+    }
 }

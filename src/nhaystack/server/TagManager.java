@@ -807,7 +807,7 @@ public class TagManager
     /**
       * create a curVal for a point
       */
-    private static HVal makeCurVal(
+    private HVal makeCurVal(
         BComponent point, 
         int pointKind, BFacets facets, 
         BStatusValue sv, HDict tags)
@@ -849,7 +849,9 @@ public class TagManager
                 else
                 {
                     BStatusEnum se = (BStatusEnum) sv;
-                    return HStr.make(SlotUtil.fromNiagara(er.getTag(se.getEnum().getOrdinal())));
+                    return HStr.make(SlotUtil.fromEnum(
+                        er.getTag(se.getEnum().getOrdinal()),
+                        service.getTranslateEnums()));
                 }
 
             case STRING_KIND:
@@ -889,7 +891,7 @@ public class TagManager
       * add the 'kind' tag, along with an associated tags 
       * like 'enum' or 'unit'
       */
-    private static void addPointKindTags(
+    private void addPointKindTags(
         int pointKind, 
         BFacets facets, 
         HDict tags, 
@@ -973,7 +975,7 @@ public class TagManager
             facets.gets("trueText", "true");
     }
 
-    private static String findRange(BFacets facets)
+    private String findRange(BFacets facets)
     {
         if (facets == null) 
             return "";
@@ -987,7 +989,9 @@ public class TagManager
         for (int i = 0; i < ords.length; i++)
         {
             if (i > 0) sb.append(",");
-            sb.append(SlotUtil.fromNiagara(range.get(ords[i]).getTag()));
+            sb.append(SlotUtil.fromEnum(
+                range.get(ords[i]).getTag(),
+                service.getTranslateEnums()));
         }
         return sb.toString();
     }

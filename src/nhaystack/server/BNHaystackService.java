@@ -59,6 +59,9 @@ public class BNHaystackService
             foxLeaseInterval: BRelTime 
                 flags { hidden }
                 default{[ BRelTime.makeMinutes(2) ]}
+            translateEnums: boolean
+                flags { hidden }
+                default{[ false ]}
         }
         actions
         {
@@ -106,8 +109,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1101742462)1.0$ @*/
-/* Generated Tue Oct 06 10:47:13 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(617458771)1.0$ @*/
+/* Generated Mon Oct 19 10:37:25 PDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -321,6 +324,29 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#foxLeaseInterval
    */
   public void setFoxLeaseInterval(BRelTime v) { set(foxLeaseInterval,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "translateEnums"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>translateEnums</code> property.
+   * @see nhaystack.server.BNHaystackService#getTranslateEnums
+   * @see nhaystack.server.BNHaystackService#setTranslateEnums
+   */
+  public static final Property translateEnums = newProperty(Flags.HIDDEN, false,null);
+  
+  /**
+   * Get the <code>translateEnums</code> property.
+   * @see nhaystack.server.BNHaystackService#translateEnums
+   */
+  public boolean getTranslateEnums() { return getBoolean(translateEnums); }
+  
+  /**
+   * Set the <code>translateEnums</code> property.
+   * @see nhaystack.server.BNHaystackService#translateEnums
+   */
+  public void setTranslateEnums(boolean v) { setBoolean(translateEnums,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"

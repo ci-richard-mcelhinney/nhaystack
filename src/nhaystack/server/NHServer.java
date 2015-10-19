@@ -363,7 +363,9 @@ public class NHServer extends HServer
                         BDynamicEnum dyn = (BDynamicEnum) value;
                         BFacets facets = (BFacets) cfg.get("valueFacets");
                         BEnumRange er = (BEnumRange) facets.get("range");
-                        val = HStr.make(SlotUtil.fromNiagara(er.getTag(dyn.getOrdinal())));
+                        val = HStr.make(SlotUtil.fromEnum(
+                                er.getTag(dyn.getOrdinal()),
+                                service.getTranslateEnums()));
                     }
                     else
                     {
@@ -453,7 +455,8 @@ public class NHServer extends HServer
                     else if (result instanceof BSimple)
                     {
                         HDictBuilder hd = new HDictBuilder();
-                        hd.add("result", TypeUtil.fromBajaSimple((BSimple) result));
+                        hd.add("result", TypeUtil.fromBajaSimple(
+                            (BSimple) result, service.getTranslateEnums()));
                         return HGridBuilder.dictToGrid(hd.toDict());
                     }
                     else
