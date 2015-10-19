@@ -180,11 +180,15 @@ class PointIO
                 {
                     BStatusEnum se = (BStatusEnum) ew.get("in" + (i+1));
                     if (!se.getStatus().isNull())
-                        vals[i] = HStr.make(SlotUtil.fromNiagara(se.getValue().getTag()));
+                        vals[i] = HStr.make(SlotUtil.fromEnum(
+                            se.getValue().getTag(),
+                            service.getTranslateEnums()));
                 }
                 BStatusEnum se = (BStatusEnum) ew.getFallback();
                 if (!se.getStatus().isNull())
-                    vals[16] = HStr.make(SlotUtil.fromNiagara(se.getValue().getTag()));
+                    vals[16] = HStr.make(SlotUtil.fromEnum(
+                        se.getValue().getTag(),
+                        service.getTranslateEnums()));
             }
             // String
             else if (point instanceof BStringWritable)

@@ -81,7 +81,7 @@ class ScheduleManager
         hdb.add("id", id);
         HDict rec = hdb.toDict();
         int level = tags.getInt("schedulable");
-        HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue());
+        HVal val = TypeUtil.fromBajaSimple((BSimple) event.getValue(), service.getTranslateEnums());
         server.onPointWrite(rec, level, val, "", null, null);
 
         // remove existing ticket
