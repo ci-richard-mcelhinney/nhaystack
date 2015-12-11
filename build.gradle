@@ -50,5 +50,9 @@ jar {
     include 'nhaystack/res/*.txt'
     include 'nhaystack/res/equip-points/*.txt'
     include 'nhaystack/icons/*.*'
+  }    
+  from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }) 
+  {
+      include "org/projecthaystack/**"     
   }
 }
