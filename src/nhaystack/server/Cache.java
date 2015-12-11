@@ -243,7 +243,7 @@ class Cache
             BComponent comp = (BComponent) iterator.next();
 
             // push implicit equip 
-            Cursor cursor = comp.getProperties();
+            SlotCursor cursor = comp.getProperties();
             if (cursor.next(BHEquip.class))
             {
                 implicitEquipStack.push(
