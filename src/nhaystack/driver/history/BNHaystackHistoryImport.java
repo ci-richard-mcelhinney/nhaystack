@@ -160,38 +160,49 @@ public class BNHaystackHistoryImport extends BHistoryImport
             if (LOG.isTraceOn())
                 LOG.trace("historyImport.doExecute begin " + id);
 
+            // make sure history exists
             BHistoryConfig localCfg = makeLocalConfig(createConfig());
-
-            if(!db.exists(id)) db.createHistory(localCfg);
-            else db.reconfigureHistory(localCfg);
-
-            BIHistory history = db.getHistory(id);
-
-            // find time to fetch from
-            BAbsTime last = history.getLastTimestamp();
-            if (last == null) last = BAbsTime.DEFAULT;
-            BAbsTime from = last.add(BRelTime.make(1L));
-
-            HTimeZone tz = HTimeZone.make(getTz());
-            HDateTime dt = HDateTime.make(from.getMillis(), tz);
-            HDateTimeRange range = HDateTimeRange.make(dt.toZinc(), tz);
-
-            // import records
-            HClient client = server().getHaystackClient();
-            HGrid hisItems = client.hisRead(getId().getRef(), range);
-            for (int i = 0; i < hisItems.numRows(); i++)
+            try (HistoryDatabaseConnection dbConn = db.getDbConnection(null))
             {
-                HRow row = hisItems.row(i);
-                if (row.has("ts") && row.has("val"))
-                {
-                    HDateTime ts = (HDateTime) row.get("ts");
-                    HVal val = row.get("val");
-                    history.append(makeTrendRecord(getKind(), ts, val));
-                }
+                if (dbConn.getHistory(id) == null)
+                    dbConn.createHistory(localCfg);
+                else
+                    dbConn.reconfigureHistory(localCfg);
             }
 
-            if (LOG.isTraceOn())
-                LOG.trace("historyImport.doExecute end " + id + ": imported " + hisItems.numRows() + " rows.");
+            // NOTE: be careful, timeQuery() is inclusive of both start and end
+            try (HistorySpaceConnection conn = db.getConnection(null))
+            {
+                BIHistory history = conn.getHistory(id);
+
+
+                // find time to fetch from
+                BAbsTime last = conn.getLastTimestamp(history);
+                if (last == null) last = BAbsTime.DEFAULT;
+                BAbsTime from = last.add(BRelTime.make(1L));
+
+                HTimeZone tz = HTimeZone.make(getTz());
+                HDateTime dt = HDateTime.make(from.getMillis(), tz);
+                HDateTimeRange range = HDateTimeRange.make(dt.toZinc(), tz);
+
+                // import records
+                HClient client = server().getHaystackClient();
+                HGrid hisItems = client.hisRead(getId().getRef(), range);
+                for (int i = 0; i < hisItems.numRows(); i++)
+                {
+                    HRow row = hisItems.row(i);
+                    if (row.has("ts") && row.has("val"))
+                    {
+                        HDateTime ts = (HDateTime) row.get("ts");
+                        HVal val = row.get("val");
+                        conn.append(history, makeTrendRecord(getKind(), ts, val));
+                    }
+                }
+
+                if (LOG.isTraceOn())
+                    LOG.trace("historyImport.doExecute end " + id + ": imported " + hisItems.numRows() + " rows.");
+
+            }
 
             executeOk();
         }

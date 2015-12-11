@@ -18,6 +18,7 @@ import javax.baja.ui.enums.*;
 import javax.baja.ui.event.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
+import javax.baja.nre.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
 import org.projecthaystack.*;
