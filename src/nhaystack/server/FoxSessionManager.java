@@ -52,16 +52,17 @@ class FoxSessionManager
     private static BFoxProxySession makeSession(BDevice station)
     throws Exception
     {
-        BOrd address = (BOrd) station.get("address");
-        BHost host = (BHost) address.get();
-
-        BComponent clientConn = (BComponent) station.get("clientConnection");
-        int port = clientConn.getInt(clientConn.getProperty("port"));
-        BString username = (BString) clientConn.get("username");
-        BPassword password = (BPassword) clientConn.get("password");
-
-        return BFoxProxySession.make(
-            host, port, username.toString(), password.getString());
+        throw new IllegalStateException("TODO: BPassword.getString() is deprecated");
+//        BOrd address = (BOrd) station.get("address");
+//        BHost host = (BHost) address.get();
+//
+//        BComponent clientConn = (BComponent) station.get("clientConnection");
+//        int port = clientConn.getInt(clientConn.getProperty("port"));
+//        BString username = (BString) clientConn.get("username");
+//        BPassword password = (BPassword) clientConn.get("password");
+//
+//        return BFoxProxySession.make(
+//            host, port, username.toString(), password.getString());
     }
 
     /**

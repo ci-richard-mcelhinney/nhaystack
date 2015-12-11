@@ -13,7 +13,7 @@ import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.list.*;
-import javax.baja.util.*;
+import javax.baja.nre.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
 import org.projecthaystack.*;
