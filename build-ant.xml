@@ -1,0 +1,23 @@
+<project name="nhaystack" default="all">
+	<property name="env.NIAGARA_HOME" value="/opt/Niagara/Niagara-3.6.31" />
+	<property environment="env"/>
+	
+	<target name="all" depends="ax"/>
+	
+	<target name="ax">
+
+		<replace file="build.xml" 
+            token="vendorVersion = &quot;1.2.5&quot;" 
+            value="vendorVersion = &quot;${env.FormattedBuild}&quot;"/> 
+
+		<exec executable="${env.NIAGARA_HOME}/bin/build">
+			<env key="NIAGARA_HOME" value="/opt/Niagara/Niagara-3.6.31"/>
+			<arg value="."/>
+			<arg value="full"/>
+		</exec>
+
+		<copy todir="./build" file="${env.NIAGARA_HOME}/modules/nhaystack.jar"/>
+
+	</target>
+
+</project>
