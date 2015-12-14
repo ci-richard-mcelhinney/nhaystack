@@ -6,3 +6,5 @@ test/jars
 test/staging
 .gradle
 build
+.gradle
+build
