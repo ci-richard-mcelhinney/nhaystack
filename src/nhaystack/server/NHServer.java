@@ -652,6 +652,18 @@ public class NHServer extends HServer
         if (LOG.isTraceOn()) LOG.trace("END removeBrokenRefs"); 
     }
 
+    final String[] consumptionUnits() 
+    {
+    	String commaUnits = service.getConsumptionUnits().toString();
+    	StringTokenizer st = new StringTokenizer(commaUnits, ",");
+    	String[] retArr = new String[st.countTokens()];
+    	for (int i = 0; i < retArr.length; i++)
+    	{
+    		retArr[i] = st.nextToken();
+    	}
+    	return retArr;
+    }
+    
 ////////////////////////////////////////////////////////////////
 // watches
 ////////////////////////////////////////////////////////////////

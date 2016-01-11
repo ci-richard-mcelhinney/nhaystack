@@ -62,6 +62,8 @@ public class BNHaystackService
             translateEnums: boolean
                 flags { hidden }
                 default{[ false ]}
+            consumptionUnits: String
+                default{[ "kWh,kg,L,m³" ]}
         }
         actions
         {
@@ -302,6 +304,29 @@ public class BNHaystackService
    */
   public void setInitializationDelayTime(BRelTime v) { set(initializationDelayTime,v,null); }
 
+////////////////////////////////////////////////////////////////
+//Property "consumptionUnits"
+////////////////////////////////////////////////////////////////
+	
+  /**
+  * Slot for the <code>consumptionUnits</code> property.
+  * @see nhaystack.server.BNHaystackService#getConsumptionUnits
+  * @see nhaystack.server.BNHaystackService#setConsumptionUnits
+  */
+  public static final Property consumptionUnits = newProperty(0, "kWh,kg,L,m³", null);
+
+  /**
+  * Get the <code>consumptionUnits</code> property.
+  * @see nhaystack.server.BNHaystackService#consumptionUnits
+  */
+  public String getConsumptionUnits() { return getString(consumptionUnits); }
+	
+  /**
+  * Set the <code>consumptionUnits</code> property.
+  * @see nhaystack.server.BNHaystackService#consumptionUnits
+  */
+  public void setConsumptionUnits(String v) { setString(consumptionUnits,v,null); }
+  
 ////////////////////////////////////////////////////////////////
 // Property "foxLeaseInterval"
 ////////////////////////////////////////////////////////////////
