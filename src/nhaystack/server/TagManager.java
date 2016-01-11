@@ -394,6 +394,38 @@ public class TagManager
             }
         }
 
+        //See if hisMode and hisInterval tags can be auto-generated
+        BCollectionInterval interval = cfg.getInterval();
+        if (interval != null) 
+        {
+        	//If the interval is IRREGULAR then it must be a COV History
+            if (interval.equals(BCollectionInterval.IRREGULAR)) 
+            {
+            	hdb.add("hisMode", "cov");
+            } else 
+            {  
+            	//Get the interval in a base unit of seconds and write out as a Haystack HNum with value and units
+            	int intervalSeconds = interval.getInterval().getSeconds();
+            	HNum hisInterval = HNum.make(intervalSeconds, "s");
+                hdb.add("hisInterval", hisInterval);
+                
+                //Tricky to decide it hisMode now is sampled or consumption. 
+                //For now just basing it on the units as a guide. If no units provided
+                //it simply won't auto-generate the hisMode tag.
+                if (hdb.get("kind").toString().equals("Number") && hdb.get("unit", false) != null) 
+                {
+               		String unit = hdb.get("unit").toString();
+               		if (isConsumptionUnit(unit)) 
+               		{
+               			hdb.add("hisMode", "consumption");
+               		} else 
+               		{
+               			hdb.add("hisMode", "sampled");
+               		}
+                } 
+            }                	
+        }
+        
         // add custom tags
         hdb.add(server.createCustomTags(cfg));
 
@@ -405,6 +437,16 @@ public class TagManager
 // private
 ////////////////////////////////////////////////////////////////
 
+    private boolean isConsumptionUnit(String unit) 
+    {
+		String[] consumptionUnits = server.consumptionUnits();
+		for (int i = 0; i < consumptionUnits.length; i++) 
+		{
+			if (consumptionUnits[i].equals(unit)) return true;
+		}
+		return false;
+	}
+    
     /**
       * Create the tags which represent a change-of-value on a point.
       * The only tags that are returned are id, curVal, and curStatus.
