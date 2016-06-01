@@ -2,57 +2,55 @@
 //  Licensed under the Academic Free License version 3.0
 // 
 //  History:
-//    07 Nov 2011  Richard McElhinney  Creation
-//    28 Sep 2012  Mike Jarmy          Ported from axhaystack
-
-apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
+//    10 Mar 2016  Richard McElhinney  Creation
 
 ext {
-  name = 'nhaystack'
-  project.version = '1.2.6'
-  project.group = 'Project Haystack'
-  description = "Niagara Haystack"
-}
-
-niagaraModule {
-  preferredSymbol = "nh"
-  runtimeProfile = "wb"
-  moduleName = "nhaystack"
-}
-
-dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
-
-  compile "Tridium:nre:4.0.22"
-  compile "Tridium:alarm-rt:4.0.22"
-  compile "Tridium:baja:4.0.22"
-  compile "Tridium:bql-rt:4.0.22"
-  compile "Tridium:control-rt:4.0.22"
-  compile "Tridium:driver-rt:4.0.22"
-  compile "Tridium:driver-wb:4.0.22"
-  compile "Tridium:file-rt:4.0.22"
-  compile "Tridium:fox-rt:4.0.22"
-  compile "Tridium:gx-rt:4.0.22"
-  compile "Tridium:history-rt:4.0.22"
-  compile "Tridium:net-rt:4.0.22"
-  compile "Tridium:schedule-rt:4.0.22"
-  compile "Tridium:web-rt:4.0.22"
-
-  compile "Tridium:bajaui-wb:4.0.22"
-  compile "Tridium:workbench-wb:4.0.22"
-
-  uberjar "javax.servlet:javax.servlet-api:3.0.1"
-}
-
-jar {
-  from('src') {
-    include 'nhaystack/res/*.csv'
-    include 'nhaystack/res/*.txt'
-    include 'nhaystack/res/equip-points/*.txt'
-    include 'nhaystack/icons/*.*'
-  }    
-  from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }) 
-  {
-      include "org/projecthaystack/**"     
+  niagaraHome = System.getenv("niagara_home")
+  if (niagaraHome == null) {
+    logger.error('niagara_home environment variable not set')
   }
 }
+
+apply from: "${System.getenv("niagara_home")}/etc/gradle/eclipse.gradle"
+apply from: "${System.getenv("niagara_home")}/etc/gradle/idea.gradle"
+
+gradle.beforeProject { p ->
+  configure(p) {
+    def vendorSettings = file("${rootDir}/vendor.gradle")
+    if (vendorSettings.exists()) {
+      apply from: vendorSettings
+    }
+    apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
+  }
+}
+
+tasks.addRule("""
+Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a set of modules rooted at path.
+""") { String taskName ->
+  def matcher = taskName =~ /(.*?)(Test)?\/(.*)/
+  if (matcher) {
+    def command = matcher.group(1)
+    def includeTestModules = matcher.group(2) == 'Test'
+    def path = file("${projectDir}/${matcher.group(3)}").toPath()
+
+    assert path.toFile().exists()
+    def targetProjects = subprojects.findAll { it.projectDir.toPath().startsWith(path) }
+
+    // default is build command and build is an alias for Gradle's jar task
+    if (command.isEmpty() || command == 'build') { command = 'jar' }
+
+    // Create task for subproject
+    task(taskName, dependsOn: targetProjects.tasks[command])
+    if (includeTestModules && command == 'jar') {
+      tasks[taskName].dependsOn targetProjects.moduleTestJar
+    }
+  }
+}
+
+allprojects {
+    afterEvaluate { project ->
+        println project.name
+    }
+}
+
+println "@@@@ Finished main build.gradle! "

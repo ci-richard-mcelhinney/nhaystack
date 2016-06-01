@@ -75,7 +75,7 @@ public class Resources
         String str = bin.readLine(); // throw away header
         str = bin.readLine();
         while (str != null)
-        {
+        {			
             String[] tokens = TextUtil.split(str, ',');
             String name = tokens[0];
             String kind = tokens[1];
@@ -112,7 +112,7 @@ public class Resources
     private static void loadUnits() throws Exception
     {
         InputStream in = Resources.class.getResourceAsStream(UNITS);
-        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+        BufferedReader bin = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 
         unitsByQuantity = new HashMap();
         unitsBySymbol = new HashMap();
@@ -134,7 +134,7 @@ public class Resources
                 else
                 {
                     String[] tokens = TextUtil.split(str, ',');
-
+							
                     if (tokens.length == 1)
                         loadUnit(new Unit(curQuant, tokens[0], tokens[0]));
                     else
@@ -301,7 +301,7 @@ public class Resources
     {
         Unit unit = (Unit) unitsByLowerCaseName.get(
             TextUtil.replace(bunit.getUnitName(), " ", "_").toLowerCase());
-
+		
         if (unit != null) return unit;
 
         if (bunit.getUnitName().equals("dollar")) return getSymbolUnit("$");

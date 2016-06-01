@@ -1,0 +1,4 @@
+<types>
+  <!--nhaystack.test-->
+  <type class="nhaystack.test.BSimpleClientTest" name="SimpleClientTest"/>
+</types>

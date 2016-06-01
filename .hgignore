@@ -6,3 +6,5 @@ test/jars
 test/staging
 build
 .gradle
+.idea/
+gradle/
