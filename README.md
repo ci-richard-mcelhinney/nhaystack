@@ -29,7 +29,10 @@ NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
 
 The development of NHaystack has been funded by 
-[J2 Innovations](http://www.j2inn.com).  
+[J2 Innovations](http://www.j2inn.com).
+
+The porting of NHaystack for Niagara 4 has been funded by J2 Innovations and
+[Airmaster Australia](http://www.airmaster.com.au).
 
 ###Benefits
 

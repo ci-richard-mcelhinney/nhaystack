@@ -4,6 +4,7 @@
 //  History:
 //    07 Nov 2011  Richard McElhinney  Creation
 //    28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//    31 May 2016  Richard McElhinney  Ported from nhaystack for Niagara AX
 
 apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
 
