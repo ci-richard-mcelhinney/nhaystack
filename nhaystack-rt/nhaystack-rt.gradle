@@ -1,0 +1,65 @@
+//  Copyright (c) 2012, J2 Innovations
+//  Licensed under the Academic Free License version 3.0
+// 
+//  History:
+//    10 Mar 2016  Richard McElhinney  Creation
+
+description = "nhaystack runtime module"
+
+niagaraModule {
+  preferredSymbol = "nh"
+  runtimeProfile = "rt"
+  moduleName = "nhaystack"
+
+  modulePart {
+    name = "nhaystack-wb"
+    runtimeProfile = "wb"
+  }
+}
+
+dependencies {
+  compile fileTree(dir: 'lib', include: ['*.jar'])
+
+  compile "Tridium:nre:4.0.22"
+  compile "Tridium:alarm-rt:4.0.22"
+  compile "Tridium:baja:4.0.22"
+  compile "Tridium:bql-rt:4.0.22"
+  compile "Tridium:control-rt:4.0.22"
+  compile "Tridium:driver-rt:4.0.22"
+  compile "Tridium:driver-wb:4.0.22"
+  compile "Tridium:file-rt:4.0.22"
+  compile "Tridium:fox-rt:4.0.22"
+  compile "Tridium:gx-rt:4.0.22"
+  compile "Tridium:history-rt:4.0.22"
+  compile "Tridium:net-rt:4.0.22"
+  compile "Tridium:schedule-rt:4.0.22"
+  compile "Tridium:web-rt:4.0.22"
+
+  compile "Tridium:bajaui-wb:4.0.22"
+  compile "Tridium:workbench-wb:4.0.22"
+
+  uberjar "javax.servlet:javax.servlet-api:3.0.1"
+}
+
+jar {
+  from('src') {
+    include 'nhaystack/res/*.csv'
+    include 'nhaystack/res/*.txt'
+    include 'nhaystack/res/equip-points/*.txt'
+    include 'nhaystack/icons/*.*'
+  }    
+  from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }) 
+  {
+      include "org/projecthaystack/**"     
+  }
+}
+
+// Include files in the test jar with the following configuration.
+moduleTestJar {
+  from('srcTest') {
+    include 'stations/nhaystack_jace1/*.bog'
+    include 'stations/nhaystack_jace2/*.bog'
+    include 'stations/nhaystack_simple/*.bog'
+    include 'stations/nhaystack_sup/*.bog'
+  }
+}

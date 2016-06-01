@@ -88,29 +88,6 @@
     <type name="HSite"   class="nhaystack.site.BHSite"/>
     <type name="HTagged" class="nhaystack.site.BHTagged"/>
 
-    <!-- nhaystack.ui -->
-    <type name="GroupPane"        class="nhaystack.ui.BGroupPane"/>
-    <type name="HDictDialog"      class="nhaystack.ui.BHDictDialog"/>
-    <type name="HDictEditor"      class="nhaystack.ui.BHDictEditor"/>
-    <type name="HDictEditorGroup" class="nhaystack.ui.BHDictEditorGroup"/>
-    <type name="MarkerSet"        class="nhaystack.ui.BMarkerSet"/>
-
-    <type name="HDictFE"     class="nhaystack.ui.BHDictFE">     <agent><on type="nhaystack:HDict"/>     </agent></type>
-    <type name="HFloorFE"    class="nhaystack.ui.BHFloorFE">    <agent><on type="nhaystack:HFloor"/>    </agent></type>
-    <type name="HNumFE"      class="nhaystack.ui.BHNumFE">      <agent><on type="nhaystack:HNum"/>      </agent></type>
-    <type name="HTimeZoneFE" class="nhaystack.ui.BHTimeZoneFE"> <agent><on type="nhaystack:HTimeZone"/> </agent></type>
-    <type name="HUnitFE"     class="nhaystack.ui.BHUnitFE">     <agent><on type="nhaystack:HUnit"/>     </agent></type>
-
-    <type name="EquipRefFE" class="nhaystack.ui.BEquipRefFE"/>
-    <type name="SiteRefFE"  class="nhaystack.ui.BSiteRefFE"/>
-
-    <!-- nhaystack.ui.view -->
-    <type name="AddHaystackSlot"  class="nhaystack.ui.view.BAddHaystackSlot"/>
-    <type name="NHaystackQueryView"  class="nhaystack.ui.view.BNHaystackQueryView">
-        <agent><on type="nhaystack:NHaystackService"/></agent></type>
-    <type name="NHaystackServiceView"  class="nhaystack.ui.view.BNHaystackServiceView">
-        <agent><on type="nhaystack:NHaystackService"/></agent></type>
-
     <!-- nhaystack.worker -->
     <type name="INHaystackWorker"          class="nhaystack.worker.BINHaystackWorker"/>
     <type name="INHaystackWorkerParent"    class="nhaystack.worker.BINHaystackWorkerParent"/>

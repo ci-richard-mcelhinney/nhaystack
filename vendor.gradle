@@ -1,0 +1,12 @@
+//  Copyright (c) 2012, J2 Innovations
+//  Licensed under the Academic Free License version 3.0
+// 
+//  History:
+//    10 Mar 2016  Richard McElhinney  Creation
+
+group = 'Project Haystack'
+
+def moduleVersion = '1.2.7'
+def moduleVersionPatch = [:]
+
+version = "${moduleVersion}${moduleVersionPatch.get(project.name, '')}"

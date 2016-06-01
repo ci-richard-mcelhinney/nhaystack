@@ -42,96 +42,101 @@ public class BHDictEditorGroup extends BScrollPane
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    public BHDictEditorGroup() {}
+  public BHDictEditorGroup()
+  {
+  }
 
-    public BHDictEditorGroup(BNHaystackService service, BComponent comp)
-    {
-        this.service = service;
-        this.comp = comp;
-        this.session = (BFoxProxySession) comp.getSession();
+  public BHDictEditorGroup(BNHaystackService service, BComponent comp)
+  {
+    this.service = service;
+    this.comp = comp;
+    this.session = (BFoxProxySession) comp.getSession();
 
-        HDict all = fetchTagsFromServer();
+    System.out.println("fetching tags from server");
+    HDict all = fetchTagsFromServer();
+    System.out.println(all.toString() + "\n\n");
 
-        Map defaultEssentials = (comp instanceof BHTagged) ?
+
+    Map defaultEssentials = (comp instanceof BHTagged) ?
             asTagMap(((BHTagged) comp).getDefaultEssentials()) :
             new HashMap();
 
-        Set allPossibleAuto = new HashSet(Arrays.asList(fetchAutoGenTags()));
+    Set allPossibleAuto = new HashSet(Arrays.asList(fetchAutoGenTags()));
 
-        // sites need 'tz' to show up in essentials.
-        if (all.has("site")) allPossibleAuto.remove("tz");
+    // sites need 'tz' to show up in essentials.
+    if (all.has("site")) allPossibleAuto.remove("tz");
 
-        // points need 'siteRef' to show up in auto-gen.
-        if (all.has("point")) allPossibleAuto.add("siteRef");
+    // points need 'siteRef' to show up in auto-gen.
+    if (all.has("point")) allPossibleAuto.add("siteRef");
 
-        //////////////////////
-        // essentials
+    //////////////////////
+    // essentials
 
-        Map essentialTags = asTagMap(all);
-        essentialTags.keySet().removeAll(allPossibleAuto);
-        essentialTags.keySet().retainAll(defaultEssentials.keySet());
+    Map essentialTags = asTagMap(all);
+    essentialTags.keySet().removeAll(allPossibleAuto);
+    essentialTags.keySet().retainAll(defaultEssentials.keySet());
 
-        Iterator it = defaultEssentials.entrySet().iterator();
-        while (it.hasNext())
-        {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            HVal val = (HVal) entry.getValue();
-            if (!essentialTags.containsKey(name))
-                essentialTags.put(name, val);
-        }
+    Iterator it = defaultEssentials.entrySet().iterator();
+    while (it.hasNext())
+    {
+      Map.Entry entry = (Map.Entry) it.next();
+      String name = (String) entry.getKey();
+      HVal val = (HVal) entry.getValue();
+      if (!essentialTags.containsKey(name))
+        essentialTags.put(name, val);
+    }
 
-        //////////////////////
-        // optional
+    //////////////////////
+    // optional
 
-        Map optionalTags = asTagMap(all);
-        optionalTags.keySet().removeAll(allPossibleAuto);
-        optionalTags.keySet().removeAll(defaultEssentials.keySet());
+    Map optionalTags = asTagMap(all);
+    optionalTags.keySet().removeAll(allPossibleAuto);
+    optionalTags.keySet().removeAll(defaultEssentials.keySet());
 
-        // points need 'equipRef' and 'schedulable' to show up in essentials.
-        if (all.has("point"))
-        {
-            if (optionalTags.containsKey("equipRef"))
-                essentialTags.put("equipRef", optionalTags.remove("equipRef"));
-            else
-                essentialTags.put("equipRef", BHRef.DEFAULT.getRef());
+    // points need 'equipRef' and 'schedulable' to show up in essentials.
+    if (all.has("point"))
+    {
+      if (optionalTags.containsKey("equipRef"))
+        essentialTags.put("equipRef", optionalTags.remove("equipRef"));
+      else
+        essentialTags.put("equipRef", BHRef.DEFAULT.getRef());
 
 //            if (optionalTags.containsKey("schedulable"))
 //                essentialTags.put("schedulable", optionalTags.remove("schedulable"));
 //            else
 //                essentialTags.put("schedulable", HNum.make(BHSchedulable.DEFAULT.getPriority()));
-        }
-
-        //////////////////////
-        // autoGen
-
-        Map autoGenTags = asTagMap(all);
-        autoGenTags.keySet().retainAll(allPossibleAuto);
-
-        // move 'equip' to optional if its not really a BHEquip
-        if (autoGenTags.containsKey("equip") && !(comp instanceof BHEquip))
-            optionalTags.put("equip", autoGenTags.remove("equip"));
-
-        //////////////////////
-        // widgets
-
-        this.essentials = new BHDictEditor(this, BHDictEditor.ESSENTIALS, essentialTags);
-        this.optional   = new BHDictEditor(this, BHDictEditor.OPTIONAL,   optionalTags);
-        this.autoGen    = new BHDictEditor(this, BHDictEditor.AUTO_GEN,   autoGenTags);
-
-        BGroupPane group = new BGroupPane(
-            new String[] {
-                LEX.getText("essentials"),
-                LEX.getText("optional"),
-                LEX.getText("autoGen") },
-            new BPane[] {
-               essentials,
-               optional,
-               autoGen });
-
-        setViewportBackground(BBrush.makeSolid(BColor.make("#CCCCCC")));
-        setContent(new BBorderPane(group));
     }
+
+    //////////////////////
+    // autoGen
+
+    Map autoGenTags = asTagMap(all);
+    autoGenTags.keySet().retainAll(allPossibleAuto);
+
+    // move 'equip' to optional if its not really a BHEquip
+    if (autoGenTags.containsKey("equip") && !(comp instanceof BHEquip))
+      optionalTags.put("equip", autoGenTags.remove("equip"));
+
+    //////////////////////
+    // widgets
+
+    this.essentials = new BHDictEditor(this, BHDictEditor.ESSENTIALS, essentialTags);
+    this.optional = new BHDictEditor(this, BHDictEditor.OPTIONAL, optionalTags);
+    this.autoGen = new BHDictEditor(this, BHDictEditor.AUTO_GEN, autoGenTags);
+
+    BGroupPane group = new BGroupPane(
+            new String[]{
+                    LEX.getText("essentials"),
+                    LEX.getText("optional"),
+                    LEX.getText("autoGen")},
+            new BPane[]{
+                    essentials,
+                    optional,
+                    autoGen});
+
+    setViewportBackground(BBrush.makeSolid(BColor.make("#CCCCCC")));
+    setContent(new BBorderPane(group));
+  }
 
 ////////////////////////////////////////////////////////////////
 // public
@@ -173,6 +178,7 @@ public class BHDictEditorGroup extends BScrollPane
         {
             NHRef ref = TagManager.makeSlotPathRef(comp);
             BHRef id = BHRef.make(ref.getHRef());
+            System.out.println("@@@@ " + id.encodeToString());
             return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
         }
         catch (Exception e)
