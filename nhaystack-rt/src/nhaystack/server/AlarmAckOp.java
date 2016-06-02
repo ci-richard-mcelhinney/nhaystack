@@ -7,8 +7,9 @@
 //
 package nhaystack.server;
 
+import java.util.logging.*;
+
 import javax.baja.alarm.*;
-import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
@@ -31,8 +32,8 @@ class AlarmAckOp extends HOp
             HRow params = req.row(0);
             BUuid uuid = BUuid.make(params.getStr("alarmUuid"));
 
-            if (LOG.isTraceOn()) 
-                LOG.trace(name() + " alarmUuid:" + uuid);
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine(name() + " alarmUuid:" + uuid);
 
             BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
             try (AlarmDbConnection conn = alarmService.getAlarmDb().getDbConnection(null))
@@ -45,8 +46,8 @@ class AlarmAckOp extends HOp
                 }
                 else
                 {
-                    if (LOG.isTraceOn()) 
-                        LOG.trace(name() + " acking " + alarm);
+                    if (LOG.isLoggable(Level.FINE))
+                        LOG.fine(name() + " acking " + alarm);
 
                     // We have to ignore the alarm while we are acking it
                     // so we don't get caught in a loop.
@@ -78,6 +79,6 @@ class AlarmAckOp extends HOp
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 }
  

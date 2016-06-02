@@ -7,6 +7,7 @@
 //    31 May 2016  Richard McElhinney  Ported from nhaystack for Niagara AX
 
 apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
+apply from: "${System.getenv("niagara_home")}/etc/gradle/idea.gradle"
 
 ext {
   name = 'nhaystack'
@@ -41,6 +42,7 @@ dependencies {
   compile "Tridium:gx-rt:4.0.22"
   compile "Tridium:history-rt:4.0.22"
   compile "Tridium:net-rt:4.0.22"
+  compile "Tridium:niagaraDriver-rt:4.0.22"
   compile "Tridium:schedule-rt:4.0.22"
   compile "Tridium:web-rt:4.0.22"
 

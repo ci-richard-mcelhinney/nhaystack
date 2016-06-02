@@ -9,6 +9,7 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.control.*;
 import javax.baja.driver.*;
@@ -213,7 +214,7 @@ public class TagManager
         BComponent comp = lookupComponent(id);
         if (comp == null)
         {
-            LOG.error("lookup failed for '" + id + "'");
+            LOG.severe("lookup failed for '" + id + "'");
             return null;
         }
 
@@ -231,7 +232,7 @@ public class TagManager
         }
         else
         {
-            LOG.error("cannot find history for for '" + id + "'");
+            LOG.severe("cannot find history for for '" + id + "'");
             return null;
         }
     }
@@ -847,7 +848,7 @@ public class TagManager
                 BEnumRange er = (BEnumRange) facets.get("range");
                 if (er == null)
                 {
-                    LOG.error("No 'range' facets found for point " + point.getSlotPath());
+                    LOG.severe("No 'range' facets found for point " + point.getSlotPath());
                     return HStr.make("INVALID_ENUM");
                 }
                 else
@@ -1048,7 +1049,7 @@ public class TagManager
         "writable"  
     };
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     // point kinds
     private static final int UNKNOWN_KIND = -1;

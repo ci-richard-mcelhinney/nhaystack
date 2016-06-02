@@ -8,9 +8,9 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.control.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.security.*;
 import javax.baja.sys.*;
@@ -46,7 +46,7 @@ class NHServerOps
                 throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
             long ticks = Clock.ticks();
-            if (LOG.isTraceOn()) LOG.trace(name() + " begin");
+            if (LOG.isLoggable(Level.FINE)) LOG.fine(name() + " begin");
 
             HRow params = req.row(0);
 
@@ -66,7 +66,7 @@ class NHServerOps
             else if (params.has("unique"))
                 result = makeUniqueGrid(result, params.getStr("unique"));
 
-            if (LOG.isTraceOn()) LOG.trace(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
+            if (LOG.isLoggable(Level.FINE)) LOG.fine(name() + " end, " + (Clock.ticks()-ticks) + "ms.");
             return result;
         }
 
@@ -127,7 +127,7 @@ class NHServerOps
             String function = params.getStr("function");
 
             long ticks = Clock.ticks();
-            if (LOG.isTraceOn()) LOG.trace(name() + " " + function + " begin");
+            if (LOG.isLoggable(Level.FINE)) LOG.fine(name() + " " + function + " begin");
 
             HGrid result = HGrid.EMPTY;
 
@@ -162,7 +162,7 @@ class NHServerOps
                 result = HGridBuilder.dictsToGrid(new HDict[] { hdb.toDict() });
             }
 
-            if (LOG.isTraceOn()) LOG.trace(name() + " " + function + " end, " + (Clock.ticks()-ticks) + "ms.");
+            if (LOG.isLoggable(Level.FINE)) LOG.fine(name() + " " + function + " end, " + (Clock.ticks()-ticks) + "ms.");
             return result;
         }
     }
@@ -200,7 +200,7 @@ class NHServerOps
                         HDict origTags = ((BHDict) comp.get("haystack")).getDict();
                         if (!origTags.has("writable"))
                         {
-                            LOG.message("adding 'writable' to " + comp.getSlotPath());
+                            LOG.info("adding 'writable' to " + comp.getSlotPath());
                             HDict newTags = new HZincReader("writable").readDict();
                             HDict row = applyTagsToDict(origTags, newTags);
                             comp.set("haystack", BHDict.make(row));
@@ -1238,7 +1238,7 @@ class NHServerOps
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private static final HStr REMOVE = HStr.make("_remove_");
 }

@@ -9,10 +9,11 @@
 package nhaystack.server;
 
 import java.io.*;
+import java.util.logging.*;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 
-import javax.baja.log.*;
 import javax.baja.sys.*;
 import javax.baja.web.*;
 
@@ -57,7 +58,7 @@ public class BNHaystackServlet extends BWebServlet
 
     void enableWithMessage(boolean flag)
     {
-        LOG.message("NHaystack Servlet " + (flag ? "enabled" : "disabled"));
+        LOG.info("NHaystack Servlet " + (flag ? "enabled" : "disabled"));
         setEnabled(flag);
     }
 
@@ -157,7 +158,7 @@ public class BNHaystackServlet extends BWebServlet
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");

@@ -8,11 +8,11 @@
 package nhaystack.driver.point.learn;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.job.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -107,8 +107,8 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
 
     private void traverse(HClient client, HUri parentNav, BComponent parent)
     {
-        if (LOG.isTraceOn())
-            LOG.trace("learn structure: nav " + parentNav);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("learn structure: nav " + parentNav);
 
         // use a name generator to create unique names
         NameGenerator nameGen = new NameGenerator();
@@ -319,7 +319,7 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 
     private BNHaystackServer server;
     private HFilter siteFilter;

@@ -7,9 +7,11 @@
 
 package nhaystack.driver.history;
 
+
+import java.util.logging.*;
+
 import javax.baja.driver.*;
 import javax.baja.driver.util.*;
-import javax.baja.log.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -57,13 +59,13 @@ public class DescriptorInvocation extends WorkerChore
 
     public boolean isPing() { return false; }
 
-    protected final Log getLog() { return LOG; }
+    protected final Logger getLogger() { return LOG; }
 
 ////////////////////////////////////////////////////////////////
 // attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 
     protected final BDescriptor descriptor;
     protected final Invocation invocation;

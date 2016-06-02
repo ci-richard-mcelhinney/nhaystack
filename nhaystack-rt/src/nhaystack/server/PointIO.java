@@ -8,11 +8,11 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.control.*;
 import javax.baja.control.enums.*;
 import javax.baja.fox.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.security.*;
@@ -51,8 +51,8 @@ class PointIO
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onPointWriteArray " + rec.id());
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onPointWriteArray " + rec.id());
 
 
         BComponent comp = tagMgr.lookupComponent(rec.id());
@@ -83,8 +83,8 @@ class PointIO
             if (!cache.initialized()) 
                 throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-            if (LOG.isTraceOn())
-                LOG.trace("onPointWrite " + 
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine("onPointWrite " +
                     "id:"    + rec.id() + ", " +
                     "level:" + level    + ", " +
                     "val:"   + val      + ", " +
@@ -106,7 +106,7 @@ class PointIO
                 }
                 else if (comp instanceof BWeeklySchedule)
                 {
-                    LOG.trace("ignoring write to " + comp.getSlotPath());
+                    LOG.fine("ignoring write to " + comp.getSlotPath());
                     return;
                 }
                 else
@@ -385,7 +385,7 @@ class PointIO
         HDict tags = BHDict.findTagAnnotation(point);
         if (!tags.has("writable")) 
         {
-            LOG.error("cannot write to " + point.getSlotPath() + ", does not have 'writable' tag.");
+            LOG.severe("cannot write to " + point.getSlotPath() + ", does not have 'writable' tag.");
             return;
         }
 
@@ -393,7 +393,7 @@ class PointIO
         RemotePoint rp = RemotePoint.fromControlPoint(point);
         if (rp == null)
         {
-            LOG.error("cannot write to " + point.getSlotPath() + ", it is neither writable nor remote.");
+            LOG.severe("cannot write to " + point.getSlotPath() + ", it is neither writable nor remote.");
             return;
         }
 
@@ -408,7 +408,7 @@ class PointIO
         remote.lease(1, millis);
         if (!(remote instanceof BIWritablePoint))
         {
-            LOG.error("cannot write to " + remote.getSlotPath() + ", it is not writable.");
+            LOG.severe("cannot write to " + remote.getSlotPath() + ", it is not writable.");
             return;
         }
 
@@ -498,7 +498,7 @@ class PointIO
         }
         else 
         {
-            LOG.error("cannot write to " + point.getSlotPath() + ", unknown point type " + point.getClass());
+            LOG.severe("cannot write to " + point.getSlotPath() + ", unknown point type " + point.getClass());
         }
     }
 
@@ -506,7 +506,7 @@ class PointIO
 // attribs 
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
     private static final String LAST_WRITE = "haystackLastWrite";
 
     private final BNHaystackService service;
