@@ -7,18 +7,17 @@
 //
 package nhaystack.server;
 
-import java.util.*;
+import com.tridium.fox.sys.BFoxClientConnection;
 
-import javax.baja.control.*;
-import javax.baja.control.ext.*;
+import java.util.*;
+import java.util.logging.*;
+
 import javax.baja.driver.*;
 import javax.baja.fox.*;
-import javax.baja.history.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.security.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
+
+import com.tridium.nd.*;
 
 class FoxSessionManager
 {
@@ -38,7 +37,7 @@ class FoxSessionManager
                 fs = new FoxSession(slotPath, makeSession(station), leaseInterval);
                 fs.proxy.connect();
                 sessions.put(slotPath, fs);
-                LOG.message("opened FoxSession for " + slotPath);
+                LOG.info("opened FoxSession for " + slotPath);
             }
 
             fs.scheduleTimeout();
@@ -52,17 +51,16 @@ class FoxSessionManager
     private static BFoxProxySession makeSession(BDevice station)
     throws Exception
     {
-        throw new IllegalStateException("TODO: BPassword.getString() is deprecated");
-//        BOrd address = (BOrd) station.get("address");
-//        BHost host = (BHost) address.get();
-//
-//        BComponent clientConn = (BComponent) station.get("clientConnection");
-//        int port = clientConn.getInt(clientConn.getProperty("port"));
-//        BString username = (BString) clientConn.get("username");
-//        BPassword password = (BPassword) clientConn.get("password");
-//
-//        return BFoxProxySession.make(
-//            host, port, username.toString(), password.getString());
+        BNiagaraStation s = (BNiagaraStation) station;
+
+        BOrd address = s.getAddress();
+        BHost host = (BHost) address.get();
+
+        BFoxClientConnection clientConn = s.getClientConnection();
+        int port = clientConn.getInt(clientConn.getProperty("port"));
+        BIUserCredentials creds = clientConn.getCredentialStore().getCredentials();
+
+        return BFoxProxySession.make(host, port, false, creds);
     }
 
     /**
@@ -92,7 +90,7 @@ class FoxSessionManager
             {
                 synchronized(sessions)
                 {
-                    LOG.message("closed FoxSession for " + slotPath);
+                    LOG.info("closed FoxSession for " + slotPath);
                     proxy.disconnect();
                     sessions.remove(slotPath);
                 }
@@ -111,7 +109,7 @@ class FoxSessionManager
 // attribs
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.fox");
+    private static final Logger LOG = Logger.getLogger("nhaystack.fox");
     private final Map sessions = new HashMap();
 }
 

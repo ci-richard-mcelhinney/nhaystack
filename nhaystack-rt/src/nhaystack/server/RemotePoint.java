@@ -7,12 +7,13 @@
 //
 package nhaystack.server;
 
+import java.util.logging.*;
+
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
 import javax.baja.driver.*;
 import javax.baja.fox.*;
 import javax.baja.history.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.security.*;
 import javax.baja.sys.*;
@@ -197,7 +198,7 @@ class RemotePoint
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private static final Type NIAGARA_PROXY_EXT;
     private static final Type NIAGARA_STATION;

@@ -49,7 +49,7 @@ public class BSimpleClientTest extends BTestNg
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
-  final String URI = "https://localhost/haystack/about";
+  final String URI = "http://localhost:82/haystack/";
   HClient client;
   private BStation station;
   private TestStationHandler h;
@@ -77,29 +77,21 @@ public class BSimpleClientTest extends BTestNg
   {
     // get bad credentials
     try
-    {
-      HClient.open(URI, "baduser", "badpass").about();
-      fail();
-    }
-    catch (CallException e)
-    {
-      Assert.assertEquals(e.getClass(), CallAuthException.class);
-    }
+    {  HClient.open(URI, "baduser", "badpass").about(); fail(); }
+    catch (Exception e)
+    {  Assert.assertEquals(e.getClass(), CallNetworkException.class); }
 
     try
-    {
-      HClient.open(URI, "admin", "badpass").about();
-      fail();
-    }
+    {  HClient.open(URI, "admin", "badpass").about(); fail(); }
     catch (CallException e)
-    {
-      Assert.assertEquals(e.getClass(), CallAuthException.class);
-    }
+    {  Assert.assertEquals(e.getClass(), CallNetworkException.class); }
 
-    this.client = HClient.open(URI, "basic", "Vk3ldb237847");
+    this.client = HClient.open(URI, "basic", "Asdfg12345");
+    client.about();
 
     // create proper client
     this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    client.about();
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -109,7 +101,7 @@ public class BSimpleClientTest extends BTestNg
   @Test(enabled = true)
   void verifyAbout() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    this.client = HClient.open(URI, "basic", "Asdfg12345");
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara AX");

@@ -8,9 +8,9 @@
 package nhaystack.driver.point.learn;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.job.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.nre.util.*;
@@ -130,7 +130,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         }
         catch (Exception e)
         {
-            LOG.error("Cannot make units for " + rec);
+            LOG.severe("Cannot make units for " + rec);
             return BFacets.NULL;
         }
     }
@@ -151,7 +151,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 
     private BNHaystackServer server = null;
 }

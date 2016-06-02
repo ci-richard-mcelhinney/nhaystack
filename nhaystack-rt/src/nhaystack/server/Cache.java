@@ -8,9 +8,10 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
+
 import javax.baja.control.*;
 import javax.baja.history.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.sys.*;
@@ -47,27 +48,27 @@ class Cache
         try
         {
             long t0 = Clock.ticks();
-            LOG.message("Begin cache rebuild.");
+            LOG.info("Begin cache rebuild.");
 
-            LOG.trace("Rebuild cache: step 1 of 5..."); 
+            LOG.fine("Rebuild cache: step 1 of 5...");
             rebuildComponentCache_firstPass();
 
-            LOG.trace("Rebuild cache: step 2 of 5..."); 
+            LOG.fine("Rebuild cache: step 2 of 5...");
             rebuildComponentCache_secondPass();
 
-            LOG.trace("Rebuild cache: step 3 of 5..."); 
+            LOG.fine("Rebuild cache: step 3 of 5...");
             rebuildHistoryCache_firstPass();
 
-            LOG.trace("Rebuild cache: step 4 of 5..."); 
+            LOG.fine("Rebuild cache: step 4 of 5...");
             rebuildHistoryCache_secondPass();
             initialized = true;
 
-            LOG.trace("Rebuild cache: step 5 of 5..."); 
+            LOG.fine("Rebuild cache: step 5 of 5...");
             schedMgr.makePointEvents((BComponent[]) scheduledPoints.trim());
 
             lastRebuildTime = BAbsTime.now();
             long t1 = Clock.ticks();
-            LOG.message("End cache rebuild " + (t1-t0) + "ms.");
+            LOG.fine("End cache rebuild " + (t1-t0) + "ms.");
             lastRebuildDuration = BRelTime.make(t1-t0);
 
             stats.setNumSites(numSites);
@@ -551,7 +552,7 @@ class Cache
     static final String NOT_INITIALIZED = 
         "NHAYSTACK CACHE NOT INITIALIZED";
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private final NHServer server;
     private final ScheduleManager schedMgr;

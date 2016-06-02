@@ -7,7 +7,7 @@
 
 package nhaystack.worker;
 
-import javax.baja.log.*;
+import java.util.logging.*;
 import javax.baja.sys.*;
 
 import org.projecthaystack.client.*;
@@ -32,8 +32,8 @@ public abstract class WorkerChore implements Runnable
     public final void run()
     {
         long begin = Clock.ticks();
-        if (getLog().isTraceOn())
-            getLog().trace("Chore BEGIN " + toString());
+        if (getLogger().isLoggable(Level.FINE))
+            getLogger().fine("Chore BEGIN " + toString());
 
         try
         {
@@ -49,10 +49,10 @@ public abstract class WorkerChore implements Runnable
         }
         finally
         {
-            if (getLog().isTraceOn())
+            if (getLogger().isLoggable(Level.FINE))
             {
                 long end = Clock.ticks();
-                getLog().trace("Chore END " + toString() + " (" + (end-begin) + "ms)");
+                getLogger().fine("Chore END " + toString() + " (" + (end-begin) + "ms)");
             }
         }
     }
@@ -76,7 +76,7 @@ public abstract class WorkerChore implements Runnable
     /**
       * get the Log
       */
-    protected abstract Log getLog();
+    protected abstract Logger getLogger();
 
 ////////////////////////////////////////////////////////////////
 // attributes

@@ -8,6 +8,7 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.control.*;
 import javax.baja.control.ext.*;
@@ -15,7 +16,6 @@ import javax.baja.driver.*;
 import javax.baja.driver.point.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.sys.*;
@@ -287,7 +287,7 @@ class SpaceManager
         }
         catch (Exception e)
         {
-            LOG.error("Invalid history name: " + cfg.getId());
+            LOG.severe("Invalid history name: " + cfg.getId());
             return false;
         }
 
@@ -375,7 +375,7 @@ class SpaceManager
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     final NHServer server;
     final BNHaystackService service;

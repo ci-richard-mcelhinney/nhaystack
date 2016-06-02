@@ -7,13 +7,12 @@
 
 package nhaystack.driver.alarm;
 
-import java.util.*;
+import java.util.logging.*;
 import java.util.concurrent.*;
 
 import javax.baja.alarm.*;
 import javax.baja.alarm.ext.*;
 import javax.baja.control.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -131,8 +130,8 @@ public class BNHaystackAlarmRecipient
         {
             if (isIgnore(alarm.getUuid()))
             {
-                if (LOG.isTraceOn())
-                    LOG.trace("handleAlarm: ignoring " + alarm.getUuid());
+                if (LOG.isLoggable(Level.FINE))
+                    LOG.fine("handleAlarm: ignoring " + alarm.getUuid());
                 endIgnore(alarm.getUuid());
             }
             else
@@ -142,8 +141,8 @@ public class BNHaystackAlarmRecipient
                 BComponent ext = (BComponent) sourceOrd.get(this, null);
                 BComponent parent = (BComponent) ext.getParent();
 
-                if (LOG.isTraceOn())
-                    LOG.trace("handleAlarm: " + alarm.getUuid() + ", " + alarm + ", " + ext.getSlotPath());
+                if (LOG.isLoggable(Level.FINE))
+                    LOG.fine("handleAlarm: " + alarm.getUuid() + ", " + alarm + ", " + ext.getSlotPath());
 //dumpAlarmRecord(alarm);
 
                 // create alarm name
@@ -320,5 +319,5 @@ public class BNHaystackAlarmRecipient
 
     private static final ConcurrentHashMap ignore = new ConcurrentHashMap();
 
-    private static final Log LOG = Log.getLog("nhaystack.driverAlarm");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driverAlarm");
 }

@@ -7,10 +7,11 @@
 
 package nhaystack.driver.history;
 
+import java.util.logging.*;
+
 import javax.baja.driver.history.*;
 import javax.baja.history.*;
 import javax.baja.history.db.*;
-import javax.baja.log.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -157,8 +158,8 @@ public class BNHaystackHistoryImport extends BHistoryImport
             BHistoryDatabase db = service.getDatabase();
             BHistoryId id = getHistoryId();
 
-            if (LOG.isTraceOn())
-                LOG.trace("historyImport.doExecute begin " + id);
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine("historyImport.doExecute begin " + id);
 
             // make sure history exists
             BHistoryConfig localCfg = makeLocalConfig(createConfig());
@@ -199,8 +200,8 @@ public class BNHaystackHistoryImport extends BHistoryImport
                     }
                 }
 
-                if (LOG.isTraceOn())
-                    LOG.trace("historyImport.doExecute end " + id + ": imported " + hisItems.numRows() + " rows.");
+                if (LOG.isLoggable(Level.FINE))
+                    LOG.fine("historyImport.doExecute end " + id + ": imported " + hisItems.numRows() + " rows.");
 
             }
 
@@ -208,7 +209,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
         }
         catch (Exception e)
         {
-            LOG.trace("historyImport.doExecute fail " + id);
+            LOG.fine("historyImport.doExecute fail " + id);
             e.printStackTrace();
             executeFail(e.getMessage());
         }
@@ -287,5 +288,5 @@ public class BNHaystackHistoryImport extends BHistoryImport
 // attribs
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 }

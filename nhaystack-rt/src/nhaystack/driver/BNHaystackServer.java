@@ -8,11 +8,11 @@
 package nhaystack.driver;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.alarm.*;
 import javax.baja.driver.*;
 import javax.baja.driver.util.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.net.*;
 import javax.baja.security.*;
@@ -419,8 +419,8 @@ public class BNHaystackServer
     public void doPing() throws Exception
     {
         long begin = Clock.ticks();
-        if (LOG.isTraceOn())
-            LOG.trace(
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine(
                 "Server Ping BEGIN " + getHaystackUrl() + ", " + 
                 Thread.currentThread().getName());
 
@@ -441,10 +441,10 @@ public class BNHaystackServer
         }
         finally
         {
-            if (LOG.isTraceOn())
+            if (LOG.isLoggable(Level.FINE))
             {
                 long end = Clock.ticks();
-                LOG.trace("Server Ping END " + getHaystackUrl() + " (" + (end-begin) + "ms)");
+                LOG.fine("Server Ping END " + getHaystackUrl() + " (" + (end-begin) + "ms)");
             }
         }
     }
@@ -489,15 +489,15 @@ public class BNHaystackServer
 
         if (!getEnabled())
         {
-            if (LOG.isTraceOn())
-                LOG.trace(getHaystackUrl() + " server disabled: " + chore);
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine(getHaystackUrl() + " server disabled: " + chore);
             return null;
         }
 
         if (getNetwork().isDisabled())
         {
-            if (LOG.isTraceOn())
-                LOG.trace(getHaystackUrl() + " network disabled: " + chore);
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine(getHaystackUrl() + " network disabled: " + chore);
             return null;
         }
 
@@ -508,12 +508,12 @@ public class BNHaystackServer
         catch (QueueFullException e)
         {
             e.printStackTrace();
-            LOG.error(getHaystackUrl() + " Cannot enqueue chore " + chore + ": QueueFullException");
+            LOG.severe(getHaystackUrl() + " Cannot enqueue chore " + chore + ": QueueFullException");
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            LOG.error(getHaystackUrl() + " Cannot enqueue chore " + chore + ": " + e.getMessage());
+            LOG.severe(getHaystackUrl() + " Cannot enqueue chore " + chore + ": " + e.getMessage());
         }
         return null;
     }
@@ -606,7 +606,7 @@ public class BNHaystackServer
       */
     public synchronized void handleNetworkException(WorkerChore chore, CallNetworkException e)
     {
-        LOG.error("Network Exception! " + chore + ", " + e.getMessage());
+        LOG.severe("Network Exception! " + chore + ", " + e.getMessage());
         e.printStackTrace();
 
         resetClient();
@@ -632,15 +632,15 @@ public class BNHaystackServer
             hwatch = null;
         }
 
-        if (isRunning() && LOG.isTraceOn())
-            LOG.trace(getHaystackUrl() + " reset client");
+        if (isRunning() && LOG.isLoggable(Level.FINE))
+            LOG.fine(getHaystackUrl() + " reset client");
     }
 
 ////////////////////////////////////////////////////////////////
 // attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 
     private HClient hclient;
     private HWatch hwatch;

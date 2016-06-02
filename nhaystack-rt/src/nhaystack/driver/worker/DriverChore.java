@@ -7,7 +7,7 @@
 
 package nhaystack.driver.worker;
 
-import javax.baja.log.*;
+import java.util.logging.*;
 
 import nhaystack.worker.*;
 
@@ -24,7 +24,7 @@ public abstract class DriverChore extends WorkerChore
     /**
       * Get the Log
       */
-    protected final Log getLog() { return LOG; }
+    protected final Logger getLogger() { return LOG; }
 
-    private static final Log LOG = Log.getLog("nhaystack.driver");
+    private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 }

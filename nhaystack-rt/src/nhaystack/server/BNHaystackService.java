@@ -10,10 +10,10 @@ package nhaystack.server;
 
 import java.io.*;
 import java.net.*;
+import java.util.logging.*;
 
 import javax.baja.driver.*;
 import javax.baja.history.db.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -569,13 +569,13 @@ public class BNHaystackService
 
     public void serviceStarted() throws Exception 
     { 
-        LOG.message("NHaystack Service started");
+        LOG.info("NHaystack Service started");
         this.server = createServer();
     }
 
     public void serviceStopped()
     { 
-        LOG.message("NHaystack Service stopped");
+        LOG.info("NHaystack Service stopped");
     }
 
     public void atSteadyState() throws Exception
@@ -590,7 +590,7 @@ public class BNHaystackService
         // wait for a while, so field bus can initialize, etc
         else
         {
-            LOG.message("Delaying NHaystack initialization for " + initDelay);
+            LOG.info("Delaying NHaystack initialization for " + initDelay);
             Clock.schedule(this, initDelay, initializeHaystack, null);
         }
     }
@@ -683,8 +683,8 @@ public class BNHaystackService
 
         if (!getEnabled())
         {
-            if (LOG.isTraceOn())
-                LOG.trace(getSlotPath() + " disabled: " + chore);
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine(getSlotPath() + " disabled: " + chore);
             return null;
         }
 
@@ -695,20 +695,20 @@ public class BNHaystackService
         }
         catch (Exception e)
         {
-            LOG.error(getSlotPath() + " Cannot post async: " + e.getMessage());
+            LOG.severe(getSlotPath() + " Cannot post async: " + e.getMessage());
             return null;
         }
     }
 
     public void doInitializeHaystack() 
     {
-        LOG.message("Begin initializing NHaystack");
+        LOG.info("Begin initializing NHaystack");
 
         getHaystackServer().getCache().rebuild(getStats());
         getServlet().enableWithMessage(true);
         setInitialized(true);
 
-        LOG.message("End initializing NHaystack");
+        LOG.info("End initializing NHaystack");
     }
 
     public BOrd doRebuildCache() 
@@ -784,7 +784,7 @@ public class BNHaystackService
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");

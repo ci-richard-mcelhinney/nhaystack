@@ -8,9 +8,9 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.control.*;
-import javax.baja.log.*;
 import javax.baja.schedule.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -82,8 +82,8 @@ class NHWatch extends HWatch
             "Watch " + watchId + " is closed.");
 
         long ticks = Clock.ticks();
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.sub begin " + watchId + ", length " + ids.length);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.sub begin " + watchId + ", length " + ids.length);
 
         lastPoll = System.currentTimeMillis();
         scheduleLeaseTimeout();
@@ -110,7 +110,7 @@ class NHWatch extends HWatch
                 //
                 if ((comp == null) || !((comp instanceof BControlPoint) || (comp instanceof BWeeklySchedule)))
                 {
-                    if (LOG.isTraceOn())
+                    if (LOG.isLoggable(Level.WARNING))
                         LOG.warning("NHWatch.sub " + watchId + " cannot subscribe to " + id);
 
                     response.add(null);
@@ -136,8 +136,8 @@ class NHWatch extends HWatch
 
         HGrid grid = HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
 
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.sub end   " + watchId + ", length " + ids.length + ", " +
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.sub end   " + watchId + ", length " + ids.length + ", " +
                 (Clock.ticks()-ticks) + "ms.");
 
         return grid;
@@ -152,8 +152,8 @@ class NHWatch extends HWatch
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
 
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.unsub " + watchId + ", length " + ids.length);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.unsub " + watchId + ", length " + ids.length);
 
         scheduleLeaseTimeout();
 
@@ -165,8 +165,8 @@ class NHWatch extends HWatch
             BComponent comp = server.getTagManager().lookupComponent(id);
             if ((comp != null) && allSubscribed.containsKey(comp))
             {
-                if (LOG.isTraceOn())
-                    LOG.trace("NHWatch.unsub " + watchId + " unsubscribe " + id);
+                if (LOG.isLoggable(Level.FINE))
+                    LOG.fine("NHWatch.unsub " + watchId + " unsubscribe " + id);
 
                 pointArr.add(comp);
                 allSubscribed.remove(comp);
@@ -188,8 +188,8 @@ class NHWatch extends HWatch
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
 
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.pollChanges begin " + watchId);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.pollChanges begin " + watchId);
 
         lastPoll = System.currentTimeMillis();
         scheduleLeaseTimeout();
@@ -204,8 +204,8 @@ class NHWatch extends HWatch
         nextPoll.clear();
 
         // done
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.pollChanges end   " + watchId + ", size " + response.size());
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.pollChanges end   " + watchId + ", size " + response.size());
         return HGridBuilder.dictsToGrid((HDict[]) response.trim());
     }
 
@@ -218,8 +218,8 @@ class NHWatch extends HWatch
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
 
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.pollRefresh begin " + watchId);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.pollRefresh begin " + watchId);
 
         lastPoll = System.currentTimeMillis();
         scheduleLeaseTimeout();
@@ -241,8 +241,8 @@ class NHWatch extends HWatch
         nextPoll.clear();
 
         // done
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.pollRefresh end   " + watchId + ", size " + response.size());
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.pollRefresh end   " + watchId + ", size " + response.size());
 
         return HGridBuilder.dictsToGrid((HDict[]) response.trim());
     }
@@ -255,8 +255,8 @@ class NHWatch extends HWatch
         if (!open) throw new BajaRuntimeException(
             "Watch " + watchId + " is closed.");
 
-        if (LOG.isTraceOn())
-            LOG.trace("NHWatch.close " + watchId);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("NHWatch.close " + watchId);
 
         if (timeout != null) timeout.cancel();
         open = false;
@@ -345,7 +345,7 @@ class NHWatch extends HWatch
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack.watch");
+    private static final Logger LOG = Logger.getLogger("nhaystack.watch");
 
     private final NHServer server;
     private final String dis;

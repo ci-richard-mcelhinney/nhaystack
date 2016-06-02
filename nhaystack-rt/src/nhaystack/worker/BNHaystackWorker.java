@@ -7,7 +7,8 @@
 
 package nhaystack.worker;
 
-import javax.baja.log.*;
+import java.util.logging.*;
+
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
@@ -143,27 +144,27 @@ public class BNHaystackWorker
           throw new NotRunningException();
 
         BStatus status = getWorkerParent().getStatus();
-        Log log = chore.getLog();
+        Logger log = chore.getLogger();
 
         if (status.isDisabled() || status.isFault())
         {
-            if (log.isTraceOn()) 
-                log.trace("Chore IGNORE " + chore + " -- " + status);
+            if (log.isLoggable(Level.FINE))
+                log.fine("Chore IGNORE " + chore + " -- " + status);
             return;
         }
 
         // if we are 'down', then all chores except pings will be ignored
         if (status.isDown() && !chore.isPing())
         {
-            if (log.isTraceOn()) 
-                log.trace("Chore IGNORE " + chore + " -- " + status);
+            if (log.isLoggable(Level.FINE))
+                log.fine("Chore IGNORE " + chore + " -- " + status);
             return;
         }
 
         if (queue.size() == 0)
         {
-            if (log.isTraceOn()) 
-                log.trace("Chore ENQUEUE " + chore);
+            if (log.isLoggable(Level.FINE))
+                log.fine("Chore ENQUEUE " + chore);
             queue.enqueue(chore);
         }
         else
@@ -175,14 +176,14 @@ public class BNHaystackWorker
             if (tail != null && tail.merge(chore))
             {
                 // merge succeeded
-                if (log.isTraceOn()) 
-                    log.trace("Chore MERGE " + chore);
+                if (log.isLoggable(Level.FINE))
+                    log.fine("Chore MERGE " + chore);
             }
             // else the merge did not happen, so enqueue the chore
             else
             {
-                if (log.isTraceOn()) 
-                    log.trace("Chore ENQUEUE " + chore);
+                if (log.isLoggable(Level.FINE))
+                    log.fine("Chore ENQUEUE " + chore);
                 queue.enqueue(chore);
             }
         }

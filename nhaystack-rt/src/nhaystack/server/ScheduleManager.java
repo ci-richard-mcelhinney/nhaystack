@@ -10,10 +10,11 @@ package nhaystack.server;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.*;
+
 import javax.baja.control.*;
 import javax.baja.history.*;
 import javax.baja.history.ext.*;
-import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.status.*;
@@ -332,8 +333,8 @@ class ScheduleManager
                     item.ts.millis(), 
                     TypeUtil.toBajaTimeZone(item.ts.tz));
 
-                if (LOG.isTraceOn())
-                    LOG.trace("Scheduling a ticket at " + item.ts + " for " + id);
+                if (LOG.isLoggable(Level.FINE))
+                    LOG.fine("Scheduling a ticket at " + item.ts + " for " + id);
 
                 ticketById.put(
                     id, 
@@ -412,7 +413,7 @@ class ScheduleManager
 
     private static final long MILLIS_IN_WEEK = BRelTime.MILLIS_IN_DAY * 7;
 
-    private static final Log LOG = Log.getLog("nhaystack");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private final NHServer server;
     private final BNHaystackService service;

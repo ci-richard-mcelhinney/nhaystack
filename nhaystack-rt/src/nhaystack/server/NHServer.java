@@ -9,6 +9,7 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.logging.*;
 
 import javax.baja.collection.*;
 import javax.baja.control.*;
@@ -74,8 +75,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onAbout");
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onAbout");
 
         try
         {
@@ -107,14 +108,14 @@ public class NHServer extends HServer
 
         try
         {
-            if (LOG.isTraceOn())
-                LOG.trace("onReadAll begin filter:\"" + filter + "\", limit:" + limit);
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine("onReadAll begin filter:\"" + filter + "\", limit:" + limit);
 
             long ticks = Clock.ticks();
             HGrid grid = super.onReadAll(filter, limit);
 
-            if (LOG.isTraceOn())
-                LOG.trace("onReadAll end   filter:\"" + filter + "\", limit:" + limit + ", " + (Clock.ticks()-ticks) + "ms.");
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine("onReadAll end   filter:\"" + filter + "\", limit:" + limit + ", " + (Clock.ticks()-ticks) + "ms.");
 
             return grid;
         }
@@ -159,8 +160,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onReadById " + id);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onReadById " + id);
 
         try
         {
@@ -183,8 +184,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onNav " + navId);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onNav " + navId);
 
         try
         {
@@ -205,8 +206,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG_WATCH.isTraceOn())
-            LOG_WATCH.trace("onWatchOpen " + dis);
+        if (LOG_WATCH.isLoggable(Level.FINE))
+            LOG_WATCH.fine("onWatchOpen " + dis);
 
         try
         {
@@ -236,8 +237,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG_WATCH.isTraceOn())
-            LOG_WATCH.trace("onWatches");
+        if (LOG_WATCH.isLoggable(Level.FINE))
+            LOG_WATCH.fine("onWatches");
 
         try
         {
@@ -258,8 +259,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG_WATCH.isTraceOn())
-            LOG_WATCH.trace("onWatch " + id);
+        if (LOG_WATCH.isLoggable(Level.FINE))
+            LOG_WATCH.fine("onWatch " + id);
 
         try
         {
@@ -298,8 +299,8 @@ public class NHServer extends HServer
         if (!cache.initialized())
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onHisRead " + rec.id() + ", " + range);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onHisRead " + rec.id() + ", " + range);
 
         try
         {
@@ -315,8 +316,8 @@ public class NHServer extends HServer
 
             BAbsTime rangeStart = BAbsTime.make(range.start.millis(), cfg.getTimeZone());
             BAbsTime rangeEnd = BAbsTime.make(range.end.millis(), cfg.getTimeZone());
-            LOG.trace("Start range: " + rangeStart.encodeToString());
-            LOG.trace("End range:   " + rangeEnd.encodeToString());
+            LOG.fine("Start range: " + rangeStart.encodeToString());
+            LOG.fine("End range:   " + rangeEnd.encodeToString());
 
             // NOTE: be careful, timeQuery() is inclusive of both start and end
             try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
@@ -387,12 +388,12 @@ public class NHServer extends HServer
                 }
 
                 HHisItem[] items = (HHisItem[]) arr.trim();
-                LOG.trace("Found " + recCounter + " items...");
-                LOG.trace("Start range check, is the found item (" + items[0].ts.millis() + ") after the queried item (" + range.start.millis() + ")?");
+                LOG.fine("Found " + recCounter + " items...");
+                LOG.fine("Start range check, is the found item (" + items[0].ts.millis() + ") after the queried item (" + range.start.millis() + ")?");
                 if (range.start.millis() < items[0].ts.millis())
-                    LOG.trace("Start range check passed!");
+                    LOG.fine("Start range check passed!");
                 else
-                    LOG.trace("Start range check failed...");
+                    LOG.fine("Start range check failed...");
 
                 // done
                 return items;
@@ -412,8 +413,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onHisWrite " + rec.id());
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onHisWrite " + rec.id());
 
         BHistoryConfig cfg = tagMgr.lookupHistoryConfig(rec.id());
 
@@ -442,8 +443,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onInvokeAction " + rec.id() + ", " + actionName + ", " + args);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onInvokeAction " + rec.id() + ", " + actionName + ", " + args);
 
         try
         {
@@ -503,8 +504,8 @@ public class NHServer extends HServer
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn())
-            LOG.trace("onNavReadByUri " + uri);
+        if (LOG.isLoggable(Level.FINE))
+            LOG.fine("onNavReadByUri " + uri);
 
         if (!uri.val.startsWith("sep:/")) return null;
         String str = uri.val.substring("sep:/".length());
@@ -580,7 +581,7 @@ public class NHServer extends HServer
             }
 
             // cannot create timezone tag
-            LOG.error("Cannot create tz tag: " + e.getMessage());
+            LOG.severe("Cannot create tz tag: " + e.getMessage());
             return null;
         }
     }
@@ -602,7 +603,7 @@ public class NHServer extends HServer
 //        if (!cache.initialized()) 
 //            throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
-        if (LOG.isTraceOn()) LOG.trace("BEGIN removeBrokenRefs"); 
+        if (LOG.isLoggable(Level.FINE)) LOG.fine("BEGIN removeBrokenRefs"); 
 
         Iterator compItr = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(service, null).get());
@@ -664,7 +665,7 @@ public class NHServer extends HServer
             }
         }
 
-        if (LOG.isTraceOn()) LOG.trace("END removeBrokenRefs"); 
+        if (LOG.isLoggable(Level.FINE)) LOG.fine("END removeBrokenRefs"); 
     }
 
 ////////////////////////////////////////////////////////////////
@@ -734,8 +735,8 @@ public class NHServer extends HServer
 // Attributes 
 ////////////////////////////////////////////////////////////////
 
-    private static final Log LOG = Log.getLog("nhaystack");
-    private static final Log LOG_WATCH = Log.getLog("nhaystack.watch");
+    private static final Logger LOG = Logger.getLogger("nhaystack");
+    private static final Logger LOG_WATCH = Logger.getLogger("nhaystack.watch");
 
     private static final String LAST_WRITE = "haystackLastWrite";
 

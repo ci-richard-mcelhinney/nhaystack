@@ -32,6 +32,7 @@ dependencies {
   compile "Tridium:gx-rt:4.0.22"
   compile "Tridium:history-rt:4.0.22"
   compile "Tridium:net-rt:4.0.22"
+  compile "Tridium:niagaraDriver-rt:4.0.22"
   compile "Tridium:schedule-rt:4.0.22"
   compile "Tridium:web-rt:4.0.22"
 
