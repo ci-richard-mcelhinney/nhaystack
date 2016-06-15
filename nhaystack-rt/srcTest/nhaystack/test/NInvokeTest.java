@@ -156,6 +156,6 @@ public class NInvokeTest extends NTest
 
     public static void main(String[] args)
     {
-        runTests(new String[] { "nhaystack.test.NInvokeTest", }, null);
+//        runTests(new String[] { "nhaystack.test.NInvokeTest", }, null);
     }
 }
