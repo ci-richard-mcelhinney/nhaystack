@@ -52,10 +52,7 @@ public class BHDictEditorGroup extends BScrollPane
     this.comp = comp;
     this.session = (BFoxProxySession) comp.getSession();
 
-    System.out.println("fetching tags from server");
     HDict all = fetchTagsFromServer();
-    System.out.println(all.toString() + "\n\n");
-
 
     Map defaultEssentials = (comp instanceof BHTagged) ?
             asTagMap(((BHTagged) comp).getDefaultEssentials()) :
@@ -178,7 +175,6 @@ public class BHDictEditorGroup extends BScrollPane
         {
             NHRef ref = TagManager.makeSlotPathRef(comp);
             BHRef id = BHRef.make(ref.getHRef());
-            System.out.println("@@@@ " + id.encodeToString());
             return ((BHDict) service.invoke(BNHaystackService.readById, id)).getDict();
         }
         catch (Exception e)
