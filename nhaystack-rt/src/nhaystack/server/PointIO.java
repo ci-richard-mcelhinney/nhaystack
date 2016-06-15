@@ -143,11 +143,39 @@ class PointIO
         try
         {
             HVal[] vals = new HVal[17];
+            BControlPoint working;
+            BControlPoint remote;
+
+            // check to see if point is remote
+            RemotePoint rp = RemotePoint.fromControlPoint(point);
+            if (rp == null)
+            {
+                LOG.severe(point.getSlotPath() + " is not remote, assuming point is local to this station");
+                working = point;
+            }
+            else
+            {
+                // look up fox session
+                long millis = service.getFoxLeaseInterval().getMillis();
+                BFoxProxySession session = foxSessionMgr.getSession(
+                        RemotePoint.findParentDevice(point), millis);
+
+                // resolve remote point
+                remote = (BControlPoint)
+                        BOrd.make("station:|" + rp.getSlotPath()).get(session);
+                remote.lease(1, millis);
+                if (!(remote instanceof BIWritablePoint))
+                {
+                    LOG.severe("cannot write to " + remote.getSlotPath() + ", it is not writable.");
+                    throw new IllegalStateException("point is not writable: " + remote.getSlotPath().toString());
+                }
+                working = remote;
+            }
 
             // Numeric
-            if (point instanceof BNumericWritable)
+            if (working instanceof BNumericWritable)
             {
-                BNumericWritable nw = (BNumericWritable) point;
+                BNumericWritable nw = (BNumericWritable) working;
                 for (int i = 0; i < 16; i++)
                 {
                     BStatusNumeric sn = (BStatusNumeric) nw.get("in" + (i+1));
@@ -159,9 +187,9 @@ class PointIO
                     vals[16] = HNum.make(sn.getValue());
             }
             // Boolean
-            else if (point instanceof BBooleanWritable)
+            else if (working instanceof BBooleanWritable)
             {
-                BBooleanWritable bw = (BBooleanWritable) point;
+                BBooleanWritable bw = (BBooleanWritable) working;
                 for (int i = 0; i < 16; i++)
                 {
                     BStatusBoolean sb = (BStatusBoolean) bw.get("in" + (i+1));
@@ -173,9 +201,9 @@ class PointIO
                     vals[16] = HBool.make(sb.getValue());
             }
             // Enum
-            else if (point instanceof BEnumWritable)
+            else if (working instanceof BEnumWritable)
             {
-                BEnumWritable ew = (BEnumWritable) point;
+                BEnumWritable ew = (BEnumWritable) working;
                 for (int i = 0; i < 16; i++)
                 {
                     BStatusEnum se = (BStatusEnum) ew.get("in" + (i+1));
@@ -191,9 +219,9 @@ class PointIO
                         service.getTranslateEnums()));
             }
             // String
-            else if (point instanceof BStringWritable)
+            else if (working instanceof BStringWritable)
             {
-                BStringWritable sw = (BStringWritable) point;
+                BStringWritable sw = (BStringWritable) working;
                 for (int i = 0; i < 16; i++)
                 {
                     BStatusString s = (BStatusString) sw.get("in" + (i+1));
@@ -206,7 +234,7 @@ class PointIO
             }
             else
             {
-                throw new IllegalStateException("unknown type: " + point.getType());
+                throw new IllegalStateException("unknown type: " + working.getType());
             }
 
             //////////////////////////////////////////////
@@ -218,7 +246,7 @@ class PointIO
             //   - val: current value at level or null
             //   - who: who last controlled the value at this level
 
-            String[] who = getLinkWho(point);
+            String[] who = getLinkWho(working);
             HDict[] result = new HDict[17];
             for (int i = 0; i < 17; i++)
             {
@@ -236,10 +264,10 @@ class PointIO
             }
             return HGridBuilder.dictsToGrid(result);
         }
-        catch (RuntimeException e)
+        catch (Exception e)
         {
             e.printStackTrace();
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
