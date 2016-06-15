@@ -53,4 +53,63 @@ allprojects {
     }
 }
 
-println "@@@@ Finished main build.gradle! "
+
+
+///////////////////////////////////////////////////////////////////////////
+// Download tags from www.project-haystack.org
+///////////////////////////////////////////////////////////////////////////
+
+def srcList = [
+  'http://project-haystack.org/download/equip-points/ahu',
+  'http://project-haystack.org/download/equip-points/chiller',
+  'http://project-haystack.org/download/equip-points/chillerPlant',
+  'http://project-haystack.org/download/equip-points/coolingTower',
+  'http://project-haystack.org/download/equip-points/elecMeter',
+  'http://project-haystack.org/download/equip-points/vav',
+  'http://project-haystack.org/download/equip-points/heatExchanger']
+
+def targetList = [
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/chiller.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/chillerPlant.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/coolingTower.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/elecMeter.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/vav.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt')]
+
+task downloadTags (type: FilesDownload) {
+  group 'nhaystack'
+  srcs = srcList
+  targets = targetList
+}
+
+
+def resList = [
+  'http://project-haystack.org/download/tags.csv',
+  'http://project-haystack.org/download/tz.txt',
+  'http://project-haystack.org/download/units.txt']
+
+def resTargetList = [
+  new File('nhaystack-rt/src/nhaystack/res/tags.csv'),
+  new File('nhaystack-rt/src/nhaystack/res/tz.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/units.txt')]
+
+task downloadResources (type: FilesDownload) {
+  group 'nhaystack'
+  srcs = resList
+  targets = resTargetList
+}
+
+class FilesDownload extends DefaultTask {
+
+  List<String> srcs
+  List<File>   targets
+
+  @TaskAction
+  void download() {
+    srcs.eachWithIndex { src, index ->
+      println "Downloading ${src} to ${targets[index].toString()}"
+      ant.get(src: src, dest: targets[index])
+    }
+  }
+}
