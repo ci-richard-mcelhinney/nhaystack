@@ -47,14 +47,6 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
   }
 }
 
-allprojects {
-    afterEvaluate { project ->
-        println project.name
-    }
-}
-
-
-
 ///////////////////////////////////////////////////////////////////////////
 // Download tags from www.project-haystack.org
 ///////////////////////////////////////////////////////////////////////////

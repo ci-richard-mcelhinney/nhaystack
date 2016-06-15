@@ -27,5 +27,3 @@ dependencies {
   compile "Project Haystack:nhaystack-rt:1.2.7"
   
 }
-
-println "#### Finished nhaystack-wb! "
