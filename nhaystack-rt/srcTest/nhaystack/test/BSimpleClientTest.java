@@ -9,20 +9,16 @@ package nhaystack.test;
 
 
 import com.tridium.testng.BTestNg;
-import nhaystack.server.BNHaystackService;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
+import org.projecthaystack.auth.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.testng.*;
 
-import javax.baja.naming.BOrd;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.*;
-import javax.baja.test.BTest;
-import javax.baja.util.BServiceContainer;
-
 
 /**
  * BSimpleClientTest -- this test uses nhaystack_simple
@@ -39,7 +35,7 @@ public class BSimpleClientTest extends BTestNg
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
+//  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BSimpleClientTest.class);
 
@@ -51,8 +47,8 @@ public class BSimpleClientTest extends BTestNg
 
   final String URI = "http://localhost:82/haystack/";
   HClient client;
-  private BStation station;
-  private TestStationHandler h;
+//  private BStation station;
+//  private TestStationHandler h;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,21 +73,26 @@ public class BSimpleClientTest extends BTestNg
   {
     // get bad credentials
     try
-    {  HClient.open(URI, "baduser", "badpass").about(); fail(); }
+    {  HClient.open(URI, "baduser", "badpass").about(); Assert.fail(); }
     catch (Exception e)
-    {  Assert.assertEquals(e.getClass(), CallNetworkException.class); }
+    {  Assert.assertEquals(e.getClass(), AuthException.class); }
 
     try
-    {  HClient.open(URI, "admin", "badpass").about(); fail(); }
+    {  HClient.open(URI, "admin", "badpass").about(); Assert.fail(); }
     catch (CallException e)
-    {  Assert.assertEquals(e.getClass(), CallNetworkException.class); }
+    {  Assert.assertEquals(e.getClass(), AuthException.class); }
 
-    this.client = HClient.open(URI, "basic", "Asdfg12345");
-    client.about();
+    try
+    {
+      this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+      client.about();
+    }
+    catch(Exception e)
+    {  e.printStackTrace(); Assert.fail(); }
 
     // create proper client
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-    client.about();
+//    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+//    client.about();
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -101,7 +102,7 @@ public class BSimpleClientTest extends BTestNg
   @Test(enabled = true)
   void verifyAbout() throws Exception
   {
-    this.client = HClient.open(URI, "basic", "Asdfg12345");
+    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara AX");
@@ -120,8 +121,8 @@ public class BSimpleClientTest extends BTestNg
     HGrid g = client.ops();
 
     // verify required columns
-    verify(g.col("name") != null);
-    verify(g.col("summary") != null);
+    Assert.assertTrue(g.col("name") != null);
+    Assert.assertTrue(g.col("summary") != null);
 
     // verify required ops
     verifyGridContains(g, "name", HStr.make("about"));
@@ -149,9 +150,9 @@ public class BSimpleClientTest extends BTestNg
     HGrid g = client.formats();
 
     // verify required columns
-    verify(g.col("mime") != null);
-    verify(g.col("read") != null);
-    verify(g.col("write") != null);
+    Assert.assertTrue(g.col("mime") != null);
+    Assert.assertTrue(g.col("read") != null);
+    Assert.assertTrue(g.col("write") != null);
 
     // verify required ops
     verifyGridContains(g, "mime", HStr.make("text/plain"));
@@ -169,44 +170,44 @@ public class BSimpleClientTest extends BTestNg
     this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid grid = client.readAll("id");
 
-    verifyEq(grid.numRows(), 18);
-    verifyEq(grid.row(0).id(), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(1).id(), HRef.make("S.Winterfell.Equip1.point1"));
-    verifyEq(grid.row(2).id(), HRef.make("S.Winterfell.Equip1.point2"));
-    verifyEq(grid.row(3).id(), HRef.make("S.Winterfell.Equip1.point3"));
-    verifyEq(grid.row(4).id(), HRef.make("S.Winterfell.Equip1.point4"));
-    verifyEq(grid.row(5).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
-    verifyEq(grid.row(6).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
-    verifyEq(grid.row(7).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
-    verifyEq(grid.row(8).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
-    verifyEq(grid.row(9).id(), HRef.make("S.Winterfell.Equip1"));
-    verifyEq(grid.row(10).id(), HRef.make("S.Winterfell.Equip1.point5"));
-    verifyEq(grid.row(11).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
-    verifyEq(grid.row(12).id(), HRef.make("S.Winterfell.Equip2.SineWave3"));
-    verifyEq(grid.row(13).id(), HRef.make("S.Winterfell.Equip2"));
-    verifyEq(grid.row(14).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
-    verifyEq(grid.row(15).id(), HRef.make("C.SineWave5"));
-    verifyEq(grid.row(16).id(), HRef.make("H.nhaystack1.AuditHistory"));
-    verifyEq(grid.row(17).id(), HRef.make("H.nhaystack1.LogHistory"));
+    Assert.assertEquals(grid.numRows(), 18);
+    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.Equip1.point1"));
+    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.Equip1.point2"));
+    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.Equip1.point3"));
+    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.Equip1.point4"));
+    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
+    Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
+    Assert.assertEquals(grid.row(7).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
+    Assert.assertEquals(grid.row(8).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
+    Assert.assertEquals(grid.row(9).id(), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(10).id(), HRef.make("S.Winterfell.Equip1.point5"));
+    Assert.assertEquals(grid.row(11).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
+    Assert.assertEquals(grid.row(12).id(), HRef.make("S.Winterfell.Equip2.SineWave3"));
+    Assert.assertEquals(grid.row(13).id(), HRef.make("S.Winterfell.Equip2"));
+    Assert.assertEquals(grid.row(14).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
+    Assert.assertEquals(grid.row(15).id(), HRef.make("C.SineWave5"));
+    Assert.assertEquals(grid.row(16).id(), HRef.make("H.nhaystack1.AuditHistory"));
+    Assert.assertEquals(grid.row(17).id(), HRef.make("H.nhaystack1.LogHistory"));
 
-    verifyEq(grid.row(1).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(2).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(3).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(4).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(5).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(6).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(7).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(8).get("siteRef"), HRef.make("S.Winterfell"));
-    verifyEq(grid.row(9).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(1).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(2).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(3).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(4).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(5).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(6).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(7).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(8).get("siteRef"), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(9).get("siteRef"), HRef.make("S.Winterfell"));
 
     // TODO add check for equipRef to Equip2
-    verifyEq(grid.row(1).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    verifyEq(grid.row(2).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    verifyEq(grid.row(3).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    verifyEq(grid.row(4).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    verifyEq(grid.row(6).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    verifyEq(grid.row(7).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-//    verifyEq(grid.row(9).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(1).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(2).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(3).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(4).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(6).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(7).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+//    Assert.assertEquals(grid.row(9).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
 
 //        for (int i = 0; i < grid.numRows(); i++)
 //        {
@@ -218,45 +219,45 @@ public class BSimpleClientTest extends BTestNg
 //        //////////////////////////////////////////
 //
 //    HDict dict = client.readById(HRef.make("C.Foo.SineWave1"));
-//    verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
+//    Assert.assertEquals(dict.get("axType"), HStr.make("kitControl:SineWave"));
 //    verify(dict.has("foo"));
 //    verify(dict.has("bar"));
-//    verifyEq(dict.get("kind"), HStr.make("Number"));
+//    Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 //    verify(dict.has("his"));
-//    verifyEq(dict.get("hisInterpolate"), HStr.make("cov"));
-//    verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave1"));
-//    verifyEq(dict.get("unit"), HStr.make("\\uxxB0" + "F"));
+//    Assert.assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
+//    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave1"));
+//    Assert.assertEquals(dict.get("unit"), HStr.make("\\uxxB0" + "F"));
 //    verify(dict.has("point"));
-//    verifyEq(dict.get("tz"), localTz());
+//    Assert.assertEquals(dict.get("tz"), localTz());
 //    verify(dict.has("cur"));
 //    double curVal = dict.getDouble("curVal");
-//    verifyEq(dict.get("curStatus"), HStr.make("ok"));
+//    Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
 //    verify(curVal >= 0.0 && curVal <= 100.0);
 //
-//    verifyEq(dict.get("dis"), HStr.make("Foo_SineWave1"));
-//    verifyEq(dict.get("navName"), HStr.make("Foo_SineWave1"));
-//    verifyEq(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
+//    Assert.assertEquals(dict.get("dis"), HStr.make("Foo_SineWave1"));
+//    Assert.assertEquals(dict.get("navName"), HStr.make("Foo_SineWave1"));
+//    Assert.assertEquals(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
 //
 //        //////////////////////////////////////////
 //
 //        dict = client.readById(HRef.make("C.Foo.Sine-Wave2~2fabc"));
-//        verifyEq(dict.get("axType"), HStr.make("kitControl:SineWave"));
+//        Assert.assertEquals(dict.get("axType"), HStr.make("kitControl:SineWave"));
 //        verify(dict.missing("foo"));
 //        verify(dict.missing("bar"));
-//        verifyEq(dict.get("kind"), HStr.make("Number"));
+//        Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 //        verify(dict.has("his"));
-//        verifyEq(dict.get("curStatus"), HStr.make("ok"));
+//        Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
 //        verify(dict.has("hisInterpolate"));
-//        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Foo/Sine$20Wave2$2fabc"));
-//        verifyEq(dict.get("unit"), HStr.make("psi"));
+//        Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Foo/Sine$20Wave2$2fabc"));
+//        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
 //        verify(dict.has("point"));
 //        verify(dict.has("tz"));
 //        verify(dict.has("cur"));
 //        curVal = dict.getDouble("curVal");
 //        verify(curVal >= 0.0 && curVal <= 100.0);
 //
-//        verifyEq(dict.get("dis"), HStr.make("Sine-Wave2~2fabc"));
-//        verifyEq(dict.get("navName"), HStr.make("Sine-Wave2~2fabc"));
+//        Assert.assertEquals(dict.get("dis"), HStr.make("Sine-Wave2~2fabc"));
+//        Assert.assertEquals(dict.get("navName"), HStr.make("Sine-Wave2~2fabc"));
 //        verify(dict.missing("navNameFormat"));
 //
 //        //////////////////////////////////////////
@@ -267,40 +268,40 @@ public class BSimpleClientTest extends BTestNg
 
 //    dict = client.readById(HRef.make("H.nhaystack1.AuditHistory"));
 //    System.out.println(dict.toString());
-//    verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+//    Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
 //    verify(dict.missing("kind"));
 //    verify(dict.has("his"));
 //    verify(dict.missing("cur"));
 //    verify(dict.missing("curStatus"));
 //    verify(dict.missing("curVal"));
-//    verifyEq(dict.get("tz"), localTz());
-//    verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack1/AuditHistory"));
+//    Assert.assertEquals(dict.get("tz"), localTz());
+//    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack1/AuditHistory"));
 //    verify(dict.missing("hisInterpolate"));
 //    verify(dict.missing("unit"));
 
 //        dict = client.readById(HRef.make("H.nhaystack_simple.LogHistory"));
-//        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
+//        Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
 //        verify(dict.missing("kind"));
 //        verify(dict.has("his"));
 //        verify(dict.missing("cur"));
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
-//        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
+//        Assert.assertEquals(dict.get("tz"), localTz());
+//        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
 //        verify(dict.missing("hisInterpolate"));
 //        verify(dict.missing("unit"));
 //
 //        //        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave3"));
-//        //        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//        //        verifyEq(dict.get("kind"), HStr.make("Number"));
+//        //        Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
+//        //        Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 //        //        verify(dict.has("his"));
 //        //        verify(dict.missing("cur"));
 //        //        verify(dict.missing("curStatus"));
 //        //        verify(dict.missing("curVal"));
-//        //        verifyEq(dict.get("tz"), localTz());
-//        //        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
+//        //        Assert.assertEquals(dict.get("tz"), localTz());
+//        //        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
 //        //        verify(dict.missing("hisInterpolate"));
-//        //        verifyEq(dict.get("unit"), HStr.make("psi"));
+//        //        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
 //
 //        try { client.readById(HRef.make("c.Mg~~")); } catch(Exception e) { verifyException(e); }
   }
@@ -388,39 +389,39 @@ public class BSimpleClientTest extends BTestNg
 ////            [---] 'Richmond AHU3 NumericWritable1'
 //
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
-//        verifyEq(grid.numRows(), 1);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Richmond"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond"));
+//        Assert.assertEquals(grid.numRows(), 1);
+//        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Richmond"));
+//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond"));
 //
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond")));
-//        verifyEq(grid.numRows(), 3);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU1"));
-//        verifyEq(grid.row(1).get("navId"), HStr.make("sep:/Richmond/AHU2"));
-//        verifyEq(grid.row(2).get("navId"), HStr.make("sep:/Richmond/AHU3"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU1"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU2"));
-//        verifyEq(grid.row(2).get("dis"), HStr.make("Richmond AHU3"));
+//        Assert.assertEquals(grid.numRows(), 3);
+//        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU1"));
+//        Assert.assertEquals(grid.row(1).get("navId"), HStr.make("sep:/Richmond/AHU2"));
+//        Assert.assertEquals(grid.row(2).get("navId"), HStr.make("sep:/Richmond/AHU3"));
+//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU1"));
+//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU2"));
+//        Assert.assertEquals(grid.row(2).get("dis"), HStr.make("Richmond AHU3"));
 //
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU1")));
-//        verifyEq(grid.numRows(), 2);
+//        Assert.assertEquals(grid.numRows(), 2);
 //        verify(grid.row(0).missing("navId"));
 //        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU1 AHU2_BooleanWritable"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU1 AHU3_BooleanWritable"));
+//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU1 AHU2_BooleanWritable"));
+//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU1 AHU3_BooleanWritable"));
 //        
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
-//        verifyEq(grid.numRows(), 2);
+//        Assert.assertEquals(grid.numRows(), 2);
 //        verify(grid.row(0).missing("navId"));
 //        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU2 NumericWritable1"));
+//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU2 NumericWritable1"));
 //
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU3")));
-//        verifyEq(grid.numRows(), 2);
+//        Assert.assertEquals(grid.numRows(), 2);
 //        verify(grid.row(0).missing("navId"));
 //        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU3 NumericWritable"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU3 NumericWritable1"));
+//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU3 NumericWritable"));
+//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU3 NumericWritable1"));
   }
 
 //    private void traverseComponents(HStr navId)
@@ -554,7 +555,7 @@ public class BSimpleClientTest extends BTestNg
     try
     {
       w.pollRefresh();
-      fail();
+      Assert.fail();
     }
     catch (Exception e)
     {
@@ -588,9 +589,16 @@ public class BSimpleClientTest extends BTestNg
 //    doVerifyPointWrite(HRef.make("S.Winterfell.Equip1.point2"));
   }
 
+  @Test(enabled = true)
+  public void verifyRemotePointWrite() throws Exception
+  {
+    this.client = HClient.open("http://localhost:85/haystack/", "user", "Vk3ldb237847");
+    doVerifyPointWrite(HRef.make("C.Drivers.NiagaraNetwork.nhaystack_j1.points.Sensor1"));
+  }
+
   private void doVerifyPointWrite(HRef id)
   {
-    client.pointWrite(id, 16, "admin", HNum.make(111), null);
+    client.pointWrite(id, 16, "user", HNum.make(111), null);
     HGrid grid = client.pointWrite(id, 10, "admin", HNum.make(222), null);
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
@@ -664,10 +672,10 @@ public class BSimpleClientTest extends BTestNg
     client.invokeAction(id, "emergencyOverride", hd.toDict());
 
     HGrid grid = client.pointWriteArray(id);
-    verifyEq(grid.numRows(), 17);
+    Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      verifyEq(grid.row(i).getInt("level"), i + 1);
+      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
       switch (i + 1)
       {
         case 1:
@@ -727,9 +735,9 @@ public class BSimpleClientTest extends BTestNg
 //    void verifyFilter() throws Exception
 //    {
 //        HGrid grid = client.readAll("point and equipRef->navName == \"AHU1\"");
-//        verifyEq(grid.numRows(), 2);
-//        verifyEq(grid.row(0).get("axSlotPath"), HStr.make("slot:/AHU2/BooleanWritable"));
-//        verifyEq(grid.row(1).get("axSlotPath"), HStr.make("slot:/AHU3/BooleanWritable"));
+//        Assert.assertEquals(grid.numRows(), 2);
+//        Assert.assertEquals(grid.row(0).get("axSlotPath"), HStr.make("slot:/AHU2/BooleanWritable"));
+//        Assert.assertEquals(grid.row(1).get("axSlotPath"), HStr.make("slot:/AHU3/BooleanWritable"));
 //    }
 //
 
@@ -761,7 +769,7 @@ public class BSimpleClientTest extends BTestNg
     if (!found)
     {
       System.out.println("verifyGridContains " + col + "=" + val + " failed!");
-      fail();
+      Assert.fail();
     }
   }
 
