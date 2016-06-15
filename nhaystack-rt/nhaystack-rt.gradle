@@ -54,13 +54,3 @@ jar {
       include "org/projecthaystack/**"     
   }
 }
-
-// Include files in the test jar with the following configuration.
-moduleTestJar {
-  from('srcTest') {
-    include 'stations/nhaystack_jace1/*.bog'
-    include 'stations/nhaystack_jace2/*.bog'
-    include 'stations/nhaystack_simple/*.bog'
-    include 'stations/nhaystack_sup/*.bog'
-  }
-}
