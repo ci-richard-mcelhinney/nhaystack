@@ -6,7 +6,7 @@
 
 group = 'Project Haystack'
 
-def moduleVersion = '1.2.7'
+def moduleVersion = '2.0.0'
 def moduleVersionPatch = [:]
 
 version = "${moduleVersion}${moduleVersionPatch.get(project.name, '')}"
