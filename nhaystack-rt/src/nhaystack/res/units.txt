@@ -16,7 +16,7 @@ square_meters_per_newton,m²/N
 watts_per_square_meter_degree_kelvin,W/m²K
 ampere_square_meter,Am²
 db_milliVolt,dBmV
-db_microVolt,dBuV
+db_microVolt,dBµV
 parts_per_unit,ppu
 parts_per_million,ppm
 parts_per_billion,ppb
@@ -35,8 +35,9 @@ australian_dollar,AUD
 british_pound,GBP,£
 canadian_dollar,CAD
 chinese_yuan,CNY,元
+emerati_dirham,AED
 euro,EUR,€
-indian_rupee,INR
+indian_rupee,INR,₹
 japanese_yen,JPY,¥
 russian_ruble,RUB,руб
 south_korean_won,KRW,₩
@@ -44,6 +45,7 @@ swedish_krona,SEK,kr
 swiss_franc,CHF,Fr
 taiwan_dollar,TWD
 us_dollar,USD,$
+new_israeli_shekel,NIS
 
 -- acceleration --
 meters_per_second_squared,m/s²
@@ -79,6 +81,7 @@ energy_efficiency_ratio,Btu/Wh,EER
 
 -- density --
 kilograms_per_cubic_meter,kg/m³
+micrograms_per_cubic_meter,µg/m³
 
 -- electric charge --
 coulomb,C
@@ -145,8 +148,12 @@ megavolt_ampere_reactive_hour,MVARh
 
 -- energy by area --
 joules_per_square_meter,J/m²
+watt_hours_per_square_meter,Wh/m²
+watt_hours_per_square_foot,Wh/ft²
 kilowatt_hours_per_square_meter,kWh/m²
 kilowatt_hours_per_square_foot,kWh/ft²
+megawatt_hours_per_square_meter,MWh/m²
+megawatt_hours_per_square_foot,MWh/ft²
 megajoules_per_square_meter,MJ/m²
 megajoules_per_square_foot,MJ/ft²
 kilobtu_per_square_foot,kBTU/ft²
@@ -209,7 +216,7 @@ watts_per_square_foot_irradiance,W/ft²_irr
 
 -- length --
 meter,m
-micrometer,um
+micrometer,µm
 millimeter,mm
 centimeter,cm
 kilometer,km
@@ -334,7 +341,7 @@ watts_per_meter_degree_kelvin,W/m°K
 
 -- time --
 nanosecond,ns
-microsecond,us
+microsecond,µs
 millisecond,ms
 hundredths_second,cs
 tenths_second,ds
@@ -364,6 +371,7 @@ cubic_meter,m³
 cubic_millimeter,mm³
 cubic_centimeter,cm³
 milliliter,mL
+hectoliter,hL
 liter,L
 kiloliter,kL
 cubic_inch,in³
@@ -375,10 +383,12 @@ quart,qt
 pint,pt
 fluid_ounce,fl_oz
 imperial_gallon,galUK
+hecto_cubic_foot,hft³
 
 -- volumetric flow --
 cubic_meters_per_second,m³/s
 milliliters_per_second,mL/s
+hectoliters_per_second,hL/s
 liters_per_second,L/s
 cubic_feet_per_second,cfs
 cubic_feet_per_minute,cfm
