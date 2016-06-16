@@ -47,9 +47,6 @@ public class BSimpleClientTest extends BTestNg
 
   final String URI = "http://localhost:82/haystack/";
   HClient client;
-//  private BStation station;
-//  private TestStationHandler h;
-
 
 //////////////////////////////////////////////////////////////////////////
 // Setup / Teardown
@@ -93,6 +90,21 @@ public class BSimpleClientTest extends BTestNg
     // create proper client
 //    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
 //    client.about();
+  }
+
+  @Test(enabled = true)
+  public void verifyHttpsAuth()
+  {
+    try
+    {
+      HClient local = HClient.open("https://localhost/haystack/", "admin", "Vk3ldb237847");
+      local.about();
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+      Assert.fail();
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
