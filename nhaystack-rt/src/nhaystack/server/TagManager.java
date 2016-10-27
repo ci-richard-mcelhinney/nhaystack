@@ -945,7 +945,7 @@ public class TagManager
         if (!(obj instanceof BUnit)) return null;
 
         BUnit unit = (BUnit) obj;
-		System.out.println(unit.encodeToString());
+
         if ((unit == null) || (unit.isNull()))
             return null;
 
