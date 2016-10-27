@@ -189,6 +189,7 @@ per_minute,/min
 per_second,/s
 per_hour,/h
 percent_per_second,%/s
+air_changes_per_hour,ACH
 
 -- grammage --
 kilograms_per_square_meter,kg/m²
