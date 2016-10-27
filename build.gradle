@@ -54,7 +54,7 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
 def srcList = [
   'http://project-haystack.org/download/equip-points/ahu',
   'http://project-haystack.org/download/equip-points/chiller',
-  'http://project-haystack.org/download/equip-points/chillerPlant',
+  'http://project-haystack.org/download/equip-points/chilledWaterPlant',
   'http://project-haystack.org/download/equip-points/coolingTower',
   'http://project-haystack.org/download/equip-points/elecMeter',
   'http://project-haystack.org/download/equip-points/vav',
