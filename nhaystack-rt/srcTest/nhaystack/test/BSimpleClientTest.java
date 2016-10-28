@@ -46,6 +46,7 @@ public class BSimpleClientTest extends BTestNg
 //////////////////////////////////////////////////////////////////////////
 
   final String URI = "http://localhost:82/haystack/";
+  final String SECURE_URI = "https://localhost/haystack";
   HClient client;
 
 //////////////////////////////////////////////////////////////////////////
@@ -114,11 +115,24 @@ public class BSimpleClientTest extends BTestNg
   @Test(enabled = true)
   void verifyAbout() throws Exception
   {
+    // non-secure
     this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara AX");
-    Assert.assertEquals(r.getStr("productVersion"), "4.1.27.20");
+    Assert.assertEquals(r.getStr("productVersion"), "4.2.36.34");
+    Assert.assertEquals(r.getStr("tz"), HTimeZone.DEFAULT.name);
+  }
+
+  @Test(enabled = true)
+  void verifySecureAbout() throws Exception{}
+  {
+    // secure
+    this.client = HClient.open(SECURE_URI, "admin", "Vk3ldb237847");
+    HDict r = client.about();
+    Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
+    Assert.assertEquals(r.getStr("productName"), "Niagara AX");
+    Assert.assertEquals(r.getStr("productVersion"), "4.2.36.34");
     Assert.assertEquals(r.getStr("tz"), HTimeZone.DEFAULT.name);
   }
 
@@ -130,6 +144,31 @@ public class BSimpleClientTest extends BTestNg
   public void verifyOps() throws Exception
   {
     this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    HGrid g = client.ops();
+
+    // verify required columns
+    Assert.assertTrue(g.col("name") != null);
+    Assert.assertTrue(g.col("summary") != null);
+
+    // verify required ops
+    verifyGridContains(g, "name", HStr.make("about"));
+    verifyGridContains(g, "name", HStr.make("ops"));
+    verifyGridContains(g, "name", HStr.make("formats"));
+    verifyGridContains(g, "name", HStr.make("read"));
+    verifyGridContains(g, "name", HStr.make("nav"));
+    verifyGridContains(g, "name", HStr.make("watchSub"));
+    verifyGridContains(g, "name", HStr.make("watchUnsub"));
+    verifyGridContains(g, "name", HStr.make("watchPoll"));
+    verifyGridContains(g, "name", HStr.make("pointWrite"));
+    verifyGridContains(g, "name", HStr.make("hisRead"));
+    verifyGridContains(g, "name", HStr.make("hisWrite"));
+    verifyGridContains(g, "name", HStr.make("invokeAction"));
+  }
+
+  @Test(enabled = true)
+  public void verifySecureOps() throws Exception
+  {
+    this.client = HClient.open(SECURE_URI, "admin", "Vk3ldb237847");
     HGrid g = client.ops();
 
     // verify required columns
