@@ -129,10 +129,8 @@ public class BNHaystackHistoryImport extends BHistoryImport
         {
             e.printStackTrace();
         }
-        finally
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public final void doExecute()
