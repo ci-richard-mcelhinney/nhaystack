@@ -11,7 +11,7 @@ apply from: "${System.getenv("niagara_home")}/etc/gradle/idea.gradle"
 
 ext {
   name = 'nhaystack'
-  project.version = '1.2.7'
+  project.version = '2.0.1'
   project.group = 'Project Haystack'
   description = "Niagara Haystack"
 }
