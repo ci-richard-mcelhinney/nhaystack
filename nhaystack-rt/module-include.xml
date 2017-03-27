@@ -82,6 +82,7 @@
     <type name="TimeZoneAliasFolder"          class="nhaystack.server.BTimeZoneAliasFolder"/>
     <type name="UniqueEquipTypeArgs"          class="nhaystack.server.BUniqueEquipTypeArgs"/>
     <type name="UniqueEquipTypeJob"           class="nhaystack.server.BUniqueEquipTypeJob"/>
+    <type name="TridiumSearchTest"            class="nhaystack.server.BTridiumSearchTest"/>
 
     <!-- nhaystack.site -->
     <type name="HEquip"  class="nhaystack.site.BHEquip"/>
