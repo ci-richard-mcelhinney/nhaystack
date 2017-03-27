@@ -53,21 +53,33 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
 
 def srcList = [
   'http://project-haystack.org/download/equip-points/ahu',
+  'http://project-haystack.org/download/equip-points/boiler',
   'http://project-haystack.org/download/equip-points/chiller',
   'http://project-haystack.org/download/equip-points/chilledWaterPlant',
   'http://project-haystack.org/download/equip-points/coolingTower',
   'http://project-haystack.org/download/equip-points/elecMeter',
+  'http://project-haystack.org/download/equip-points/heatExchanger',
+  'http://project-haystack.org/download/equip-points/hotWaterPlant',
+  'http://project-haystack.org/download/equip-points/steamPlant',
+  'http://project-haystack.org/download/equip-points/tank',
   'http://project-haystack.org/download/equip-points/vav',
-  'http://project-haystack.org/download/equip-points/heatExchanger']
+  'http://project-haystack.org/download/equip-points/vfd',
+  'http://project-haystack.org/download/equip-points/zone']
 
 def targetList = [
   new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/boiler.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/chiller.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/chillerPlant.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/coolingTower.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/elecMeter.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/hotWaterPlant.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/steamPlant.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/tank.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/vav.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt')]
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/vfd.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/zone.txt'),]
 
 task downloadTags (type: FilesDownload) {
   group 'nhaystack'

@@ -1,11 +1,15 @@
 name,kind
 absorption,Marker
+ac,Marker
+active,Marker
 ahu,Marker
 ahuRef,Ref
 air,Marker
 airCooled,Marker
+angle,Marker
 apparent,Marker
 area,Number
+avg,Marker
 barometric,Marker
 blowdown,Marker
 boiler,Marker
@@ -40,6 +44,7 @@ curStatus,Str
 curVal,Obj
 current,Marker
 damper,Marker
+dc,Marker
 delta,Marker
 device,Marker
 device1Ref,Ref
@@ -71,6 +76,7 @@ equip,Marker
 equipRef,Ref
 evaporator,Marker
 exhaust,Marker
+export,Marker
 faceBypass,Marker
 fan,Marker
 fanPowered,Marker
@@ -112,6 +118,8 @@ humidifier,Marker
 humidity,Marker
 hvac,Marker
 id,Ref
+imbalance,Marker
+import,Marker
 irradiance,Marker
 isolation,Marker
 kind,Str
@@ -122,6 +130,7 @@ lighting,Marker
 lights,Marker
 lightsGroup,Marker
 load,Marker
+mag,Marker
 makeup,Marker
 mau,Marker
 max,Marker
@@ -132,6 +141,7 @@ minVal,Number
 mixed,Marker
 mixing,Marker
 multiZone,Marker
+net,Marker
 network,Marker
 networkRef,Ref
 neutralDeck,Marker
@@ -155,6 +165,7 @@ primaryFunction,Str
 primaryLoop,Marker
 protocol,Str
 pump,Marker
+reactive,Marker
 reciprocal,Marker
 refrig,Marker
 reheat,Marker
@@ -186,6 +197,8 @@ submeterOf,Ref
 sunrise,Marker
 tank,Marker
 temp,Marker
+thd,Marker
+total,Marker
 tripleDuct,Marker
 tz,Str
 unit,Str
