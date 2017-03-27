@@ -35,7 +35,7 @@ dependencies {
   compile "Tridium:niagaraDriver-rt:4.0.22"
   compile "Tridium:schedule-rt:4.0.22"
   compile "Tridium:web-rt:4.0.22"
-
+  compile "Tridium:search-rt:4.0.22"
   compile "Tridium:bajaui-wb:4.0.22"
   compile "Tridium:workbench-wb:4.0.22"
 
