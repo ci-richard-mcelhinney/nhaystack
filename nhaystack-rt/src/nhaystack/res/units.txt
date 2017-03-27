@@ -314,7 +314,7 @@ bar
 atmosphere,atm
 pounds_per_square_inch,psi
 centimeters_of_water,cmH₂O
-inches_of_water,inH₂O
+inches_of_water,in/wc,inH₂O
 millimeters_of_mercury,mmHg
 centimeters_of_mercury,cmHg
 inches_of_mercury,inHg
