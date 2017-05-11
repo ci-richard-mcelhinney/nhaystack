@@ -3,16 +3,17 @@
 // 
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+//    11 May 2017  Christian Tremblay Update (added tags download)
 
 ext {
-  niagaraHome = System.getenv("niagara_home")
+  niagaraHome = System.getenv("NIAGARA4_HOME")
   if (niagaraHome == null) {
     logger.error('niagara_home environment variable not set')
   }
 }
 
-apply from: "${System.getenv("niagara_home")}/etc/gradle/eclipse.gradle"
-apply from: "${System.getenv("niagara_home")}/etc/gradle/idea.gradle"
+apply from: "${System.getenv("NIAGARA4_HOME")}/etc/gradle/eclipse.gradle"
+apply from: "${System.getenv("NIAGARA4_HOME")}/etc/gradle/idea.gradle"
 
 gradle.beforeProject { p ->
   configure(p) {
@@ -20,7 +21,7 @@ gradle.beforeProject { p ->
     if (vendorSettings.exists()) {
       apply from: vendorSettings
     }
-    apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
+    apply from: "${System.getenv("NIAGARA4_HOME")}/etc/gradle/niagara.gradle"
   }
 }
 
@@ -53,21 +54,34 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
 
 def srcList = [
   'http://project-haystack.org/download/equip-points/ahu',
-  'http://project-haystack.org/download/equip-points/chiller',
+  'http://project-haystack.org/download/equip-points/boiler',
   'http://project-haystack.org/download/equip-points/chilledWaterPlant',
+  'http://project-haystack.org/download/equip-points/chiller',
   'http://project-haystack.org/download/equip-points/coolingTower',
   'http://project-haystack.org/download/equip-points/elecMeter',
+  'http://project-haystack.org/download/equip-points/heatExchanger',
+  'http://project-haystack.org/download/equip-points/hotWaterPlant',
+  'http://project-haystack.org/download/equip-points/steamPlant',
+  'http://project-haystack.org/download/equip-points/tank',
   'http://project-haystack.org/download/equip-points/vav',
-  'http://project-haystack.org/download/equip-points/heatExchanger']
+  'http://project-haystack.org/download/equip-points/vfd',
+  'http://project-haystack.org/download/equip-points/zone']
 
 def targetList = [
   new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/boiler.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/chilledWaterPlant.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/chiller.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/chillerPlant.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/coolingTower.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/elecMeter.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/hotWaterPlant.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/steamPlant.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/tank.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/vav.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt')]
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/vfd.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/zone.txt'),
+  ]
 
 task downloadTags (type: FilesDownload) {
   group 'nhaystack'

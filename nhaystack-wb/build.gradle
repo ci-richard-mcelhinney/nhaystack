@@ -10,13 +10,13 @@ ext {
   project.group = 'Project Haystack' 
   project.description = "NHaystack Workbench UI Module"
   
-  niagaraHome = System.getenv("niagara_home")
+  niagaraHome = System.getenv("NIAGARA4_HOME")
   if (niagaraHome == null) {
     logger.error('niagara_home environment variable not set')
   }
 }
 
-apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
+apply from: "${System.getenv("NIAGARA4_HOME")}/etc/gradle/niagara.gradle"
 
 niagaraModule {
   preferredSymbol = "nh"
