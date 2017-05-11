@@ -7,8 +7,8 @@
 //
 package nhaystack.server;
 
-import java.util.concurrent.*;
 import javax.baja.sys.*;
+import com.tridium.util.backport.concurrent.*;
 
 /**
   * ThreadContext manages Context meta-data associated with a Thread.

@@ -62,7 +62,6 @@ public class BNHaystackQueryView extends BWbView
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackQueryView.class);
 
@@ -91,7 +90,6 @@ public class BNHaystackQueryView extends BWbView
         linkTo(filterMru.getEditor(), BTextField.actionPerformed, queryFilter);  
     }
 
-    @Override
     protected void doLoadValue(BObject value, Context cx)
     {
         this.service = (BNHaystackService) value;
@@ -148,19 +146,15 @@ public class BNHaystackQueryView extends BWbView
                 columnIndex[i] = indexNames[i].index;
         }
 
-        @Override
         public int getRowCount() { return grid.numRows(); }
 
-        @Override
         public int getColumnCount() { return grid.numCols(); }
 
-        @Override
         public String getColumnName(int col) 
         { 
             return grid.col(columnIndex[col]).name(); 
         }
 
-        @Override
         public Object getValueAt(int row, int col)
         {
             HVal val = grid.row(row).get(grid.col(columnIndex[col]), false);
@@ -186,7 +180,6 @@ public class BNHaystackQueryView extends BWbView
 
     class GridCellRenderer extends TableCellRenderer
     {
-        @Override
         public void paintCell(Graphics g, Cell cell)
         {
             if (cell.value instanceof HMarker)

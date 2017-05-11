@@ -14,7 +14,7 @@ import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.security.*;
 import javax.baja.sys.*;
-import javax.baja.nre.util.*;
+import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
@@ -37,11 +37,8 @@ class NHServerOps
 
     static class ExtendedReadOp extends HOp
     {
-        @Override
         public String name() { return "extendedRead"; }
-        @Override
         public String summary() { return "Extended Read"; }
-        @Override
         public HGrid onService(HServer db, HGrid req)
         {
             NHServer server = (NHServer) db;
@@ -118,11 +115,8 @@ class NHServerOps
 
     static class ExtendedOp extends HOp
     {
-        @Override
         public String name() { return "extended"; }
-        @Override
         public String summary() { return "Extended Functions"; }
-        @Override
         public HGrid onService(HServer db, HGrid req)
         {
             NHServer server = (NHServer) db;
@@ -322,7 +316,7 @@ class NHServerOps
         }
         else
         {
-            BComponent[] kids = comp.getChildren(BComponent.class);
+            BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
             for (int i = 0; i < kids.length; i++)
                 applyPointDicts(kids[i], pointDictMap, cx);
         }
@@ -345,7 +339,7 @@ class NHServerOps
         }
         else
         {
-            BComponent[] kids = comp.getChildren(BComponent.class);
+            BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
             for (int i = 0; i < kids.length; i++)
                 collectPointDicts(kids[i], pointDictMap, cx);
         }
@@ -505,7 +499,7 @@ class NHServerOps
             String key = (String) e.getKey();
             HVal   val = (HVal)   e.getValue();
 
-            HVal rem = newTags.get(key, false);
+            HVal rem = (HVal) newTags.get(key, false);
             if (!(rem != null && rem.equals(REMOVE)))
                 hdb.add(key, val);
         }
@@ -1189,36 +1183,23 @@ class NHServerOps
             this.list = Arrays.asList(dicts); 
         }
 
-        @Override
         protected Iterator iterator() { return list.iterator(); }
 
         // HProj
-        @Override
         protected HDict onReadById(HRef id) { return server.onReadById(id); }
 
         // HServer
-        @Override
         public HOp[] ops() { throw new UnsupportedOperationException(); }
-        @Override
         protected HDict onAbout() { throw new UnsupportedOperationException(); }
-        @Override
         protected HGrid onNav(String navId) { throw new UnsupportedOperationException(); }
-        @Override
         protected HDict onNavReadByUri(HUri uri) { throw new UnsupportedOperationException(); }
-        @Override
         protected HWatch onWatchOpen(String dis, HNum lease) { throw new UnsupportedOperationException(); }
-        @Override
         protected HWatch[] onWatches() { throw new UnsupportedOperationException(); }
-        @Override
         protected HWatch onWatch(String id) { throw new UnsupportedOperationException(); }
-        @Override
         protected HGrid onPointWriteArray(HDict rec) { throw new UnsupportedOperationException(); }
         protected void onPointWrite(HDict rec, int level, HVal val, String who, HNum dur, HDict ops) { throw new UnsupportedOperationException(); }
-        @Override
         protected HHisItem[] onHisRead(HDict rec, HDateTimeRange range) { throw new UnsupportedOperationException(); }
-        @Override
         protected void onHisWrite(HDict rec, HHisItem[] items) { throw new UnsupportedOperationException(); }
-        @Override
         protected HGrid onInvokeAction(HDict rec, String action, HDict args) { throw new UnsupportedOperationException(); }
     }
 

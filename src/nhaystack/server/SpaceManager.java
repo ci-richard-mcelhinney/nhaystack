@@ -249,19 +249,15 @@ class SpaceManager
       */
     BHistoryExt lookupHistoryExt(BControlPoint point)
     {
-        SlotCursor cursor = point.getProperties();
+        Cursor cursor = point.getProperties();
         if (cursor.next(BHistoryExt.class))
         {
             BHistoryExt ext = (BHistoryExt) cursor.get();
 
             // Return null if the extension has never been enabled.
             BHistoryConfig config = ext.getHistoryConfig();
-
-            try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
-            {
-                if (conn.getHistory(config.getId()) == null)
-                    return null;
-            }
+            if (service.getHistoryDb().getHistory(config.getId()) == null)
+                return null;
 
             return ext;
         }

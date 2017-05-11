@@ -37,13 +37,11 @@ public final class BHUnit
 // Object
 ////////////////////////////////////////////////////////////////
 
-    @Override
     public int hashCode() 
     { 
         return symbol.hashCode(); 
     }
 
-    @Override
     public boolean equals(Object obj)
     {
         if (this == obj) return true;
@@ -57,25 +55,21 @@ public final class BHUnit
 // BSimple
 ////////////////////////////////////////////////////////////////
 
-    @Override
     public void encode(DataOutput encoder) throws IOException
     { 
         encoder.writeUTF(symbol);
     }
 
-    @Override
     public BObject decode(DataInput decoder) throws IOException
     { 
         return new BHUnit(decoder.readUTF());
     }  
 
-    @Override
     public String encodeToString() throws IOException
     { 
         return symbol;
     }
 
-    @Override
     public BObject decodeFromString(String s) throws IOException
     { 
         return new BHUnit(s);
@@ -97,7 +91,6 @@ public final class BHUnit
     /** * The default is "%".  */
     public static final BHUnit DEFAULT = new BHUnit("%");
 
-    @Override
     public Type getType() { return TYPE; }
     public static final Type TYPE = Sys.loadType(BHUnit.class);
 

@@ -99,7 +99,6 @@ public class BUniqueEquipTypeArgs extends BStruct
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BUniqueEquipTypeArgs.class);
 

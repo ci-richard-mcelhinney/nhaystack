@@ -11,23 +11,25 @@ package nhaystack.ui.view;
 import java.util.*;
 
 import javax.baja.gx.*;
-import javax.baja.naming.BOrd;
-import javax.baja.naming.SlotPath;
 import javax.baja.sys.*;
+import javax.baja.sys.Sys;
 import javax.baja.ui.*;
 import javax.baja.ui.enums.*;
-import javax.baja.ui.file.BFileChooser;
 import javax.baja.ui.pane.*;
 import javax.baja.ui.tree.*;
-import javax.baja.ui.wizard.BWizard;
 import javax.baja.util.*;
-import javax.baja.workbench.BWbShell;
 import javax.baja.workbench.view.*;
 import javax.baja.xml.*;
 
 import nhaystack.res.Resources;
 import nhaystack.server.*;
 import nhaystack.site.*;
+
+import javax.baja.file.BIFile;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.SlotPath;
+import javax.baja.naming.UnresolvedException;
+import javax.baja.nre.util.TextUtil;
 
 /**
   * BNHaystackServiceView is a view on BNHaystackService
@@ -106,7 +108,15 @@ public class BNHaystackServiceView extends BWbComponentView
         b8.setSize(10, 20);
         b8.setPadding(BInsets.make(0, 0, 2, 0));      
         
-        //BFileChooser fc = new BFileChooser(this,"Choose your dictionnary");
+        // BFileChooser fc = new BFileChooser(this,"Choose your own list");
+        // We should be able to access to the file...or choose the file we want... actually just tell us what file it is
+        
+        BHyperlinkLabel labelCustomTags = new BHyperlinkLabel(LEX.getText("editCustomTagsDict"), BOrd.make(customTagsDictFilePath));
+        labelCustomTags.setHalign(BHalign.left);
+        BBorderPane b9 = new BBorderPane(labelCustomTags);
+        b9.setBorder(BBorder.make("inset"));
+        b9.setPadding(BInsets.make(2, 2, 2, 2));
+        b9.setMargin(BInsets.make(4, 4, 8, 4));
         
         BGridPane gp = new BGridPane(5);
         gp.setColumnGap(5);
@@ -118,11 +128,10 @@ public class BNHaystackServiceView extends BWbComponentView
         gp.add(null,b8);
         gp.setHalign(BHalign.make(2));
         gp.setColumnAlign(BHalign.make(2));
-        
         BEdgePane e3 = new BEdgePane();
         e3.setLeft(label);
         e3.setRight(gp);
-
+        e3.setBottom(b9);
 
         BEdgePane e1 = new BEdgePane();
         e1.setTop(e3);
@@ -157,7 +166,6 @@ public class BNHaystackServiceView extends BWbComponentView
         {
             String xml = ((BString) service.invoke(
                 BNHaystackService.fetchSepNav, null)).getString();
-            //SlotPath.unescape(xml);
             try
             {
                 XElem root = XParser.make(xml).parse();
@@ -229,7 +237,7 @@ public class BNHaystackServiceView extends BWbComponentView
             try
             {
               System.out.println("Refreshing custom tag dictionnary");
-              Resources.loadAutoMarkers(BOrd.make("local:|file:/C:/nHaystack/customTagsDict.csv"));
+              Resources.loadAutoMarkers(BOrd.make(customTagsDictFilePath));
               // File must be local on the PC
               // local:|file:/C:/JCI/FXWorkbench-6.0/stations/StationVide/nHaystack/customTagsDict.csv
             }
@@ -270,8 +278,6 @@ public class BNHaystackServiceView extends BWbComponentView
         final BNHaystackServiceView view;
     }
     
-
-
     
     
     public void stopped() throws Exception 
@@ -313,7 +319,7 @@ public class BNHaystackServiceView extends BWbComponentView
         {
             super(model);
             this.text = toggleTextFormat(xsite.get("navName"),buttonToggleFormat.isSelected());
-            
+
             XElem[] xequips = xsite.elems("equip");
             equips = new EquipNode[xequips.length];
             for (int i = 0; i < equips.length; i++)
@@ -336,8 +342,9 @@ public class BNHaystackServiceView extends BWbComponentView
         EquipNode(NavTreeModel model, XElem xequip)
         {
             super(model);
+            //this.text = xequip.get("navName");
             this.text = toggleTextFormat(xequip.get("navName"),buttonToggleFormat.isSelected());
-            
+
             XElem[] xpoints = xequip.elems("point");
             points = new PointNode[xpoints.length];
             for (int i = 0; i < points.length; i++)
@@ -360,8 +367,9 @@ public class BNHaystackServiceView extends BWbComponentView
         PointNode(NavTreeModel model, XElem xpoint)
         {
             super(model);
+            //this.text = xpoint.get("navName");
             this.text = toggleTextFormat(xpoint.get("navName"),buttonToggleFormat.isSelected());
-            
+
             String type = xpoint.get("axType");
             this.icon = (BImage) POINT_ICONS.get(type);
             if (this.icon == null)
@@ -426,4 +434,9 @@ public class BNHaystackServiceView extends BWbComponentView
     private final InitializeCommand initialize;
     private final LoadCustomTagDictionnary loadCustomTagDict;
     BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
-}
+    
+    // N4 : String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
+    // N4 : private final String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
+    String shared_folder = "c:/nHaystack";
+    private final String customTagsDictFilePath = "local:|file:/"+shared_folder+"/customTagsDict.csv";
+ }

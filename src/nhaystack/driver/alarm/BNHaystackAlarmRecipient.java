@@ -7,14 +7,17 @@
 
 package nhaystack.driver.alarm;
 
-import java.util.concurrent.*;
+import java.util.*;
 
 import javax.baja.alarm.*;
+import javax.baja.alarm.ext.*;
 import javax.baja.control.*;
 import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
+
+import com.tridium.util.backport.concurrent.ConcurrentHashMap;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
@@ -115,7 +118,6 @@ public class BNHaystackAlarmRecipient
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackAlarmRecipient.class);
 
@@ -124,7 +126,6 @@ public class BNHaystackAlarmRecipient
     /**
       * handleAlarm
       */
-    @Override
     public void handleAlarm(BAlarmRecord alarm)
     {
         try
@@ -148,7 +149,7 @@ public class BNHaystackAlarmRecipient
 
                 // create alarm name
                 String alarmName = getAlarmFacetValue(alarm, BAlarmRecord.SOURCE_NAME);
-                alarmName = alarmName.replace(' ', '_');
+                alarmName = TextUtil.replace(alarmName, " ", "_");
                 alarmName = SlotUtil.fromNiagara(SlotPath.escape(alarmName));
 
                 // create request either for a point, or for "miscellaneous"

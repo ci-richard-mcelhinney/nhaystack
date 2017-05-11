@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test/src"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/baja.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/resources.jar" sourcepath="C:/Program Files/Java/jdk1.7.0_79/src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="https://docs.oracle.com/javase/7/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/rt.jar" sourcepath="C:/Program Files/Java/jdk1.7.0_79/src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="https://docs.oracle.com/javase/7/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/jsse.jar" sourcepath="C:/Program Files/Java/jdk1.7.0_79/src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="https://docs.oracle.com/javase/7/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/jce.jar" sourcepath="C:/Program Files/Java/jdk1.7.0_79/src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="https://docs.oracle.com/javase/7/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/charsets.jar" sourcepath="C:/Program Files/Java/jdk1.7.0_79/src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="https://docs.oracle.com/javase/7/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/jfr.jar" sourcepath="C:/Program Files/Java/jdk1.7.0_79/src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="https://docs.oracle.com/javase/7/docs/api/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/access-bridge-64.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/dnsns.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/jaccess.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/localedata.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/sunec.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/sunjce_provider.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/sunmscapi.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.7.0_79/jre/lib/ext/zipfs.jar"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/alarm-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/schedule-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/bajaui-wb.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/bql-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/control-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/driver-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/file-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/fox-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/gx-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/history-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/net-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/obix-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/workbench-wb.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/web-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/modules/platform-rt.jar" sourcepath="C:/JCI/FXWorkbench-14.0/modules/docBajaEclipse.zip"/>
+	<classpathentry kind="lib" path="C:/JCI/FXWorkbench-14.0/bin/ext/nre.jar"/>
+	<classpathentry kind="lib" path="ext/nhaystack.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

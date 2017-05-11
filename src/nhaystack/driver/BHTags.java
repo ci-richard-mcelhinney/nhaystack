@@ -48,13 +48,11 @@ public final class BHTags
 // Object
 ////////////////////////////////////////////////////////////////
 
-    @Override
     public int hashCode() 
     { 
         return dict.hashCode(); 
     }
 
-    @Override
     public boolean equals(Object obj)
     {
         if (this == obj) return true;
@@ -68,7 +66,6 @@ public final class BHTags
 // BSimple
 ////////////////////////////////////////////////////////////////
 
-    @Override
     public String toString(Context context)
     {
         return dict.toZinc();
@@ -77,7 +74,6 @@ public final class BHTags
     /**
       * Encode to ZINC format
       */
-    @Override
     public void encode(DataOutput encoder) throws IOException
     { 
         encoder.writeUTF(dict.toZinc()); 
@@ -86,7 +82,6 @@ public final class BHTags
     /**
       * Decode from ZINC format
       */
-    @Override
     public BObject decode(DataInput decoder) throws IOException
     { 
         HZincReader zr = new HZincReader(decoder.readUTF());
@@ -96,7 +91,6 @@ public final class BHTags
     /**
       * Encode to ZINC format
       */
-    @Override
     public String encodeToString() throws IOException
     { 
         return dict.toZinc(); 
@@ -105,7 +99,6 @@ public final class BHTags
     /**
       * Decode from ZINC format
       */
-    @Override
     public BObject decodeFromString(String s) throws IOException
     { 
         HZincReader zr = new HZincReader(s);
@@ -125,14 +118,12 @@ public final class BHTags
 // Attributes
 //////////////////////////////////////////////////////////////// 
 
-    @Override
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
 
     /** * The default is HDict.EMPTY. */
     public static final BHTags DEFAULT = new BHTags(HDict.EMPTY);
 
-    @Override
     public Type getType() { return TYPE; }
     public static final Type TYPE = Sys.loadType(BHTags.class);
 
