@@ -111,7 +111,8 @@ public class BNHaystackServiceView extends BWbComponentView
         // BFileChooser fc = new BFileChooser(this,"Choose your own list");
         // We should be able to access to the file...or choose the file we want... actually just tell us what file it is
         
-        BHyperlinkLabel labelCustomTags = new BHyperlinkLabel(LEX.getText("editCustomTagsDict"), BOrd.make(customTagsDictFilePath));
+        BHyperlinkLabel labelCustomTags = new BHyperlinkLabel(LEX.getText("editCustomTagsDict") + "    ->    (" + customTagsDictFilePath + ")", BOrd.make(customTagsDictFilePath));
+        
         labelCustomTags.setHalign(BHalign.left);
         BBorderPane b9 = new BBorderPane(labelCustomTags);
         b9.setBorder(BBorder.make("inset"));
@@ -435,6 +436,6 @@ public class BNHaystackServiceView extends BWbComponentView
     private final LoadCustomTagDictionnary loadCustomTagDict;
     BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
     
-    String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");;
+    String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
     private final String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
  }
