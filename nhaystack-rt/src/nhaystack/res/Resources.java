@@ -133,7 +133,7 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
           if (fq == null){
             // must be a local file on workbench PC.... at startup, it may load but will be overriden when service view will open.
             // loading again will be necessary using the button
-            String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");;
+            String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
             String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
             System.out.println(customTagsDictFilePath);
             fileQuery =  BOrd.make(customTagsDictFilePath);
