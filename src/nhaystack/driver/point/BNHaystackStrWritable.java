@@ -47,18 +47,21 @@ public class BNHaystackStrWritable
    * Get the <code>proxyExt</code> property.
    * @see nhaystack.driver.point.BNHaystackStrWritable#proxyExt
    */
+  @Override
   public BAbstractProxyExt getProxyExt() { return (BAbstractProxyExt)get(proxyExt); }
   
   /**
    * Set the <code>proxyExt</code> property.
    * @see nhaystack.driver.point.BNHaystackStrWritable#proxyExt
    */
+  @Override
   public void setProxyExt(BAbstractProxyExt v) { set(proxyExt,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackStrWritable.class);
 
@@ -71,6 +74,7 @@ public class BNHaystackStrWritable
         ((BNHaystackProxyExt) getProxyExt()).setId(id);
     }
 
+    @Override
     public boolean isParentLegal(BComponent comp)
     {
         return (comp instanceof BNHaystackPointDeviceExt) || (comp instanceof BNHaystackPointFolder);

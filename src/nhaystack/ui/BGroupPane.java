@@ -27,6 +27,7 @@ public class BGroupPane extends BPane
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BGroupPane.class);
 
@@ -46,6 +47,7 @@ public class BGroupPane extends BPane
             add(null, panes[i]);
     }
 
+    @Override
     public void doLayout(BWidget abwidget[])
     {
         double width = getWidth();
@@ -60,6 +62,7 @@ public class BGroupPane extends BPane
         }
     }
 
+    @Override
     public void computePreferredSize()
     {
         double width = 0;
@@ -75,6 +78,7 @@ public class BGroupPane extends BPane
         setPreferredSize(width, height);
     }
 
+    @Override
     public void paint(Graphics g)
     {
         super.paint(g);

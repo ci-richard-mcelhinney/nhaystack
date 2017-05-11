@@ -529,7 +529,7 @@ public class BNHaystackServer
             hclient = HClient.open(
                 getHaystackUrl(),
                 getCredentials().getUsername(),
-                getCredentials().getPassword().getString());
+                getCredentials().getPassword().getValue());
         }
         return hclient;
     }

@@ -9,26 +9,17 @@
 package nhaystack.server;
 
 import java.util.*;
+import java.util.concurrent.*;
 import javax.baja.control.*;
-import javax.baja.history.*;
-import javax.baja.history.ext.*;
 import javax.baja.log.*;
-import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
-import javax.baja.timezone.*;
-import javax.baja.units.*;
-import javax.baja.util.*;
-import com.tridium.util.backport.concurrent.ConcurrentHashMap;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
-import org.projecthaystack.util.*;
-
 import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.site.*;
 import nhaystack.util.*;
 
 /**
@@ -73,7 +64,7 @@ class ScheduleManager
     {
         HRef id = event.getId().getRef();
 
-        BComponent point = (BComponent) server.getTagManager().lookupComponent(id);
+        BComponent point = server.getTagManager().lookupComponent(id);
         HDict tags = BHDict.findTagAnnotation(point);
 
         // set the point

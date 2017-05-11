@@ -18,14 +18,6 @@ return air damper cmd
 **Mixed**
 mixed air temp sensor
 
-**Zone**
-zone air temp sensor
-zone air humidity sensor
-zone air co2 sensor
-zone air temp effective sp
-zone air temp cooling sp
-zone air temp heating sp
-
 **Outside**
 outside air temp sensor
 outside air humidity sensor

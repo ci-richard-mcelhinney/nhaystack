@@ -15,6 +15,7 @@ import javax.baja.gx.*;
 import javax.baja.sys.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;

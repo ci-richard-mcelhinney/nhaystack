@@ -68,7 +68,7 @@ public class BHScheduleEvent extends BComponent
    * Get the <code>value</code> property.
    * @see nhaystack.server.BHScheduleEvent#value
    */
-  public BValue getValue() { return (BValue)get(value); }
+  public BValue getValue() { return get(value); }
   
   /**
    * Set the <code>value</code> property.
@@ -80,6 +80,7 @@ public class BHScheduleEvent extends BComponent
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHScheduleEvent.class);
 

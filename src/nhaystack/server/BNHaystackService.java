@@ -17,6 +17,7 @@ import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
+import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
@@ -63,7 +64,7 @@ public class BNHaystackService
                 flags { hidden }
                 default{[ false ]}
             consumptionUnits: String
-                default{[ "kWh,kg,L,m³" ]}
+                default{[ "kWh,kg,L,cu m" ]}
         }
         actions
         {
@@ -313,7 +314,7 @@ public class BNHaystackService
   * @see nhaystack.server.BNHaystackService#getConsumptionUnits
   * @see nhaystack.server.BNHaystackService#setConsumptionUnits
   */
-  public static final Property consumptionUnits = newProperty(0, "kWh,kg,L,m³", null);
+  public static final Property consumptionUnits = newProperty(0, "kWh,kg,L,cu m", null);
 
   /**
   * Get the <code>consumptionUnits</code> property.
