@@ -10,9 +10,17 @@ package nhaystack.res;
 import java.io.*;
 import java.util.*;
 
+import javax.baja.file.BIFile;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.SlotPath;
+import javax.baja.naming.UnresolvedException;
+
 import javax.baja.sys.*;
+import javax.baja.sys.Sys;
 import javax.baja.units.*;
 import javax.baja.nre.util.*;
+
+
 
 /**
   * Resources makes available all the various files downloaded 
@@ -21,19 +29,28 @@ import javax.baja.nre.util.*;
 public class Resources
 {
     private static final String TAGS  = "/nhaystack/res/tags.csv";
+    private static final String AUTOMARKERS  = "/nhaystack/res/autoMarker.csv";
     private static final String TZ    = "/nhaystack/res/tz.txt";
     private static final String UNITS = "/nhaystack/res/units.txt";
 
-    private static final String ELEC_METER     = "/nhaystack/res/equip-points/elecMeter.txt";
-    private static final String VAV            = "/nhaystack/res/equip-points/vav.txt";
-    private static final String HEAT_EXCHANGER = "/nhaystack/res/equip-points/heatExchanger.txt";
-    private static final String COOLING_TOWER  = "/nhaystack/res/equip-points/coolingTower.txt";
-    private static final String CHILLER_PLANT  = "/nhaystack/res/equip-points/chillerPlant.txt";
-    private static final String CHILLER        = "/nhaystack/res/equip-points/chiller.txt";
-    private static final String AHU            = "/nhaystack/res/equip-points/ahu.txt";
+    private static final String AHU                   = "/nhaystack/res/equip-points/ahu.txt";
+    private static final String BOILER                = "/nhaystack/res/equip-points/boiler.txt";
+    private static final String CHILLED_WATER_PLANT   = "/nhaystack/res/equip-points/chilledWaterPlant.txt";
+    private static final String CHILLER               = "/nhaystack/res/equip-points/chiller.txt";
+    private static final String COOLING_TOWER         = "/nhaystack/res/equip-points/coolingTower.txt";
+    private static final String ELEC_METER            = "/nhaystack/res/equip-points/elecMeter.txt";
+    private static final String HEAT_EXCHANGER        = "/nhaystack/res/equip-points/heatExchanger.txt";
+    private static final String HOT_WATER_PLANT       = "/nhaystack/res/equip-points/hotWaterPlant.txt";
+    private static final String STEAM_PLANT           = "/nhaystack/res/equip-points/steamPlant.txt";
+    private static final String TANK                  = "/nhaystack/res/equip-points/tank.txt";
+    private static final String VAV                   = "/nhaystack/res/equip-points/vav.txt";
+    private static final String VFD                   = "/nhaystack/res/equip-points/vfd.txt";
+    private static final String ZONE                  = "/nhaystack/res/equip-points/zone.txt";
+    
 
     private static Map kindTags; // <String,Set<String>>
-
+    private static Map autoMarkers; //<String,Set<String>>
+    
     private static String[] timeZones;
 
     private static Map unitsByQuantity; // <String,Array<Unit>>
@@ -42,8 +59,8 @@ public class Resources
     private static String[] quantities;
 
     private static String[] markerSets = new String[] {
-        "elecMeter", "vav", "heatExchanger", "coolingTower",
-        "chillerPlant", "chiller", "ahu" };
+        "ahu", "boiler", "chilledWaterPlant", "chiller", "coolingTower", "elecMeter", 
+        "heatExchanger", "hotWaterPlant", "steamPlant", "tank", "vav", "vfd", "zone"};
     private static Map markerSetTags; // <String,Array<String>>
 
 ////////////////////////////////////////////////////////////////
@@ -58,6 +75,7 @@ public class Resources
             loadTimeZones();
             loadUnits();
             loadMarkerSets();
+            loadAutoMarkers(null); // New feature
         }
         catch (Exception e)
         {
@@ -91,6 +109,81 @@ public class Resources
         bin.close();
     }
 
+    /**
+     * loadAutoMarkers() loads a CSV file which stores default tags for AX point based on their name
+     * A lot of devices use consistent names that can be used to tag points.
+     * Some examples are : 
+     * DA-T (discharge air temperature), SF-C (supply fan command), SF-S (supply fan status) for Johnson Controls
+     * It is then possible to build a list with known names and add a lot of speed to the tagging process
+     * 
+     * File is built simply
+     * [pointName],[list of tags]
+     * DA-T,discharge air temp sensor
+     * SF-C,discharge fan cmd
+     * @throws Exception
+     */
+public static void loadAutoMarkers(BOrd fq) throws Exception
+{
+        // Load default dictionnary
+        BOrd fileQuery = null;
+        InputStream in = null; 
+        // Try to load local file if exists
+        try
+        {
+          if (fq == null){
+            // must be a local file on workbench PC.... at startup, it may load but will be overriden when service view will open.
+            // loading again will be necessary using the button
+            String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");;
+            String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
+            System.out.println(customTagsDictFilePath);
+            fileQuery =  BOrd.make(customTagsDictFilePath);
+          }
+          else{
+            fileQuery = fq;
+          }
+          BIFile myFile = (BIFile)fileQuery.get();
+          in = myFile.getInputStream();              
+        }
+        //handle case where file isn't found or doesn't exist.
+        catch(UnresolvedException re)
+        {
+          System.out.println("nHaystack - Tag Dictionnary / No custom file, using default.");
+          in = Resources.class.getResourceAsStream(AUTOMARKERS);  
+        }
+        //handle IO exceptions from trying to read from file
+        catch(IOException ioe)
+        {
+          System.out.println("nHaystack - Tag Dictionnary / Errors in custom file, using default.");
+          in = Resources.class.getResourceAsStream(AUTOMARKERS); 
+        }  
+        
+        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+
+        autoMarkers = new HashMap();
+
+        String str = bin.readLine(); // throw away header
+        str = bin.readLine();
+        while (str != null)
+        {
+            String[] tokens = TextUtil.split(str, ',');
+            String pointName = tokens[0];
+            String[] markerList = TextUtil.split(tokens[1], ' ');
+
+            Set set = (Set) autoMarkers.get(pointName);
+            if (set == null)
+              autoMarkers.put(pointName, set = new TreeSet());
+            for (int i = 0; i < markerList.length; i++){
+              set.add(markerList[i]);
+            }
+
+            str = bin.readLine();
+        }
+        System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
+        System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
+        bin.close();
+}
+    
+    
     private static void loadTimeZones() throws Exception
     {
         InputStream in = Resources.class.getResourceAsStream(TZ);
@@ -170,13 +263,19 @@ public class Resources
     {
         markerSetTags = new HashMap();
 
-        markerSetTags.put("elecMeter",     loadMarkerSet(ELEC_METER));
-        markerSetTags.put("vav",           loadMarkerSet(VAV));
+        markerSetTags.put("ahu", loadMarkerSet(AHU));
+        markerSetTags.put("boiler", loadMarkerSet(BOILER));
+        markerSetTags.put("chilledWaterPlant", loadMarkerSet(CHILLED_WATER_PLANT));
+        markerSetTags.put("chiller", loadMarkerSet(CHILLER));
+        markerSetTags.put("coolingTower", loadMarkerSet(COOLING_TOWER));
+        markerSetTags.put("elecMeter", loadMarkerSet(ELEC_METER));
         markerSetTags.put("heatExchanger", loadMarkerSet(HEAT_EXCHANGER));
-        markerSetTags.put("coolingTower",  loadMarkerSet(COOLING_TOWER));
-        markerSetTags.put("chillerPlant",  loadMarkerSet(CHILLER_PLANT));
-        markerSetTags.put("chiller",       loadMarkerSet(CHILLER));
-        markerSetTags.put("ahu",           loadMarkerSet(AHU));
+        markerSetTags.put("hotWaterPlant", loadMarkerSet(HOT_WATER_PLANT));
+        markerSetTags.put("steamPlant", loadMarkerSet(STEAM_PLANT));
+        markerSetTags.put("tank", loadMarkerSet(TANK));
+        markerSetTags.put("vav", loadMarkerSet(VAV));
+        markerSetTags.put("vfd", loadMarkerSet(VFD));
+        markerSetTags.put("zone", loadMarkerSet(ZONE));
     }
 
     private static Array loadMarkerSet(String resourcePath) throws Exception
@@ -291,6 +390,18 @@ public class Resources
         if (arr == null) throw new BajaRuntimeException(
             "Cannot find marker group '" + group + "'.");
         return (String[]) arr.trim();
+    }
+    
+    /**
+     * Get the default tags based on pointName. Ex. DA-T loads "discharge air temp sensor" tags. Used in BAddHaystackSlot.
+     */
+    public static String[] getAutoMarkers(String pointName)
+    {
+      String key = SlotPath.unescape(pointName);
+      if (!autoMarkers.containsKey(key)) return new String[0];
+      Array arr = new Array(String.class, (Set) autoMarkers.get(key));
+      System.out.println("getAutoMArker" + pointName + " : " + (String[]) arr.trim());
+      return (String[]) arr.trim();
     }
 
     /**

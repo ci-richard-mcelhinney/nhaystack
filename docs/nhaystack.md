@@ -256,6 +256,32 @@ change a tag or alter the structure of a station.
 Note that tagging of Histories is not currently supported.  A future version
 of NHaystack will probably support this.
 
+### 3.2 A better Workbench Interface
+The nHaystack Service View is really simple. There's no need to rebuild 
+everything but adding a few buttons add a lot of flexibility to the view. 
+I also modified the showed text so we can get rid of ~ codes and retrieve 
+familiar characters. For those who want to see ~ codes, just toggle de 
+"Codes vs Text" button.
+
+![New service view](service.PNG)
+
+If you change your local dictionnary file (local:|file:/C:/Users/USERNAME/Niagara4.2/tridium/shared/nHaystack/customTagsDict.csv) 
+just push the "Reload Custom Tag List" button and all new haystack slot will use 
+the new file to tag your points based on name.
+
+You can also click on the label "Edit your custom Tags" and you will be rediected to the workbench text editor.
+
+Note that if the file doesn't exist, you will get an error. To make this feature work, 
+create a folder named "nHaystack" in your shared folder. Then create a simple file named
+customTagsDict.csv.
+
+The format of the file is the following ::
+
+	name,markers
+	DA-T,discharge air temp sensor
+	DAT-SP,discharge air temp sp
+
+
 ### 4. How site and equip tags work
 
 In addition to tagging `point` recs, you may also want to include `site` 
