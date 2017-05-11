@@ -1,16 +1,17 @@
-zone air temp sensor
-zone air temp effective sp
-zone air temp cooling sp
-zone air temp heating sp
-zone air humidity sensor
-zone air co2 sensor
 discharge air temp sensor
-discharge air pressure sensor
-discharge air flow sensor
-discharge air fan cmd
-discharge air fan sensor
-discharge air damper cmd
 entering air temp sensor
-heat cmd
+air pressure sensor
+air flow sensor
+air flow effective sp
+air flow min sp
+air flow max sp
+air flow reheating max sp
+air flow standby sp
+air fan cmd
+air fan sensor
+air damper cmd
+reheat cmd
+vavMode sp
+ductArea sp
 perimeterHeat cmd
 

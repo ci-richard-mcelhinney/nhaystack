@@ -11,14 +11,14 @@ import java.util.*;
 import javax.baja.sys.*;
 
 /**
-  * CursorIterator wraps a Cursor inside an Iterator
+  * CursorIterator wraps a SlotCursor inside an Iterator
   */
 public class CursorIterator implements Iterator
 {
     /**
       * Convenience for <code>new CursorIterator(cursor, null)</code>.
       */
-    public CursorIterator(Cursor cursor)
+    public CursorIterator(SlotCursor cursor)
     {
         this(cursor, null);
     }
@@ -28,7 +28,7 @@ public class CursorIterator implements Iterator
       * @param cls The class of the objects that we want the
       *            cursor to return, or null to return everything.
       */
-    public CursorIterator(Cursor cursor, Class cls)
+    public CursorIterator(SlotCursor cursor, Class cls)
     {
         this.cursor = cursor;
         this.cls = cls;
@@ -74,7 +74,7 @@ public class CursorIterator implements Iterator
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private final Cursor cursor;
+    private final SlotCursor cursor;
     private final Class cls;
     private boolean hasNext;
 }

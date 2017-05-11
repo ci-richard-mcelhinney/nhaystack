@@ -14,6 +14,7 @@ import javax.baja.ui.enums.*;
 import javax.baja.ui.event.*;
 import javax.baja.ui.list.*;
 import javax.baja.ui.pane.*;
+import javax.baja.ui.text.BTextEditor;
 import javax.baja.util.*;
 import javax.baja.workbench.*;
 import javax.baja.workbench.fieldeditor.*;
@@ -39,6 +40,7 @@ public class BHFloorFE extends BWbFieldEditor
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHFloorFE.class);
 
@@ -57,15 +59,17 @@ public class BHFloorFE extends BWbFieldEditor
         setContent(ep);
 
         linkTo(prefix, BDropDown.valueModified, BWbPlugin.setModified);
-        linkTo(suffix, BTextField.textModified, BWbPlugin.setModified);
+        linkTo(suffix, BTextEditor.textModified, BWbPlugin.setModified);
     }
 
+    @Override
     protected void doSetReadonly(boolean readonly)
     {
         prefix.setEnabled(!readonly);
         suffix.setEnabled(!readonly);
     }
 
+    @Override
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
         BHFloor floor = (BHFloor) value;
@@ -99,12 +103,13 @@ public class BHFloorFE extends BWbFieldEditor
         }
     }
 
+    @Override
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
         if (!getEnabled()) throw new IllegalStateException();
 
         String a = (String) prefix.getSelectedItem();
-        String b = (String) suffix.getText();
+        String b = suffix.getText();
 
         if (a.equals("Floor") && b.equals(""))
             return BHFloor.DEFAULT;
@@ -116,6 +121,7 @@ public class BHFloorFE extends BWbFieldEditor
             return BHFloor.make(a + " " + b);
     }
 
+    @Override
     public void setEnabled(boolean enabled)
     {
         super.setEnabled(enabled);

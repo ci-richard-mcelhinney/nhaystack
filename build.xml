@@ -14,7 +14,7 @@
     preferredSymbol = "nh"
     description = "Niagara Haystack"
     vendor = "Project Haystack"
-    vendorVersion = "1.2.5.18" 
+    vendorVersion = "2.0.2" 
 >
 
     <!-- Dependencies -->

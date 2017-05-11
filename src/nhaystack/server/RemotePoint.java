@@ -18,8 +18,8 @@ import javax.baja.security.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
-import nhaystack.driver.*;
-import nhaystack.driver.point.*;
+//import nhaystack.driver.*;
+//import nhaystack.driver.point.*;
 
 /**
   * A RemotePoint represents a point that is present in
@@ -35,7 +35,7 @@ class RemotePoint
     static boolean isRemotePoint(BControlPoint point)
     {
         if (point.getProxyExt().getType().is(NIAGARA_PROXY_EXT)) return true;
-        if (point.getProxyExt() instanceof BNHaystackProxyExt) return true;
+//        if (point.getProxyExt() instanceof BNHaystackProxyExt) return true;
         return false;
     }
 
@@ -45,7 +45,7 @@ class RemotePoint
     private static boolean isRemoteDevice(BDevice device)
     {
         if (device.getType().is(NIAGARA_STATION)) return true;
-        if (device instanceof BNHaystackServer) return true;
+//        if (device instanceof BNHaystackServer) return true;
         return false;
     }
 
@@ -133,21 +133,12 @@ class RemotePoint
                 "Unexpected slot path value: '" + slotPathStr + "'");
 
         this.stationName = stationName;
-		try
-		{
-			this.slotPath = new SlotPath("slot", slotPathStr.substring("slot:".length()));
-			this.hashCode =
-				31*31*stationName.hashCode() + 
-				31*slotPath.getScheme().hashCode() +
-				slotPath.getBody().hashCode();
-		}
-		catch(Exception e)
-		{
-			LOG.message("[RemotePoint] error in slot path string " + slotPathStr);
-			System.out.println("[RemotePoint] error in slot path string " + slotPathStr);
-			e.printStackTrace();
-			return;
-		}
+        this.slotPath = new SlotPath("slot", slotPathStr.substring("slot:".length()));
+
+        this.hashCode =
+            31*31*stationName.hashCode() + 
+            31*slotPath.getScheme().hashCode() +
+            slotPath.getBody().hashCode();
     }
 
     static BDevice findParentDevice(BComplex cpx)
@@ -216,8 +207,8 @@ class RemotePoint
         NIAGARA_STATION   = BTypeSpec.make("niagaraDriver:NiagaraStation")  .getResolvedType();
     }
 
-    private String stationName = null;
-    private SlotPath slotPath = null;
+    private final String stationName;
+    private final SlotPath slotPath;
 
-    private int hashCode;
+    private final int hashCode;
 }

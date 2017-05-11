@@ -9,6 +9,7 @@ package nhaystack.driver.worker;
 
 import java.util.*;
 
+import javax.baja.nre.util.*;
 import javax.baja.util.*;
 
 import org.projecthaystack.*;

@@ -67,13 +67,15 @@ public class BNHaystackServlet extends BWebServlet
 
     public void doGet(WebOp op) throws IOException, ServletException
     {   
+//System.out.println("BNHaystackServlet.doGet: " + op);
         // save the op so we can use it later to check permissions
         ThreadContext.putContext(Thread.currentThread(), op);
 
         try
         {
             servlet.doGet(
-                new RequestWrapper(op.getRequest()),
+//                new RequestWrapper(op.getRequest()),
+                op.getRequest(),
                 op.getResponse());
         }
         finally
@@ -85,13 +87,15 @@ public class BNHaystackServlet extends BWebServlet
 
     public void doPost(WebOp op) throws IOException, ServletException
     {
+//System.out.println("BNHaystackServlet.doPost: " + op);
         // save the op so we can use it later to check permissions
         ThreadContext.putContext(Thread.currentThread(), op);
 
         try
         {
             servlet.doPost(
-                new RequestWrapper(op.getRequest()),
+//                new RequestWrapper(op.getRequest()),
+                op.getRequest(),
                 op.getResponse());
         }
         finally

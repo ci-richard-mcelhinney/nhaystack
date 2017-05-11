@@ -45,11 +45,13 @@ public final class BHNum
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return num.hashCode(); 
     }
 
+    @Override
     public boolean equals(Object obj)
     {
         if (this == obj) return true;
@@ -66,6 +68,7 @@ public final class BHNum
     /**
       * Encode to ZINC format
       */
+    @Override
     public void encode(DataOutput encoder) throws IOException
     { 
         encoder.writeUTF(num.toZinc()); 
@@ -74,6 +77,7 @@ public final class BHNum
     /**
       * Decode from ZINC format
       */
+    @Override
     public BObject decode(DataInput decoder) throws IOException
     { 
         HZincReader zr = new HZincReader(decoder.readUTF());
@@ -83,6 +87,7 @@ public final class BHNum
     /**
       * Encode to ZINC format
       */
+    @Override
     public String encodeToString() throws IOException
     { 
         return num.toZinc(); 
@@ -91,6 +96,7 @@ public final class BHNum
     /**
       * Decode from ZINC format
       */
+    @Override
     public BObject decodeFromString(String s) throws IOException
     { 
         HZincReader zr = new HZincReader(s);
@@ -113,6 +119,7 @@ public final class BHNum
     /** * The default is HNum.ZERO. */
     public static final BHNum DEFAULT = new BHNum(HNum.ZERO);
 
+    @Override
     public Type getType() { return TYPE; }
     public static final Type TYPE = Sys.loadType(BHNum.class);
 
