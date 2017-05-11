@@ -10,6 +10,7 @@ package nhaystack.driver.point;
 import org.projecthaystack.*;
 
 import javax.baja.driver.point.*;
+import javax.baja.naming.*;
 import javax.baja.sys.*;
 
 import nhaystack.*;
@@ -114,7 +115,6 @@ public abstract class BNHaystackProxyExt extends BProxyExt
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackProxyExt.class);
 
@@ -124,14 +124,12 @@ public abstract class BNHaystackProxyExt extends BProxyExt
 // BComponent
 ////////////////////////////////////////////////////////////////
 
-    @Override
     public void started()
     {
         this.server = findServer();
         server.registerProxyExt(this);
     }
 
-    @Override
     public void stopped()
     {
         if (server != null) server.unregisterProxyExt(this);
@@ -150,13 +148,11 @@ public abstract class BNHaystackProxyExt extends BProxyExt
 // BProxyExt
 ////////////////////////////////////////////////////////////////
 
-    @Override
     public final Type getDeviceExtType()
     {
         return BNHaystackPointDeviceExt.TYPE;
     }
 
-    @Override
     public final BReadWriteMode getMode()
     {
         return getParentPoint().isWritablePoint() ? 
@@ -167,7 +163,6 @@ public abstract class BNHaystackProxyExt extends BProxyExt
     /**
       * readSubscribed
       */
-    @Override
     public final void readSubscribed(Context context) throws Exception
     {
         if (server != null)
@@ -177,7 +172,6 @@ public abstract class BNHaystackProxyExt extends BProxyExt
     /**
       * readUnsubscribed
       */
-    @Override
     public final void readUnsubscribed(Context context) throws Exception
     {
         if (server != null)
@@ -187,7 +181,6 @@ public abstract class BNHaystackProxyExt extends BProxyExt
     /**
       * write
       */
-    @Override
     public final boolean write(Context context) throws Exception
     {
         if (server == null) return false;

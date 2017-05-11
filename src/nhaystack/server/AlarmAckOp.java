@@ -18,11 +18,8 @@ import nhaystack.driver.alarm.*;
 
 class AlarmAckOp extends HOp
 {
-    @Override
     public String name() { return "alarmAck"; }
-    @Override
     public String summary() { return "Alarm Ack"; }
-    @Override
     public HGrid onService(HServer db, HGrid req)
     {
         NHServer server = (NHServer) db;
@@ -38,36 +35,34 @@ class AlarmAckOp extends HOp
                 LOG.trace(name() + " alarmUuid:" + uuid);
 
             BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
-            try (AlarmDbConnection conn = alarmService.getAlarmDb().getDbConnection(null))
+            BAlarmRecord alarm = alarmService.getAlarmDb().getRecord(uuid);
+
+            if (alarm == null)
             {
-                BAlarmRecord alarm = conn.getRecord(uuid);
-
-                if (alarm == null)
-                {
-                    LOG.warning(name() + " cannot find alarm with uuid " + uuid);
-                }
-                else
-                {
-                    if (LOG.isTraceOn()) 
-                        LOG.trace(name() + " acking " + alarm);
-
-                    // We have to ignore the alarm while we are acking it
-                    // so we don't get caught in a loop.
-                    BAlarmService service = (BAlarmService) Sys.getService(BAlarmService.TYPE);
-                    BNHaystackAlarmRecipient[] recips = service.getChildren(BNHaystackAlarmRecipient.class);
-                    for (int i = 0; i < recips.length; i++)
-                        recips[i].beginIgnore(uuid);
-
-                    // ack the alarm
-                    alarm.ackAlarm();
-
-                    // Route the ack (we will end up ignoring this when it
-                    // gets routed to BNHaystackAlarmRecipient instances).
-                    alarmService.ackAlarm(alarm); 
-                }
-
-                return HGrid.EMPTY;
+                LOG.warning(name() + " cannot find alarm with uuid " + uuid);
             }
+            else
+            {
+                if (LOG.isTraceOn()) 
+                    LOG.trace(name() + " acking " + alarm);
+
+                // We have to ignore the alarm while we are acking it
+                // so we don't get caught in a loop.
+                BAlarmService service = (BAlarmService) Sys.getService(BAlarmService.TYPE);
+                BNHaystackAlarmRecipient[] recips = (BNHaystackAlarmRecipient[]) 
+                    service.getChildren(BNHaystackAlarmRecipient.class);
+                for (int i = 0; i < recips.length; i++)
+                    recips[i].beginIgnore(uuid);
+
+                // ack the alarm
+                alarm.ackAlarm();
+
+                // Route the ack (we will end up ignoring this when it
+                // gets routed to BNHaystackAlarmRecipient instances).
+                alarmService.ackAlarm(alarm); 
+            }
+
+            return HGrid.EMPTY;
         }
         catch (Exception e)
         {

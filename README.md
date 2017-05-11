@@ -48,7 +48,6 @@ equipment and data.
 ###Key Features
 
 * Provides drop-in support for the Haystack protocol on an AX system.
-** User can create a list of tag based on point name to facilitate tag creation
 * Unifies the Component and History namespaces
 * Allows for arbitrary queries of the station based on Haystack tags
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
@@ -254,37 +253,6 @@ change a tag or alter the structure of a station.
 
 Note that tagging of Histories is not currently supported.  A future version
 of NHaystack will probably support this.
-
-### 3.1 Using a point name dictionnary to tag points
-You can create a simple csv file containing tags that will be added to your points, based on their name.
-
-    ex.
-    name,markers
-    DA-T,discharge air temp sensor
-    DA-H,discharge air humidity sensor
-    DA-P,discharge air pressure sensor
-    DA-VP,discharge air flow sensor 
-    SF-C,discharge air fan cmd
-    SF-S,discharge air fan sensor
-    SF-O,discharge air fan speed cmd
-    CLG1-C,cool stage:1 cmd
-
-This file must actually reside under this folder in your PC. 
-
-    c:\nhaystack\customTagsDict.csv
-
-A default file reside inside the module and could contain some tags shared by the community. The default file actually contains : 
-    
-    name,markers
-    DA-T,discharge air temp sensor
-    CLG1-C,cool stage:1 cmd
-
-
-### 3.2 A better Workbench Interface
-The nHaystack Service View is really simple. There's no need to rebuild everything but adding a few buttons add a lot of flexibility to the view. I also modified the showed text so we can get rid of ~ codes and retrieve familiar characters. For those who want to see ~ codes, just toggle de Haystack Format button.
-![nhaystackInterface.JPG](https://bitbucket.org/repo/aG6Aqy/images/2671364523-nhaystackInterface.JPG)
-
-If you change your local dictionnary file (c:\nHyatsack\customTagsDict.csv) just push the "Refresh Custom Dict" button and all new haystack slot will use the new file to tag your points based on name.
 
 ### 4. How site and equip tags work
 
@@ -605,3 +573,4 @@ enum tag is stored as a 'range' facet on the AX ControlPoint.
 [cur]: http://project-haystack.org/tag/cur
 [curStatus]: http://project-haystack.org/tag/curStatus
 [curVal]: http://project-haystack.org/tag/curVal
+

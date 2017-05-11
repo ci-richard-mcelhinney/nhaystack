@@ -14,7 +14,7 @@ import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.schedule.*;
 import javax.baja.sys.*;
-import javax.baja.nre.util.*;
+import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import nhaystack.*;
@@ -243,7 +243,7 @@ class Cache
             BComponent comp = (BComponent) iterator.next();
 
             // push implicit equip 
-            SlotCursor cursor = comp.getProperties();
+            Cursor cursor = comp.getProperties();
             if (cursor.next(BHEquip.class))
             {
                 implicitEquipStack.push(

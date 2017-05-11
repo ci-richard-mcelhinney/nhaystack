@@ -7,7 +7,7 @@
 //
 package nhaystack.res;
 
-import javax.baja.nre.util.*;
+import javax.baja.util.*;
 
 /**
   * Unit models a single entry found in 'units.txt'.

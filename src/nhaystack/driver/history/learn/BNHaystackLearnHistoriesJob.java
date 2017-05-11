@@ -13,7 +13,8 @@ import javax.baja.history.*;
 import javax.baja.job.*;
 import javax.baja.naming.*;
 import javax.baja.sys.*;
-import javax.baja.nre.util.*;
+import javax.baja.util.*;
+
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
@@ -42,7 +43,6 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackLearnHistoriesJob.class);
 
@@ -55,14 +55,12 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
         this.server = server;
     }
 
-    @Override
     public void doCancel(Context ctx) 
     {
         super.doCancel(ctx);
         throw new JobCancelException();
     }
 
-    @Override
     public void run(Context ctx) throws Exception 
     {
         NameGenerator nameGen = new NameGenerator();

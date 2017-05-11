@@ -34,13 +34,11 @@ public class BNHaystackPollScheduler
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackPollScheduler.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    @Override
     public void doPoll(BIPollable pollable) throws Exception
     {
         BNHaystackNetwork network = (BNHaystackNetwork) getParent();

@@ -21,11 +21,10 @@ import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.units.*;
 import javax.baja.util.*;
-import javax.baja.nre.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
-import org.projecthaystack.util.Base64;
+import org.projecthaystack.util.*;
 
 import nhaystack.*;
 import nhaystack.res.*;
@@ -123,16 +122,13 @@ public class TagManager
                     "/" + SlotUtil.toNiagara(nh.getPath()) :
                     Base64.URI.decodeUTF8(nh.getPath()));
 
-            try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
-            {
-                BIHistory history = conn.getHistory(hid);
-                if (history == null) return null;
-                BHistoryConfig cfg = history.getConfig();
+            BIHistory history = service.getHistoryDb().getHistory(hid);
+            if (history == null) return null;
+            BHistoryConfig cfg = history.getConfig();
 
-                if (!mustBeVisible) return cfg;
+            if (!mustBeVisible) return cfg;
 
-                return spaceMgr.isVisibleHistory(cfg) ? cfg : null;
-            }
+            return spaceMgr.isVisibleHistory(cfg) ? cfg : null;
         }
         // sep space
         else if (nh.getSpace().equals(NHRef.SEP))

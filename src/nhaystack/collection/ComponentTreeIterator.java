@@ -9,7 +9,7 @@ package nhaystack.collection;
 
 import java.util.*;
 import javax.baja.sys.*;
-import javax.baja.nre.util.*;
+import javax.baja.util.*;
 
 /**
   * ComponentTreeIterator iterates through a tree

@@ -61,7 +61,6 @@ public abstract class BHTagged extends BComponent
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHTagged.class);
 

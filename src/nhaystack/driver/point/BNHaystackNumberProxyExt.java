@@ -33,13 +33,11 @@ public class BNHaystackNumberProxyExt extends BNHaystackProxyExt
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackNumberProxyExt.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    @Override
     public void doRead(HVal curVal, HStr curStatus)
     {
         BStatus status = TypeUtil.toBajaStatus(curStatus);
@@ -55,7 +53,6 @@ public class BNHaystackNumberProxyExt extends BNHaystackProxyExt
         }
     }
 
-    @Override
     public void doWrite() throws Exception
     {
         BStatusNumeric writeValue = (BStatusNumeric) getWriteValue();

@@ -18,7 +18,6 @@ import javax.baja.ui.enums.*;
 import javax.baja.ui.event.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
-import javax.baja.nre.util.*;
 import javax.baja.workbench.fieldeditor.*;
 
 import org.projecthaystack.*;
@@ -82,7 +81,6 @@ public class BHDictEditor extends BEdgePane
 // Type
 ////////////////////////////////////////////////////////////////
   
-  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHDictEditor.class);
 
@@ -377,10 +375,8 @@ public class BHDictEditor extends BEdgePane
     {
         public AddRowIcon() { super(BHDictEditor.this, ""); }
 
-        @Override
         public BImage getIcon() { return ADD; }
 
-        @Override
         public CommandArtifact doInvoke()
         {
             String[] tags = Resources.getKindTags("Marker");
@@ -397,7 +393,6 @@ public class BHDictEditor extends BEdgePane
     {
         public AddRowButton() { super(BHDictEditor.this, LEX.getText("addTag")); }
 
-        @Override
         public CommandArtifact doInvoke()
         {
             String[] tags = Resources.getKindTags("Marker");
@@ -418,10 +413,8 @@ public class BHDictEditor extends BEdgePane
             this.index = index;
         }
 
-        @Override
         public BImage getIcon() { return REMOVE; }
 
-        @Override
         public CommandArtifact doInvoke()
         {
             rows.remove(index);
@@ -439,7 +432,6 @@ public class BHDictEditor extends BEdgePane
     {
         public AddMarkerSet() { super(BHDictEditor.this, LEX, "addMarkerSet"); }
 
-        @Override
         public CommandArtifact doInvoke()
         {
             BMarkerSet markerSet = new BMarkerSet();

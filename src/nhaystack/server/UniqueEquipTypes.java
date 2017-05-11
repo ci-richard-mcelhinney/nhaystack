@@ -14,7 +14,7 @@ import javax.baja.log.*;
 import javax.baja.naming.*;
 import javax.baja.security.*;
 import javax.baja.sys.*;
-import javax.baja.nre.util.*;
+import javax.baja.util.*;
 
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
