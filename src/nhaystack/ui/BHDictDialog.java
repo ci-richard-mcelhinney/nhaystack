@@ -14,6 +14,8 @@ import javax.baja.ui.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 
+import nhaystack.*;
+
 /**
   * BHDictDialog is used by a BHDictFE to bring up a BHDictEditorGroup.
   */
@@ -26,7 +28,7 @@ public final class BHDictDialog extends BDialog
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.ui.BHDictDialog(4101567885)1.0$ @*/
-/* Generated Fri Feb 01 09:12:38 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

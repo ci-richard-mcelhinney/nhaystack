@@ -23,7 +23,7 @@ public class BPointGrouping extends BComponent
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.BPointGrouping(1898514170)1.0$ @*/
-/* Generated Fri Apr 10 08:38:14 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "filter"

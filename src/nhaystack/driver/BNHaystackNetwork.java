@@ -35,7 +35,7 @@ public class BNHaystackNetwork
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.BNHaystackNetwork(3502540996)1.0$ @*/
-/* Generated Mon Apr 27 09:02:40 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "tuningPolicies"

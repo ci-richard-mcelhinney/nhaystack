@@ -24,7 +24,7 @@ public class BUniqueEquipTypeArgs extends BStruct
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.server.BUniqueEquipTypeArgs(99543646)1.0$ @*/
-/* Generated Wed May 06 09:30:55 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "filter"

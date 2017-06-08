@@ -44,7 +44,7 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.point.learn.BNHaystackLearnStructureJob(1124661438)1.0$ @*/
-/* Generated Wed Apr 08 12:16:28 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

@@ -33,8 +33,8 @@ public class BNHaystackWorker
 
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.worker.BNHaystackWorker(1126374167)1.0$ @*/
-/* Generated Sun Jun 01 13:38:16 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.worker.BNHaystackWorker(2080566612)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "maxQueueSize"

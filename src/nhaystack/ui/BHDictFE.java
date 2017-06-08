@@ -13,6 +13,7 @@ import javax.baja.naming.*;
 import javax.baja.sys.*;
 import javax.baja.ui.*;
 import javax.baja.ui.enums.*;
+import javax.baja.ui.event.*;
 import javax.baja.ui.pane.*;
 import javax.baja.util.*;
 import javax.baja.workbench.fieldeditor.*;
@@ -35,8 +36,8 @@ public class BHDictFE extends BWbFieldEditor
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictFE(2503827154)1.0$ @*/
-/* Generated Sun Jan 27 11:25:33 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictFE(3017636865)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

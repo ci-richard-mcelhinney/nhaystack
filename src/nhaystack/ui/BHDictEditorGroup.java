@@ -29,8 +29,8 @@ public class BHDictEditorGroup extends BScrollPane
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditorGroup(2327187967)1.0$ @*/
-/* Generated Sat Feb 09 10:19:16 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictEditorGroup(2199273530)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

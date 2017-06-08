@@ -30,8 +30,8 @@ public class BEquipRefFE extends BWbFieldEditor
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BEquipRefFE(3045417629)1.0$ @*/
-/* Generated Sun Feb 10 10:52:19 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BEquipRefFE(531194592)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

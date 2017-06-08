@@ -30,7 +30,7 @@ public class BNHaystackStrPoint
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.point.BNHaystackStrPoint(4123762748)1.0$ @*/
-/* Generated Sun Jun 01 09:34:38 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "proxyExt"
