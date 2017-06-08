@@ -3,8 +3,7 @@
 ## ![NHaystack](docs/tag.png) NHaystack
 
 NHaystack is an open-source [Niagara AX](https://www.tridium.com/en/products-services/niagara-ax) 
-and [Niagara4](https://www.tridium.com/en/products-services/niagara4) module 
-that enables Niagara stations (JACE and WebSupervisor) to act as either servers 
+and module that enables Niagara stations (JACE and WebSupervisor) to act as either servers 
 _or_ clients in the [Project Haystack](http://project-haystack.org) format, via 
 a [RESTful](http://project-haystack.org/doc/Rest) protocol.  Using NHaystack, 
 external applications receive data that includes essential meta data (tags) 
@@ -32,7 +31,15 @@ NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
 
 The development of NHaystack has been funded by 
-[J2 Innovations](http://www.j2inn.com).  
+[J2 Innovations](http://www.j2inn.com).
+
+Further development has been undertaken by [Conserve it](http://www.conserveit.com.au)
+and [Airmaster](http://www.airmaster.com.au).
+
+## Community Contributors
+The following members of the community of contributed code to NHaystack:
+
+* Christian Tremblay, [Servisys](http://www.servisys.com)
 
 ###Benefits
 
@@ -50,12 +57,12 @@ equipment and data.
 
 ###Key Features
 
-* Provides drop-in support for the Haystack protocol on an AX system.
+* Provides drop-in support for the Haystack protocol on a Niagara AX system.
 * Unifies the Component and History namespaces
 * Allows for arbitrary queries of the station based on Haystack tags
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
-* Provides a standard AX driver so that remote Haystack servers can be modeled 
-inside of AX.
+* Provides a standard Niagara AX driver so that remote Haystack servers can be 
+modelled inside of Niagara AX.
 
 ### 1. Using NHaystack as a server
 
@@ -224,6 +231,7 @@ have a curVal.
 
 ### 3. Tagging via the "haystack" slot
 
+#### 3.1 Basic concepts
 For many use cases of NHaystack, you will not need to do any explicit tagging
 on the station.  However, sometimes you want to actually add tags to the 
 recs that are generated.  NHaystack supports this via the following convention: 
@@ -254,22 +262,31 @@ Whenever you alter a tag with the FieldEditor, you usually need to run
 `rebuildCache`. Its best to just get in the habit of running it any time you
 change a tag or alter the structure of a station.
 
-Note that tagging of Histories is not currently supported.  A future version
-of NHaystack will probably support this.
+Note that tagging of Histories is not currently supported.
 
-### 3.2 A better Workbench Interface
-The nHaystack Service View is really simple. There's no need to rebuild 
-everything but adding a few buttons add a lot of flexibility to the view. 
-I also modified the showed text so we can get rid of ~ codes and retrieve 
-familiar characters. For those who want to see ~ codes, just toggle de Codes vs Text button.
+#### 3.2 Automating explicit tagging
+As described above it is possible to explicitly tag a BControlPoint in a station
+that implements NHaystack.  Depending on the size of your station this could be
+quite a time consuming tasks.  In addition many users of Niagara AX reuse similar
+point names within their stations across projects and having to tag the same 
+points with the same tags on repeated projects can waste a lot for time and incur
+a lot of unnecessary cost to the customer.
+
+Starting in version 1.3.0 functionality has been added to allow the System 
+Integrator to define standard tag sets that are to be automatically applied to 
+a point on the basis of the point name in the station.  By adding some simple
+GUI functionality a System Integrator can add explicit tags in a uniform fashion
+and save time and money.
+
+In order to achieve this saving, a System Integrator must define their own local
+"tag dictionary".  This dictionary can reside on the local PC of the SI and can be
+edited right in the Niagara AX Workbench.
 
 ![New service view](docs/service.PNG)
 
-If you change your local dictionnary file (local:|file:/C:/Users/USERNAME/Niagara4.2/tridium/shared/nHaystack/customTagsDict.csv) 
+If you change your local dictionnary file (local:|file:/C:nHaystack/customTagsDict.csv) 
 just push the "Reload Custom Tag List" button and all new haystack slot will use 
 the new file to tag your points based on name.
-
-You can also click on the label "Edit your custom Tags" and you will be rediected to the workbench text editor.
 
 Note that if the file doesn't exist, you will get an error. To make this feature work, 
 create a folder named "nHaystack" in your shared folder. Then create a simple file named
