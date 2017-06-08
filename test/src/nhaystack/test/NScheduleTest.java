@@ -37,7 +37,7 @@ public class NScheduleTest extends NTest
         System.out.println("verifySchedule aaa");
 
         HRef id = HRef.make("S.Tatooine.Equip1.BooleanWritable");
-        client.pointWrite(id, 15, "foo", HBool.TRUE, HNum.ZERO, schedItems());
+        client.pointWrite(id, 15, "foo", HBool.TRUE, HNum.ZERO);
 
 //        id = HRef.make("S.Tatooine.Equip2.BooleanSchedule");
 //        client.pointWrite(id, 15, "foo", HBool.TRUE, HNum.ZERO, schedItems());
