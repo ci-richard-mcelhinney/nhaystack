@@ -69,44 +69,44 @@ public class Resources
 
     static
     {
-        try
-        {
-            loadTags();
-            loadTimeZones();
-            loadUnits();
-            loadMarkerSets();
-            loadAutoMarkers(null); // New feature
-        }
-        catch (Exception e)
-        {
-            throw new BajaRuntimeException(e);
-        }
+      try
+      {
+        loadTags();
+        loadTimeZones();
+        loadUnits();
+        loadMarkerSets();
+        loadAutoMarkers(null); // New feature
+      }
+      catch (Exception e)
+      {
+        throw new BajaRuntimeException(e);
+      }
     }
 
     private static void loadTags() throws Exception
     {
-        InputStream in = Resources.class.getResourceAsStream(TAGS);
-        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+      InputStream in = Resources.class.getResourceAsStream(TAGS);
+      BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        kindTags = new HashMap();
+      kindTags = new HashMap();
 
-        String str = bin.readLine(); // throw away header
+      String str = bin.readLine(); // throw away header
+      str = bin.readLine();
+      while (str != null)
+      {			
+        String[] tokens = TextUtil.split(str, ',');
+        String name = tokens[0];
+        String kind = tokens[1];
+
+        Set set = (Set) kindTags.get(kind);
+        if (set == null)
+          kindTags.put(kind, set = new TreeSet());
+        set.add(name);
+
         str = bin.readLine();
-        while (str != null)
-        {			
-            String[] tokens = TextUtil.split(str, ',');
-            String name = tokens[0];
-            String kind = tokens[1];
+      }
 
-            Set set = (Set) kindTags.get(kind);
-            if (set == null)
-                kindTags.put(kind, set = new TreeSet());
-            set.add(name);
-
-            str = bin.readLine();
-        }
-
-        bin.close();
+      bin.close();
     }
 
     /**
@@ -122,186 +122,186 @@ public class Resources
      * SF-C,discharge fan cmd
      * @throws Exception
      */
-public static void loadAutoMarkers(BOrd fq) throws Exception
-{
-        // Load default dictionnary
-        BOrd fileQuery = null;
-        InputStream in = null; 
-        // Try to load local file if exists
-        try
-        {
-          if (fq == null){
-            // must be a local file on workbench PC.... at startup, it may load but will be overriden when service view will open.
-            // loading again will be necessary using the button
-            // N4 : String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
-            // N4 : String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
-            String shared_folder = "c:/nHaystack";
-            String customTagsDictFilePath = "local:|file:/"+shared_folder+"/customTagsDict.csv";
-            System.out.println(customTagsDictFilePath);
-            fileQuery =  BOrd.make(customTagsDictFilePath);
-          }
-          else{
-            fileQuery = fq;
-          }
-          BIFile myFile = (BIFile)fileQuery.get();
-          in = myFile.getInputStream();              
+    public static void loadAutoMarkers(BOrd fq) throws Exception
+    {
+      // Load default dictionnary
+      BOrd fileQuery = null;
+      InputStream in = null; 
+      // Try to load local file if exists
+      try
+      {
+        if (fq == null){
+          // must be a local file on workbench PC.... at startup, it may load but will be overriden when service view will open.
+          // loading again will be necessary using the button
+          // N4 : String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
+          // N4 : String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
+          String shared_folder = "c:/nHaystack";
+          String customTagsDictFilePath = "local:|file:/"+shared_folder+"/customTagsDict.csv";
+          System.out.println(customTagsDictFilePath);
+          fileQuery =  BOrd.make(customTagsDictFilePath);
         }
-        //handle case where file isn't found or doesn't exist.
-        catch(UnresolvedException re)
-        {
-          System.out.println("nHaystack - Tag Dictionnary / No custom file, using default.");
-          in = Resources.class.getResourceAsStream(AUTOMARKERS);  
+        else{
+          fileQuery = fq;
         }
-        //handle IO exceptions from trying to read from file
-        catch(IOException ioe)
-        {
-          System.out.println("nHaystack - Tag Dictionnary / Errors in custom file, using default.");
-          in = Resources.class.getResourceAsStream(AUTOMARKERS); 
-        }  
-        
-        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+        BIFile myFile = (BIFile)fileQuery.get();
+        in = myFile.getInputStream();              
+      }
+      //handle case where file isn't found or doesn't exist.
+      catch(UnresolvedException re)
+      {
+        System.out.println("nHaystack - Tag Dictionnary / No custom file, using default.");
+        in = Resources.class.getResourceAsStream(AUTOMARKERS);  
+      }
+      //handle IO exceptions from trying to read from file
+      catch(IOException ioe)
+      {
+        System.out.println("nHaystack - Tag Dictionnary / Errors in custom file, using default.");
+        in = Resources.class.getResourceAsStream(AUTOMARKERS); 
+      }  
 
-        autoMarkers = new HashMap();
+      BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        String str = bin.readLine(); // throw away header
+      autoMarkers = new HashMap();
+
+      String str = bin.readLine(); // throw away header
+      str = bin.readLine();
+      while (str != null)
+      {
+        String[] tokens = TextUtil.split(str, ',');
+        String pointName = tokens[0];
+        String[] markerList = TextUtil.split(tokens[1], ' ');
+
+        Set set = (Set) autoMarkers.get(pointName);
+        if (set == null)
+          autoMarkers.put(pointName, set = new TreeSet());
+        for (int i = 0; i < markerList.length; i++){
+          set.add(markerList[i]);
+        }
+
         str = bin.readLine();
-        while (str != null)
-        {
-            String[] tokens = TextUtil.split(str, ',');
-            String pointName = tokens[0];
-            String[] markerList = TextUtil.split(tokens[1], ' ');
+      }
+      System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
+      System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
+      bin.close();
+    }
 
-            Set set = (Set) autoMarkers.get(pointName);
-            if (set == null)
-              autoMarkers.put(pointName, set = new TreeSet());
-            for (int i = 0; i < markerList.length; i++){
-              set.add(markerList[i]);
-            }
-
-            str = bin.readLine();
-        }
-        System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
-        System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
-        bin.close();
-}
-    
     
     private static void loadTimeZones() throws Exception
     {
-        InputStream in = Resources.class.getResourceAsStream(TZ);
-        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+      InputStream in = Resources.class.getResourceAsStream(TZ);
+      BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        Array arr = new Array(String.class);
+      Array arr = new Array(String.class);
 
-        String str = bin.readLine(); 
-        while (str != null)
-        {
-            arr.add(str.trim());
-            str = bin.readLine();
-        }
+      String str = bin.readLine(); 
+      while (str != null)
+      {
+        arr.add(str.trim());
+        str = bin.readLine();
+      }
 
-        timeZones = (String[]) arr.trim();
-        bin.close();
+      timeZones = (String[]) arr.trim();
+      bin.close();
     }
 
     private static void loadUnits() throws Exception
     {
-        InputStream in = Resources.class.getResourceAsStream(UNITS);
-        BufferedReader bin = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+      InputStream in = Resources.class.getResourceAsStream(UNITS);
+      BufferedReader bin = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 
-        unitsByQuantity = new HashMap();
-        unitsBySymbol = new HashMap();
-        unitsByLowerCaseName = new HashMap();
+      unitsByQuantity = new HashMap();
+      unitsBySymbol = new HashMap();
+      unitsByLowerCaseName = new HashMap();
 
-        Array arr = new Array(String.class);
-        String curQuant = null;
+      Array arr = new Array(String.class);
+      String curQuant = null;
 
-        String str = bin.readLine(); 
-        while (str != null)
+      String str = bin.readLine(); 
+      while (str != null)
+      {
+        if (!str.equals("")) 
         {
-            if (!str.equals("")) 
-            {
-                if (str.startsWith("-- "))
-                {
-                    curQuant = str.substring(3, str.length() - 3);
-                    arr.add(curQuant);
-                }
-                else
-                {
-                    String[] tokens = TextUtil.split(str, ',');
-							
-                    if (tokens.length == 1)
-                        loadUnit(new Unit(curQuant, tokens[0], tokens[0]));
-                    else
-                        for (int i = 0; i < tokens.length-1; i++)
-                            loadUnit(new Unit(curQuant, tokens[0], tokens[i+1]));
-                }
-            }
+          if (str.startsWith("-- "))
+          {
+            curQuant = str.substring(3, str.length() - 3);
+            arr.add(curQuant);
+          }
+          else
+          {
+            String[] tokens = TextUtil.split(str, ',');
 
-            str = bin.readLine();
+            if (tokens.length == 1)
+              loadUnit(new Unit(curQuant, tokens[0], tokens[0]));
+            else
+              for (int i = 0; i < tokens.length-1; i++)
+                loadUnit(new Unit(curQuant, tokens[0], tokens[i+1]));
+          }
         }
 
-        quantities = (String[]) arr.trim();
-        bin.close();
+        str = bin.readLine();
+      }
+
+      quantities = (String[]) arr.trim();
+      bin.close();
     }
 
     private static void loadUnit(Unit unit)
     {
-        Array arr = (Array) unitsByQuantity.get(unit.quantity);
-        if (arr == null)
-            unitsByQuantity.put(unit.quantity, arr = new Array(Unit.class));
-        arr.add(unit);
+      Array arr = (Array) unitsByQuantity.get(unit.quantity);
+      if (arr == null)
+        unitsByQuantity.put(unit.quantity, arr = new Array(Unit.class));
+      arr.add(unit);
 
-        if (unitsBySymbol.containsKey(unit.symbol))
-            throw new BajaRuntimeException("Duplicate symbol: " + unit.symbol);
-        unitsBySymbol.put(unit.symbol, unit);
+      if (unitsBySymbol.containsKey(unit.symbol))
+        throw new BajaRuntimeException("Duplicate symbol: " + unit.symbol);
+      unitsBySymbol.put(unit.symbol, unit);
 
-        String name = unit.name.toLowerCase();
-        if (!unitsByLowerCaseName.containsKey(name))
-            unitsByLowerCaseName.put(name, unit);
+      String name = unit.name.toLowerCase();
+      if (!unitsByLowerCaseName.containsKey(name))
+        unitsByLowerCaseName.put(name, unit);
     }
 
     private static void loadMarkerSets() throws Exception
     {
-        markerSetTags = new HashMap();
+      markerSetTags = new HashMap();
 
-        markerSetTags.put("ahu", loadMarkerSet(AHU));
-        markerSetTags.put("boiler", loadMarkerSet(BOILER));
-        markerSetTags.put("chilledWaterPlant", loadMarkerSet(CHILLED_WATER_PLANT));
-        markerSetTags.put("chiller", loadMarkerSet(CHILLER));
-        markerSetTags.put("coolingTower", loadMarkerSet(COOLING_TOWER));
-        markerSetTags.put("elecMeter", loadMarkerSet(ELEC_METER));
-        markerSetTags.put("heatExchanger", loadMarkerSet(HEAT_EXCHANGER));
-        markerSetTags.put("hotWaterPlant", loadMarkerSet(HOT_WATER_PLANT));
-        markerSetTags.put("steamPlant", loadMarkerSet(STEAM_PLANT));
-        markerSetTags.put("tank", loadMarkerSet(TANK));
-        markerSetTags.put("vav", loadMarkerSet(VAV));
-        markerSetTags.put("vfd", loadMarkerSet(VFD));
-        markerSetTags.put("zone", loadMarkerSet(ZONE));
+      markerSetTags.put("ahu", loadMarkerSet(AHU));
+      markerSetTags.put("boiler", loadMarkerSet(BOILER));
+      markerSetTags.put("chilledWaterPlant", loadMarkerSet(CHILLED_WATER_PLANT));
+      markerSetTags.put("chiller", loadMarkerSet(CHILLER));
+      markerSetTags.put("coolingTower", loadMarkerSet(COOLING_TOWER));
+      markerSetTags.put("elecMeter", loadMarkerSet(ELEC_METER));
+      markerSetTags.put("heatExchanger", loadMarkerSet(HEAT_EXCHANGER));
+      markerSetTags.put("hotWaterPlant", loadMarkerSet(HOT_WATER_PLANT));
+      markerSetTags.put("steamPlant", loadMarkerSet(STEAM_PLANT));
+      markerSetTags.put("tank", loadMarkerSet(TANK));
+      markerSetTags.put("vav", loadMarkerSet(VAV));
+      markerSetTags.put("vfd", loadMarkerSet(VFD));
+      markerSetTags.put("zone", loadMarkerSet(ZONE));
     }
 
     private static Array loadMarkerSet(String resourcePath) throws Exception
     {
-        InputStream in = Resources.class.getResourceAsStream(resourcePath);
-        BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+      InputStream in = Resources.class.getResourceAsStream(resourcePath);
+      BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        Array arr = new Array(String.class);
+      Array arr = new Array(String.class);
 
-        String str = bin.readLine(); 
-        while (str != null)
+      String str = bin.readLine(); 
+      while (str != null)
+      {
+        if (!str.equals("") && !str.startsWith("**"))
         {
-            if (!str.equals("") && !str.startsWith("**"))
-            {
-                while (str.indexOf("  ") != -1)
-                    str = TextUtil.replace(str, "  ", " ");
-                arr.add(str);
-            }
-
-            str = bin.readLine();
+          while (str.indexOf("  ") != -1)
+            str = TextUtil.replace(str, "  ", " ");
+          arr.add(str);
         }
 
-        bin.close();
-        return arr;
+        str = bin.readLine();
+      }
+
+      bin.close();
+      return arr;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -309,91 +309,91 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
 ////////////////////////////////////////////////////////////////
 
     /**
-      * Get the different 'kinds' of tags: Str, Marker, Bool, etc
-      */
+     * Get the different 'kinds' of tags: Str, Marker, Bool, etc
+     */
     public static String[] getKindTags(String kind)
     {
-        if (!kindTags.containsKey(kind)) return new String[0];
+      if (!kindTags.containsKey(kind)) return new String[0];
 
-        Array arr = new Array(String.class, (Set) kindTags.get(kind));
-        return (String[]) arr.trim();
+      Array arr = new Array(String.class, (Set) kindTags.get(kind));
+      return (String[]) arr.trim();
     }
 
     /**
-      * Get all the timezones.
-      */
+     * Get all the timezones.
+     */
     public static String[] getTimeZones()
     {
-        return timeZones;
+      return timeZones;
     }
 
     /**
-      * Get all the different quantities of units.
-      */
+     * Get all the different quantities of units.
+     */
     public static String[] getUnitQuantities()
     {
-        return quantities;
+      return quantities;
     }
 
     /**
-      * Get all the Units having a given quantity.
-      */
+     * Get all the Units having a given quantity.
+     */
     public static Unit[] getUnits(String quantity)
     {
-        Array arr = (Array) unitsByQuantity.get(quantity);
-        return (Unit[]) arr.trim();
+      Array arr = (Array) unitsByQuantity.get(quantity);
+      return (Unit[]) arr.trim();
     }
 
     /**
-      * Get all the Units having a given quantity and name.
-      */
+     * Get all the Units having a given quantity and name.
+     */
     public static Unit[] getUnits(String quantity, String name)
     {
-        Array a1 = (Array) unitsByQuantity.get(quantity);
-        Array a2 = new Array(Unit.class);
+      Array a1 = (Array) unitsByQuantity.get(quantity);
+      Array a2 = new Array(Unit.class);
 
-        for (int i = 0; i < a1.size(); i++)
-        {
-            Unit unit = (Unit) a1.get(i);
-            if (unit.name.equals(name))
-                a2.add(unit);
-        }
+      for (int i = 0; i < a1.size(); i++)
+      {
+        Unit unit = (Unit) a1.get(i);
+        if (unit.name.equals(name))
+          a2.add(unit);
+      }
 
-        return (Unit[]) a2.trim();
+      return (Unit[]) a2.trim();
     }
 
     /**
-      * Get the unit having a given symbol.
-      */
+     * Get the unit having a given symbol.
+     */
     public static Unit getSymbolUnit(String symbol)
     {
-        Unit unit = (Unit) unitsBySymbol.get(symbol);
-        if (unit == null)
-            throw new BajaRuntimeException(
-                "Cannot find Unit for symbol '" + symbol + "'.");
-        return unit;
+      Unit unit = (Unit) unitsBySymbol.get(symbol);
+      if (unit == null)
+        throw new BajaRuntimeException(
+                                       "Cannot find Unit for symbol '" + symbol + "'.");
+      return unit;
     }
 
     /**
-      * Get the names of all the Marker Sets.
-      */
+     * Get the names of all the Marker Sets.
+     */
     public static String[] getMarkerSets()
     {
-        return markerSets;
+      return markerSets;
     }
 
     /**
-      * Get the space-delimited list of the tags
-      * associated with the given Marker Set name.
-      */
+     * Get the space-delimited list of the tags
+     * associated with the given Marker Set name.
+     */
     public static String[] getMarkerSetTags(String group)
     {
-        Array arr = (Array) markerSetTags.get(group);
-        if (arr == null) throw new BajaRuntimeException(
-            "Cannot find marker group '" + group + "'.");
-        return (String[]) arr.trim();
+      Array arr = (Array) markerSetTags.get(group);
+      if (arr == null) throw new BajaRuntimeException(
+                                                      "Cannot find marker group '" + group + "'.");
+      return (String[]) arr.trim();
     }
-    
+
     /**
      * Get the default tags based on pointName. Ex. DA-T loads "discharge air temp sensor" tags. Used in BAddHaystackSlot.
      */
@@ -407,38 +407,38 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
     }
 
     /**
-      * Get the Unit that corresponds to the given Niagara BUnit,
-      * or return null if no corresponding Unit can be found.
-      */
+     * Get the Unit that corresponds to the given Niagara BUnit,
+     * or return null if no corresponding Unit can be found.
+     */
     public static Unit fromBajaUnit(BUnit bunit)
     {
-        Unit unit = (Unit) unitsByLowerCaseName.get(
-            TextUtil.replace(bunit.getUnitName(), " ", "_").toLowerCase());
-		
-        if (unit != null) return unit;
+      Unit unit = (Unit) unitsByLowerCaseName.get(
+                                                  TextUtil.replace(bunit.getUnitName(), " ", "_").toLowerCase());
 
-        if (bunit.getUnitName().equals("dollar")) return getSymbolUnit("$");
-        if (bunit.getUnitName().equals("pounds")) return getSymbolUnit("GBP");
-        if (bunit.getUnitName().equals("rupee"))  return getSymbolUnit("INR");
-        if (bunit.getUnitName().equals("won"))    return getSymbolUnit("KRW");
-        if (bunit.getUnitName().equals("yen"))    return getSymbolUnit("JPY");
+      if (unit != null) return unit;
 
-        return null;
+      if (bunit.getUnitName().equals("dollar")) return getSymbolUnit("$");
+      if (bunit.getUnitName().equals("pounds")) return getSymbolUnit("GBP");
+      if (bunit.getUnitName().equals("rupee"))  return getSymbolUnit("INR");
+      if (bunit.getUnitName().equals("won"))    return getSymbolUnit("KRW");
+      if (bunit.getUnitName().equals("yen"))    return getSymbolUnit("JPY");
+
+      return null;
     }
 
     /**
-      * Get the BUnit that corresponds to the given Haystack Unit,
-      * or return null if no corresponding BUnit can be found.
-      */
+     * Get the BUnit that corresponds to the given Haystack Unit,
+     * or return null if no corresponding BUnit can be found.
+     */
     public static BUnit toBajaUnit(Unit unit)
     {
-        if (unit.name.equals("us_dollar"))     return BUnit.getUnit("dollar");
-        if (unit.name.equals("british_pound")) return BUnit.getUnit("pounds");
-        if (unit.name.equals("indian_rupee"))  return BUnit.getUnit("rupee");
-        if (unit.name.equals("chinese_yuan"))  return BUnit.getUnit("won");
-        if (unit.name.equals("japanese_yen"))  return BUnit.getUnit("yen");
+      if (unit.name.equals("us_dollar"))     return BUnit.getUnit("dollar");
+      if (unit.name.equals("british_pound")) return BUnit.getUnit("pounds");
+      if (unit.name.equals("indian_rupee"))  return BUnit.getUnit("rupee");
+      if (unit.name.equals("chinese_yuan"))  return BUnit.getUnit("won");
+      if (unit.name.equals("japanese_yen"))  return BUnit.getUnit("yen");
 
-        return BUnit.getUnit(TextUtil.replace(unit.name, "_", " ").toLowerCase());
+      return BUnit.getUnit(TextUtil.replace(unit.name, "_", " ").toLowerCase());
     }
 
 ////////////////////////////////////////////////////////////////
@@ -447,79 +447,79 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
 
     private static void missingUnitsToNiagara() throws Exception
     {
-        // print all the haystack unit names which cannot automatically
-        // be converted into Baja unit names.
+      // print all the haystack unit names which cannot automatically
+      // be converted into Baja unit names.
 
-        System.out.println("--------------------------------------------------------");
-        System.out.println("Units which cannot be converted from Haystack to Niagara");
-        System.out.println();
+      System.out.println("--------------------------------------------------------");
+      System.out.println("Units which cannot be converted from Haystack to Niagara");
+      System.out.println();
 
-        String[] quantities = getUnitQuantities();
-        for (int i = 0; i < quantities.length; i++)
+      String[] quantities = getUnitQuantities();
+      for (int i = 0; i < quantities.length; i++)
+      {
+        String quantity = quantities[i];
+        boolean headerPrinted = false;
+
+        Unit[] units = getUnits(quantity);
+        for (int j = 0; j < units.length; j++)
         {
-            String quantity = quantities[i];
-            boolean headerPrinted = false;
-
-            Unit[] units = getUnits(quantity);
-            for (int j = 0; j < units.length; j++)
+          Unit unit = units[j];
+          try
+          {
+            BUnit bunit = toBajaUnit(unit);
+          }
+          catch (UnitException e)
+          {
+            if (!headerPrinted)
             {
-                Unit unit = units[j];
-                try
-                {
-                    BUnit bunit = toBajaUnit(unit);
-                }
-                catch (UnitException e)
-                {
-                    if (!headerPrinted)
-                    {
-                        System.out.println(quantity);
-                        headerPrinted = true;
-                    }
-                    System.out.println("    " + unit.name);
-                }
+              System.out.println(quantity);
+              headerPrinted = true;
             }
+            System.out.println("    " + unit.name);
+          }
         }
+      }
     }
 
     private static void missingUnitsFromNiagara() throws Exception
     {
-        // print all the niagara unit names which cannot automatically
-        // be converted into haystack unit names.
+      // print all the niagara unit names which cannot automatically
+      // be converted into haystack unit names.
 
-        System.out.println("--------------------------------------------------------");
-        System.out.println("Units which cannot be converted from Niagara to Haystack");
-        System.out.println();
+      System.out.println("--------------------------------------------------------");
+      System.out.println("Units which cannot be converted from Niagara to Haystack");
+      System.out.println();
 
-        UnitDatabase ud = UnitDatabase.getDefault();
-        UnitDatabase.Quantity[] quantities = ud.getQuantities();
+      UnitDatabase ud = UnitDatabase.getDefault();
+      UnitDatabase.Quantity[] quantities = ud.getQuantities();
 
-        for (int i = 0; i < quantities.length; i++)
+      for (int i = 0; i < quantities.length; i++)
+      {
+        UnitDatabase.Quantity q = quantities[i];
+        boolean headerPrinted = false;
+
+        BUnit[] units = q.getUnits();
+        for (int j = 0; j < units.length; j++)
         {
-            UnitDatabase.Quantity q = quantities[i];
-            boolean headerPrinted = false;
+          BUnit u = units[j];
 
-            BUnit[] units = q.getUnits();
-            for (int j = 0; j < units.length; j++)
+          if (fromBajaUnit(u) == null)
+          {
+            if (!headerPrinted)
             {
-                BUnit u = units[j];
-
-                if (fromBajaUnit(u) == null)
-                {
-                    if (!headerPrinted)
-                    {
-                        System.out.println(q.getName());
-                        headerPrinted = true;
-                    }
-
-                    System.out.println("    " + u.getUnitName());
-                }
+              System.out.println(q.getName());
+              headerPrinted = true;
             }
+
+            System.out.println("    " + u.getUnitName());
+          }
         }
+      }
     }
 
     public static void main(String[] args) throws Exception
     {
-        missingUnitsFromNiagara();
-        missingUnitsToNiagara();
+      missingUnitsFromNiagara();
+      missingUnitsToNiagara();
     }
 }
