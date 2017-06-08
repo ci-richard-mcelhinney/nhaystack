@@ -455,8 +455,8 @@ public class NSimpleClientTest extends NTest
         // do first sub
         HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
         verifyEq(sub.numRows(), 2);
-//        verifyEq(sub.row(0).dis(), a.dis());
-//        verifyEq(sub.row(1).dis(), b.dis());
+        verifyEq(sub.row(0).id(), a.id());
+        verifyEq(sub.row(1).id(), b.id());
 //
 //        // now add c, d
 //        sub = w.sub(new HRef[] { c.id(), d.id() }, false);
