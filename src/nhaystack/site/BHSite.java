@@ -28,8 +28,8 @@ public class BHSite extends BHTagged
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHSite(875174785)1.0$ @*/
-/* Generated Fri Mar 29 12:39:07 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.site.BHSite(1786347679)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

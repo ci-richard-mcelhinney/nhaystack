@@ -34,7 +34,7 @@ public class BNHaystackThreadPoolWorker
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.worker.BNHaystackThreadPoolWorker(2268244792)1.0$ @*/
-/* Generated Sat Apr 25 09:05:06 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "maxQueueSize"

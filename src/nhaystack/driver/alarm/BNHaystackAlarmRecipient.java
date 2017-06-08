@@ -43,7 +43,7 @@ public class BNHaystackAlarmRecipient
    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(1587153237)1.0$ @*/
-/* Generated Fri Jun 12 08:14:38 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackServer"

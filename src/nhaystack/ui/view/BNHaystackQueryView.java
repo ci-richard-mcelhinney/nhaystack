@@ -39,8 +39,8 @@ public class BNHaystackQueryView extends BWbView
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.view.BNHaystackQueryView(2576189528)1.0$ @*/
-/* Generated Sun Apr 28 10:49:50 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.view.BNHaystackQueryView(3296896567)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Action "queryFilter"

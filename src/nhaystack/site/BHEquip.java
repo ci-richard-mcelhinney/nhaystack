@@ -30,8 +30,8 @@ public class BHEquip extends BHTagged
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHEquip(1762613286)1.0$ @*/
-/* Generated Tue Sep 03 09:48:31 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.site.BHEquip(3567360809)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystack"

@@ -22,8 +22,8 @@ public class BNHaystackServerFolder extends BDeviceFolder
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $j2inn.nhaystack.driver.BNHaystackServerFolder(3322669339)1.0$ @*/
-/* Generated Tue Dec 24 13:41:23 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.BNHaystackServerFolder(3322669339)1.0$ @*/
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

@@ -22,7 +22,7 @@ public class BNHaystackRebuildCacheJob extends BSimpleJob
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.server.BNHaystackRebuildCacheJob(1080354402)1.0$ @*/
-/* Generated Sun Jun 01 09:34:38 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

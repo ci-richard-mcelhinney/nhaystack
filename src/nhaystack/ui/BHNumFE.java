@@ -34,8 +34,8 @@ public class BHNumFE extends BWbFieldEditor
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHNumFE(298792993)1.0$ @*/
-/* Generated Tue Feb 05 14:25:56 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHNumFE(2279711778)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Action "hasUnitModified"

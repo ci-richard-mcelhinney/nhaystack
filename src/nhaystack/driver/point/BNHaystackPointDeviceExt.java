@@ -24,7 +24,7 @@ public class BNHaystackPointDeviceExt extends BPointDeviceExt
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.point.BNHaystackPointDeviceExt(306764068)1.0$ @*/
-/* Generated Mon Apr 07 12:57:57 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:42 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

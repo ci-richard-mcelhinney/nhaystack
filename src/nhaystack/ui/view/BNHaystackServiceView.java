@@ -42,8 +42,8 @@ public class BNHaystackServiceView extends BWbComponentView
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BNHaystackServiceView(1870466022)1.0$ @*/
-/* Generated Tue Apr 09 09:47:22 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.view.BNHaystackServiceView(1870466022)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -242,8 +242,7 @@ public class BNHaystackServiceView extends BWbComponentView
               // local:|file:/C:/JCI/FXWorkbench-6.0/stations/StationVide/nHaystack/customTagsDict.csv
             }
             catch (Exception e)
-            {
-              // TODO Auto-generated catch block
+            { 
               System.out.println("Problem...");
               e.printStackTrace();
             }

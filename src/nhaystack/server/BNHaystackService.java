@@ -63,7 +63,7 @@ public class BNHaystackService
                 flags { hidden }
                 default{[ false ]}
             consumptionUnits: String
-                default{[ "kWh,kg,L,m³" ]}
+                default{[ "kWh,kg,L,mï¿½" ]}
         }
         actions
         {
@@ -111,8 +111,8 @@ public class BNHaystackService
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(617458771)1.0$ @*/
-/* Generated Mon Oct 19 10:37:25 PDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackService(3913379293)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -305,29 +305,6 @@ public class BNHaystackService
   public void setInitializationDelayTime(BRelTime v) { set(initializationDelayTime,v,null); }
 
 ////////////////////////////////////////////////////////////////
-//Property "consumptionUnits"
-////////////////////////////////////////////////////////////////
-	
-  /**
-  * Slot for the <code>consumptionUnits</code> property.
-  * @see nhaystack.server.BNHaystackService#getConsumptionUnits
-  * @see nhaystack.server.BNHaystackService#setConsumptionUnits
-  */
-  public static final Property consumptionUnits = newProperty(0, "kWh,kg,L,m³", null);
-
-  /**
-  * Get the <code>consumptionUnits</code> property.
-  * @see nhaystack.server.BNHaystackService#consumptionUnits
-  */
-  public String getConsumptionUnits() { return getString(consumptionUnits); }
-	
-  /**
-  * Set the <code>consumptionUnits</code> property.
-  * @see nhaystack.server.BNHaystackService#consumptionUnits
-  */
-  public void setConsumptionUnits(String v) { setString(consumptionUnits,v,null); }
-  
-////////////////////////////////////////////////////////////////
 // Property "foxLeaseInterval"
 ////////////////////////////////////////////////////////////////
   
@@ -372,6 +349,29 @@ public class BNHaystackService
    * @see nhaystack.server.BNHaystackService#translateEnums
    */
   public void setTranslateEnums(boolean v) { setBoolean(translateEnums,v,null); }
+
+////////////////////////////////////////////////////////////////
+// Property "consumptionUnits"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the <code>consumptionUnits</code> property.
+   * @see nhaystack.server.BNHaystackService#getConsumptionUnits
+   * @see nhaystack.server.BNHaystackService#setConsumptionUnits
+   */
+  public static final Property consumptionUnits = newProperty(0, "kWh,kg,L,m\ufffd",null);
+  
+  /**
+   * Get the <code>consumptionUnits</code> property.
+   * @see nhaystack.server.BNHaystackService#consumptionUnits
+   */
+  public String getConsumptionUnits() { return getString(consumptionUnits); }
+  
+  /**
+   * Set the <code>consumptionUnits</code> property.
+   * @see nhaystack.server.BNHaystackService#consumptionUnits
+   */
+  public void setConsumptionUnits(String v) { setString(consumptionUnits,v,null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "readById"

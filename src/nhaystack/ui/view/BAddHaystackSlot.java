@@ -32,8 +32,8 @@ public class BAddHaystackSlot extends BTextEditor
     }
   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.view.BAddHaystackSlot(1390518057)1.0$ @*/
-/* Generated Tue Apr 09 10:10:53 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.view.BAddHaystackSlot(658320125)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

@@ -31,8 +31,8 @@ public class BNHaystackServlet extends BWebServlet
     }
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $haystack.ax.BNHaystackServlet(4016421877)1.0$ @*/
-/* Generated Thu Sep 27 14:59:43 EDT 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackServlet(3316847236)1.0$ @*/
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type

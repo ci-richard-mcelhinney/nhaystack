@@ -22,7 +22,7 @@ public class BNHaystackRemoveBrokenRefsJob extends BSimpleJob
     -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.server.BNHaystackRemoveBrokenRefsJob(3224119689)1.0$ @*/
-/* Generated Sun Jun 01 09:55:13 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/* Generated Tue May 30 17:08:43 AEST 2017 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
 // Type
