@@ -32,14 +32,19 @@
     <get src="http://project-haystack.org/download/tz.txt"    dest="src/nhaystack/res/tz.txt"    />
     <get src="http://project-haystack.org/download/units.txt" dest="src/nhaystack/res/units.txt" />
 
-    <get src="http://project-haystack.org/download/equip-points/ahu"           dest="src/nhaystack/res/equip-points/ahu.txt"           />
-    <get src="http://project-haystack.org/download/equip-points/chiller"       dest="src/nhaystack/res/equip-points/chiller.txt"       />
-    <get src="http://project-haystack.org/download/equip-points/chillerPlant"  dest="src/nhaystack/res/equip-points/chillerPlant.txt"  />
-    <get src="http://project-haystack.org/download/equip-points/coolingTower"  dest="src/nhaystack/res/equip-points/coolingTower.txt"  />
-    <get src="http://project-haystack.org/download/equip-points/elecMeter"     dest="src/nhaystack/res/equip-points/elecMeter.txt"     />
-    <get src="http://project-haystack.org/download/equip-points/heatExchanger" dest="src/nhaystack/res/equip-points/heatExchanger.txt" />
-    <get src="http://project-haystack.org/download/equip-points/vav"           dest="src/nhaystack/res/equip-points/vav.txt"           />
-
+    <get src="http://project-haystack.org/download/equip-points/ahu"                dest="src/nhaystack/res/equip-points/ahu.txt"                />
+  	<get src="http://project-haystack.org/download/equip-points/boiler"             dest="src/nhaystack/res/equip-points/boiler.txt"             />
+  	<get src="http://project-haystack.org/download/equip-points/chiller"            dest="src/nhaystack/res/equip-points/chiller.txt"            />
+    <get src="http://project-haystack.org/download/equip-points/chilledWaterPlant"  dest="src/nhaystack/res/equip-points/chilledWaterPlant.txt"  />
+    <get src="http://project-haystack.org/download/equip-points/coolingTower"       dest="src/nhaystack/res/equip-points/coolingTower.txt"       />
+    <get src="http://project-haystack.org/download/equip-points/elecMeter"          dest="src/nhaystack/res/equip-points/elecMeter.txt"          />
+    <get src="http://project-haystack.org/download/equip-points/heatExchanger"      dest="src/nhaystack/res/equip-points/heatExchanger.txt"      />
+    <get src="http://project-haystack.org/download/equip-points/hotWaterPlant"      dest="src/nhaystack/res/equip-points/hotWaterPlant.txt"      />
+  	<get src="http://project-haystack.org/download/equip-points/steamPlant"         dest="src/nhaystack/res/equip-points/steamPlant.txt"         />
+  	<get src="http://project-haystack.org/download/equip-points/tank"               dest="src/nhaystack/res/equip-points/tank.txt"               />
+  	<get src="http://project-haystack.org/download/equip-points/vav"                dest="src/nhaystack/res/equip-points/vav.txt"                />
+  	<get src="http://project-haystack.org/download/equip-points/vfd"                dest="src/nhaystack/res/equip-points/vfd.txt"                />
+  	<get src="http://project-haystack.org/download/equip-points/zone"               dest="src/nhaystack/res/equip-points/zone.txt"               />
   </target>
 
 </project>
