@@ -47,7 +47,6 @@ public class NSimpleClientTest extends NTest
         System.out.println("--- Passed verifyRead");
         verifyNav();
         System.out.println("--- Passed verifyNav");
-
         verifyWatches();
         System.out.println("--- Passed verifyWatches");
         verifyPointWrite();
@@ -192,7 +191,11 @@ public class NSimpleClientTest extends NTest
         verifyEq(dict.get("dis"), HStr.make("Config_SineWave5"));
         verifyEq(dict.get("navName"), HStr.make("Config_SineWave5"));
         verifyEq(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
-//
+
+        
+// TODO this structure doesn't exist in the test station, need to look and 
+//      see if it's really necessary
+        
 //        //////////////////////////////////////////
 //
 //        dict = client.readById(HRef.make("C.Foo.Sine-Wave2~2fabc"));
@@ -245,7 +248,7 @@ public class NSimpleClientTest extends NTest
         verify(dict.missing("hisInterpolate"));
         verify(dict.missing("unit"));
 
-//        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave3"));
+//        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave5"));
 //        verifyEq(dict.get("axType"), HStr.make("history:HistoryConfig"));
 //        verifyEq(dict.get("kind"), HStr.make("Number"));
 //        verify(dict.has("his"));
@@ -253,7 +256,7 @@ public class NSimpleClientTest extends NTest
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
+//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave5"));
 //        verify(dict.missing("hisInterpolate"));
 //        verifyEq(dict.get("unit"), HStr.make("psi"));
 
@@ -300,28 +303,27 @@ public class NSimpleClientTest extends NTest
 
         n = makeNavGrid(HStr.make("his:/nhaystack_simple"));
         grid = client.call("nav", n);
-//        verifyEq(grid.numRows(), 3);
         verifyEq(grid.numRows(), 2);
 
-//        n = makeNavGrid(HStr.make("slot:/"));
-//        grid = client.call("nav", n);
+        n = makeNavGrid(HStr.make("slot:/"));
+        grid = client.call("nav", n);
 //        printBasicGrid(grid);
-//        verifyEq(grid.numRows(), 10);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("slot:/Services"));
-//        verifyEq(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
-//        verify(grid.row(2).missing("navId"));
-//        verifyEq(grid.row(3).get("navId"), HStr.make("slot:/Equip1"));
-//        verifyEq(grid.row(4).get("navId"), HStr.make("slot:/Equip2"));
-//        verifyEq(grid.row(5).get("navId"), HStr.make("slot:/SineWave4"));
-//        verifyEq(grid.row(6).get("navId"), HStr.make("slot:/SineWave4"));
-//        verifyEq(grid.row(7).get("navId"), HStr.make("slot:/SineWave5"));
-//        verifyEq(grid.row(8).get("navId"), HStr.make("slot:/Richmond"));
-//        verifyEq(grid.row(9).get("navId"), HStr.make("slot:/AHU2"));
-//
+        verifyEq(grid.numRows(), 10);
+        verifyEq(grid.row(0).get("navId"), HStr.make("slot:/Services"));
+        verifyEq(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
+        verify(grid.row(2).missing("navId"));
+        verify(grid.row(3).missing("navId"));
+        verifyEq(grid.row(4).get("navId"), HStr.make("slot:/Equip1"));
+        verifyEq(grid.row(5).get("navId"), HStr.make("slot:/Equip2"));
+        verifyEq(grid.row(6).get("navId"), HStr.make("slot:/SineWave4"));
+        verifyEq(grid.row(7).get("navId"), HStr.make("slot:/SineWave5"));
+        verify(grid.row(8).missing("navId"));
+        verifyEq(grid.row(9).get("navId"), HStr.make("slot:/AHU2"));
+
 //        traverseComponents((HStr) grid.row(0).get("navId"));
 //        traverseComponents((HStr) grid.row(1).get("navId"));
 //        traverseComponents((HStr) grid.row(2).get("navId"));
-//
+
 ////[sep:/] 'Site'
 ////    [sep:/Richmond] 'Richmond'
 ////        [sep:/Richmond/AHU1] 'Richmond AHU1'
@@ -341,30 +343,22 @@ public class NSimpleClientTest extends NTest
 
         grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond")));
         verifyEq(grid.numRows(), 1);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU1"));
         verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU2"));
-//        verifyEq(grid.row(2).get("navId"), HStr.make("sep:/Richmond/AHU3"));
         verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU2"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU2"));
-//        verifyEq(grid.row(2).get("dis"), HStr.make("Richmond AHU3"));
 
         grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
         verifyEq(grid.numRows(), 1);
         verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
         
-        // TODO this should work
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
-        
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU1 AHU3_BooleanWritable"));
+        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+// TODO add some more tests in here
         
         grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
         verifyEq(grid.numRows(), 1);
         verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU2 NumericWritable1"));
-//
+        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+
+// TODO add in another AHU for testing 
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU3")));
 //        verifyEq(grid.numRows(), 2);
 //        verify(grid.row(0).missing("navId"));
@@ -373,17 +367,17 @@ public class NSimpleClientTest extends NTest
 //        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU3 NumericWritable1"));
     }
 
-//    private void traverseComponents(HStr navId)
-//    {
-//        HGrid grid = client.call("nav", makeNavGrid(navId));
-//
-//        for (int i = 0; i < grid.numRows(); i++)
-//        {
-//            if (grid.row(i).has("navId"))
-//                traverseComponents((HStr) grid.row(i).get("navId"));
-//        }
-//    }
-//
+    private void traverseComponents(HStr navId)
+    {
+        HGrid grid = client.call("nav", makeNavGrid(navId));
+
+        for (int i = 0; i < grid.numRows(); i++)
+        {
+            if (grid.row(i).has("navId"))
+                traverseComponents((HStr) grid.row(i).get("navId"));
+        }
+    }
+
 ////////////////////////////////////////////////////////////////////////////
 //// His Reads
 ////////////////////////////////////////////////////////////////////////////
@@ -435,7 +429,7 @@ public class NSimpleClientTest extends NTest
     void verifyWatches() throws Exception
     {
         // create new watch
-        HWatch w = client.watchOpen("NHaystack Simple Test", HNum.make(60, "s"));
+        HWatch w = client.watchOpen("NHaystack Simple Test", HNum.make(120, "s"));
         verifyEq(w.id(), null);
         verifyEq(w.dis(), "NHaystack Simple Test");
 
@@ -457,47 +451,47 @@ public class NSimpleClientTest extends NTest
         verifyEq(sub.numRows(), 2);
         verifyEq(sub.row(0).id(), a.id());
         verifyEq(sub.row(1).id(), b.id());
-//
-//        // now add c, d
-//        sub = w.sub(new HRef[] { c.id(), d.id() }, false);
-//        verifyEq(sub.numRows(), 2);
-//        verifyEq(sub.row(0).dis(), c.dis());
-//        verifyEq(sub.row(1).dis(), d.dis());
-//
-//        // verify state of watch now
-//        verify(client.watch(w.id()) == w);
-//        verifyEq(client.watches().length, 1);
-//        verify(client.watches()[0] == w);
-//        verifyEq(w.lease().millis(), 2L * 60 * 1000);
-//
-//        // poll refresh
-//        HGrid poll = w.pollRefresh();
-//        verifyEq(poll.numRows(), 4);
-//        verifyGridContains(poll, "id", a.id());
-//        verifyGridContains(poll, "id", b.id());
-//        verifyGridContains(poll, "id", c.id());
-//        verifyGridContains(poll, "id", d.id());
-//
-//        // poll changes
-//        Thread.sleep(2000); // wait for the sine waves to tick over
-//        poll = w.pollChanges();
-//        verifyEq(poll.numRows(), 2);
-//
-//        // remove d, and then poll refresh
-//        w.unsub(new HRef[] { d.id() });
-//        poll = w.pollRefresh();
-//        verifyEq(poll.numRows(), 3);
-//
-//        // close
-//        w.close();
-//        try { w.pollRefresh(); fail(); } catch (Exception e) { verifyException(e); }
-//        verifyEq(client.watch(w.id(), false), null);
-//        verifyEq(client.watches().length, 0);
-//
-//        // check bad id 
-//        w = client.watchOpen("Bogus Test");
-//        HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
-//        try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
+
+        // now add c, d
+        sub = w.sub(new HRef[] { c.id(), d.id() }, false);
+        verifyEq(sub.numRows(), 2);
+        verifyEq(sub.row(0).id(), c.id());
+        verifyEq(sub.row(1).id(), d.id());
+
+        // verify state of watch now
+        verify(client.watch(w.id()) == w);
+        verifyEq(client.watches().length, 1);
+        verify(client.watches()[0] == w);
+        verifyEq(w.lease().millis(), 2L * 60 * 1000);
+
+        // poll refresh
+        HGrid poll = w.pollRefresh();
+        verifyEq(poll.numRows(), 4);
+        verifyGridContains(poll, "id", a.id());
+        verifyGridContains(poll, "id", b.id());
+        verifyGridContains(poll, "id", c.id());
+        verifyGridContains(poll, "id", d.id());
+
+        // poll changes
+        Thread.sleep(3000); // wait for the sine waves to tick over
+        poll = w.pollChanges();
+        verifyEq(poll.numRows(), 1);
+
+        // remove d, and then poll refresh
+        w.unsub(new HRef[] { d.id() });
+        poll = w.pollRefresh();
+        verifyEq(poll.numRows(), 3);
+
+        // close
+        w.close();
+        try { w.pollRefresh(); fail(); } catch (Exception e) { verifyException(e); }
+        verifyEq(client.watch(w.id(), false), null);
+        verifyEq(client.watches().length, 0);
+
+        // check bad id 
+        w = client.watchOpen("Bogus Test", HNum.make(120, "s"));
+        HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
+        try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyException(e); }
     }
 
 ////////////////////////////////////////////////////////////////////////////
