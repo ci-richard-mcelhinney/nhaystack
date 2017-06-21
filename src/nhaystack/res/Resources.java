@@ -180,8 +180,8 @@ public class Resources
 
         str = bin.readLine();
       }
-      System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
-      System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
+//      System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
+//      System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
       bin.close();
     }
 
