@@ -10,7 +10,6 @@ package nhaystack.test;
 import org.projecthaystack.*;
 import org.projecthaystack.io.*;
 import org.projecthaystack.client.*;
-import org.projecthaystack.test.*;
 import org.projecthaystack.util.*;
 
 /**
@@ -18,7 +17,7 @@ import org.projecthaystack.util.*;
  */
 public class NInvokeTest extends NTest
 {
-    final String URI = "http://localhost/haystack/";
+    final String URI = "http://localhost:8080/haystack/";
 
 //////////////////////////////////////////////////////////////////////////
 // Main
