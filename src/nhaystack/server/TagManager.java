@@ -534,17 +534,19 @@ public class TagManager
     private String createDis(BComponent comp, HDict tags, HDictBuilder hdb)
     {
         String dis = makeDisName(comp, tags);
-
         if (hdb.has("point"))
         {
             String equipDis = lookupDisName(hdb, "equipRef");
             if (equipDis != null)
             {
-                dis = equipDis + " " + dis;
-
                 String siteDis = lookupDisName(hdb, "siteRef");
                 if (siteDis != null)
-                    dis = siteDis + " " + equipDis + " " + dis;
+                {
+                  System.out.println("siteDis: " + siteDis); 
+                  return siteDis + " " + equipDis + " " + dis;
+                }
+                else
+                  return equipDis + " " + dis;
             }
         }
         else if (hdb.has("equip"))
