@@ -137,7 +137,7 @@ public class Resources
           // N4 : String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
           String shared_folder = "c:/nHaystack";
           String customTagsDictFilePath = "local:|file:/"+shared_folder+"/customTagsDict.csv";
-          System.out.println(customTagsDictFilePath);
+//          System.out.println(customTagsDictFilePath);
           fileQuery =  BOrd.make(customTagsDictFilePath);
         }
         else{
@@ -402,7 +402,7 @@ public class Resources
       String key = SlotPath.unescape(pointName);
       if (!autoMarkers.containsKey(key)) return new String[0];
       Array arr = new Array(String.class, (Set) autoMarkers.get(key));
-      System.out.println("getAutoMArker" + pointName + " : " + (String[]) arr.trim());
+//      System.out.println("getAutoMArker" + pointName + " : " + (String[]) arr.trim());
       return (String[]) arr.trim();
     }
 

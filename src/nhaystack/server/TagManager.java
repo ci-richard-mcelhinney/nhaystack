@@ -542,7 +542,7 @@ public class TagManager
                 String siteDis = lookupDisName(hdb, "siteRef");
                 if (siteDis != null)
                 {
-                  System.out.println("siteDis: " + siteDis); 
+//                  System.out.println("siteDis: " + siteDis); 
                   return siteDis + " " + equipDis + " " + dis;
                 }
                 else
