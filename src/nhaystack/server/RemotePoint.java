@@ -144,7 +144,7 @@ class RemotePoint
 		catch(Exception e)
 		{
 			LOG.message("[RemotePoint] error in slot path string " + slotPathStr);
-			System.out.println("[RemotePoint] error in slot path string " + slotPathStr);
+//			System.out.println("[RemotePoint] error in slot path string " + slotPathStr);
 			e.printStackTrace();
 			return;
 		}
