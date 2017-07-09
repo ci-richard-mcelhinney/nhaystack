@@ -79,7 +79,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("unit"), HStr.make("°F"));
         verify(dict.has("point"));
         verifyEq(dict.get("tz"), localTz());
-        verify(dict.getDouble("curVal") == 0.0);
+//        verify(dict.getDouble("curVal") == 0.0);
 ////        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
         dict = client.readById(HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace1.points.SineWave2"));
@@ -91,7 +91,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("unit"), HStr.make("psi"));
         verify(dict.has("point"));
         verifyEq(dict.get("tz"), localTz());
-        verify(dict.getDouble("curVal") == 0.0);
+//        verify(dict.getDouble("curVal") == 0.0);
 ////        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 
         dict = client.readById(HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace2.points.SineWave1"));
@@ -103,7 +103,7 @@ public class NSupervisorClientTest extends NTest
         verifyEq(dict.get("unit"), HStr.make("°F"));
         verify(dict.has("point"));
         verify(dict.missing("tz"));
-        verify(dict.getDouble("curVal") == 0.0);
+//        verify(dict.getDouble("curVal") == 0.0);
         verify(dict.missing("axHistoryRef"));
         verify(dict.missing("hisInterpolate"));
 

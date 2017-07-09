@@ -18,7 +18,7 @@ import org.projecthaystack.util.*;
  */
 public class NScheduleTest extends NTest
 {
-    final String URI = "http://localhost/haystack/";
+    final String URI = "https://localhost/haystack/";
     HClient client;
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,7 +28,6 @@ public class NScheduleTest extends NTest
     public void test() throws Exception
     {
         this.client = HClient.open(URI, "admin", "Abcde12345");
-
         verifySchedule();
     }
 
@@ -36,10 +35,10 @@ public class NScheduleTest extends NTest
     {
         System.out.println("verifySchedule aaa");
 
-        HRef id = HRef.make("S.Tatooine.Equip1.BooleanWritable");
-        client.pointWrite(id, 15, "foo", HBool.TRUE, HNum.ZERO);
+//        HRef id = HRef.make("S.Tatooine.Equip1.BooleanWritable");
+//        client.pointWrite(id, 15, "foo", HBool.TRUE, HNum.ZERO);
 
-//        id = HRef.make("S.Tatooine.Equip2.BooleanSchedule");
+//        HRef id = HRef.make("C.Misc_Comps.BooleanSchedule");
 //        client.pointWrite(id, 15, "foo", HBool.TRUE, HNum.ZERO, schedItems());
     }
 
