@@ -31,15 +31,15 @@ public class NUtilTest extends NTest
     {
         verifyPath(
             "/AHU2/BooleanWritable",
-            "AHU2.BooleanWritable");
+            ".AHU2.BooleanWritable");
 
         verifyPath(
             "/AHU2/Boolean$20Writable",
-            "AHU2.Boolean-Writable");
+            ".AHU2.Boolean-Writable");
 
         verifyPath(
             "/AHU2/Boolean$20Writable$2f",
-            "AHU2.Boolean-Writable~2f");
+            ".AHU2.Boolean-Writable~2f");
 
         verifyPath(
             "/$20AHU2/Boolean$20Writable$2f$20",
