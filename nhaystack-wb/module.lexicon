@@ -20,4 +20,8 @@ noSites=(there are no Sites)
 filter=Filter:
 siteEquipPoint=Site-Equip-Point Hierarchy:
 load=Load
-
+loadcustomTagDict=Reload Custom Tag List
+rebuildCache=Rebuild Cache
+initialize=Initialize
+haystackFormat=Codes vs Text
+editCustomTagsDict=Edit your custom Tags

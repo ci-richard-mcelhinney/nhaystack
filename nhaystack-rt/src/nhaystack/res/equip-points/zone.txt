@@ -9,5 +9,3 @@ zone air temp standby heating sp
 zone air humidity sensor
 zone air co2 sensor
 zone air co2 sp
-
-
