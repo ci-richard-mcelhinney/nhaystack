@@ -3,6 +3,7 @@
 // 
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+//    11 May 2017  Christian Tremblay Update (added tags download)
 
 ext {
   niagaraHome = System.getenv("niagara_home")
@@ -54,8 +55,8 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
 def srcList = [
   'http://project-haystack.org/download/equip-points/ahu',
   'http://project-haystack.org/download/equip-points/boiler',
-  'http://project-haystack.org/download/equip-points/chiller',
   'http://project-haystack.org/download/equip-points/chilledWaterPlant',
+  'http://project-haystack.org/download/equip-points/chiller',
   'http://project-haystack.org/download/equip-points/coolingTower',
   'http://project-haystack.org/download/equip-points/elecMeter',
   'http://project-haystack.org/download/equip-points/heatExchanger',
@@ -69,8 +70,8 @@ def srcList = [
 def targetList = [
   new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/boiler.txt'),
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/chilledWaterPlant.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/chiller.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/chillerPlant.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/coolingTower.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/elecMeter.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt'),
@@ -79,7 +80,8 @@ def targetList = [
   new File('nhaystack-rt/src/nhaystack/res/equip-points/tank.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/vav.txt'),
   new File('nhaystack-rt/src/nhaystack/res/equip-points/vfd.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/zone.txt'),]
+  new File('nhaystack-rt/src/nhaystack/res/equip-points/zone.txt'),
+  ]
 
 task downloadTags (type: FilesDownload) {
   group 'nhaystack'

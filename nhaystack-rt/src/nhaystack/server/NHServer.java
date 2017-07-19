@@ -84,13 +84,13 @@ public class NHServer extends HServer
 
             hd.add("serverName", Sys.getStation().getStationName());
 
-            hd.add("productName",    "Niagara AX");
+            hd.add("productName",    "Niagara 4");
             hd.add("productVersion", BComponent.TYPE.getVendorVersion().toString());
             hd.add("productUri",     HUri.make("http://www.tridium.com/"));
 
             hd.add("moduleName",    BNHaystackService.TYPE.getModule().getModuleName());
             hd.add("moduleVersion", BNHaystackService.TYPE.getVendorVersion().toString());
-            hd.add("moduleUri",     HUri.make("https://bitbucket.org/jasondbriggs/nhaystack"));
+            hd.add("moduleUri",     HUri.make("https://bitbucket.org/richiemac_77/nhaystack"));
 
             return hd.toDict();
         }
