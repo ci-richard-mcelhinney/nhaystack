@@ -14,7 +14,6 @@ percent_obscuration_per_meter,%obsc/m
 psi_per_degree_fahrenheit,psi/°F
 square_meters_per_newton,m²/N
 watts_per_square_meter_degree_kelvin,W/m²K
-ampere_square_meter,Am²
 db_milliVolt,dBmV
 db_microVolt,dBµV
 parts_per_unit,ppu
@@ -85,6 +84,7 @@ micrograms_per_cubic_meter,µg/m³
 
 -- electric charge --
 coulomb,C
+ampere_hour,Ah
 
 -- electric conductance --
 siemens,S
@@ -92,6 +92,9 @@ siemens,S
 -- electric current --
 ampere,A
 milliampere,mA
+
+-- electromagnetic moment --
+ampere_square_meter,Am²
 
 -- electric current density --
 amperes_per_square_meter,A/m²
@@ -409,3 +412,4 @@ megabyte,MB
 gigabyte,GB
 terabyte,TB
 petabyte,PB
+
