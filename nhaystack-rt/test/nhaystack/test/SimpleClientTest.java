@@ -496,7 +496,7 @@ public class SimpleClientTest
 //// His Reads
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = false)
+  @Test(enabled = true)
   public void verifyHisRead() throws Exception
   {
     HGrid grid = client.readAll("his");
@@ -513,7 +513,7 @@ public class SimpleClientTest
     int last = his.numRows()-1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
 
-    Assert.assertEquals(numVal(his.row(0)).unit, "�F");
+    Assert.assertEquals(numVal(his.row(0)).unit, "°F");
 
     ///////////////////////////////////////////////
 
@@ -533,7 +533,7 @@ public class SimpleClientTest
 
 //        ///////////////////////////////////////////////
 
-    client.hisRead(HRef.make("C.AHU2.NumericWritable"), "today");
+//    client.hisRead(HRef.make("C.AHU2.NumericWritable"), "today");
 //        client.hisRead(HRef.make("S.Richmond.AHU2.NumericWritable"), "today");
   }
 
@@ -541,7 +541,7 @@ public class SimpleClientTest
 //// Watches
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = false)
+  @Test(enabled = true)
   void verifyWatches() throws Exception
   {
     // create new watch
