@@ -614,7 +614,7 @@ public class SimpleClientTest
 //// Point Write
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = false)
+  @Test(enabled = true)
   void verifyPointWrite() throws Exception
   {
     doVerifyInvokeAction(HRef.make("C.AHU2.NumericWritable"));
@@ -681,7 +681,7 @@ public class SimpleClientTest
 //// Invoke Action
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = false)
+  @Test(enabled = true)
   void verifyInvokeAction() throws Exception
   {
     doVerifyInvokeAction(HRef.make("C.AHU2.NumericWritable"));
