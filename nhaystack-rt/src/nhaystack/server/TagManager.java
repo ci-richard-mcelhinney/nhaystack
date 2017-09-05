@@ -503,11 +503,17 @@ public class TagManager
             String equipDis = lookupDisName(hdb, "equipRef");
             if (equipDis != null)
             {
-                dis = equipDis + " " + dis;
-
+//                dis = equipDis + " " + dis;
                 String siteDis = lookupDisName(hdb, "siteRef");
                 if (siteDis != null)
-                    dis = siteDis + " " + equipDis + " " + dis;
+                {
+//                    dis = siteDis + " " + equipDis + " " + dis;
+                    return siteDis + " " + equipDis + " " + dis;
+                }
+                else
+                {
+                    return equipDis + " " + dis;
+                }
             }
         }
         else if (hdb.has("equip"))
