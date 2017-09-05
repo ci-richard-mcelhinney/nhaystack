@@ -36,3 +36,4 @@ condenser refrig temp sensor
 condenser refrig pressure sensor
 evaporator refrig temp sensor
 evaporator refrig pressure sensor
+
