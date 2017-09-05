@@ -49,7 +49,17 @@ dependencies {
   compile "Tridium:bajaui-wb:4.0.22"
   compile "Tridium:workbench-wb:4.0.22"
 
+  testCompile 'org.testng:testng:6.10'
+
   uberjar "javax.servlet:javax.servlet-api:3.0.1"
+}
+
+test {
+  useTestNG()
+
+  include 'nhaystack/test/*'
+
+  testLogging.showStandardStreams = true
 }
 
 jar {
