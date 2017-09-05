@@ -8,38 +8,25 @@
 package nhaystack.test;
 
 
-import com.tridium.testng.BTestNg;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
-import org.projecthaystack.auth.*;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+//import org.projecthaystack.auth.*;
+import org.projecthaystack.util.Base64;
+import org.testng.annotations.*;
 import org.testng.*;
 
-import javax.baja.nre.annotations.NiagaraType;
-import javax.baja.sys.*;
+import java.util.Iterator;
+import java.util.Map;
+
+import static org.testng.Assert.fail;
 
 /**
- * BSimpleClientTest -- this test uses nhaystack_simple
+ * SimpleClientTest -- this test uses nhaystack_simple
  */
-@NiagaraType
+
 @Test
-public class BSimpleClientTest extends BTestNg
+public class SimpleClientTest
 {
-/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.test.BSimpleClientTest(2979906276)1.0$ @*/
-/* Generated Sat May 21 21:24:09 AEST 2016 by Slot-o-Matic (c) Tridium, Inc. 2012 */
-
-////////////////////////////////////////////////////////////////
-// Type
-////////////////////////////////////////////////////////////////
-  
-//  @Override
-  public Type getType() { return TYPE; }
-  public static final Type TYPE = Sys.loadType(BSimpleClientTest.class);
-
-/*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -53,13 +40,23 @@ public class BSimpleClientTest extends BTestNg
 // Setup / Teardown
 //////////////////////////////////////////////////////////////////////////
 
-  @BeforeClass(alwaysRun = true)
+  @BeforeMethod(alwaysRun = true)
   public void setup()
-  { }
+  {
+    try
+    {
+      this.client = HClient.open(URI, "admin", "abcd1234");
+      client.about();
+    }
+    catch(Exception e)
+    {  e.printStackTrace(); fail(); }
+  }
 
-  @AfterClass(alwaysRun = true)
+  @AfterMethod(alwaysRun = true)
   public void tearDown()
-  { }
+  {
+    client = null;
+  }
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,29 +68,29 @@ public class BSimpleClientTest extends BTestNg
   {
     // get bad credentials
     try
-    {  HClient.open(URI, "baduser", "badpass").about(); Assert.fail(); }
+    {  HClient.open(URI, "baduser", "badpass").about(); fail(); }
     catch (Exception e)
-    {  Assert.assertEquals(e.getClass(), AuthException.class); }
+    {
+      Assert.assertTrue(true);
+    }
 
     try
-    {  HClient.open(URI, "admin", "badpass").about(); Assert.fail(); }
+    {  HClient.open(URI, "admin", "badpass").about(); fail(); }
     catch (CallException e)
-    {  Assert.assertEquals(e.getClass(), AuthException.class); }
+    {
+      Assert.assertTrue(true);
+    }
 
     try
     {
-      this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+      this.client = HClient.open(URI, "admin", "abcd1234");
       client.about();
     }
     catch(Exception e)
-    {  e.printStackTrace(); Assert.fail(); }
-
-    // create proper client
-//    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-//    client.about();
+    {  e.printStackTrace(); fail(); }
   }
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   public void verifyHttpsAuth()
   {
     try
@@ -104,7 +101,7 @@ public class BSimpleClientTest extends BTestNg
     catch(Exception e)
     {
       e.printStackTrace();
-      Assert.fail();
+      fail();
     }
   }
 
@@ -116,16 +113,15 @@ public class BSimpleClientTest extends BTestNg
   void verifyAbout() throws Exception
   {
     // non-secure
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    this.client = HClient.open(URI, "admin", "abcd1234");
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
-    Assert.assertEquals(r.getStr("productName"), "Niagara AX");
+    Assert.assertEquals(r.getStr("productName"), "Niagara 4");
     Assert.assertEquals(r.getStr("productVersion"), "4.2.36.34");
-    Assert.assertEquals(r.getStr("tz"), HTimeZone.DEFAULT.name);
   }
 
-  @Test(enabled = true)
-  void verifySecureAbout() throws Exception{}
+//  @Test(enabled = false)
+  void verifySecureAbout() throws Exception
   {
     // secure
     this.client = HClient.open(SECURE_URI, "admin", "Vk3ldb237847");
@@ -143,7 +139,7 @@ public class BSimpleClientTest extends BTestNg
   @Test(enabled = true)
   public void verifyOps() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    this.client = HClient.open(URI, "admin", "abcd1234");
     HGrid g = client.ops();
 
     // verify required columns
@@ -165,7 +161,7 @@ public class BSimpleClientTest extends BTestNg
     verifyGridContains(g, "name", HStr.make("invokeAction"));
   }
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   public void verifySecureOps() throws Exception
   {
     this.client = HClient.open(SECURE_URI, "admin", "Vk3ldb237847");
@@ -197,7 +193,7 @@ public class BSimpleClientTest extends BTestNg
   @Test(enabled = true)
   public void verifyFormats() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+//    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid g = client.formats();
 
     // verify required columns
@@ -218,28 +214,27 @@ public class BSimpleClientTest extends BTestNg
   public void verifyRead() throws Exception
   {
     HDict dict;
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid grid = client.readAll("id");
 
-    Assert.assertEquals(grid.numRows(), 18);
-    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell"));
-    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.Equip1.point1"));
-    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.Equip1.point2"));
-    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.Equip1.point3"));
-    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.Equip1.point4"));
-    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
-    Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
-    Assert.assertEquals(grid.row(7).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
-    Assert.assertEquals(grid.row(8).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
-    Assert.assertEquals(grid.row(9).id(), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row(10).id(), HRef.make("S.Winterfell.Equip1.point5"));
-    Assert.assertEquals(grid.row(11).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
-    Assert.assertEquals(grid.row(12).id(), HRef.make("S.Winterfell.Equip2.SineWave3"));
-    Assert.assertEquals(grid.row(13).id(), HRef.make("S.Winterfell.Equip2"));
-    Assert.assertEquals(grid.row(14).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
-    Assert.assertEquals(grid.row(15).id(), HRef.make("C.SineWave5"));
-    Assert.assertEquals(grid.row(16).id(), HRef.make("H.nhaystack1.AuditHistory"));
-    Assert.assertEquals(grid.row(17).id(), HRef.make("H.nhaystack1.LogHistory"));
+//    printFullGrid(grid);
+    Assert.assertEquals(grid.numRows(), 17);
+    Assert.assertEquals(grid.row( 0).id(), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row( 1).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
+    Assert.assertEquals(grid.row( 2).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
+    Assert.assertEquals(grid.row( 3).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
+    Assert.assertEquals(grid.row( 4).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
+    Assert.assertEquals(grid.row( 5).id(), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 6).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
+    Assert.assertEquals(grid.row( 7).id(), HRef.make("S.Winterfell.Equip2.SineWave2"));
+    Assert.assertEquals(grid.row( 8).id(), HRef.make("S.Winterfell.Equip2.SineWave3"));
+    Assert.assertEquals(grid.row( 9).id(), HRef.make("S.Winterfell.Equip2"));
+    Assert.assertEquals(grid.row(10).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
+    Assert.assertEquals(grid.row(11).id(), HRef.make("C.SineWave5"));
+    Assert.assertEquals(grid.row(12).id(), HRef.make("S.Richmond"));
+    Assert.assertEquals(grid.row(13).id(), HRef.make("S.Richmond.AHU2"));
+    Assert.assertEquals(grid.row(14).id(), HRef.make("S.Richmond.AHU2.NumericWritable"));
+    Assert.assertEquals(grid.row(15).id(), HRef.make("H.nhaystack_simple.AuditHistory"));
+    Assert.assertEquals(grid.row(16).id(), HRef.make("H.nhaystack_simple.LogHistory"));
 
     Assert.assertEquals(grid.row(1).get("siteRef"), HRef.make("S.Winterfell"));
     Assert.assertEquals(grid.row(2).get("siteRef"), HRef.make("S.Winterfell"));
@@ -252,12 +247,36 @@ public class BSimpleClientTest extends BTestNg
     Assert.assertEquals(grid.row(9).get("siteRef"), HRef.make("S.Winterfell"));
 
     // TODO add check for equipRef to Equip2
-    Assert.assertEquals(grid.row(1).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row(2).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row(3).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row(4).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row(6).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row(7).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 1).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 2).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 3).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 4).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 6).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row( 7).get("equipRef"), HRef.make("S.Winterfell.Equip2"));
+    Assert.assertEquals(grid.row(10).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+
+    //////////////////////////////////////////
+
+    dict = client.readById(HRef.make("C.SineWave5"));
+    Assert.assertEquals(dict.get("axType"), HStr.make("kitControl:SineWave"));
+    Assert.assertTrue(dict.has("foo"));
+    Assert.assertTrue(dict.has("bar"));
+    Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
+    Assert.assertTrue(dict.has("his"));
+    Assert.assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/SineWave5"));
+    Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
+    Assert.assertTrue(dict.has("point"));
+    Assert.assertEquals(dict.get("tz"), localTz());
+    Assert.assertTrue(dict.has("cur"));
+    double curVal = dict.getDouble("curVal");
+    Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
+    Assert.assertTrue(curVal >= 0.0 && curVal <= 100.0);
+
+    Assert.assertEquals(dict.get("dis"), HStr.make("Config_SineWave5"));
+    Assert.assertEquals(dict.get("navName"), HStr.make("Config_SineWave5"));
+    Assert.assertEquals(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
+
 //    Assert.assertEquals(grid.row(9).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
 
 //        for (int i = 0; i < grid.numRows(); i++)
@@ -311,50 +330,50 @@ public class BSimpleClientTest extends BTestNg
 //        Assert.assertEquals(dict.get("navName"), HStr.make("Sine-Wave2~2fabc"));
 //        verify(dict.missing("navNameFormat"));
 //
-//        //////////////////////////////////////////
-//
-//        dict = client.readById(HRef.make("S.Richmond.AHU2.NumericWritable"));
-//
-//        //////////////////////////////////////////
+        //////////////////////////////////////////
 
-//    dict = client.readById(HRef.make("H.nhaystack1.AuditHistory"));
-//    System.out.println(dict.toString());
-//    Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//    verify(dict.missing("kind"));
-//    verify(dict.has("his"));
-//    verify(dict.missing("cur"));
-//    verify(dict.missing("curStatus"));
-//    verify(dict.missing("curVal"));
-//    Assert.assertEquals(dict.get("tz"), localTz());
-//    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack1/AuditHistory"));
-//    verify(dict.missing("hisInterpolate"));
-//    verify(dict.missing("unit"));
+        dict = client.readById(HRef.make("S.Richmond.AHU2.NumericWritable"));
 
-//        dict = client.readById(HRef.make("H.nhaystack_simple.LogHistory"));
+        //////////////////////////////////////////
+
+    dict = client.readById(HRef.make("H.nhaystack_simple.AuditHistory"));
+    Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
+    Assert.assertTrue(!dict.missing("kind"));
+    Assert.assertTrue(dict.has("his"));
+    Assert.assertTrue(dict.missing("cur"));
+    Assert.assertTrue(dict.missing("curStatus"));
+    Assert.assertTrue(dict.missing("curVal"));
+    Assert.assertEquals(dict.get("tz"), localTz());
+    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/AuditHistory"));
+    Assert.assertTrue(dict.missing("hisInterpolate"));
+    Assert.assertTrue(dict.missing("unit"));
+
+    dict = client.readById(HRef.make("H.nhaystack_simple.LogHistory"));
+    Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
+    Assert.assertTrue(!dict.missing("kind"));
+    Assert.assertTrue(dict.has("his"));
+    Assert.assertTrue(dict.missing("cur"));
+    Assert.assertTrue(dict.missing("curStatus"));
+    Assert.assertTrue(dict.missing("curVal"));
+    Assert.assertEquals(dict.get("tz"), localTz());
+    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
+    Assert.assertTrue(dict.missing("hisInterpolate"));
+    Assert.assertTrue(dict.missing("unit"));
+
+//        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave3"));
 //        Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//        verify(dict.missing("kind"));
+//        Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 //        verify(dict.has("his"));
 //        verify(dict.missing("cur"));
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        Assert.assertEquals(dict.get("tz"), localTz());
-//        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
+//        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
 //        verify(dict.missing("hisInterpolate"));
-//        verify(dict.missing("unit"));
+//        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
 //
-//        //        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave3"));
-//        //        Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//        //        Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
-//        //        verify(dict.has("his"));
-//        //        verify(dict.missing("cur"));
-//        //        verify(dict.missing("curStatus"));
-//        //        verify(dict.missing("curVal"));
-//        //        Assert.assertEquals(dict.get("tz"), localTz());
-//        //        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
-//        //        verify(dict.missing("hisInterpolate"));
-//        //        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
-//
-//        try { client.readById(HRef.make("c.Mg~~")); } catch(Exception e) { verifyException(e); }
+        try { client.readById(HRef.make("c.Mg~~")); }
+        catch(Exception e) { Assert.assertNotNull(e); }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -364,8 +383,6 @@ public class BSimpleClientTest extends BTestNg
   @Test(enabled = true)
   public void verifyNav() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-
     HGrid grid = client.call("read", makeIdGrid(HUri.make("sep:/Winterfell")));
     Assert.assertEquals(grid.numRows(), 1);
     Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell"));
@@ -376,53 +393,47 @@ public class BSimpleClientTest extends BTestNg
 
     HGrid n = makeNavGrid(HStr.make("sep:/Winterfell/Equip1"));
     grid = client.call("nav", n);
-    Assert.assertEquals(grid.numRows(), 11);
-    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell.Equip1.point1"));
-    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.Equip1.point2"));
-    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.Equip1.point3"));
-    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.Equip1.point4"));
-    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
-    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
-    Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
-    Assert.assertEquals(grid.row(7).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
-    Assert.assertEquals(grid.row(8).id(), HRef.make("S.Winterfell.Equip1.point5"));
-    Assert.assertEquals(grid.row(9).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
-    Assert.assertEquals(grid.row(10).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
+    Assert.assertEquals(grid.numRows(), 6);
+    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
+    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
+    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
+    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
+    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
+    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
 
     grid = client.call("nav", HGrid.EMPTY);
     Assert.assertEquals(grid.numRows(), 3);
     Assert.assertEquals(grid.row(0).get("navId"), HStr.make("slot:/"));
-    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("ComponentSpace"));
+    Assert.assertEquals(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
     Assert.assertEquals(grid.row(1).get("navId"), HStr.make("his:/"));
-    Assert.assertEquals(grid.row(1).get("dis"), HStr.make("HistorySpace"));
+    Assert.assertEquals(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
     Assert.assertEquals(grid.row(2).get("navId"), HStr.make("sep:/"));
-    Assert.assertEquals(grid.row(2).get("dis"), HStr.make("Site"));
+    Assert.assertEquals(grid.row(2).get("dis"),   HStr.make("Site"));
 
     n = makeNavGrid(HStr.make("his:/"));
     grid = client.call("nav", n);
     Assert.assertEquals(grid.numRows(), 1);
-    Assert.assertEquals(grid.row(0).get("navId"), HStr.make("his:/nhaystack1"));
+    Assert.assertEquals(grid.row(0).get("navId"), HStr.make("his:/nhaystack_simple"));
 
-//    n = makeNavGrid(HStr.make("his:/nhaystack1"));
-//    grid = client.call("nav", n);
-//    Assert.assertEquals(grid.numRows(), 3);
-//    Assert.assertEquals(grid.numRows(), 2);
-//
+    n = makeNavGrid(HStr.make("his:/nhaystack_simple"));
+    grid = client.call("nav", n);
+    Assert.assertEquals(grid.numRows(), 2);
+
     n = makeNavGrid(HStr.make("slot:/"));
     grid = client.call("nav", n);
-//    System.out.println(grid.row(0).toString());
-//    System.out.println(grid.row(1).toString());
-//    System.out.println(grid.row(2).toString());
-//    System.out.println(grid.row(3).toString());
-//    System.out.println(grid.row(4).toString());
-//    System.out.println(grid.row(5).toString());
-    Assert.assertEquals(grid.numRows(), 7);
+//        printBasicGrid(grid);
+    Assert.assertEquals(grid.numRows(), 10);
     Assert.assertEquals(grid.row(0).get("navId"), HStr.make("slot:/Services"));
     Assert.assertEquals(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
-//    Assert.assertEquals(grid.row(2).get("navId"), HStr.make("slot:/Winterfell"));
-    Assert.assertEquals(grid.row(3).get("navId"), HStr.make("slot:/Equip1"));
-    Assert.assertEquals(grid.row(4).get("navId"), HStr.make("slot:/Equip2"));
-//
+    Assert.assertTrue(grid.row(2).missing("navId"));
+    Assert.assertTrue(grid.row(3).missing("navId"));
+    Assert.assertEquals(grid.row(4).get("navId"), HStr.make("slot:/Equip1"));
+    Assert.assertEquals(grid.row(5).get("navId"), HStr.make("slot:/Equip2"));
+    Assert.assertEquals(grid.row(6).get("navId"), HStr.make("slot:/SineWave4"));
+    Assert.assertEquals(grid.row(7).get("navId"), HStr.make("slot:/SineWave5"));
+    Assert.assertTrue(grid.row(8).missing("navId"));
+    Assert.assertEquals(grid.row(9).get("navId"), HStr.make("slot:/AHU2"));
+
 //        traverseComponents((HStr) grid.row(0).get("navId"));
 //        traverseComponents((HStr) grid.row(1).get("navId"));
 //        traverseComponents((HStr) grid.row(2).get("navId"));
@@ -439,114 +450,100 @@ public class BSimpleClientTest extends BTestNg
 ////            [---] 'Richmond AHU3 NumericWritable'
 ////            [---] 'Richmond AHU3 NumericWritable1'
 //
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
-//        Assert.assertEquals(grid.numRows(), 1);
-//        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Richmond"));
-//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond")));
-//        Assert.assertEquals(grid.numRows(), 3);
-//        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU1"));
-//        Assert.assertEquals(grid.row(1).get("navId"), HStr.make("sep:/Richmond/AHU2"));
-//        Assert.assertEquals(grid.row(2).get("navId"), HStr.make("sep:/Richmond/AHU3"));
-//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU1"));
-//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU2"));
-//        Assert.assertEquals(grid.row(2).get("dis"), HStr.make("Richmond AHU3"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU1")));
-//        Assert.assertEquals(grid.numRows(), 2);
-//        verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
-//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU1 AHU2_BooleanWritable"));
-//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU1 AHU3_BooleanWritable"));
-//        
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
-//        Assert.assertEquals(grid.numRows(), 2);
-//        verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
-//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
-//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU2 NumericWritable1"));
-//
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
+    Assert.assertEquals(grid.numRows(), 2);
+    Assert.assertEquals(grid.row(1).get("navId"), HStr.make("sep:/Richmond"));
+    Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond")));
+    Assert.assertEquals(grid.numRows(), 1);
+    Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU2"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
+    Assert.assertEquals(grid.numRows(), 1);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+// TODO add some more tests in here
+
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
+    Assert.assertEquals(grid.numRows(), 1);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+
+// TODO add in another AHU for testing
 //        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU3")));
-//        Assert.assertEquals(grid.numRows(), 2);
+//        verifyEq(grid.numRows(), 2);
 //        verify(grid.row(0).missing("navId"));
 //        verify(grid.row(1).missing("navId"));
-//        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU3 NumericWritable"));
-//        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond AHU3 NumericWritable1"));
+//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU3 NumericWritable"));
+//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU3 NumericWritable1"));
   }
 
-//    private void traverseComponents(HStr navId)
-//    {
-//        HGrid grid = client.call("nav", makeNavGrid(navId));
-//
-//        for (int i = 0; i < grid.numRows(); i++)
-//        {
-//            if (grid.row(i).has("navId"))
-//                traverseComponents((HStr) grid.row(i).get("navId"));
-//        }
-//    }
-//
+  private void traverseComponents(HStr navId)
+  {
+    HGrid grid = client.call("nav", makeNavGrid(navId));
+
+    for (int i = 0; i < grid.numRows(); i++)
+    {
+      if (grid.row(i).has("navId"))
+        traverseComponents((HStr) grid.row(i).get("navId"));
+    }
+  }
+
 ////////////////////////////////////////////////////////////////////////////
 //// His Reads
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   public void verifyHisRead() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-
     HGrid grid = client.readAll("his");
-    Assert.assertEquals(grid.numRows(), 4);
+    Assert.assertEquals(grid.numRows(), 5);
 
     ///////////////////////////////////////////////
 
-    HDict dict = client.read("axSlotPath==\"slot:/SineWave4\"");
+    HDict dict = client.read("axSlotPath==\"slot:/Equip1/SineWave1\"");
     HGrid his = client.hisRead(dict.id(), "today");
 
     Assert.assertEquals(his.meta().id(), dict.id());
     Assert.assertTrue(his.numRows() > 0);
 
-    int last = his.numRows() - 1;
+    int last = his.numRows()-1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
 
-    //TODO there is an issue with units here that needs to be solved
-//    Assert.assertEquals(numVal(his.row(0)).unit, "\\uxxB0" + "F");
+    Assert.assertEquals(numVal(his.row(0)).unit, "�F");
 
     ///////////////////////////////////////////////
 
-    dict = client.read("axHistoryId==\"/nhaystack1/LogHistory\"");
+    dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
     his = client.hisRead(dict.id(), "today");
     Assert.assertEquals(his.meta().id(), dict.id());
     Assert.assertTrue(his.numRows() > 0);
 
-    last = his.numRows() - 1;
+    last = his.numRows()-1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
 
     ///////////////////////////////////////////////
 
-    // TODO investigate the auto-generation of the axHistoryId tag
-    // TODO this particular test requires that, but right now it
-    // TODO isn't being generated, maybe it's not necessary
-//    dict = client.read("axHistoryId==\"/nhaystack1/SineWave5\"");
-//    his = client.hisRead(dict.id(), "today");
-//    Assert.assertEquals(his.meta().id(), dict.id());
+//        dict = client.read("axHistoryId==\"/nhaystack_simple/SineWave5\"");
+//        his = client.hisRead(dict.id(), "today");
+//        verifyEq(his.meta().id(), dict.id());
 
-    ///////////////////////////////////////////////
+//        ///////////////////////////////////////////////
 
-    // TODO work out what these to lines are testing????
-//    client.hisRead(HRef.make("C.AHU2.NumericWritable"), "today");
-//    client.hisRead(HRef.make("S.Richmond.AHU2.NumericWritable"), "today");
+    client.hisRead(HRef.make("C.AHU2.NumericWritable"), "today");
+//        client.hisRead(HRef.make("S.Richmond.AHU2.NumericWritable"), "today");
   }
 
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   void verifyWatches() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-
     // create new watch
     HWatch w = client.watchOpen("NHaystack Simple Test", HNum.make(120, "s"));
     Assert.assertEquals(w.id(), null);
@@ -560,19 +557,19 @@ public class BSimpleClientTest extends BTestNg
     HDict c = recs.row(2);
     HDict d = recs.row(3);
 
-//    System.out.println(a);
-//    System.out.println(b);
-//    System.out.println(c);
-//    System.out.println(d);
+//System.out.println(a);
+//System.out.println(b);
+//System.out.println(c);
+//System.out.println(d);
 
     // do first sub
-    HGrid sub = w.sub(new HRef[]{a.id(), b.id()});
+    HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
     Assert.assertEquals(sub.numRows(), 2);
     Assert.assertEquals(sub.row(0).id(), a.id());
     Assert.assertEquals(sub.row(1).id(), b.id());
 
     // now add c, d
-    sub = w.sub(new HRef[]{c.id(), d.id()}, false);
+    sub = w.sub(new HRef[] { c.id(), d.id() }, false);
     Assert.assertEquals(sub.numRows(), 2);
     Assert.assertEquals(sub.row(0).id(), c.id());
     Assert.assertEquals(sub.row(1).id(), d.id());
@@ -580,7 +577,7 @@ public class BSimpleClientTest extends BTestNg
     // verify state of watch now
     Assert.assertTrue(client.watch(w.id()) == w);
     Assert.assertEquals(client.watches().length, 1);
-    Assert.assertTrue((client.watches()[0] == w));
+    Assert.assertTrue(client.watches()[0] == w);
     Assert.assertEquals(w.lease().millis(), 2L * 60 * 1000);
 
     // poll refresh
@@ -592,55 +589,39 @@ public class BSimpleClientTest extends BTestNg
     verifyGridContains(poll, "id", d.id());
 
     // poll changes
-    Thread.sleep(2000); // wait for the sine waves to tick over
+    Thread.sleep(3000); // wait for the sine waves to tick over
     poll = w.pollChanges();
-    Assert.assertEquals(poll.numRows(), 4);
+    Assert.assertEquals(poll.numRows(), 1);
 
     // remove d, and then poll refresh
-    w.unsub(new HRef[]{d.id()});
+    w.unsub(new HRef[] { d.id() });
     poll = w.pollRefresh();
     Assert.assertEquals(poll.numRows(), 3);
 
     // close
     w.close();
-    try
-    {
-      w.pollRefresh();
-      Assert.fail();
-    }
-    catch (Exception e)
-    {
-      verifyEx(e);
-    }
-//    Assert.assertEquals(client.watch(w.id(), false), null);
-//    Assert.assertEquals(client.watches().length, 0);
+    try { w.pollRefresh(); Assert.fail(); } catch (Exception e) { verifyEx(e); }
+    Assert.assertEquals(client.watch(w.id(), false), null);
+    Assert.assertEquals(client.watches().length, 0);
 
     // check bad id
-//    w = client.watchOpen("Bogus Test");
-//    HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
-//    try
-//    {
-//      w.sub(new HRef[]{badId}).dump();
-//      fail();
-//    } catch (Exception e)
-//    {
-//      verifyException(e);
-//    }
+    w = client.watchOpen("Bogus Test", HNum.make(120, "s"));
+    HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
+    try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyEx(e); }
   }
 
 ////////////////////////////////////////////////////////////////////////////
 //// Point Write
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   void verifyPointWrite() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-    doVerifyPointWrite(HRef.make("S.Winterfell.Equip1.point5"));
+    doVerifyInvokeAction(HRef.make("C.AHU2.NumericWritable"));
 //    doVerifyPointWrite(HRef.make("S.Winterfell.Equip1.point2"));
   }
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   public void verifyRemotePointWrite() throws Exception
   {
     this.client = HClient.open("http://localhost:85/haystack/", "user", "Vk3ldb237847");
@@ -649,21 +630,18 @@ public class BSimpleClientTest extends BTestNg
 
   private void doVerifyPointWrite(HRef id)
   {
-    client.pointWrite(id, 16, "user", HNum.make(111), null);
     HGrid grid = client.pointWrite(id, 10, "admin", HNum.make(222), null);
+//        printFullGrid(grid);
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
-      switch (i + 1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
+      switch(i+1)
       {
         case 10:
           Assert.assertEquals(grid.row(i).get("val"), HNum.make(222));
-          // TODO check if this is supposed to work in Niagara, from reading the code
-          // TODO it doesn't look as if "who" functionality is supported right now
-//          Assert.assertEquals(grid.row(i).get("who"), HStr.make("admin"));
           break;
-        case 16:
+        case 17:
           Assert.assertEquals(grid.row(i).get("val"), HNum.make(111));
           Assert.assertTrue(grid.row(i).missing("who"));
           break;
@@ -678,16 +656,13 @@ public class BSimpleClientTest extends BTestNg
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
-      switch (i + 1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
+      switch(i+1)
       {
         case 10:
           Assert.assertTrue(grid.row(i).missing("val"));
-          // TODO check if this is supposed to work in Niagara, from reading the code
-          // TODO it doesn't look as if "who" functionality is supported right now
-//          Assert.assertEquals(grid.row(i).get("who"), HStr.make("admin"));
           break;
-        case 16:
+        case 17:
           Assert.assertEquals(grid.row(i).get("val"), HNum.make(111));
           Assert.assertTrue(grid.row(i).missing("who"));
           break;
@@ -698,8 +673,6 @@ public class BSimpleClientTest extends BTestNg
       }
     }
 
-    // reset point to known state before next test
-    grid = client.pointWrite(id, 16, "admin", null, null);
     // just make sure this works with no level, etc
     grid = client.pointWriteArray(id);
   }
@@ -708,12 +681,10 @@ public class BSimpleClientTest extends BTestNg
 //// Invoke Action
 ////////////////////////////////////////////////////////////////////////////
 
-  @Test(enabled = true)
+  @Test(enabled = false)
   void verifyInvokeAction() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
-    doVerifyInvokeAction(HRef.make("S.Winterfell.Equip1.point5"));
-//        doVerifyInvokeAction(HRef.make("S.Richmond.AHU2.NumericWritable"));
+    doVerifyInvokeAction(HRef.make("C.AHU2.NumericWritable"));
   }
 
   private void doVerifyInvokeAction(HRef id)
@@ -726,20 +697,17 @@ public class BSimpleClientTest extends BTestNg
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
-      switch (i + 1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
+      switch(i+1)
       {
         case 1:
           Assert.assertEquals(grid.row(i).get("val"), HNum.make(333));
-          Assert.assertTrue(grid.row(i).missing("who"));
           break;
         case 10:
-//          Assert.assertTrue(grid.row(i).missing("val"));
-//          Assert.assertEquals(grid.row(i).get("who"), HStr.make("admin"));
+          Assert.assertTrue(grid.row(i).missing("val"));
           break;
         case 17:
-//          Assert.assertEquals(grid.row(i).get("val"), HNum.make(111));
-//          Assert.assertTrue(grid.row(i).missing("who"));
+          Assert.assertEquals(grid.row(i).get("val"), HNum.make(111));
           break;
         default:
           Assert.assertTrue(grid.row(i).missing("val"));
@@ -754,28 +722,21 @@ public class BSimpleClientTest extends BTestNg
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
-      Assert.assertTrue(grid.row(i).missing("val"));
-      Assert.assertTrue(grid.row(i).missing("who"));
-
-      // TODO not sure what the following was trying to accomplish
-      // TODO instead just checking that all levels have returned
-      // TODO null status in the above checks
-//      switch (i + 1)
-//      {
-//        case 10:
-//          Assert.assertTrue(grid.row(i).missing("val"));
-//          Assert.assertEquals(grid.row(i).get("who"), HStr.make("admin"));
-//          break;
-//        case 17:
-//          Assert.assertEquals(grid.row(i).get("val"), HNum.make(111));
-//          Assert.assertTrue(grid.row(i).missing("who"));
-//          break;
-//        default:
-//          Assert.assertTrue(grid.row(i).missing("val"));
-//          Assert.assertTrue(grid.row(i).missing("who"));
-//          break;
-//      }
+      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
+      switch(i+1)
+      {
+        case 10:
+          Assert.assertTrue(grid.row(i).missing("val"));
+          break;
+        case 17:
+          Assert.assertEquals(grid.row(i).get("val"), HNum.make(111));
+          Assert.assertTrue(grid.row(i).missing("who"));
+          break;
+        default:
+          Assert.assertTrue(grid.row(i).missing("val"));
+          Assert.assertTrue(grid.row(i).missing("who"));
+          break;
+      }
     }
   }
 
@@ -820,7 +781,7 @@ public class BSimpleClientTest extends BTestNg
     if (!found)
     {
       System.out.println("verifyGridContains " + col + "=" + val + " failed!");
-      Assert.fail();
+      fail();
     }
   }
 
@@ -828,6 +789,72 @@ public class BSimpleClientTest extends BTestNg
   {
     System.out.println(e.toString());
     Assert.assertTrue(!e.toString().contains("Test failed"));
+  }
+
+
+  /**
+   * Convenience to print and format a basic grid nicely for debugging
+   *
+   * @param grid
+   */
+  void printBasicGrid(HGrid grid)
+  {
+    int row = 0;
+    for (Iterator i = grid.iterator(); i.hasNext();)
+    {
+      HRow r = (HRow) i.next();
+      System.out.print(row + ", ");
+      System.out.print(r.id());
+      System.out.print("              ");
+      if (r.has("equipRef"))
+        System.out.println(r.get("equipRef"));
+
+      System.out.print("              ");
+      if (r.has("kind"))
+        System.out.println(r.get("kind"));
+      System.out.println();
+      row++;
+    }
+  }
+
+  /**
+   * Print a full grid
+   *
+   * @param grid
+   */
+  void printFullGrid(HGrid grid)
+  {
+    int row = 0;
+    for (Iterator i = grid.iterator(); i.hasNext();)
+    {
+      HRow r = (HRow) i.next();
+      System.out.print(row + ", " + r.toString());
+      System.out.println();
+      row++;
+    }
+  }
+
+
+  /**
+   * Convenience to print and format a dict for debugging
+   *
+   * @param dict
+   */
+  void printDict(HDict dict)
+  {
+    for (Iterator i = dict.iterator(); i.hasNext();)
+    {
+      Map.Entry e = (Map.Entry) i.next();
+      String name = (String) e.getKey();
+      HVal val = (HVal) e.getValue();
+      if (name == "id" ||
+              name == "dis" ||
+              name == "equipRef")
+      {
+        System.out.print(name + ":" + val.toString() + " ");
+      }
+    }
+    System.out.println();
   }
 
   HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
