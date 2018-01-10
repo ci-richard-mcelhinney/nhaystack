@@ -1,4 +1,5 @@
 <types>
   <!--nhaystack.ntest-->
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
+  <type class="nhaystack.ntest.BSlotUtilTest" name="SlotUtilTest"/>
 </types>
