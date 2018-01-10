@@ -27,6 +27,8 @@ niagaraModule {
   }
 }
 
+repositories { jcenter() }
+
 dependencies {
   compile fileTree(dir: 'lib', include: ['*.jar'])
 
@@ -50,6 +52,9 @@ dependencies {
   compile "Tridium:workbench-wb:4.0.22"
 
   testCompile 'org.testng:testng:6.10'
+  testCompile "Tridium:alarm-rt:4.0.22"
+  testCompile 'org.mockito:mockito-core:2.+'
+  testCompile fileTree(dir: 'lib', include: ['*.jar'])
 
   uberjar "javax.servlet:javax.servlet-api:3.0.1"
 }
@@ -57,7 +62,8 @@ dependencies {
 test {
   useTestNG()
 
-  include 'nhaystack/test/*'
+  include 'nhaystack/test/**'
+  include 'nhaystack/server/**'
 
   testLogging.showStandardStreams = true
 }
