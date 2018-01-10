@@ -130,15 +130,17 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
         // Try to load local file if exists
         try
         {
-          if (fq == null){
+          if (fq == null)
+          {
             // must be a local file on workbench PC.... at startup, it may load but will be overriden when service view will open.
             // loading again will be necessary using the button
             String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
             String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
-            System.out.println(customTagsDictFilePath);
+//            System.out.println(customTagsDictFilePath);
             fileQuery =  BOrd.make(customTagsDictFilePath);
           }
-          else{
+          else
+          {
             fileQuery = fq;
           }
           BIFile myFile = (BIFile)fileQuery.get();
@@ -147,13 +149,13 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
         //handle case where file isn't found or doesn't exist.
         catch(UnresolvedException re)
         {
-          System.out.println("nHaystack - Tag Dictionnary / No custom file, using default.");
+//          System.out.println("nHaystack - Tag Dictionnary / No custom file, using default.");
           in = Resources.class.getResourceAsStream(AUTOMARKERS);  
         }
         //handle IO exceptions from trying to read from file
         catch(IOException ioe)
         {
-          System.out.println("nHaystack - Tag Dictionnary / Errors in custom file, using default.");
+//          System.out.println("nHaystack - Tag Dictionnary / Errors in custom file, using default.");
           in = Resources.class.getResourceAsStream(AUTOMARKERS); 
         }  
         
@@ -178,8 +180,8 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
 
             str = bin.readLine();
         }
-        System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
-        System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
+//        System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
+//        System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
         bin.close();
 }
     
@@ -400,7 +402,7 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       String key = SlotPath.unescape(pointName);
       if (!autoMarkers.containsKey(key)) return new String[0];
       Array arr = new Array(String.class, (Set) autoMarkers.get(key));
-      System.out.println("getAutoMArker" + pointName + " : " + (String[]) arr.trim());
+//      System.out.println("getAutoMArker" + pointName + " : " + (String[]) arr.trim());
       return (String[]) arr.trim();
     }
 
