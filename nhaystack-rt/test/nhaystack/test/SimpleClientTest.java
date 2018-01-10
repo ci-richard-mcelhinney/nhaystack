@@ -10,7 +10,6 @@ package nhaystack.test;
 
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
-//import org.projecthaystack.auth.*;
 import org.projecthaystack.util.Base64;
 import org.testng.annotations.*;
 import org.testng.*;
@@ -33,7 +32,6 @@ public class SimpleClientTest
 //////////////////////////////////////////////////////////////////////////
 
   final String URI = "http://localhost:82/haystack/";
-  final String SECURE_URI = "https://localhost/haystack";
   HClient client;
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,21 +88,6 @@ public class SimpleClientTest
     {  e.printStackTrace(); fail(); }
   }
 
-  @Test(enabled = false)
-  public void verifyHttpsAuth()
-  {
-    try
-    {
-      HClient local = HClient.open("https://localhost/haystack/", "admin", "Vk3ldb237847");
-      local.about();
-    }
-    catch(Exception e)
-    {
-      e.printStackTrace();
-      fail();
-    }
-  }
-
 //////////////////////////////////////////////////////////////////////////
 // About
 //////////////////////////////////////////////////////////////////////////
@@ -117,19 +100,7 @@ public class SimpleClientTest
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
-    Assert.assertEquals(r.getStr("productVersion"), "4.2.36.34");
-  }
-
-//  @Test(enabled = false)
-  void verifySecureAbout() throws Exception
-  {
-    // secure
-    this.client = HClient.open(SECURE_URI, "admin", "Vk3ldb237847");
-    HDict r = client.about();
-    Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
-    Assert.assertEquals(r.getStr("productName"), "Niagara AX");
-    Assert.assertEquals(r.getStr("productVersion"), "4.2.36.34");
-    Assert.assertEquals(r.getStr("tz"), HTimeZone.DEFAULT.name);
+    Assert.assertEquals(r.getStr("productVersion"), "4.2.36.42.3");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -140,31 +111,6 @@ public class SimpleClientTest
   public void verifyOps() throws Exception
   {
     this.client = HClient.open(URI, "admin", "abcd1234");
-    HGrid g = client.ops();
-
-    // verify required columns
-    Assert.assertTrue(g.col("name") != null);
-    Assert.assertTrue(g.col("summary") != null);
-
-    // verify required ops
-    verifyGridContains(g, "name", HStr.make("about"));
-    verifyGridContains(g, "name", HStr.make("ops"));
-    verifyGridContains(g, "name", HStr.make("formats"));
-    verifyGridContains(g, "name", HStr.make("read"));
-    verifyGridContains(g, "name", HStr.make("nav"));
-    verifyGridContains(g, "name", HStr.make("watchSub"));
-    verifyGridContains(g, "name", HStr.make("watchUnsub"));
-    verifyGridContains(g, "name", HStr.make("watchPoll"));
-    verifyGridContains(g, "name", HStr.make("pointWrite"));
-    verifyGridContains(g, "name", HStr.make("hisRead"));
-    verifyGridContains(g, "name", HStr.make("hisWrite"));
-    verifyGridContains(g, "name", HStr.make("invokeAction"));
-  }
-
-  @Test(enabled = false)
-  public void verifySecureOps() throws Exception
-  {
-    this.client = HClient.open(SECURE_URI, "admin", "Vk3ldb237847");
     HGrid g = client.ops();
 
     // verify required columns
@@ -273,9 +219,9 @@ public class SimpleClientTest
     Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
     Assert.assertTrue(curVal >= 0.0 && curVal <= 100.0);
 
-    Assert.assertEquals(dict.get("dis"), HStr.make("Config_SineWave5"));
-    Assert.assertEquals(dict.get("navName"), HStr.make("Config_SineWave5"));
-    Assert.assertEquals(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
+    Assert.assertEquals(dict.get("dis"), HStr.make("SineWave5"));
+    Assert.assertEquals(dict.get("navName"), HStr.make("SineWave5"));
+//    Assert.assertEquals(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
 
 //    Assert.assertEquals(grid.row(9).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
 
@@ -756,6 +702,7 @@ public class SimpleClientTest
 ////////////////////////////////////////////////////////////////
 // Utils
 ////////////////////////////////////////////////////////////////
+
   static HGrid makeIdGrid(HVal id)
   {
     HDictBuilder hd = new HDictBuilder();
