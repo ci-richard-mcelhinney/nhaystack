@@ -7,82 +7,94 @@
 //
 package nhaystack.test;
 
-//import org.projecthaystack.test.*;
+import org.projecthaystack.*;
+import org.projecthaystack.client.HClient;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import static nhaystack.test.TestUtils.makeNavGrid;
+import static nhaystack.test.TestUtils.numVal;
+import static nhaystack.test.TestUtils.ts;
 
 /**
  * NSupervisorClientTest -- this test uses nhaystack_sup
  */
-public class SupervisorClientTest //extends NTest
+public class SupervisorClientTest //extends TestUtils
 {
-//    final String URI = "http://localhost:81/haystack/";
-//    HClient client;
-//
-////////////////////////////////////////////////////////////////////////////
-//// Main
-////////////////////////////////////////////////////////////////////////////
-//
-//    public void test() throws Exception
-//    {
-//        verifyAuth();
-//        verifyRead();
-//        verifyHisRead();
-//        verifyWatches();
-//        verifyNav();
-//    }
-//
-//    void verifyAuth() throws Exception
-//    {
-//        this.client = HClient.open(URI, "admin", "abc123");
-//    }
-//
+    final String URI = "http://localhost:85/haystack/";
+    HClient client;
+
+    @Test(enabled = true)
+    void verifySupAuth() throws Exception
+    {
+      try
+      {
+        this.client = HClient.open(URI, "admin", "Abcde12345");
+      }
+      catch(Exception e)
+      {
+        Assert.fail("did not connect");
+      }
+      Assert.assertTrue(true);
+    }
+
 ////////////////////////////////////////////////////////////////////////////
 //// Reads
 ////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyRead() throws Exception
-//    {
-//        HGrid grid = client.readAll("point");
-//
-////        for (int i = 0; i < grid.numRows(); i++)
-////            System.out.println(i + ", " + grid.row(i).get("id"));
-//
-//        verifyEq(grid.numRows(), 8);
-//        verifyEq(grid.row(0).get("id"), HRef.make("S.Blacksburg.nhaystack_jace1.SineWave1"));
-//        verifyEq(grid.row(1).get("id"), HRef.make("S.Blacksburg.nhaystack_jace1.SineWave2"));
-//        verifyEq(grid.row(2).get("id"), HRef.make("S.Blacksburg.Transmogrifier.SineWave1"));
-////        verifyEq(grid.row(0).get("id"), HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace1.points.SineWave1"));
-////        verifyEq(grid.row(1).get("id"), HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace1.points.SineWave2"));
-////        verifyEq(grid.row(2).get("id"), HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace2.points.SineWave1"));
+
+  @Test(enabled = true)
+  void verifySupRead()
+  {
+    this.client = HClient.open(URI, "admin", "Abcde12345");
+    HGrid grid = client.readAll("point");
+
+    for (int i = 0; i < grid.numRows(); i++)
+      System.out.println(i + ", " + grid.row(i).get("id"));
+
+    Assert.assertEquals(grid.numRows(), 11);
+    Assert.assertEquals(grid.row(0).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.Sensor1"));
+    Assert.assertEquals(grid.row(1).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.SineWave1"));
+    Assert.assertEquals(grid.row(2).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.SineWave2"));
+    Assert.assertEquals(grid.row(3).get("id"), HRef.make("C.Drivers.NiagaraNetwork.nhaystack_j2.points.Sensor2"));
+    Assert.assertEquals(grid.row(4).get("id"), HRef.make("C.Drivers.NiagaraNetwork.nhaystack_j2.points.SineWave2"));
+    Assert.assertEquals(grid.row(5).get("id"), HRef.make("S.Blacksburg.Transmogrifier.SineWave1"));
+    Assert.assertEquals(grid.row(6).get("id"), HRef.make("H.nhaystack_j1.AuditHistory"));
+    Assert.assertEquals(grid.row(7).get("id"), HRef.make("H.nhaystack_j1.LogHistory"));
+    Assert.assertEquals(grid.row(8).get("id"), HRef.make("H.nhaystack_j2.SineWave2"));
+    Assert.assertEquals(grid.row(9).get("id"), HRef.make("H.nhaystack_sup.AuditHistory"));
+    Assert.assertEquals(grid.row(10).get("id"), HRef.make("H.nhaystack_sup.LogHistory"));
+
 //        verifyEq(grid.row(3).get("id"), HRef.make("H.nhaystack_jace1.AuditHistory"));
 //        verifyEq(grid.row(4).get("id"), HRef.make("H.nhaystack_jace1.LogHistory"));
 //        verifyEq(grid.row(5).get("id"), HRef.make("H.nhaystack_jace2.SineWave2"));
 //        verifyEq(grid.row(6).get("id"), HRef.make("H.nhaystack_sup.AuditHistory"));
 //        verifyEq(grid.row(7).get("id"), HRef.make("H.nhaystack_sup.LogHistory"));
 //
-//        HDict dict = client.readById(HRef.make("S.Blacksburg.nhaystack_jace1.SineWave1"));
-//        verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
-//        verifyEq(dict.get("kind"), HStr.make("Number"));
-//        verify(dict.has("his"));
-//        verify(dict.has("curStatus"));
-//        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1"));
-//        verifyEq(dict.get("unit"), HStr.make("?F"));
-//        verify(dict.has("point"));
+    HDict dict = client.readById(HRef.make("S.Blacksburg.nhaystack_j1.SineWave1"));
+    Assert.assertEquals(dict.get("axType"), HStr.make("control:NumericPoint"));
+    Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
+
+    Assert.assertTrue(dict.has("curStatus"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j1/points/SineWave1"));
+    Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
+    Assert.assertTrue(dict.has("point"));
+//    Assert.assertTrue(dict.has("his"));
 //        verifyEq(dict.get("tz"), localTz());
-////        verify(dict.getDouble("curVal") == 0.0);
-////        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
-//
-//        dict = client.readById(HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace1.points.SineWave2"));
-//        verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
-//        verifyEq(dict.get("kind"), HStr.make("Number"));
+//        verify(dict.getDouble("curVal") == 0.0);
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
+
+    dict = client.readById(HRef.make("C.Drivers.NiagaraNetwork.nhaystack_j2.points.SineWave2"));
+    Assert.assertEquals(dict.get("axType"), HStr.make("control:NumericPoint"));
+    Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
+    Assert.assertTrue(dict.has("curStatus"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2"));
+    Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
+    Assert.assertTrue(dict.has("point"));
 //        verify(dict.has("his"));
-//        verify(dict.has("curStatus"));
-//        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave2"));
-//        verifyEq(dict.get("unit"), HStr.make("psi"));
-//        verify(dict.has("point"));
 //        verifyEq(dict.get("tz"), localTz());
-////        verify(dict.getDouble("curVal") == 0.0);
-////        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
-//
+//        verify(dict.getDouble("curVal") == 0.0);
+//        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
+
 //        dict = client.readById(HRef.make("C.Drivers.NiagaraNetwork.nhaystack_jace2.points.SineWave1"));
 //        verifyEq(dict.get("axType"), HStr.make("control:NumericPoint"));
 //        verifyEq(dict.get("kind"), HStr.make("Number"));
@@ -156,184 +168,187 @@ public class SupervisorClientTest //extends NTest
 //        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/LogHistory"));
 //        verify(dict.missing("hisInterpolate"));
 //        verify(dict.missing("unit"));
-//    }
-//
+    }
+
 ////////////////////////////////////////////////////////////////////////////
-//// Nav
+// Nav
 ////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyNav() throws Exception
-//    {
-////[sep:/] 'Site'
-////    [sep:/Blacksburg] 'Blacksburg'
-////        [sep:/Blacksburg/nhaystack_jace1] 'Blacksburg nhaystack_jace1'
-////            [---] 'Blacksburg nhaystack_jace1 SineWave1'
-////            [---] 'Blacksburg nhaystack_jace1 SineWave2'
-////        [sep:/Blacksburg/Transmogrifier] 'Blacksburg Transmogrifier'
-////            [---] 'Blacksburg Transmogrifier SineWave1'
-////        [sep:/Blacksburg/FluxCapacitor] 'Blacksburg FluxCapacitor'
-//
-//        HGrid grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
-//        verifyEq(grid.numRows(), 1);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Blacksburg"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg")));
-//        verifyEq(grid.numRows(), 3);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("sep:/Blacksburg/nhaystack_jace1"));
-//        verifyEq(grid.row(1).get("navId"), HStr.make("sep:/Blacksburg/Transmogrifier"));
-//        verifyEq(grid.row(2).get("navId"), HStr.make("sep:/Blacksburg/FluxCapacitor"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg nhaystack_jace1"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Blacksburg Transmogrifier"));
-//        verifyEq(grid.row(2).get("dis"), HStr.make("Blacksburg FluxCapacitor"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/nhaystack_jace1")));
-//        verifyEq(grid.numRows(), 2);
-//        verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg nhaystack_jace1 SineWave1"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("Blacksburg nhaystack_jace1 SineWave2"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/Transmogrifier")));
-//        verifyEq(grid.numRows(), 1);
-//        verify(grid.row(0).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("Blacksburg Transmogrifier SineWave1"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/FluxCapacitor")));
-//        verifyEq(grid.numRows(), 0);
-//
-////[his:/] 'HistorySpace'
-////    [his:/nhaystack_jace1] 'nhaystack_jace1'
-////        [---] 'nhaystack_jace1_AuditHistory'
-////        [---] 'nhaystack_jace1_LogHistory'
-////    [his:/nhaystack_jace2] 'nhaystack_jace2'
-////        [---] 'nhaystack_jace2_SineWave2'
-////    [his:/nhaystack_sup] 'nhaystack_sup'
-////        [---] 'nhaystack_sup_AuditHistory'
-////        [---] 'nhaystack_sup_LogHistory'
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("his:/")));
-//        verifyEq(grid.numRows(), 3);
-//        verifyEq(grid.row(0).get("navId"), HStr.make("his:/nhaystack_jace1"));
-//        verifyEq(grid.row(1).get("navId"), HStr.make("his:/nhaystack_jace2"));
-//        verifyEq(grid.row(2).get("navId"), HStr.make("his:/nhaystack_sup"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_jace1")));
-//        verifyEq(grid.numRows(), 2);
-//        verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_jace1_AuditHistory"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("nhaystack_jace1_LogHistory"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_jace2")));
-//        verifyEq(grid.numRows(), 1);
-//        verify(grid.row(0).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_jace2_SineWave2"));
-//
-//        grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_sup")));
-//        verifyEq(grid.numRows(), 2);
-//        verify(grid.row(0).missing("navId"));
-//        verify(grid.row(1).missing("navId"));
-//        verifyEq(grid.row(0).get("dis"), HStr.make("nhaystack_sup_AuditHistory"));
-//        verifyEq(grid.row(1).get("dis"), HStr.make("nhaystack_sup_LogHistory"));
-//    }
-//
+
+  @Test(enabled = true)
+  void verifySupNav()
+  {
+//[sep:/] 'Site'
+//    [sep:/Blacksburg] 'Blacksburg'
+//        [sep:/Blacksburg/nhaystack_jace1] 'Blacksburg nhaystack_jace1'
+//            [---] 'Blacksburg nhaystack_jace1 SineWave1'
+//            [---] 'Blacksburg nhaystack_jace1 SineWave2'
+//        [sep:/Blacksburg/Transmogrifier] 'Blacksburg Transmogrifier'
+//            [---] 'Blacksburg Transmogrifier SineWave1'
+//        [sep:/Blacksburg/FluxCapacitor] 'Blacksburg FluxCapacitor'
+
+    HGrid grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
+    Assert.assertEquals(grid.numRows(), 1);
+    Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Blacksburg"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Blacksburg"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg")));
+    Assert.assertEquals(grid.numRows(), 2);
+    Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Blacksburg/nhaystack_j1"));
+    Assert.assertEquals(grid.row(1).get("navId"), HStr.make("sep:/Blacksburg/Transmogrifier"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/nhaystack_j1")));
+    Assert.assertEquals(grid.numRows(), 3);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+    Assert.assertTrue(grid.row(1).missing("navId"));
+    Assert.assertTrue(grid.row(2).missing("navId"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Blacksburg nhaystack_j1 Sensor1"));
+    Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Blacksburg nhaystack_j1 SineWave1"));
+    Assert.assertEquals(grid.row(2).get("dis"), HStr.make("Blacksburg nhaystack_j1 SineWave2"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("sep:/Blacksburg/Transmogrifier")));
+    Assert.assertEquals(grid.numRows(), 1);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Blacksburg Transmogrifier SineWave1"));
+
+//[his:/] 'HistorySpace'
+//    [his:/nhaystack_jace1] 'nhaystack_jace1'
+//        [---] 'nhaystack_jace1_AuditHistory'
+//        [---] 'nhaystack_jace1_LogHistory'
+//    [his:/nhaystack_jace2] 'nhaystack_jace2'
+//        [---] 'nhaystack_jace2_SineWave2'
+//    [his:/nhaystack_sup] 'nhaystack_sup'
+//        [---] 'nhaystack_sup_AuditHistory'
+//        [---] 'nhaystack_sup_LogHistory'
+
+    grid = client.call("nav", makeNavGrid(HStr.make("his:/")));
+    Assert.assertEquals(grid.numRows(), 3);
+    Assert.assertEquals(grid.row(0).get("navId"), HStr.make("his:/nhaystack_j1"));
+    Assert.assertEquals(grid.row(1).get("navId"), HStr.make("his:/nhaystack_j2"));
+    Assert.assertEquals(grid.row(2).get("navId"), HStr.make("his:/nhaystack_sup"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_j1")));
+    Assert.assertEquals(grid.numRows(), 2);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+    Assert.assertTrue(grid.row(1).missing("navId"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("nhaystack_j1_AuditHistory"));
+    Assert.assertEquals(grid.row(1).get("dis"), HStr.make("nhaystack_j1_LogHistory"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_j2")));
+    Assert.assertEquals(grid.numRows(), 1);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("nhaystack_j2_SineWave2"));
+
+    grid = client.call("nav", makeNavGrid(HStr.make("his:/nhaystack_sup")));
+    Assert.assertEquals(grid.numRows(), 2);
+    Assert.assertTrue(grid.row(0).missing("navId"));
+    Assert.assertTrue(grid.row(1).missing("navId"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("nhaystack_sup_AuditHistory"));
+    Assert.assertEquals(grid.row(1).get("dis"), HStr.make("nhaystack_sup_LogHistory"));
+  }
+
 ////////////////////////////////////////////////////////////////////////////
 //// His Reads
 ////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyHisRead() throws Exception
-//    {
-//        HGrid grid = client.readAll("his");
-//        verifyEq(grid.numRows(), 7);
-//
-//        ///////////////////////////////////////////////
-//
-//        HDict dict = client.read("axSlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_jace1/points/SineWave1\"");
-//        HGrid his = client.hisRead(dict.id(), "today");
-//
-//        verifyEq(his.meta().id(), dict.id());
-//        verify(his.numRows() > 0);
-//
-//        int last = his.numRows()-1;
-//        verifyEq(ts(his.row(last)).date, HDate.today());
-//
-//        verifyEq(numVal(his.row(0)).unit, "?F");
-//
-//        ///////////////////////////////////////////////
-//
-//        try { client.read("axHistoryId==\"/nhaystack_jace1/SineWave1\""); } 
-//        catch(UnknownRecException e) { verifyException(e); }
-//    }
-//
+
+  @Test(enabled = true)
+  void verifySupHisRead()
+  {
+    this.client = HClient.open(URI, "admin", "Abcde12345");
+    HGrid grid = client.readAll("his");
+    Assert.assertEquals(grid.numRows(), 6);
+
+    HDict dict = client.read("axSlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2\"");
+    HGrid his = client.hisRead(dict.id(), "today");
+
+    Assert.assertEquals(his.meta().id(), dict.id());
+    Assert.assertTrue(his.numRows() > 0);
+
+    int last = his.numRows() - 1;
+    Assert.assertEquals(ts(his.row(last)).date, HDate.today());
+
+    Assert.assertEquals(numVal(his.row(0)).unit, "psi");
+
+    try
+    {
+      client.read("axHistoryId==\"/nhaystack_j1/SineWave1\"");
+      Assert.fail("Should have received an exception....");
+    }
+    catch (UnknownRecException e)
+    {
+      Assert.assertEquals(e.getClass(), UnknownRecException.class);
+    }
+  }
+
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
 ////////////////////////////////////////////////////////////////////////////
-//
-//    void verifyWatches() throws Exception
-//    {
-//        // create new watch
-//        HWatch w = client.watchOpen("NHaystack Supervisor Test");
-//        verifyEq(w.id(), null);
-//        verifyEq(w.dis(), "NHaystack Supervisor Test");
-//
-//        // do query to get some recs
-//        HGrid recs = client.readAll("point");
-//        verify(recs.numRows() >= 4);
-//        HDict a = recs.row(0);
-//        HDict b = recs.row(1);
-//        HDict c = recs.row(2);
-//        HDict d = recs.row(3);
-//
-////System.out.println(a);
-////System.out.println(b);
-////System.out.println(c);
-////System.out.println(d);
-//
-//        HGrid sub = w.sub(new HRef[] { a.id(), b.id(), c.id(), d.id() });
-//        verifyEq(sub.numRows(), 4);
-//        verifyEq(sub.row(0).dis(), a.dis());
-//        verifyEq(sub.row(1).dis(), b.dis());
-//        verifyEq(sub.row(2).dis(), c.dis());
-//        verifyEq(sub.row(3).dis(), d.dis());
-//
-//        // verify state of watch now
-//        verify(client.watch(w.id()) == w);
-//        verifyEq(client.watches().length, 1);
-//        verify(client.watches()[0] == w);
-//        verifyEq(w.lease().millis(), 2L * 60 * 1000);
-//
-//        // poll refresh
-//        HGrid poll = w.pollRefresh();
-//        verifyEq(poll.numRows(), 4);
-//        verifyGridContains(poll, "id", a.id());
-//        verifyGridContains(poll, "id", b.id());
-//        verifyGridContains(poll, "id", c.id());
-//        verifyGridContains(poll, "id", d.id());
-//
-//        // poll changes
-//        Thread.sleep(3000); // wait for the sine waves to tick over
-//        poll = w.pollChanges();
-//        verifyEq(poll.numRows(), 3);
-//
-//        // remove a, and then poll changes
-//        w.unsub(new HRef[] { a.id() });
-//        poll = w.pollChanges();
-//        verifyEq(poll.numRows(), 2);
-//
-//        // close
-//        w.close();
-//        try { w.pollRefresh(); fail(); } catch (Exception e) { verifyException(e); }
-//        verifyEq(client.watch(w.id(), false), null);
-//        verifyEq(client.watches().length, 0);
-//    }
-//
-////////////////////////////////////////////////////////////////////////////
-//// Main
-////////////////////////////////////////////////////////////////////////////
-//
-//    public static void main(String[] args)
-//    {
-//        runTests(new String[] { "nhaystack.test.NSupervisorClientTest", }, null);
-//    }
+
+  @Test(enabled = true)
+  void verifySupWatches() throws Exception
+  {
+    this.client = HClient.open(URI, "admin", "Abcde12345");
+
+    // create new watch
+    HWatch w = client.watchOpen("NHaystack Supervisor Test", HNum.make(120, "s"));
+    Assert.assertEquals(w.id(), null);
+    Assert.assertEquals(w.dis(), "NHaystack Supervisor Test");
+
+    // do query to get some recs
+    HGrid recs = client.readAll("point");
+    Assert.assertTrue(recs.numRows() >= 4);
+    HDict a = recs.row(0);
+    HDict b = recs.row(1);
+    HDict c = recs.row(2);
+    HDict d = recs.row(3);
+
+//System.out.println(a);
+//System.out.println(b);
+//System.out.println(c);
+//System.out.println(d);
+
+    HGrid sub = w.sub(new HRef[]{a.id(), b.id(), c.id(), d.id()});
+    Assert.assertEquals(sub.numRows(), 4);
+    Assert.assertEquals(sub.row(0).id(), a.id());
+    Assert.assertEquals(sub.row(1).id(), b.id());
+    Assert.assertEquals(sub.row(2).id(), c.id());
+    Assert.assertEquals(sub.row(3).id(), d.id());
+
+    // verify state of watch now
+    Assert.assertTrue(client.watch(w.id()) == w);
+    Assert.assertEquals(client.watches().length, 1);
+    Assert.assertTrue(client.watches()[0] == w);
+    Assert.assertEquals(w.lease().millis(), 2L * 60 * 1000);
+
+    // poll refresh
+    HGrid poll = w.pollRefresh();
+    Assert.assertEquals(poll.numRows(), 4);
+//    verifyGridContains(poll, "id", a.id());
+//    verifyGridContains(poll, "id", b.id());
+//    verifyGridContains(poll, "id", c.id());
+//    verifyGridContains(poll, "id", d.id());
+
+    // poll changes
+    Thread.sleep(3000); // wait for the sine waves to tick over
+    poll = w.pollChanges();
+    Assert.assertEquals(poll.numRows(), 2);
+
+    // remove a, and then poll changes
+    w.unsub(new HRef[]{a.id()});
+    poll = w.pollChanges();
+    Assert.assertEquals(poll.numRows(), 0);
+
+    // close
+    w.close();
+    try
+    {
+      w.pollRefresh();
+      Assert.fail();
+    } catch (Exception e)
+    {
+      Assert.assertTrue(e instanceof Exception);
+    }
+    Assert.assertEquals(client.watch(w.id(), false), null);
+    Assert.assertEquals(client.watches().length, 0);
+  }
+
 }
