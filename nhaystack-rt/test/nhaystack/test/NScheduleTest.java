@@ -16,7 +16,7 @@ import org.projecthaystack.util.*;
 /**
  * NScheduleTest
  */
-public class NScheduleTest extends NTest
+public class NScheduleTest
 {
     final String URI = "http://localhost/haystack/";
     HClient client;
@@ -79,8 +79,8 @@ public class NScheduleTest extends NTest
 // main
 ////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args)
-    {
+//    public static void main(String[] args)
+//    {
 //        runTests(new String[] { "nhaystack.test.NScheduleTest", }, null);
-    }
+//    }
 }
