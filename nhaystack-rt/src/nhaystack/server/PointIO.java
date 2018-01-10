@@ -150,7 +150,7 @@ class PointIO
             RemotePoint rp = RemotePoint.fromControlPoint(point);
             if (rp == null)
             {
-                LOG.severe(point.getSlotPath() + " is not remote, assuming point is local to this station");
+                LOG.finest(point.getSlotPath() + " is not remote, assuming point is local to this station");
                 working = point;
             }
             else
