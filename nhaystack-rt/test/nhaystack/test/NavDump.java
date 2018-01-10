@@ -7,9 +7,6 @@
 //
 package nhaystack.test;
 
-import java.io.*;
-import java.util.*;
-
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
@@ -50,7 +47,7 @@ public class NavDump
                 str = (HStr) row.get("navId", false);
                 if (str != null)
                 {
-                    HGrid navKids = client.call("nav", NTest.makeNavGrid(str));
+                    HGrid navKids = client.call("nav", TestUtils.makeNavGrid(str));
                     dumpNav(navKids, curDepth + 1);
                 }
             }
