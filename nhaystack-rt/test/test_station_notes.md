@@ -1,29 +1,80 @@
-#Test Harness Setup and Usage
+#Testing nhaystack for Niagara 4
 
+##Introduction
+The 'nhaystack' module for Niagara 4 comes ready with an extensive test suite.  
+The test suite configuration allows a developer to run automated tests against more 
+than 1 running Niagara station and exercise the Haystack REST API in different 
+scenarios.  The test suite is constantly evolving and more tests and scenarios
+are always being added.
+
+By configuring and running a number of Niagara stations a developer is able to 
+simulate a sufficient range of test scenarios.
+
+The following notes describe how to use the test harness for testing against a 
+live Niagara Station.
+
+This document also describes how to run a small number of other unit tests using 
+the Niagara TestNG test harness.
+
+##Distribution
+The test stations for the nhaystack module are distributed as Niagara station
+templates.  This means that a developer who wishes to run the 'nhaystack' test
+suite must first create new stations on their local system using the distributed
+station templates.
+
+##Setup and execution
+Step 1 in running the test suite is to clone/download the 'nhaystack' repository
+and build the relevant Niagara modules ensuring that both the runtime and workbench
+profile modules have been copied into the <niagara_home>\modules folder.
+
+Step 2 is to copy the station template files included with the 'nhaystack' 
+repository to the <niagara_user_home>\stationTemplates folder so they can be found
+by the Niagara Workbench.
+
+Step 3 is to create a new instance of each of the test stations using the templates.
+
+Documentation for creating new Niagara stations from a template is available with 
+your Niagara 4 distribution.  The most efficient way to run the 'nhaystack' test
+harness would be to create each of the stations mentioned below.  Once a copy of
+each station has been created and the administrator credentials have been configured
+it will be possible to run the test suite.
+
+Due to the fact that every time the stations are created, when creating via a 
+template, new admnistrator credentials must be configured it is necessary to change
+the credentials in the test suite.  To do this edit the SimpleClientTest.java and the
+SupervisorClientTest.java, searching for any references to the username and password
+for the respective stations and replacing the credentials in the source code with the
+configured when creating the test stations from the templates.
+
+Once this is done it will be possible to run the test harness using the 'gradlew' 
+command.
+
+<p><code>gradlew test</code></p>
+  
+This will build and run the test suite against the running test stations.  If you
+receive errors check that the test stations have started properly and there are no 
+port conflicts.  It is recommended that the test stations are started using the 
+Niagara Workbench, in tihs way they will be started under the Platform Daemon and
+have full crypto and security functionality operational, thus enabling a more 
+realisitc test scenario.
 
 ##nhaystack_simple
-This station simulates a scenario where the is only a single Jace talking to a system.
+This station simulates a scenario where there is only a single Jace talking to a system.
 In this case we imagine that a "Haystack Client" is querying the Jace for points and 
 history data.  So this station has a setup that mimics many different use cases for a 
-Jace using nhaystack.
+Jace using 'nhaystack'.
 
-The test harness runs through a number of tests to check a number of the operations 
-accessible through the REST API.
-- cannot login using the admin username
-- for workbench logins you must use the following credentials
-  - username = user
-  - password = Vk3ldb237847
-- the admin user is used in the test script for this station
-  - username = admin
-  - password = abcd1234
-
+###Port Allocation
+Fox  => 1912<br>
+FoxS => 4911<br>
+HTTP => 82<br>
 
 ##nhaystack_sup
 This is an example of a larger setup of a Niagara system.  In this case there is 2
 Jaces setup and a Web Supervisor.  THe Web Supervisor station is already configured
 with the 
 
-###Station Login Details
+###Port Allocation
 nhaystack_sup
 - username = admin
 - password = Abcde12345
@@ -35,4 +86,6 @@ nhaystack_j1
 nhaystack_j2
 - username = admin
 - password = Abcde12345
+
+##Niagara Test Harness
   
