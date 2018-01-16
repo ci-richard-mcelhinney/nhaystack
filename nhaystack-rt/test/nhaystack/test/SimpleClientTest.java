@@ -219,8 +219,8 @@ public class SimpleClientTest
     Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
     Assert.assertTrue(curVal >= 0.0 && curVal <= 100.0);
 
-    Assert.assertEquals(dict.get("dis"), HStr.make("SineWave5"));
-    Assert.assertEquals(dict.get("navName"), HStr.make("SineWave5"));
+    Assert.assertEquals(dict.get("dis"), HStr.make("Config_SineWave5"));
+    Assert.assertEquals(dict.get("navName"), HStr.make("Config_SineWave5"));
 //    Assert.assertEquals(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
 
 //    Assert.assertEquals(grid.row(9).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
@@ -559,6 +559,22 @@ public class SimpleClientTest
 ////////////////////////////////////////////////////////////////////////////
 //// Point Write
 ////////////////////////////////////////////////////////////////////////////
+
+  @Test(enabled = false)
+  void manualPointWrite()
+  {
+    HRef ref = HRef.make("C.AHU2.NumericWritable");
+    this.client = HClient.open(URI, "admin", "abcd1234");
+    HGrid grid = client.pointWrite(ref, 10, "admin", HNum.make(222), null);
+  }
+
+  @Test(enabled = false)
+  void manualPointWriteLevelRelease()
+  {
+    HRef ref = HRef.make("C.AHU2.NumericWritable");
+    this.client = HClient.open(URI, "admin", "abcd1234");
+    HGrid grid = client.pointWrite(ref, 10, "admin", null, null);
+  }
 
   @Test(enabled = true)
   void verifyPointWrite() throws Exception
