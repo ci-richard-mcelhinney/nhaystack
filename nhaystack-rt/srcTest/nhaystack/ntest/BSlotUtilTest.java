@@ -2,22 +2,13 @@ package nhaystack.ntest;
 
 import nhaystack.util.*;
 
-import org.projecthaystack.*;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
-import javax.baja.alarm.ext.BAlarmState;
-import javax.baja.control.BEnumWritable;
 import javax.baja.nre.annotations.NiagaraType;
-import javax.baja.status.BStatus;
 import javax.baja.sys.*;
 
 import com.tridium.testng.*;
-
-import java.io.IOException;
-import java.util.Map;
-
-import static org.mockito.Mockito.*;
 
 @NiagaraType
 public class BSlotUtilTest extends BTestNg
