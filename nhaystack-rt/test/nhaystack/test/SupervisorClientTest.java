@@ -328,7 +328,7 @@ public class SupervisorClientTest //extends TestUtils
 //    verifyGridContains(poll, "id", d.id());
 
     // poll changes
-    Thread.sleep(3000); // wait for the sine waves to tick over
+    Thread.sleep(10000); // wait for the sine waves to tick over
     poll = w.pollChanges();
     Assert.assertEquals(poll.numRows(), 2);
 
