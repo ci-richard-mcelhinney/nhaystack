@@ -78,19 +78,33 @@ any 'Haystack' tagging, they are just normal Niagara stations simulating the fun
 of a JACE.  
 
 ###Port Allocation
-nhaystack_sup
+nhaystack_sup<br>
 Fox  => 1915<br>
 HTTP => 85<br>
 
-nhaystack_j1
+nhaystack_j1<br>
 Fox  => 1916<br>
 HTTP => 86<br>
 
-nhaystack_j2
+nhaystack_j2<br>
 Fox  => 1917<br>
 HTTP => 87<br>
 
 ##Niagara Test Harness
 There is currently a small number of unit tests that can be run using the Niagara 
 Test Harness.  The details of the test harness can be found in the developer 
-documentation in the Niagara installation, however 
+documentation in the Niagara installation, however it is quite simple to run the 
+test harness.
+
+First you need to build the Niagara Test Module: <br>
+
+<p><code>gradlew moduleTestJar</code></p>
+
+then assuming you have already built the main nhaystack modules you can run 
+the following from the command line in a Niagara shell.
+
+<p><code>test nhaystack</code></p>
+
+This will run the automated tests in the Niagara environment.  Test results are
+viewable in the form of a HTML report which can be found under the Niagara User
+Home directory.
