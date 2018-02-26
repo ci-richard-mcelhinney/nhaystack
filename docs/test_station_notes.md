@@ -1,4 +1,6 @@
-#Testing nhaystack for Niagara 4
+<link href="markdown.css" rel="stylesheet"/>
+
+# ![NHaystack](tag.png)Testing nhaystack for Niagara 4  
 
 ##Introduction
 The 'nhaystack' module for Niagara 4 comes ready with an extensive test suite.  
@@ -17,7 +19,7 @@ This document also describes how to run a small number of other unit tests using
 the Niagara TestNG test harness.
 
 ##Distribution
-The test stations for the nhaystack module are distributed as Niagara station
+The test stations for the nhaystack module are distributed as Niagara Station
 templates.  This means that a developer who wishes to run the 'nhaystack' test
 suite must first create new stations on their local system using the distributed
 station templates.
@@ -54,9 +56,9 @@ command.
 This will build and run the test suite against the running test stations.  If you
 receive errors check that the test stations have started properly and there are no 
 port conflicts.  It is recommended that the test stations are started using the 
-Niagara Workbench, in tihs way they will be started under the Platform Daemon and
+Niagara Workbench, in this way they will be started under the Platform Daemon and
 have full crypto and security functionality operational, thus enabling a more 
-realisitc test scenario.
+realistic test scenario.
 
 ##nhaystack_simple
 This station simulates a scenario where there is only a single Jace talking to a system.
@@ -66,26 +68,29 @@ Jace using 'nhaystack'.
 
 ###Port Allocation
 Fox  => 1912<br>
-FoxS => 4911<br>
 HTTP => 82<br>
 
 ##nhaystack_sup
 This is an example of a larger setup of a Niagara system.  In this case there is 2
 Jaces setup and a Web Supervisor.  THe Web Supervisor station is already configured
-with the 
+with the subordinate Jaces in the Niagara Network.  The subordinate JACEs do not have
+any 'Haystack' tagging, they are just normal Niagara stations simulating the function
+of a JACE.  
 
 ###Port Allocation
 nhaystack_sup
-- username = admin
-- password = Abcde12345
+Fox  => 1915<br>
+HTTP => 85<br>
 
 nhaystack_j1
-- username = admin
-- password = Abcde12345
+Fox  => 1916<br>
+HTTP => 86<br>
 
 nhaystack_j2
-- username = admin
-- password = Abcde12345
+Fox  => 1917<br>
+HTTP => 87<br>
 
 ##Niagara Test Harness
-  
+There is currently a small number of unit tests that can be run using the Niagara 
+Test Harness.  The details of the test harness can be found in the developer 
+documentation in the Niagara installation, however 
