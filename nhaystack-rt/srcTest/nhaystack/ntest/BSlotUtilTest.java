@@ -8,7 +8,7 @@ import org.testng.annotations.*;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.*;
 
-import com.tridium.testng.*;
+import javax.baja.test.BTestNg;
 
 @NiagaraType
 public class BSlotUtilTest extends BTestNg

@@ -30,7 +30,7 @@ public final class BHDict
       * Make a BHDict instance from a ZINC-encoded string.
       */
     public static BHDict make(String s) 
-    { 
+    {
         HZincReader zr = new HZincReader(s);
         return new BHDict(zr.readDict());
     }

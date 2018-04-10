@@ -12,7 +12,7 @@ import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.status.BStatus;
 import javax.baja.sys.*;
 
-import com.tridium.testng.*;
+import javax.baja.test.BTestNg;
 
 import java.io.IOException;
 import java.util.Map;
