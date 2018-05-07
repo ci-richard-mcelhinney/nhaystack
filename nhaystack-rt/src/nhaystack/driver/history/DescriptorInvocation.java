@@ -3,20 +3,18 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Added missing @Overrides annotations
 
 package nhaystack.driver.history;
 
-
-import java.util.logging.*;
-
-import javax.baja.driver.*;
-import javax.baja.driver.util.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import nhaystack.worker.*;
+import java.util.logging.Logger;
+import javax.baja.driver.util.BDescriptor;
+import javax.baja.status.BStatus;
+import javax.baja.sys.BComponent;
+import javax.baja.util.Invocation;
+import nhaystack.worker.BNHaystackWorker;
+import nhaystack.worker.WorkerChore;
 
 /**
   * A DescriptorInvocation is a WorkerChore that invokes an action
@@ -37,6 +35,7 @@ public class DescriptorInvocation extends WorkerChore
         this.invocation = invocation;
     }
 
+    @Override
     public void doRun() throws Exception
     {
         BStatus status = worker.getWorkerParent().getStatus();
@@ -55,10 +54,13 @@ public class DescriptorInvocation extends WorkerChore
         invocation.run();
     }
 
+    @Override
     public boolean merge(WorkerChore chore) { return false; }
 
+    @Override
     public boolean isPing() { return false; }
 
+    @Override
     protected final Logger getLogger() { return LOG; }
 
 ////////////////////////////////////////////////////////////////
