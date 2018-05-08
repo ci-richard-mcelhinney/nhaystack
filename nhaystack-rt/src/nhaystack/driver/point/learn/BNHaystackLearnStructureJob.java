@@ -3,53 +3,80 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
+//                               added use of generics
 
 package nhaystack.driver.point.learn;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.control.*;
-import javax.baja.history.*;
-import javax.baja.job.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import nhaystack.*;
-import nhaystack.driver.*;
-import nhaystack.driver.history.*;
-import nhaystack.driver.point.*;
-import nhaystack.res.*;
-import nhaystack.server.*;
-import nhaystack.site.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.control.BControlPoint;
+import javax.baja.history.BHistoryId;
+import javax.baja.job.BSimpleJob;
+import javax.baja.job.JobCancelException;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.SlotPath;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.BHDict;
+import nhaystack.BHRef;
+import nhaystack.driver.BHTags;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.driver.BPointGrouping;
+import nhaystack.driver.BStructureSettings;
+import nhaystack.driver.NameGenerator;
+import nhaystack.driver.history.BNHaystackHistoryImport;
+import nhaystack.driver.point.BNHaystackBoolPoint;
+import nhaystack.driver.point.BNHaystackBoolWritable;
+import nhaystack.driver.point.BNHaystackNumberPoint;
+import nhaystack.driver.point.BNHaystackNumberWritable;
+import nhaystack.driver.point.BNHaystackPointFolder;
+import nhaystack.driver.point.BNHaystackProxyExt;
+import nhaystack.driver.point.BNHaystackStrPoint;
+import nhaystack.driver.point.BNHaystackStrWritable;
+import nhaystack.server.BNHaystackRebuildCacheJob;
+import nhaystack.server.BNHaystackService;
+import nhaystack.server.TagManager;
+import nhaystack.site.BHEquip;
+import nhaystack.site.BHSite;
+import nhaystack.site.BHTagged;
+import org.projecthaystack.HBin;
+import org.projecthaystack.HDate;
+import org.projecthaystack.HDateTime;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HFilter;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HTime;
+import org.projecthaystack.HUri;
+import org.projecthaystack.HVal;
+import org.projecthaystack.client.HClient;
 
 /**
   * BNHaystackLearnStructureJob is a Job which 'learns' all the remote
   * points from a remote haystack server, and puts them into a folder structure.
   */
+@NiagaraType
 public class BNHaystackLearnStructureJob extends BSimpleJob 
 {
-    /*-
-    class BNHaystackLearnStructureJob
-    {
-        properties
-        {
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.learn.BNHaystackLearnStructureJob(1124661438)1.0$ @*/
-/* Generated Wed Apr 08 12:16:28 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.learn.BNHaystackLearnStructureJob(2979906276)1.0$ @*/
+/* Generated Fri Nov 17 11:56:51 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackLearnStructureJob.class);
 
@@ -80,13 +107,15 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
             return HFilter.make(str);
     }
 
-    public void doCancel(Context ctx) 
+    @Override
+    public void doCancel(Context ctx)
     {
         super.doCancel(ctx);
         throw new JobCancelException();
     }
 
-    public void run(Context ctx) throws Exception 
+    @Override
+    public void run(Context ctx) throws Exception
     {
         try
         {
@@ -145,7 +174,7 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
                 BNHaystackPointFolder folder = ensureFolder(parent, name);
 
                 // add implicit equip
-                if (rec.has("equip") && (folder.get("equip") == null))
+                if (rec.has("equip") && folder.get("equip") == null)
                     folder.add("equip", createEquip(rec, name));
 
                 // traverse recursively
@@ -198,7 +227,7 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
 
                     BNHaystackHistoryImport imp = new BNHaystackHistoryImport();
                     BHistoryId hisId = BHistoryId.make(
-                        siteName, equipName + "_" + name);
+                        siteName, equipName + '_' + name);
 
                     imp.setId(BHRef.make(rec.id()));
                     imp.setImportedTags(BHTags.make(rec));
@@ -241,23 +270,23 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
         return equip;
     }
 
-    private HDictBuilder createHaystackDict(HDict rec)
+    private static HDictBuilder createHaystackDict(HDict rec)
     {
         HDictBuilder hdb = new HDictBuilder();
 
-        Iterator itr = rec.iterator();
+        Iterator<Map.Entry<String, HVal>> itr = rec.iterator();
         while (itr.hasNext())
         {
-            Map.Entry e = (Map.Entry) itr.next();
-            String name = (String) e.getKey();
-            HVal val = (HVal) e.getValue();
+            Map.Entry<String, HVal> e = itr.next();
+            String name = e.getKey();
+            HVal val = e.getValue();
 
-            if (!((val instanceof HRef) ||
-                  (val instanceof HBin) ||
-                  (val instanceof HUri) ||
-                  (val instanceof HDate) ||
-                  (val instanceof HTime) ||
-                  (val instanceof HDateTime)))
+            if (!(val instanceof HRef ||
+                  val instanceof HBin ||
+                  val instanceof HUri ||
+                  val instanceof HDate ||
+                  val instanceof HTime ||
+                  val instanceof HDateTime))
                 hdb.add(name, val);
         }
 
@@ -282,20 +311,20 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
         if (kind.equals("Bool"))
         {
             return writable ?
-                (BControlPoint) new BNHaystackBoolWritable() :
-                (BControlPoint) new BNHaystackBoolPoint();
+                new BNHaystackBoolWritable() :
+                new BNHaystackBoolPoint();
         }
         else if (kind.equals("Number"))
         {
             return writable ?
-                (BControlPoint) new BNHaystackNumberWritable() :
-                (BControlPoint) new BNHaystackNumberPoint();
+                new BNHaystackNumberWritable() :
+                new BNHaystackNumberPoint();
         }
         else if (kind.equals("Str"))
         {
             return writable ?
-                (BControlPoint) new BNHaystackStrWritable() :
-                (BControlPoint) new BNHaystackStrPoint();
+                new BNHaystackStrWritable() :
+                new BNHaystackStrPoint();
         }
         else throw new IllegalStateException("Cannot create point for " + kind);
     }
@@ -328,8 +357,9 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
     private BPointGrouping[] groups;
     private HFilter[] groupFilters;
 
-    private HFilter.Pather PATHER = new HFilter.Pather() {
+    private final HFilter.Pather PATHER = new HFilter.Pather() {
+        @Override
         public HDict find(String ref) { return null; } };
 
-    private Map idComponents = new HashMap();
+    private final Map<HRef, BHTagged> idComponents = new HashMap<>();
 }
