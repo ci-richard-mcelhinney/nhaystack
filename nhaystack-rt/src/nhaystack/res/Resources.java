@@ -3,65 +3,80 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   27 Jan 2013  Mike Jarmy Creation
+//   27 Jan 2013  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Added use of generics
 //
 package nhaystack.res;
 
-import java.io.*;
-import java.util.*;
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.baja.file.BIFile;
 import javax.baja.naming.BOrd;
 import javax.baja.naming.SlotPath;
 import javax.baja.naming.UnresolvedException;
-
-import javax.baja.sys.*;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.BajaRuntimeException;
 import javax.baja.sys.Sys;
-import javax.baja.units.*;
-import javax.baja.nre.util.*;
-
-
+import javax.baja.units.BUnit;
+import javax.baja.units.UnitDatabase;
+import javax.baja.units.UnitDatabase.Quantity;
+import javax.baja.units.UnitException;
 
 /**
   * Resources makes available all the various files downloaded 
   * from project-haystack.org
   */
-public class Resources
+public final class Resources
 {
-    private static final String TAGS  = "/nhaystack/res/tags.csv";
-    private static final String AUTOMARKERS  = "/nhaystack/res/autoMarker.csv";
-    private static final String TZ    = "/nhaystack/res/tz.txt";
-    private static final String UNITS = "/nhaystack/res/units.txt";
+    private static final String TAGS        = "/nhaystack/res/tags.csv";
+    private static final String AUTOMARKERS = "/nhaystack/res/autoMarker.csv";
+    private static final String TZ          = "/nhaystack/res/tz.txt";
+    private static final String UNITS       = "/nhaystack/res/units.txt";
 
-    private static final String AHU                   = "/nhaystack/res/equip-points/ahu.txt";
-    private static final String BOILER                = "/nhaystack/res/equip-points/boiler.txt";
-    private static final String CHILLED_WATER_PLANT   = "/nhaystack/res/equip-points/chilledWaterPlant.txt";
-    private static final String CHILLER               = "/nhaystack/res/equip-points/chiller.txt";
-    private static final String COOLING_TOWER         = "/nhaystack/res/equip-points/coolingTower.txt";
-    private static final String ELEC_METER            = "/nhaystack/res/equip-points/elecMeter.txt";
-    private static final String HEAT_EXCHANGER        = "/nhaystack/res/equip-points/heatExchanger.txt";
-    private static final String HOT_WATER_PLANT       = "/nhaystack/res/equip-points/hotWaterPlant.txt";
-    private static final String STEAM_PLANT           = "/nhaystack/res/equip-points/steamPlant.txt";
-    private static final String TANK                  = "/nhaystack/res/equip-points/tank.txt";
-    private static final String VAV                   = "/nhaystack/res/equip-points/vav.txt";
-    private static final String VFD                   = "/nhaystack/res/equip-points/vfd.txt";
-    private static final String ZONE                  = "/nhaystack/res/equip-points/zone.txt";
-    
+    private static final String AHU                 = "/nhaystack/res/equip-points/ahu.txt";
+    private static final String BOILER              = "/nhaystack/res/equip-points/boiler.txt";
+    private static final String CHILLED_WATER_PLANT = "/nhaystack/res/equip-points/chilledWaterPlant.txt";
+    private static final String CHILLER             = "/nhaystack/res/equip-points/chiller.txt";
+    private static final String COOLING_TOWER       = "/nhaystack/res/equip-points/coolingTower.txt";
+    private static final String ELEC_METER          = "/nhaystack/res/equip-points/elecMeter.txt";
+    private static final String HEAT_EXCHANGER      = "/nhaystack/res/equip-points/heatExchanger.txt";
+    private static final String HOT_WATER_PLANT     = "/nhaystack/res/equip-points/hotWaterPlant.txt";
+    private static final String STEAM_PLANT         = "/nhaystack/res/equip-points/steamPlant.txt";
+    private static final String TANK                = "/nhaystack/res/equip-points/tank.txt";
+    private static final String VAV                 = "/nhaystack/res/equip-points/vav.txt";
+    private static final String VFD                 = "/nhaystack/res/equip-points/vfd.txt";
+    private static final String ZONE                = "/nhaystack/res/equip-points/zone.txt";
 
-    private static Map kindTags; // <String,Set<String>>
-    private static Map autoMarkers; //<String,Set<String>>
-    
+    public static final String[] EMPTY_STRING_ARR = new String[0];
+    public static final Unit[] EMPTY_UNIT_ARR = new Unit[0];
+
+    private static Map<String, Set<String>> kindTags;
+    private static Map<String, Set<String>> autoMarkers;
+
     private static String[] timeZones;
 
-    private static Map unitsByQuantity; // <String,Array<Unit>>
-    private static Map unitsBySymbol;   // <String,Unit>
-    private static Map unitsByLowerCaseName;   // <String,Unit>
+    private static Map<String, List<Unit>> unitsByQuantity;
+    private static Map<String, Unit> unitsBySymbol;
+    private static Map<String, Unit> unitsByLowerCaseName;
     private static String[] quantities;
 
-    private static String[] markerSets = new String[] {
+    private static final String[] markerSets = {
         "ahu", "boiler", "chilledWaterPlant", "chiller", "coolingTower", "elecMeter", 
         "heatExchanger", "hotWaterPlant", "steamPlant", "tank", "vav", "vfd", "zone"};
-    private static Map markerSetTags; // <String,Array<String>>
+    private static Map<String, List<String>> markerSetTags;
+
+    private Resources()
+    {
+    }
 
 ////////////////////////////////////////////////////////////////
 //  load
@@ -88,20 +103,17 @@ public class Resources
         InputStream in = Resources.class.getResourceAsStream(TAGS);
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        kindTags = new HashMap();
+        kindTags = new HashMap<>();
 
         String str = bin.readLine(); // throw away header
         str = bin.readLine();
         while (str != null)
-        {			
+        {
             String[] tokens = TextUtil.split(str, ',');
             String name = tokens[0];
             String kind = tokens[1];
 
-            Set set = (Set) kindTags.get(kind);
-            if (set == null)
-                kindTags.put(kind, set = new TreeSet());
-            set.add(name);
+            kindTags.computeIfAbsent(kind, k -> new TreeSet<String>()).add(name);
 
             str = bin.readLine();
         }
@@ -122,46 +134,49 @@ public class Resources
      * SF-C,discharge fan cmd
      * @throws Exception
      */
-public static void loadAutoMarkers(BOrd fq) throws Exception
-{
+    public static void loadAutoMarkers(BOrd fq) throws Exception
+    {
         // Load default dictionnary
-        BOrd fileQuery = null;
-        InputStream in = null; 
+        BOrd fileQuery;
+        InputStream in;
+
         // Try to load local file if exists
         try
         {
-          if (fq == null)
-          {
-            // must be a local file on workbench PC.... at startup, it may load but will be overriden when service view will open.
-            // loading again will be necessary using the button
-            String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
-            String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
+            if (fq == null)
+            {
+                // must be a local file on workbench PC.... at startup, it may load but will be
+                // overriden when service view will open. loading again will be necessary using the
+                // button
+                String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
+                String customTagsDictFilePath = "local:|file:/" + shared_folder + "/nHaystack/customTagsDict.csv";
 //            System.out.println(customTagsDictFilePath);
-            fileQuery =  BOrd.make(customTagsDictFilePath);
-          }
-          else
-          {
-            fileQuery = fq;
-          }
-          BIFile myFile = (BIFile)fileQuery.get();
-          in = myFile.getInputStream();              
+                fileQuery =  BOrd.make(customTagsDictFilePath);
+            }
+            else
+            {
+                fileQuery = fq;
+            }
+
+            BIFile myFile = (BIFile)fileQuery.get();
+            in = myFile.getInputStream();
         }
-        //handle case where file isn't found or doesn't exist.
         catch(UnresolvedException re)
         {
+            // handle case where file isn't found or doesn't exist.
 //          System.out.println("nHaystack - Tag Dictionnary / No custom file, using default.");
-          in = Resources.class.getResourceAsStream(AUTOMARKERS);  
+            in = Resources.class.getResourceAsStream(AUTOMARKERS);
         }
-        //handle IO exceptions from trying to read from file
         catch(IOException ioe)
         {
+            // handle IO exceptions from trying to read from file
 //          System.out.println("nHaystack - Tag Dictionnary / Errors in custom file, using default.");
-          in = Resources.class.getResourceAsStream(AUTOMARKERS); 
+            in = Resources.class.getResourceAsStream(AUTOMARKERS);
         }  
         
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        autoMarkers = new HashMap();
+        autoMarkers = new HashMap<>();
 
         String str = bin.readLine(); // throw away header
         str = bin.readLine();
@@ -171,27 +186,22 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
             String pointName = tokens[0];
             String[] markerList = TextUtil.split(tokens[1], ' ');
 
-            Set set = (Set) autoMarkers.get(pointName);
-            if (set == null)
-              autoMarkers.put(pointName, set = new TreeSet());
-            for (int i = 0; i < markerList.length; i++){
-              set.add(markerList[i]);
-            }
+            Set<String> set = autoMarkers.computeIfAbsent(pointName, k -> new TreeSet<>());
+            Collections.addAll(set, markerList);
 
             str = bin.readLine();
         }
 //        System.out.println("Testing Generation Map (SF-C): " + getAutoMarkers("SF-C"));
 //        System.out.println("Testing Generation Map (DA-T): " + getAutoMarkers("DA-T"));
         bin.close();
-}
-    
-    
+    }
+
     private static void loadTimeZones() throws Exception
     {
         InputStream in = Resources.class.getResourceAsStream(TZ);
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        Array arr = new Array(String.class);
+        List<String> arr = new ArrayList<>();
 
         String str = bin.readLine(); 
         while (str != null)
@@ -200,7 +210,7 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
             str = bin.readLine();
         }
 
-        timeZones = (String[]) arr.trim();
+        timeZones = arr.toArray(EMPTY_STRING_ARR);
         bin.close();
     }
 
@@ -209,17 +219,17 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
         InputStream in = Resources.class.getResourceAsStream(UNITS);
         BufferedReader bin = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 
-        unitsByQuantity = new HashMap();
-        unitsBySymbol = new HashMap();
-        unitsByLowerCaseName = new HashMap();
+        unitsByQuantity = new HashMap<>();
+        unitsBySymbol = new HashMap<>();
+        unitsByLowerCaseName = new HashMap<>();
 
-        Array arr = new Array(String.class);
+        List<String> arr = new ArrayList<>();
         String curQuant = null;
 
         String str = bin.readLine(); 
         while (str != null)
         {
-            if (!str.equals("")) 
+            if (!str.isEmpty())
             {
                 if (str.startsWith("-- "))
                 {
@@ -229,7 +239,7 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
                 else
                 {
                     String[] tokens = TextUtil.split(str, ',');
-							
+
                     if (tokens.length == 1)
                         loadUnit(new Unit(curQuant, tokens[0], tokens[0]));
                     else
@@ -241,19 +251,17 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
             str = bin.readLine();
         }
 
-        quantities = (String[]) arr.trim();
+        quantities = arr.toArray(EMPTY_STRING_ARR);
         bin.close();
     }
 
     private static void loadUnit(Unit unit)
     {
-        Array arr = (Array) unitsByQuantity.get(unit.quantity);
-        if (arr == null)
-            unitsByQuantity.put(unit.quantity, arr = new Array(Unit.class));
-        arr.add(unit);
+        unitsByQuantity.computeIfAbsent(unit.quantity, k -> new ArrayList<>()).add(unit);
 
         if (unitsBySymbol.containsKey(unit.symbol))
             throw new BajaRuntimeException("Duplicate symbol: " + unit.symbol);
+
         unitsBySymbol.put(unit.symbol, unit);
 
         String name = unit.name.toLowerCase();
@@ -263,7 +271,7 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
 
     private static void loadMarkerSets() throws Exception
     {
-        markerSetTags = new HashMap();
+        markerSetTags = new HashMap<>();
 
         markerSetTags.put("ahu", loadMarkerSet(AHU));
         markerSetTags.put("boiler", loadMarkerSet(BOILER));
@@ -280,19 +288,19 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
         markerSetTags.put("zone", loadMarkerSet(ZONE));
     }
 
-    private static Array loadMarkerSet(String resourcePath) throws Exception
+    private static List<String> loadMarkerSet(String resourcePath) throws Exception
     {
         InputStream in = Resources.class.getResourceAsStream(resourcePath);
         BufferedReader bin = new BufferedReader(new InputStreamReader(in));
 
-        Array arr = new Array(String.class);
+        List<String> arr = new ArrayList<>();
 
         String str = bin.readLine(); 
         while (str != null)
         {
-            if (!str.equals("") && !str.startsWith("**"))
+            if (!str.isEmpty() && !str.startsWith("**"))
             {
-                while (str.indexOf("  ") != -1)
+                while (str.contains("  "))
                     str = TextUtil.replace(str, "  ", " ");
                 arr.add(str);
             }
@@ -313,10 +321,10 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       */
     public static String[] getKindTags(String kind)
     {
-        if (!kindTags.containsKey(kind)) return new String[0];
+        if (!kindTags.containsKey(kind)) return EMPTY_STRING_ARR;
 
-        Array arr = new Array(String.class, (Set) kindTags.get(kind));
-        return (String[]) arr.trim();
+        Set<String> kindTagsValue = kindTags.get(kind);
+        return kindTagsValue.toArray(EMPTY_STRING_ARR);
     }
 
     /**
@@ -340,8 +348,8 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       */
     public static Unit[] getUnits(String quantity)
     {
-        Array arr = (Array) unitsByQuantity.get(quantity);
-        return (Unit[]) arr.trim();
+        List<Unit> arr = unitsByQuantity.get(quantity);
+        return arr.toArray(EMPTY_UNIT_ARR);
     }
 
     /**
@@ -349,17 +357,16 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       */
     public static Unit[] getUnits(String quantity, String name)
     {
-        Array a1 = (Array) unitsByQuantity.get(quantity);
-        Array a2 = new Array(Unit.class);
+        List<Unit> units = unitsByQuantity.get(quantity);
+        List<Unit> result = new ArrayList<>();
 
-        for (int i = 0; i < a1.size(); i++)
+        for (Unit unit : units)
         {
-            Unit unit = (Unit) a1.get(i);
             if (unit.name.equals(name))
-                a2.add(unit);
+                result.add(unit);
         }
 
-        return (Unit[]) a2.trim();
+        return result.toArray(EMPTY_UNIT_ARR);
     }
 
     /**
@@ -367,7 +374,7 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       */
     public static Unit getSymbolUnit(String symbol)
     {
-        Unit unit = (Unit) unitsBySymbol.get(symbol);
+        Unit unit = unitsBySymbol.get(symbol);
         if (unit == null)
             throw new BajaRuntimeException(
                 "Cannot find Unit for symbol '" + symbol + "'.");
@@ -388,22 +395,22 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       */
     public static String[] getMarkerSetTags(String group)
     {
-        Array arr = (Array) markerSetTags.get(group);
+        List<String> arr = markerSetTags.get(group);
         if (arr == null) throw new BajaRuntimeException(
             "Cannot find marker group '" + group + "'.");
-        return (String[]) arr.trim();
+        return arr.toArray(EMPTY_STRING_ARR);
     }
-    
+
     /**
      * Get the default tags based on pointName. Ex. DA-T loads "discharge air temp sensor" tags. Used in BAddHaystackSlot.
      */
     public static String[] getAutoMarkers(String pointName)
     {
-      String key = SlotPath.unescape(pointName);
-      if (!autoMarkers.containsKey(key)) return new String[0];
-      Array arr = new Array(String.class, (Set) autoMarkers.get(key));
+        String key = SlotPath.unescape(pointName);
+        if (!autoMarkers.containsKey(key)) return EMPTY_STRING_ARR;
+
 //      System.out.println("getAutoMArker" + pointName + " : " + (String[]) arr.trim());
-      return (String[]) arr.trim();
+        return autoMarkers.get(key).toArray(EMPTY_STRING_ARR);
     }
 
     /**
@@ -412,9 +419,9 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
       */
     public static Unit fromBajaUnit(BUnit bunit)
     {
-        Unit unit = (Unit) unitsByLowerCaseName.get(
+        Unit unit = unitsByLowerCaseName.get(
             TextUtil.replace(bunit.getUnitName(), " ", "_").toLowerCase());
-		
+
         if (unit != null) return unit;
 
         if (bunit.getUnitName().equals("dollar")) return getSymbolUnit("$");
@@ -455,15 +462,13 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
         System.out.println();
 
         String[] quantities = getUnitQuantities();
-        for (int i = 0; i < quantities.length; i++)
+        for (String quantity : quantities)
         {
-            String quantity = quantities[i];
             boolean headerPrinted = false;
 
             Unit[] units = getUnits(quantity);
-            for (int j = 0; j < units.length; j++)
+            for (Unit unit : units)
             {
-                Unit unit = units[j];
                 try
                 {
                     BUnit bunit = toBajaUnit(unit);
@@ -493,25 +498,22 @@ public static void loadAutoMarkers(BOrd fq) throws Exception
         UnitDatabase ud = UnitDatabase.getDefault();
         UnitDatabase.Quantity[] quantities = ud.getQuantities();
 
-        for (int i = 0; i < quantities.length; i++)
+        for (Quantity quantity : quantities)
         {
-            UnitDatabase.Quantity q = quantities[i];
             boolean headerPrinted = false;
 
-            BUnit[] units = q.getUnits();
-            for (int j = 0; j < units.length; j++)
+            BUnit[] units = quantity.getUnits();
+            for (BUnit unit : units)
             {
-                BUnit u = units[j];
-
-                if (fromBajaUnit(u) == null)
+                if (fromBajaUnit(unit) == null)
                 {
                     if (!headerPrinted)
                     {
-                        System.out.println(q.getName());
+                        System.out.println(quantity.getName());
                         headerPrinted = true;
                     }
 
-                    System.out.println("    " + u.getUnitName());
+                    System.out.println("    " + unit.getUnitName());
                 }
             }
         }

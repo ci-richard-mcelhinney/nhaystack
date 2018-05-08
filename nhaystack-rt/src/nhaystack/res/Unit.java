@@ -7,7 +7,7 @@
 //
 package nhaystack.res;
 
-import javax.baja.nre.util.*;
+import javax.baja.nre.util.TextUtil;
 
 /**
   * Unit models a single entry found in 'units.txt'.
@@ -31,12 +31,12 @@ public class Unit
         return "[Unit " +
             "quantity:" + quantity + ", " +
             "name:" + name + ", " +
-            "symbol:" + symbol + "]";
+            "symbol:" + symbol + ']';
     }
 
     public String toDisplayString()
     {
-        return TextUtil.replace(name, "_", " ") + " (" + symbol + ")";
+        return TextUtil.replace(name, "_", " ") + " (" + symbol + ')';
     }
 
     public boolean equals(Object obj) 
