@@ -7,10 +7,9 @@
 
 package nhaystack.worker;
 
-import java.util.logging.*;
-
-import javax.baja.status.*;
-import javax.baja.util.*;
+import java.util.logging.Logger;
+import javax.baja.status.BStatus;
+import javax.baja.util.Invocation;
 
 /**
   * A Worker Invocation is a WorkerChore that invokes an action
@@ -24,6 +23,7 @@ public class WorkerInvocation extends WorkerChore
         this.invocation = invocation;
     }
 
+    @Override
     public void doRun() throws Exception
     {
         BStatus status = worker.getWorkerParent().getStatus();
@@ -33,10 +33,13 @@ public class WorkerInvocation extends WorkerChore
         invocation.run();
     }
 
+    @Override
     public boolean merge(WorkerChore chore) { return false; }
 
+    @Override
     public boolean isPing() { return false; }
 
+    @Override
     protected final Logger getLogger() { return LOG; }
 
 ////////////////////////////////////////////////////////////////

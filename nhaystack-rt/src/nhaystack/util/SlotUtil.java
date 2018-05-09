@@ -20,7 +20,7 @@ public abstract class SlotUtil
       */
     public static String fromNiagara(String path)
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int n = 0;
         while (n < path.length())
         {
@@ -34,9 +34,9 @@ public abstract class SlotUtil
 
                 case '$': 
 
-                    if ((n < path.length()-2) &&
-                        (path.charAt(n+1) == '2') &&
-                        (path.charAt(n+2) == '0'))
+                    if ((n < (path.length() - 2)) &&
+                        (path.charAt(n + 1) == '2') &&
+                        (path.charAt(n + 2) == '0'))
                     {
                         sb.append('-'); 
                         n += 3;
@@ -68,7 +68,7 @@ public abstract class SlotUtil
       */
     public static String toNiagara(String path)
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < path.length(); i++)
         {
             char ch = path.charAt(i);
@@ -85,6 +85,6 @@ public abstract class SlotUtil
 
     public static String fromEnum(String value, boolean translate)
     {
-        return (translate) ? fromNiagara(value) : value;
+        return translate ? fromNiagara(value) : value;
     }
 }
