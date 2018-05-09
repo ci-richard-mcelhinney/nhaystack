@@ -3,38 +3,40 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   06 Feb 2013  Mike Jarmy  Creation
-//
+//   06 Feb 2013  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.site;
 
-import javax.baja.sys.*;
-
-import org.projecthaystack.*;
-import nhaystack.res.*;
-import nhaystack.server.*;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BIcon;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.res.Resources;
+import nhaystack.server.NHServer;
+import nhaystack.server.Nav;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTimeZone;
 
 /**
  *  BHSite represents a Haystack 'site' rec.
  */
+@NiagaraType
 public class BHSite extends BHTagged
 {
-    /*-
-    class BHSite
-    {
-        properties
-        {
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHSite(875174785)1.0$ @*/
-/* Generated Fri Mar 29 12:39:07 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.site.BHSite(2979906276)1.0$ @*/
+/* Generated Sun Nov 19 22:46:59 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHSite.class);
 
@@ -44,6 +46,7 @@ public class BHSite extends BHTagged
       * Return default values for those tags which are essential for
       * defining this component.
       */
+    @Override
     public HDict getDefaultEssentials()
     {
         return ESSENTIALS;
@@ -54,6 +57,7 @@ public class BHSite extends BHTagged
       * This will include the auto-generated tags, and
       * any other tags defined in the 'haystack' property.
       */
+    @Override
     public HDict generateTags(NHServer server)
     {
         HDictBuilder hdb = new HDictBuilder();
@@ -84,6 +88,7 @@ public class BHSite extends BHTagged
         return hdb.toDict();
     }
 
+    @Override
     public BIcon getIcon() { return ICON; }
 
 ////////////////////////////////////////////////////////////////
