@@ -3,40 +3,57 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   27 Jan 2013  Mike Jarmy Creation
+//   27 Jan 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
+//                               added use of generics
 //
 
 package nhaystack.ui;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import javax.baja.fox.BFoxProxySession;
+import javax.baja.gx.BBrush;
+import javax.baja.gx.BColor;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BString;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.pane.BBorderPane;
+import javax.baja.ui.pane.BPane;
+import javax.baja.ui.pane.BScrollPane;
+import javax.baja.util.Lexicon;
+import nhaystack.BHDict;
+import nhaystack.BHRef;
+import nhaystack.NHRef;
+import nhaystack.server.BNHaystackService;
+import nhaystack.server.TagManager;
+import nhaystack.site.BHEquip;
+import nhaystack.site.BHTagged;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HVal;
 
-import javax.baja.fox.*;
-import javax.baja.gx.*;
-import javax.baja.sys.*;
-import javax.baja.ui.pane.*;
-import javax.baja.util.*;
-import javax.baja.nre.util.*;
-
-import org.projecthaystack.*;
-import nhaystack.*;
-import nhaystack.server.*;
-import nhaystack.site.*;
-
+@NiagaraType
 public class BHDictEditorGroup extends BScrollPane
 {
-    /*-
-    class BHDictEditorGroup
-    {
-    }
-    -*/
-/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditorGroup(2327187967)1.0$ @*/
-/* Generated Sat Feb 09 10:19:16 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+  /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
+/*@ $nhaystack.ui.BHDictEditorGroup(2979906276)1.0$ @*/
+/* Generated Mon Nov 20 12:23:31 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHDictEditorGroup.class);
 
@@ -54,11 +71,11 @@ public class BHDictEditorGroup extends BScrollPane
 
     HDict all = fetchTagsFromServer();
 
-    Map defaultEssentials = (comp instanceof BHTagged) ?
+    Map<String, HVal> defaultEssentials = comp instanceof BHTagged ?
             asTagMap(((BHTagged) comp).getDefaultEssentials()) :
-            new HashMap();
+            new HashMap<>();
 
-    Set allPossibleAuto = new HashSet(Arrays.asList(fetchAutoGenTags()));
+    Set<String> allPossibleAuto = new HashSet<>(Arrays.asList(fetchAutoGenTags()));
 
     // sites need 'tz' to show up in essentials.
     if (all.has("site")) allPossibleAuto.remove("tz");
@@ -69,16 +86,14 @@ public class BHDictEditorGroup extends BScrollPane
     //////////////////////
     // essentials
 
-    Map essentialTags = asTagMap(all);
+    Map<String, HVal> essentialTags = asTagMap(all);
     essentialTags.keySet().removeAll(allPossibleAuto);
     essentialTags.keySet().retainAll(defaultEssentials.keySet());
 
-    Iterator it = defaultEssentials.entrySet().iterator();
-    while (it.hasNext())
+    for (Entry<String, HVal> entry : defaultEssentials.entrySet())
     {
-      Map.Entry entry = (Map.Entry) it.next();
-      String name = (String) entry.getKey();
-      HVal val = (HVal) entry.getValue();
+      String name = entry.getKey();
+      HVal val = entry.getValue();
       if (!essentialTags.containsKey(name))
         essentialTags.put(name, val);
     }
@@ -86,7 +101,7 @@ public class BHDictEditorGroup extends BScrollPane
     //////////////////////
     // optional
 
-    Map optionalTags = asTagMap(all);
+    Map<String, HVal> optionalTags = asTagMap(all);
     optionalTags.keySet().removeAll(allPossibleAuto);
     optionalTags.keySet().removeAll(defaultEssentials.keySet());
 
@@ -107,7 +122,7 @@ public class BHDictEditorGroup extends BScrollPane
     //////////////////////
     // autoGen
 
-    Map autoGenTags = asTagMap(all);
+    Map<String, HVal> autoGenTags = asTagMap(all);
     autoGenTags.keySet().retainAll(allPossibleAuto);
 
     // move 'equip' to optional if its not really a BHEquip
@@ -198,22 +213,22 @@ public class BHDictEditorGroup extends BScrollPane
         catch (Exception e)
         {
             e.printStackTrace();
-            return new String[0];
+            return EMPTY_STRING_ARR;
         }
     }
 
     /**
       * Convert an HDict into a TreeMap<String,HVal>
       */
-    private static Map asTagMap(HDict dict)
+    private static Map<String, HVal> asTagMap(HDict dict)
     {
-        Map tagMap = new TreeMap();
-        Iterator it = dict.iterator();
+        Map<String, HVal> tagMap = new TreeMap<>();
+        Iterator<Map.Entry<String, HVal>> it = dict.iterator();
         while (it.hasNext())
         {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            HVal val = (HVal) entry.getValue();
+            Map.Entry<String, HVal> entry = it.next();
+            String name = entry.getKey();
+            HVal val = entry.getValue();
             tagMap.put(name, val);
         }
         return tagMap;
@@ -233,6 +248,8 @@ public class BHDictEditorGroup extends BScrollPane
 
     private static final Lexicon LEX = Lexicon.make("nhaystack");
 
+    private static final String[] EMPTY_STRING_ARR = new String[0];
+
     private BComponent comp;
     private BFoxProxySession session;
     private BNHaystackService service;
@@ -241,6 +258,6 @@ public class BHDictEditorGroup extends BScrollPane
     private BHDictEditor optional;
     private BHDictEditor autoGen;
 
-    private BHDict tags = null;
-    private String zinc = null;
+    private BHDict tags;
+    private String zinc;
 }

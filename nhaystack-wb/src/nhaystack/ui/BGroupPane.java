@@ -3,30 +3,33 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   09 Feb 2013  Mike Jarmy  Creation
+//   09 Feb 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 //
 package nhaystack.ui;
 
-import javax.baja.gx.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.pane.*;
+import javax.baja.gx.BBrush;
+import javax.baja.gx.BColor;
+import javax.baja.gx.BFont;
+import javax.baja.gx.Graphics;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BWidget;
+import javax.baja.ui.pane.BPane;
 
+@NiagaraType
 public class BGroupPane extends BPane
 {
-    /*-
-    class BGroupPane
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BGroupPane(1322706479)1.0$ @*/
-/* Generated Sat Feb 09 10:45:55 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BGroupPane(2979906276)1.0$ @*/
+/* Generated Mon Nov 20 11:09:23 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BGroupPane.class);
 
@@ -34,7 +37,7 @@ public class BGroupPane extends BPane
 
     public BGroupPane() {}
 
-    public BGroupPane(String headers[], BPane panes[])
+    public BGroupPane(String[] headers, BPane[] panes)
     {
         if (headers.length != panes.length)
             throw new IllegalStateException();
@@ -42,31 +45,31 @@ public class BGroupPane extends BPane
         this.headers = headers;
         this.panes = panes;
 
-        for (int i = 0; i < panes.length; i++)
-            add(null, panes[i]);
+        for (BPane pane : panes)
+            add(null, pane);
     }
 
-    public void doLayout(BWidget abwidget[])
+    @Override
+    public void doLayout(BWidget[] abwidget)
     {
         double width = getWidth();
         double y = -BORDER;
-        for (int i = 0; i < panes.length; i++)
+        for (BPane pane : panes)
         {
             y += HEIGHT;
-            BPane pane = panes[i];
             double ph = pane.getPreferredHeight();
             pane.setBounds(0, y, width, ph);
             y += ph;
         }
     }
 
+    @Override
     public void computePreferredSize()
     {
         double width = 0;
         double height = -BORDER;
-        for (int i = 0; i < panes.length; i++)
+        for (BPane pane : panes)
         {
-            BPane pane = panes[i];
             pane.computePreferredSize();
             width = Math.max(width, pane.getPreferredWidth());
             height += pane.getPreferredHeight();
@@ -75,6 +78,7 @@ public class BGroupPane extends BPane
         setPreferredSize(width, height);
     }
 
+    @Override
     public void paint(Graphics g)
     {
         super.paint(g);
@@ -116,7 +120,7 @@ public class BGroupPane extends BPane
     private static final int BORDER = 12;
     private static final BBrush BG = BBrush.makeSolid(BColor.make(0xb0b0b0));
 
-    private static BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
+    private static final BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
 
     private String[] headers;
     private BPane[] panes;
