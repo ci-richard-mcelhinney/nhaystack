@@ -3,24 +3,31 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   11 Apr 2013  Mike Jarmy  Creation
+//   11 Apr 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Added use of generics
 //
 package nhaystack.server;
 
-import java.io.*;
-
-import javax.baja.control.*;
-import javax.baja.history.*;
-import javax.baja.naming.*;
-import javax.baja.security.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-import javax.baja.nre.util.*;
-import javax.baja.xml.*;
-
-import org.projecthaystack.*;
-import nhaystack.site.*;
-import nhaystack.util.*;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.SlotPath;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.security.PermissionException;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Context;
+import javax.baja.util.BFormat;
+import javax.baja.xml.XWriter;
+import nhaystack.site.BHSite;
+import nhaystack.util.SlotUtil;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HStr;
 
 /**
   * Nav manages the nav trees
@@ -66,7 +73,7 @@ public class Nav
 
     static String makeEquipNavId(String siteNav, String equipNav)
     {
-        return siteNav + "/" + equipNav;
+        return siteNav + '/' + equipNav;
     }
 
     /**
@@ -100,9 +107,9 @@ public class Nav
         else
         {
             out.w("<sepNav>").nl();
-            for (int i = 0; i < sites.length; i++)
+            for (BHSite site : sites)
             {
-                HDict siteTags = tagMgr.createComponentTags(sites[i]);
+                HDict siteTags = tagMgr.createComponentTags(site);
                 String siteName = siteTags.getStr("navName");
 
                 BComponent[] equips = cache.getNavSiteEquips(makeSiteNavId(siteName));
@@ -120,9 +127,9 @@ public class Nav
                         .attr("navName", siteTags.getStr("navName"))
                         .w(">").nl();
 
-                    for (int j = 0; j < equips.length; j++)
+                    for (BComponent equip : equips)
                     {
-                        HDict equipTags = tagMgr.createComponentTags(equips[j]);
+                        HDict equipTags = tagMgr.createComponentTags(equip);
                         String equipName = equipTags.getStr("navName");
 
                         BComponent[] points = cache.getNavEquipPoints(
@@ -142,9 +149,9 @@ public class Nav
                                 .attr("navName", equipTags.getStr("navName"))
                                 .w(">").nl();
 
-                            for (int k = 0; k < points.length; k++)
+                            for (BComponent point : points)
                             {
-                                HDict pointTags = tagMgr.createComponentTags(points[k]);
+                                HDict pointTags = tagMgr.createComponentTags(point);
                                 out.indent(3)
                                     .w("<point ")
                                     .attr("navName", pointTags.getStr("navName")).w(" ")
@@ -172,27 +179,24 @@ public class Nav
 
     private static HGrid roots()
     {
-        Array dicts = new Array(HDict.class);
+        HDict[] dicts = {
+            new HDictBuilder()
+                .add("navId", "slot:/")
+                .add("dis", "ComponentSpace")
+                .toDict(),
 
-        dicts.add(
-            new HDictBuilder() 
-            .add("navId", "slot:/")
-            .add("dis", "ComponentSpace")
-            .toDict());
+            new HDictBuilder()
+                .add("navId", "his:/")
+                .add("dis", "HistorySpace")
+                .toDict(),
 
-        dicts.add(
-            new HDictBuilder() 
-            .add("navId", "his:/")
-            .add("dis", "HistorySpace")
-            .toDict());
+            new HDictBuilder()
+                .add("navId", "sep:/")
+                .add("dis", "Site")
+                .toDict()
+        };
 
-        dicts.add(
-            new HDictBuilder() 
-            .add("navId", "sep:/")
-            .add("dis", "Site")
-            .toDict());
-
-        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        return HGridBuilder.dictsToGrid(dicts);
     }
 
     private HGrid onCompNav(String navId)
@@ -208,14 +212,14 @@ public class Nav
             if (!TypeUtil.canRead(root, cx)) 
                 throw new PermissionException("Cannot read " + navId);
 
-            BComponent kids[] = root.getChildComponents();
-            Array dicts = new Array(HDict.class);
-            for (int i = 0; i < kids.length; i++)
+            BComponent[] kids = root.getChildComponents();
+            ArrayList<HDict> dicts = new ArrayList<>();
+            for (BComponent kid : kids)
             {
-                if (TypeUtil.canRead(kids[i], cx)) 
-                    dicts.add(makeCompNavRec(kids[i]));
+                if (TypeUtil.canRead(kid, cx))
+                    dicts.add(makeCompNavRec(kid));
             }
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
         // ComponentSpace component
         else if (navId.startsWith("slot:/"))
@@ -227,14 +231,14 @@ public class Nav
             if (!TypeUtil.canRead(comp, cx)) 
                 throw new PermissionException("Cannot read " + navId);
 
-            BComponent kids[] = comp.getChildComponents();
-            Array dicts = new Array(HDict.class);
-            for (int i = 0; i < kids.length; i++)
+            BComponent[] kids = comp.getChildComponents();
+            ArrayList<HDict> dicts = new ArrayList<>();
+            for (BComponent kid : kids)
             {
-                if (TypeUtil.canRead(kids[i], cx)) 
-                    dicts.add(makeCompNavRec(kids[i]));
+                if (TypeUtil.canRead(kid, cx))
+                    dicts.add(makeCompNavRec(kid));
             }
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
         else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
     }
@@ -275,10 +279,9 @@ public class Nav
         {
             String[] stationNames = cache.getNavHistoryStationNames();
 
-            Array dicts = new Array(HDict.class);
-            for (int i = 0; i < stationNames.length; i++)
+            ArrayList<HDict> dicts = new ArrayList<>();
+            for (String stationName : stationNames)
             {
-                String stationName = stationNames[i];
                 if (getAccessibleHistoryConfigs(stationName, cx).length > 0)
                 {
                     HDictBuilder hd = new HDictBuilder();
@@ -288,7 +291,7 @@ public class Nav
                     dicts.add(hd.toDict());
                 }
             }
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
 
         // histories that go with station
@@ -298,10 +301,10 @@ public class Nav
 
             BHistoryConfig[] configs = getAccessibleHistoryConfigs(stationName, cx);
 
-            Array dicts = new Array(HDict.class);
-            for (int i = 0; i < configs.length; i++)
-                dicts.add(tagMgr.createHistoryTags(configs[i]));
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+            ArrayList<HDict> dicts = new ArrayList<>();
+            for (BHistoryConfig config : configs)
+                dicts.add(tagMgr.createHistoryTags(config));
+            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
 
         else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
@@ -311,13 +314,13 @@ public class Nav
     {
         BHistoryConfig[] configs = cache.getNavHistories(stationName);
 
-        Array arr = new Array(BHistoryConfig.class);
-        for (int i = 0; i < configs.length; i++)
+        ArrayList<BHistoryConfig> arr = new ArrayList<>();
+        for (BHistoryConfig config : configs)
         {
-            if (TypeUtil.canRead(configs[i], cx)) 
-                arr.add(configs[i]);
+            if (TypeUtil.canRead(config, cx))
+                arr.add(config);
         }
-        return (BHistoryConfig[]) arr.trim();
+        return arr.toArray(EMPTY_HISTORY_CONFIG_ARRAY);
     }
 
     private HGrid onSepNav(String navId)
@@ -325,12 +328,11 @@ public class Nav
         if (navId.equals("sep:/"))
         {
             Context cx = ThreadContext.getContext(Thread.currentThread());
-            Array dicts = new Array(HDict.class);
+            ArrayList<HDict> dicts = new ArrayList<>();
 
             BHSite[] sites = cache.getAllSites();
-            for (int i = 0; i < sites.length; i++)
+            for (BHSite site : sites)
             {
-                BHSite site = sites[i];
                 if (!TypeUtil.canRead(site, cx)) continue;
 
                 HDict tags = tagMgr.createComponentTags(site);
@@ -344,7 +346,7 @@ public class Nav
                 dicts.add(hd.toDict());
             }
 
-            return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
 
         else if (navId.startsWith("sep:/"))
@@ -367,14 +369,13 @@ public class Nav
     private HGrid makeSiteNav(String siteName)
     {
         Context cx = ThreadContext.getContext(Thread.currentThread());
-        Array dicts = new Array(HDict.class);
+        ArrayList<HDict> dicts = new ArrayList<>();
 
         String siteNav = makeSiteNavId(siteName);
         BComponent[] equips = cache.getNavSiteEquips(siteNav);
 
-        for (int i = 0; i < equips.length; i++)
+        for (BComponent equip : equips)
         {
-            BComponent equip = equips[i];
             if (!TypeUtil.canRead(equip, cx)) continue;
 
             HDict tags = tagMgr.createComponentTags(equip);
@@ -388,31 +389,31 @@ public class Nav
             dicts.add(hd.toDict());
         }
 
-        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
     }
 
     private HGrid makeEquipNav(String siteName, String equipName)
     {
-        Context cx = ThreadContext.getContext(Thread.currentThread());
-        Array dicts = new Array(HDict.class);
+        ArrayList<HDict> dicts = new ArrayList<>();
 
         String equipNav = makeEquipNavId(siteName, equipName);
         BComponent[] points = cache.getNavEquipPoints(equipNav);
-        for (int i = 0; i < points.length; i++)
+        for (BComponent point : points)
         {
-            BComponent point = points[i];
-
             HDictBuilder hd = new HDictBuilder();
             hd.add(tagMgr.createComponentTags(point));
             dicts.add(hd.toDict());
         }
 
-        return HGridBuilder.dictsToGrid((HDict[]) dicts.trim());
+        return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
     }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
+
+    private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
+    private static final BHistoryConfig[] EMPTY_HISTORY_CONFIG_ARRAY = new BHistoryConfig[0];
 
     final BNHaystackService service;
     final Cache cache;

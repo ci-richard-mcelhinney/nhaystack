@@ -3,20 +3,34 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   30 Mar 2013  Mike Jarmy  Creation
+//   30 Mar 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Added missing @Overrides annotations, added use of generics
 //
 package nhaystack.server;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.control.*;
-import javax.baja.schedule.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-import javax.baja.nre.util.*;
-
-import org.projecthaystack.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.control.BControlPoint;
+import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BComponentEvent;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Clock;
+import javax.baja.sys.Subscriber;
+import javax.baja.util.BUuid;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HWatch;
 
 /**
   * NHWatch manages leased components
@@ -39,12 +53,13 @@ class NHWatch extends HWatch
         return "[NHWatch " +
             "dis:'" + dis + "', " +
             "watchId:'" + watchId + "', " +
-            "leaseInterval:" + leaseInterval + "]";
+            "leaseInterval:" + leaseInterval + ']';
     }
 
     /**
      * Unique watch identifier within a project database.
      */
+    @Override
     public String id()
     {
         return watchId;
@@ -53,6 +68,7 @@ class NHWatch extends HWatch
     /**
      * Debug display string used during "HProj.watchOpen"
      */
+    @Override
     public String dis()
     {
         return dis;
@@ -61,6 +77,7 @@ class NHWatch extends HWatch
     /**
      * Lease period or null if watch has not been opened yet.
      */
+    @Override
     public HNum lease()
     {
         return HNum.make(leaseInterval, "ms");
@@ -76,6 +93,7 @@ class NHWatch extends HWatch
      * The HGrid that is returned must contain metadata entries 
      * for 'watchId' and 'lease'.
      */
+    @Override
     public synchronized HGrid sub(HRef[] ids, boolean checked)
     {
         if (!open) throw new BajaRuntimeException(
@@ -93,12 +111,10 @@ class NHWatch extends HWatch
             .add("lease", lease())
             .toDict();
 
-        Array response = new Array(HDict.class);
-        Array pointArr = new Array(BComponent.class);
-        for (int i = 0; i < ids.length; i++)
+        ArrayList<HDict> response = new ArrayList<>();
+        ArrayList<BComponent> pointArr = new ArrayList<>();
+        for (HRef id : ids)
         {
-            HRef id = (HRef) ids[i];
-
             try
             {
                 BComponent comp = server.getTagManager().lookupComponent(id);
@@ -108,7 +124,7 @@ class NHWatch extends HWatch
                 //
                 // we also ignore anything that's not a control point or schedule.
                 //
-                if ((comp == null) || !((comp instanceof BControlPoint) || (comp instanceof BWeeklySchedule)))
+                if (!(comp instanceof BControlPoint || comp instanceof BWeeklySchedule))
                 {
                     if (LOG.isLoggable(Level.WARNING))
                         LOG.warning("NHWatch.sub " + watchId + " cannot subscribe to " + id);
@@ -132,9 +148,9 @@ class NHWatch extends HWatch
             }
         }
 
-        subscriber.subscribe((BComponent[]) pointArr.trim(), 0, null);
+        subscriber.subscribe(pointArr.toArray(EMPTY_COMPONENT_ARRAY), 0, null);
 
-        HGrid grid = HGridBuilder.dictsToGrid(meta, (HDict[]) response.trim());
+        HGrid grid = HGridBuilder.dictsToGrid(meta, response.toArray(EMPTY_HDICT_ARRAY));
 
         if (LOG.isLoggable(Level.FINE))
             LOG.fine("NHWatch.sub end   " + watchId + ", length " + ids.length + ", " +
@@ -147,6 +163,7 @@ class NHWatch extends HWatch
      * Remove a list of records from watch.  Silently ignore
      * any invalid ids.
      */
+    @Override
     public synchronized void unsub(HRef[] ids)
     {
         if (!open) throw new BajaRuntimeException(
@@ -157,13 +174,11 @@ class NHWatch extends HWatch
 
         scheduleLeaseTimeout();
 
-        Array pointArr = new Array(BComponent.class);
-        for (int i = 0; i < ids.length; i++)
+        ArrayList<BComponent> pointArr = new ArrayList<>();
+        for (HRef id : ids)
         {
-            HRef id = (HRef) ids[i];
-
             BComponent comp = server.getTagManager().lookupComponent(id);
-            if ((comp != null) && allSubscribed.containsKey(comp))
+            if (comp != null && allSubscribed.containsKey(comp))
             {
                 if (LOG.isLoggable(Level.FINE))
                     LOG.fine("NHWatch.unsub " + watchId + " unsubscribe " + id);
@@ -175,14 +190,14 @@ class NHWatch extends HWatch
         }
 
         // unsubscribe
-        BComponent[] points = (BComponent[]) pointArr.trim();
-        subscriber.unsubscribe(points, null);
+        subscriber.unsubscribe(pointArr.toArray(EMPTY_COMPONENT_ARRAY), null);
     }
 
     /**
      * Poll for any changes to the subscriptions records.
      * This returns only the id, curVal and curStatus tags for each point.
      */
+    @Override
     public synchronized HGrid pollChanges()
     {
         if (!open) throw new BajaRuntimeException(
@@ -195,10 +210,7 @@ class NHWatch extends HWatch
         scheduleLeaseTimeout();
 
         // create a response from all the COV values in nextPoll
-        Array response = new Array(HDict.class);
-        Iterator itr = nextPoll.values().iterator();
-        while (itr.hasNext())
-            response.add(itr.next());
+        ArrayList<HDict> response = new ArrayList<>(nextPoll.values());
 
         // clear out nextPoll so we can start accumulating more COVs
         nextPoll.clear();
@@ -206,13 +218,14 @@ class NHWatch extends HWatch
         // done
         if (LOG.isLoggable(Level.FINE))
             LOG.fine("NHWatch.pollChanges end   " + watchId + ", size " + response.size());
-        return HGridBuilder.dictsToGrid((HDict[]) response.trim());
+        return HGridBuilder.dictsToGrid(response.toArray(EMPTY_HDICT_ARRAY));
     }
 
     /**
      * Poll all the subscriptions records even if there have been no changes.
      * This returns all of the tags for each point.
      */
+    @Override
     public synchronized HGrid pollRefresh()
     {
         if (!open) throw new BajaRuntimeException(
@@ -225,13 +238,10 @@ class NHWatch extends HWatch
         scheduleLeaseTimeout();
 
         // create a response that represents every tag for every subscribed point
-        Array response = new Array(HDict.class);
-        Iterator itr = allSubscribed.keySet().iterator();
-        while (itr.hasNext())
+        ArrayList<HDict> response = new ArrayList<>();
+        for (BComponent point : allSubscribed.keySet())
         {
-            BComponent point = (BComponent) itr.next();
             HDict dict = server.getTagManager().createComponentCovTags(point);
-
             response.add(dict);
             allSubscribed.put(point, dict);
         }
@@ -244,12 +254,13 @@ class NHWatch extends HWatch
         if (LOG.isLoggable(Level.FINE))
             LOG.fine("NHWatch.pollRefresh end   " + watchId + ", size " + response.size());
 
-        return HGridBuilder.dictsToGrid((HDict[]) response.trim());
+        return HGridBuilder.dictsToGrid(response.toArray(EMPTY_HDICT_ARRAY));
     }
 
     /**
      * Close the watch and free up any state resources.
      */
+    @Override
     public synchronized void close()
     {
         if (!open) throw new BajaRuntimeException(
@@ -272,6 +283,7 @@ class NHWatch extends HWatch
     /**
      * Return whether this watch is currently open.
      */
+    @Override
     public synchronized boolean isOpen()
     {
         return open;
@@ -283,7 +295,8 @@ class NHWatch extends HWatch
 
     private class NSubscriber extends Subscriber
     {
-        public void event(BComponentEvent event)     
+        @Override
+        public void event(BComponentEvent event)
         {
             synchronized(NHWatch.this)
             {
@@ -305,15 +318,13 @@ class NHWatch extends HWatch
 
     synchronized HDict[] curSubscribed()
     {
-        Array arr = new Array(HDict.class);
-        Iterator itr = allSubscribed.keySet().iterator();
-        while (itr.hasNext())
+        ArrayList<HDict> arr = new ArrayList<>();
+        for (BComponent point : allSubscribed.keySet())
         {
-            BComponent point = (BComponent) itr.next();
             HDict dict = server.getTagManager().createComponentCovTags(point);
             arr.add(dict);
         }
-        return (HDict[]) arr.trim();
+        return arr.toArray(EMPTY_HDICT_ARRAY);
     }
 
     synchronized long lastPoll()
@@ -334,6 +345,7 @@ class NHWatch extends HWatch
 
     private class Timeout extends TimerTask
     {
+        @Override
         public void run()
         {
             LOG.warning("Watch " + watchId + " timed out.");
@@ -347,6 +359,9 @@ class NHWatch extends HWatch
 
     private static final Logger LOG = Logger.getLogger("nhaystack.watch");
 
+    private static final BComponent[] EMPTY_COMPONENT_ARRAY = new BComponent[0];
+    private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
+
     private final NHServer server;
     private final String dis;
     private final String watchId;
@@ -354,12 +369,12 @@ class NHWatch extends HWatch
 
     private final Subscriber subscriber = new NSubscriber();
 
-    private final HashMap allSubscribed = new HashMap(); // point -> HDict (all tags)
-    private final HashMap nextPoll      = new HashMap(); // point -> HDict (cov)
+    private final Map<BComponent, HDict> allSubscribed = new HashMap<>(); // point -> HDict (all tags)
+    private final Map<BComponent, HDict> nextPoll = new HashMap<>(); // point -> HDict (cov)
 
     private boolean open;
     private final Timer timer = new Timer();
-    private Timeout timeout = null;
-    private long lastPoll = 0;
+    private Timeout timeout;
+    private long lastPoll;
 }
 
