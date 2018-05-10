@@ -5,33 +5,75 @@
 // History:
 //   07 Nov 2011  Richard McElhinney  Creation
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//   10 May 2018  Eric Anderson       Added missing @Overrides annotations, added use of generics
 //
 package nhaystack.server;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.control.*;
-import javax.baja.driver.*;
-import javax.baja.history.*;
-import javax.baja.history.ext.*;
-import javax.baja.log.*;
-import javax.baja.naming.*;
-import javax.baja.schedule.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.units.*;
-import javax.baja.util.*;
-import javax.baja.nre.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+import javax.baja.control.BBooleanPoint;
+import javax.baja.control.BControlPoint;
+import javax.baja.control.BEnumPoint;
+import javax.baja.control.BNumericPoint;
+import javax.baja.control.BStringPoint;
+import javax.baja.driver.BDevice;
+import javax.baja.history.BBooleanTrendRecord;
+import javax.baja.history.BEnumTrendRecord;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.history.BHistoryId;
+import javax.baja.history.BIHistory;
+import javax.baja.history.BNumericTrendRecord;
+import javax.baja.history.BStringTrendRecord;
+import javax.baja.history.BTrendRecord;
+import javax.baja.history.HistorySpaceConnection;
+import javax.baja.history.ext.BCovHistoryExt;
+import javax.baja.history.ext.BHistoryExt;
+import javax.baja.naming.BOrd;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.schedule.BBooleanSchedule;
+import javax.baja.schedule.BEnumSchedule;
+import javax.baja.schedule.BNumericSchedule;
+import javax.baja.schedule.BStringSchedule;
+import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.status.BStatus;
+import javax.baja.status.BStatusBoolean;
+import javax.baja.status.BStatusEnum;
+import javax.baja.status.BStatusNumeric;
+import javax.baja.status.BStatusString;
+import javax.baja.status.BStatusValue;
+import javax.baja.sys.Action;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BEnumRange;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BNumber;
+import javax.baja.sys.BObject;
+import javax.baja.sys.BValue;
+import javax.baja.sys.Flags;
+import javax.baja.sys.Type;
+import javax.baja.units.BUnit;
+import javax.baja.units.BUnitConversion;
+import javax.baja.util.BFormat;
+import nhaystack.BHDict;
+import nhaystack.NHRef;
+import nhaystack.res.Resources;
+import nhaystack.res.Unit;
+import nhaystack.site.BHTagged;
+import nhaystack.util.SlotUtil;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HVal;
+import org.projecthaystack.io.HZincWriter;
 import org.projecthaystack.util.Base64;
-
-import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.site.*;
-import nhaystack.util.*;
 
 /**
   * TagManager does various task associated with generating tags
@@ -63,12 +105,12 @@ public class TagManager
     {
         HDictBuilder hdb = new HDictBuilder();
 
-        Iterator it = annotatedTags.iterator();
+        Iterator<Map.Entry<String, HVal>> it = annotatedTags.iterator();
         while (it.hasNext())
         {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            HVal val = (HVal) entry.getValue();
+            Map.Entry<String, HVal> entry = it.next();
+            String name = entry.getKey();
+            HVal val = entry.getValue();
 
             if (val instanceof HRef)
             {
@@ -98,13 +140,14 @@ public class TagManager
     {
         NHRef nh = NHRef.make(id);
 
-        // component space
-        if (nh.getSpace().equals(NHRef.COMP) ||
-            nh.getSpace().equals(NHRef.COMP_BASE64))
+        switch (nh.getSpace())
         {
-            BOrd ord = BOrd.make("station:|" + 
-                (nh.getSpace().equals(NHRef.COMP) ? 
-                    "slot:" + SlotUtil.toNiagara(nh.getPath()) : 
+        // component space
+        case NHRef.COMP:
+        case NHRef.COMP_BASE64:
+            BOrd ord = BOrd.make("station:|" +
+                (nh.getSpace().equals(NHRef.COMP) ?
+                    "slot:" + SlotUtil.toNiagara(nh.getPath()) :
                     Base64.URI.decodeUTF8(nh.getPath())));
 
             BComponent comp = (BComponent) ord.get(service, null);
@@ -113,15 +156,13 @@ public class TagManager
             if (!mustBeVisible) return comp;
 
             return spaceMgr.isVisibleComponent(comp) ? comp : null;
-        }
+
         // history space
-        else if (
-            nh.getSpace().equals(NHRef.HIS_BASE64) ||
-            nh.getSpace().equals(NHRef.HIS))
-        {
+        case NHRef.HIS_BASE64:
+        case NHRef.HIS:
             BHistoryId hid = BHistoryId.make(
-                nh.getSpace().equals(NHRef.HIS) ? 
-                    "/" + SlotUtil.toNiagara(nh.getPath()) :
+                nh.getSpace().equals(NHRef.HIS) ?
+                    '/' + SlotUtil.toNiagara(nh.getPath()) :
                     Base64.URI.decodeUTF8(nh.getPath()));
 
             try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
@@ -134,15 +175,13 @@ public class TagManager
 
                 return spaceMgr.isVisibleHistory(cfg) ? cfg : null;
             }
-        }
+
         // sep space
-        else if (nh.getSpace().equals(NHRef.SEP))
-        {
+        case NHRef.SEP:
             return cache.lookupComponentBySepRef(nh);
-        }
+
         // invalid space
-        else 
-        {
+        default:
             return null;
         }
     }
@@ -201,7 +240,7 @@ public class TagManager
       */
     public HDict createTags(BComponent comp)
     {
-        return (comp instanceof BHistoryConfig) ?
+        return comp instanceof BHistoryConfig ?
             createHistoryTags((BHistoryConfig) comp) :
             createComponentTags(comp);
     }
@@ -214,7 +253,7 @@ public class TagManager
         BComponent comp = lookupComponent(id);
         if (comp == null)
         {
-            LOG.severe("lookup failed for '" + id + "'");
+            LOG.severe("lookup failed for '" + id + '\'');
             return null;
         }
 
@@ -232,7 +271,7 @@ public class TagManager
         }
         else
         {
-            LOG.severe("cannot find history for for '" + id + "'");
+            LOG.severe("cannot find history for for '" + id + '\'');
             return null;
         }
     }
@@ -249,7 +288,6 @@ public class TagManager
     HDict createComponentTags(BComponent comp)
     {
         HDictBuilder hdb = new HDictBuilder();
-
         if (comp instanceof BHTagged)
         {
             hdb.add(((BHTagged) comp).generateTags(server));
@@ -313,8 +351,6 @@ public class TagManager
       */
     HDict createComponentCovTags(BComponent comp)
     {
-        HDictBuilder hdb = new HDictBuilder();
-
         if (comp instanceof BControlPoint)
             return createPointCovTags((BControlPoint) comp);
 
@@ -394,7 +430,7 @@ public class TagManager
             if (!tags.has("hisInterpolate"))
             {
                 BHistoryExt historyExt = spaceMgr.lookupHistoryExt(point);
-                if (historyExt != null && (historyExt instanceof BCovHistoryExt))
+                if (historyExt instanceof BCovHistoryExt)
                     hdb.add("hisInterpolate", "cov");
             }
         }
@@ -506,11 +542,11 @@ public class TagManager
                 String siteDis = lookupDisName(hdb, "siteRef");
                 if (siteDis != null)
                 {
-                    return siteDis + " " + equipDis + " " + dis;
+                    dis = siteDis + ' ' + equipDis + ' ' + dis;
                 }
                 else
                 {
-                    return equipDis + " " + dis;
+                    dis = equipDis + ' ' + dis;
                 }
             }
         }
@@ -518,7 +554,7 @@ public class TagManager
         {
             String siteDis = lookupDisName(hdb, "siteRef");
             if (siteDis != null)
-                dis = siteDis + " " + dis;
+                dis = siteDis + ' ' + dis;
         }
 
         return dis;
@@ -572,7 +608,7 @@ public class TagManager
             if (!tags.has("hisInterpolate"))
             {
                 BHistoryExt historyExt = spaceMgr.lookupHistoryExt(point);
-                if (historyExt != null && (historyExt instanceof BCovHistoryExt))
+                if (historyExt instanceof BCovHistoryExt)
                     hdb.add("hisInterpolate", "cov");
             }
         }
@@ -620,7 +656,7 @@ public class TagManager
     {
         if (status.isOk()) return "ok";
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         if (status.isDisabled())     sb.append("disabled")     .append(',');
         if (status.isFault())        sb.append("fault")        .append(',');
         if (status.isDown())         sb.append("down")         .append(',');
@@ -643,7 +679,7 @@ public class TagManager
         HDict tags)
     {
         BValue val = point.get("out");
-        if ((val == null) || !(val instanceof BStatusValue)) return;
+        if (!(val instanceof BStatusValue)) return;
         BStatusValue out = (BStatusValue) val;
         
         hdb.add("point");
@@ -720,7 +756,7 @@ public class TagManager
         }
     }
 
-    private BNumber getNumberFacet(BFacets facets, String name)
+    private static BNumber getNumberFacet(BFacets facets, String name)
     {
         BNumber num = (BNumber) facets.get(name);
         if (num == null) return null;
@@ -734,7 +770,7 @@ public class TagManager
       */
     private static HGrid createPointActions(BControlPoint point, int pointKind)
     {
-        Array arr = new Array(HDict.class);
+        ArrayList<HDict> arr = new ArrayList<>();
 
         switch(pointKind)
         {
@@ -759,8 +795,8 @@ public class TagManager
                 break;
         }
 
-        HDict[] rows = (HDict[]) arr.trim();
-        return (rows.length == 0) ?
+        HDict[] rows = arr.toArray(EMPTY_HDICT_ARRAY);
+        return rows.length == 0 ?
             null : HGridBuilder.dictsToGrid(rows);
     }
 
@@ -769,7 +805,7 @@ public class TagManager
       */
     private static void addPointAction(
         BControlPoint point,
-        Array arr,
+        List<HDict> arr,
         String name,
         String expr)
     {
@@ -797,7 +833,7 @@ public class TagManager
     {
         if (!path.startsWith(prefix))
             throw new IllegalStateException(
-                "'" + path + "' does not start with '" + prefix + "'");
+              '\'' + path + "' does not start with '" + prefix + '\'');
 
         return path.substring(prefix.length());
     }
@@ -865,7 +901,7 @@ public class TagManager
 
             case STRING_KIND:
                 BStatusString ss = (BStatusString) sv;
-                return HStr.make(ss.getValue().toString());
+                return HStr.make(ss.getValue());
 
             default: 
                 return null;
@@ -950,7 +986,7 @@ public class TagManager
 
         BUnit unit = (BUnit) obj;
 
-        if ((unit == null) || (unit.isNull()))
+        if (unit == null || unit.isNull())
             return null;
 
         int conv = facets.geti("unitConversion", 0);
@@ -981,7 +1017,7 @@ public class TagManager
             return "false,true";
 
         return 
-            facets.gets("falseText", "false") + "," +
+            facets.gets("falseText", "false") + ',' +
             facets.gets("trueText", "true");
     }
 
@@ -991,14 +1027,14 @@ public class TagManager
             return "";
 
         BEnumRange range = (BEnumRange) facets.get("range");
-        if ((range == null) || (range.isNull()))
+        if (range == null || range.isNull())
             return "";
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int[] ords = range.getOrdinals();
         for (int i = 0; i < ords.length; i++)
         {
-            if (i > 0) sb.append(",");
+            if (i > 0) sb.append(',');
             sb.append(SlotUtil.fromEnum(
                 range.get(ords[i]).getTag(),
                 service.getTranslateEnums()));
@@ -1021,39 +1057,40 @@ public class TagManager
 ////////////////////////////////////////////////////////////////
 
     /** Every single tag which the server may have auto-generated.  */
-    static final String[] AUTO_GEN_TAGS = new String[] {
-
-        "axAnnotated",    
-        "axHistoryId",    
-        "axHistoryRef", 
+    static final String[] AUTO_GEN_TAGS = {
+        "axAnnotated",
+        "axHistoryId",
+        "axHistoryRef",
         "axPointRef",
         "axSlotPath", 
-        "axType",         
+        "axType",
         "axStatus",
 
-        "actions",    
-        "cur",          
+        "actions",
+        "cur",
         "curStatus",
-        "curVal",     
-        "dis",            
-        "enum",         
+        "curVal",
+        "dis",
+        "enum",
         "equip",
-        "his",        
-        "hisInterpolate", 
-        "id",           
+        "his",
+        "hisInterpolate",
+        "id",
         "kind",
         "maxVal",
         "minVal",
-        "navName",    
-        "point",          
+        "navName",
+        "point",
         "precision",
-        "site",         
-        "tz",         
-        "unit",       
-        "writable"  
+        "site",
+        "tz",
+        "unit",
+        "writable"
     };
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
+
+    private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
 
     // point kinds
     private static final int UNKNOWN_KIND = -1;
