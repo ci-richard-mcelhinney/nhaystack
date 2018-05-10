@@ -25,6 +25,6 @@ dependencies {
   compile "Tridium:bajaui-wb:4.0.0"
   compile "Tridium:gx-wb:4.0.0"
   compile "Tridium:fox-rt:4.0.0"
-  
-  compile "Project Haystack:nhaystack-rt:1.2.7"
+
+  compile project(":nhaystack-rt")
 }
