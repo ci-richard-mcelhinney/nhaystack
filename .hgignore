@@ -1,0 +1,5 @@
+syntax: glob
+.gradle/
+.idea/
+*/build/
+nhaystack.iml

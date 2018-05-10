@@ -1,8 +1,9 @@
 //  Copyright (c) 2012, J2 Innovations
 //  Licensed under the Academic Free License version 3.0
-// 
+//
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+//    10 May 2018  Eric Anderson       Removed UI dependencies
 
 description = "nhaystack runtime module"
 
@@ -17,7 +18,9 @@ niagaraModule {
   }
 }
 
-repositories { jcenter() }
+repositories {
+  jcenter()
+}
 
 dependencies {
   compile fileTree(dir: 'lib', include: ['*.jar'])
@@ -28,23 +31,17 @@ dependencies {
   compile "Tridium:bql-rt:4.0.22"
   compile "Tridium:control-rt:4.0.22"
   compile "Tridium:driver-rt:4.0.22"
-  compile "Tridium:driver-wb:4.0.22"
-  compile "Tridium:file-rt:4.0.22"
   compile "Tridium:fox-rt:4.0.22"
-  compile "Tridium:gx-rt:4.0.22"
   compile "Tridium:history-rt:4.0.22"
   compile "Tridium:net-rt:4.0.22"
   compile "Tridium:niagaraDriver-rt:4.0.22"
   compile "Tridium:schedule-rt:4.0.22"
   compile "Tridium:web-rt:4.0.22"
 
-  compile "Tridium:bajaui-wb:4.0.22"
-  compile "Tridium:workbench-wb:4.0.22"
-
   niagaraModuleTestCompile "Tridium:test-se:4.0.0"
 
   testCompile 'org.testng:testng:6.10'
-  testCompile "Tridium:alarm-rt:4.0.22"
+  testCompile 'Tridium:alarm-rt:4.0.22'
 //  testCompile 'org.mockito:mockito-core:2.+'
   testCompile fileTree(dir: 'lib', include: ['*.jar'])
 
@@ -54,9 +51,10 @@ dependencies {
 test {
   useTestNG()
 
-    include 'nhaystack/test/**'
-    include 'nhaystack/server/*'
-    testLogging.showStandardStreams = true
+  include 'nhaystack/test/**'
+  include 'nhaystack/server/**'
+
+  testLogging.showStandardStreams = true
 }
 
 jar {
@@ -65,9 +63,9 @@ jar {
     include 'nhaystack/res/*.txt'
     include 'nhaystack/res/equip-points/*.txt'
     include 'nhaystack/icons/*.*'
-  }    
-  from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }) 
+  }
+  from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) })
   {
-      include "org/projecthaystack/**"     
+    include "org/projecthaystack/**"
   }
 }
