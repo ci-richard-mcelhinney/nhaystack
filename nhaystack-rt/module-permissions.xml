@@ -1,0 +1,20 @@
+<!--
+     Module permissions for nHaystack.  By default,
+     allow outbound access to any address, any port.
+
+     History:
+       26 Mar 2018 Stuart Longland  Creation
+-->
+
+<permissions>
+    <niagara-permission-groups type="station">
+        <req-permission>
+            <name>NETWORK_COMMUNICATION</name>
+            <purposeKey>This module needs to communicate with HTTP servers on arbitrary ports.</purposeKey>
+            <parameters>
+                <parameter name="hosts" value="*"/>
+                <parameter name="ports" value="1-65535"/>
+            </parameters>
+        </req-permission>
+    </niagara-permission-groups>
+</permissions>
