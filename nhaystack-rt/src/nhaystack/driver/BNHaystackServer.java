@@ -76,6 +76,29 @@ public class BNHaystackServer
 /* Generated Mon Apr 27 09:02:40 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
 
 ////////////////////////////////////////////////////////////////
+// Property "tls"
+////////////////////////////////////////////////////////////////
+
+  /**
+   * Slot for the <code>tls</code> property.
+   * @see nhaystack.driver.BNHaystackServer#getTls
+   * @see nhaystack.driver.BNHaystackServer#setTls
+   */
+  public static final Property tls = newProperty(0, ((BBoolean)(BBoolean.FALSE)).getBoolean(),null);
+
+  /**
+   * Get the <code>tls</code> property.
+   * @see nhaystack.driver.BNHaystackServer#tls
+   */
+  public boolean getTls() { return getBoolean(tls); }
+
+  /**
+   * Set the <code>tls</code> property.
+   * @see nhaystack.driver.BNHaystackServer#tls
+   */
+  public void setTls(boolean v) { setBoolean(tls,v,null); }
+
+////////////////////////////////////////////////////////////////
 // Property "internetAddress"
 ////////////////////////////////////////////////////////////////
   
@@ -554,7 +577,11 @@ public class BNHaystackServer
     {
         StringBuffer sb = new StringBuffer();
 
-        sb.append("http://");
+        if (getTls())
+            sb.append("https://");
+        else
+            sb.append("http://");
+
         sb.append(getInternetAddress().getAuthority());
 
         String path = getUriPath();
