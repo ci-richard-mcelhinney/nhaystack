@@ -93,11 +93,10 @@ public class BNHaystackPointManager extends BPointManager
         }
 
         @Override
-        public BComponent newInstance(MgrTypeInfo type)
-        throws Exception
+        public BComponent newInstance(MgrTypeInfo type) throws Exception
         {                  
             return type.newInstance();
-        }  
+        }
 
         @Override
         public MgrTypeInfo[] getNewTypes()
@@ -115,7 +114,7 @@ public class BNHaystackPointManager extends BPointManager
     {    
         BIPointFolder folder = (BIPointFolder) getCurrentValue();
         return (BNHaystackServer) folder.getDevice();
-    }   
+    }
 
 ////////////////////////////////////////////////////////////////
 // Learn
@@ -123,23 +122,26 @@ public class BNHaystackPointManager extends BPointManager
 
     class Learn extends MgrLearn
     {                           
-        Learn(BNHaystackPointManager mgr) { super(mgr); }
+        Learn(BNHaystackPointManager mgr)
+        {
+            super(mgr);
+        }
 
         @Override
         protected MgrColumn[] makeColumns()
-        {                     
+        {
             return new MgrColumn[]
             {
                 new MgrColumn.Name(),
                 new MgrColumn.Prop(BNHaystackPointEntry.id),
-            };    
+            };
         } 
 
         @Override
         public boolean isMatchable(Object dis, BComponent db)
         {
             return isExisting(dis, db);
-        }            
+        }
 
         @Override
         public BImage getIcon(Object dis)
@@ -185,14 +187,14 @@ public class BNHaystackPointManager extends BPointManager
 
         @Override
         public void toRow(Object dis, MgrEditRow row) throws Exception
-        {                                      
+        {
             BNHaystackPointEntry entry = (BNHaystackPointEntry) dis;
 
             row.setDefaultName(entry.getName());
             row.setCell(colId, entry.getId());
             row.setCell(colFacets, entry.getFacets());
             row.setCell(colImportedTags, entry.getImportedTags());
-        }                   
+        }
 
         @Override
         public boolean isExisting(Object discovery, BComponent component)
@@ -201,12 +203,12 @@ public class BNHaystackPointManager extends BPointManager
 
             if (discovery instanceof BNHaystackPointEntry)
             {
-                BNHaystackPointEntry entry = (BNHaystackPointEntry) discovery;      
+                BNHaystackPointEntry entry = (BNHaystackPointEntry) discovery;
                 res = entry.is(component);
             }
 
             return res;
-        }    
+        }
 
         @Override
         public void jobComplete(BJob job)
@@ -236,9 +238,9 @@ public class BNHaystackPointManager extends BPointManager
 
         @Override
         public CommandArtifact doDiscover(Context context) throws Exception
-        {                      
-            super.doDiscover(context);          
-            getLearn().setJob(server().submitLearnPointsJob()); 
+        {
+            super.doDiscover(context);
+            getLearn().setJob(server().submitLearnPointsJob());
             return null;
         }
     }
@@ -254,22 +256,21 @@ public class BNHaystackPointManager extends BPointManager
     static final MgrTypeInfo TYPE_STR             = MgrTypeInfo.make(BNHaystackStrPoint.TYPE);
     static final MgrTypeInfo TYPE_STR_WRITABLE    = MgrTypeInfo.make(BNHaystackStrWritable.TYPE);
 
-    final MgrColumn colPath        = new MgrColumn.Path(MgrColumn.UNSEEN);
-    final MgrColumn colName        = new MgrColumn.Name();
-    final MgrColumn colType        = new MgrColumn.Type();
-    final MgrColumn colToString    = new MgrColumn.ToString("Out", 0);
-    final MgrColumn colEnabled     = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.enabled}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    final MgrColumn colFacets      = new MgrColumn.PropPath(new Property[] {BControlPoint.facets},  MgrColumn.EDITABLE);
-    final MgrColumn colTuning      = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.tuningPolicyName}, MgrColumn.EDITABLE);
-    final MgrColumn colDeviceFacets= new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.deviceFacets}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    final MgrColumn colConversion  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.conversion},   MgrColumn.EDITABLE | MgrColumn.UNSEEN);
-    final MgrColumn colFaultCause  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.faultCause},   MgrColumn.EDITABLE | MgrColumn.READONLY);
-    final MgrColumn colReadValue   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.readValue},    MgrColumn.UNSEEN);
-    final MgrColumn colWriteValue  = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.writeValue},   MgrColumn.UNSEEN);
+    final MgrColumn colPath         = new MgrColumn.Path(MgrColumn.UNSEEN);
+    final MgrColumn colName         = new MgrColumn.Name();
+    final MgrColumn colType         = new MgrColumn.Type();
+    final MgrColumn colToString     = new MgrColumn.ToString("Out", 0);
+    final MgrColumn colEnabled      = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.enabled},               MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    final MgrColumn colFacets       = new MgrColumn.PropPath(new Property[] {BControlPoint.facets},                                    MgrColumn.EDITABLE);
+    final MgrColumn colTuning       = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.tuningPolicyName},      MgrColumn.EDITABLE);
+    final MgrColumn colDeviceFacets = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.deviceFacets},          MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    final MgrColumn colConversion   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.conversion},            MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    final MgrColumn colFaultCause   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.faultCause},            MgrColumn.EDITABLE | MgrColumn.READONLY);
+    final MgrColumn colReadValue    = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.readValue},             MgrColumn.UNSEEN);
+    final MgrColumn colWriteValue   = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BProxyExt.writeValue},            MgrColumn.UNSEEN);
 
-    final MgrColumn colId           = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.id}, MgrColumn.EDITABLE);
-    final MgrColumn colImportedTags = new MgrColumn.PropPath(
-        new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.importedTags}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
+    final MgrColumn colId           = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.id},           MgrColumn.EDITABLE);
+    final MgrColumn colImportedTags = new MgrColumn.PropPath(new Property[] {BControlPoint.proxyExt, BNHaystackProxyExt.importedTags}, MgrColumn.EDITABLE | MgrColumn.UNSEEN);
 
     final MgrColumn[] cols =
     { 
@@ -279,7 +280,7 @@ public class BNHaystackPointManager extends BPointManager
         colImportedTags,
     }; 
 
-    private static final BImage NUMBER_ICON = BImage.make(BNumericPoint .TYPE.getInstance().getIcon());
-    private static final BImage BOOL_ICON   = BImage.make(BBooleanPoint .TYPE.getInstance().getIcon());
-    private static final BImage STR_ICON    = BImage.make(BStringPoint  .TYPE.getInstance().getIcon());
+    private static final BImage NUMBER_ICON = BImage.make(BNumericPoint.TYPE.getInstance().getIcon());
+    private static final BImage BOOL_ICON   = BImage.make(BBooleanPoint.TYPE.getInstance().getIcon());
+    private static final BImage STR_ICON    = BImage.make(BStringPoint .TYPE.getInstance().getIcon());
 }

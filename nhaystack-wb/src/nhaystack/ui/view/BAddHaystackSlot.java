@@ -93,6 +93,7 @@ public class BAddHaystackSlot extends BTextEditor
 
         return null;
     }
+
     /** 
      * retrieveTagsDict() is used to generate tags as a HDict based on the name of the BComponent.
      * CSV List is included in Resources.jar 
