@@ -3,33 +3,30 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.driver.point;
 
-import javax.baja.driver.point.*;
-import javax.baja.sys.*;
+import javax.baja.driver.point.BPointDeviceExt;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.driver.BNHaystackNetwork;
+import nhaystack.driver.BNHaystackServer;
 
-import nhaystack.driver.*;
-
+@NiagaraType
 public class BNHaystackPointDeviceExt extends BPointDeviceExt
 {
-    /*-
-    class BNHaystackPointDeviceExt
-    {
-        properties
-        {
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackPointDeviceExt(306764068)1.0$ @*/
-/* Generated Mon Apr 07 12:57:57 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.BNHaystackPointDeviceExt(2979906276)1.0$ @*/
+/* Generated Mon Nov 20 14:56:01 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackPointDeviceExt.class);
 
@@ -45,16 +42,19 @@ public class BNHaystackPointDeviceExt extends BPointDeviceExt
         return (BNHaystackServer) getDevice();
     }
 
+    @Override
     public Type getDeviceType()
     {
         return BNHaystackServer.TYPE;
     }
 
+    @Override
     public Type getPointFolderType()
     {
         return BNHaystackPointFolder.TYPE;
     }
 
+    @Override
     public Type getProxyExtType()
     {
         return BNHaystackProxyExt.TYPE;

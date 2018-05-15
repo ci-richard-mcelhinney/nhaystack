@@ -3,47 +3,48 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
+//                               added use of generics
 
 package nhaystack.driver.history.learn;
 
-import java.util.*;
-
-import javax.baja.history.*;
-import javax.baja.job.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.nre.util.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import nhaystack.*;
-import nhaystack.driver.*;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import javax.baja.history.BHistoryId;
+import javax.baja.job.BSimpleJob;
+import javax.baja.job.JobCancelException;
+import javax.baja.naming.SlotPath;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.BHRef;
+import nhaystack.driver.BHTags;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.driver.NameGenerator;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HRow;
+import org.projecthaystack.client.HClient;
 
 /**
   * BNHaystackLearnHistoriesJob is a Job which 'learns' all the remote
   * histories from a remote haystack server.
   */
+@NiagaraType
 public class BNHaystackLearnHistoriesJob extends BSimpleJob 
 {
-    /*-
-    class BNHaystackLearnHistoriesJob
-    {
-        properties
-        {
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.history.BNHaystackLearnHistoriesJob(3057501146)1.0$ @*/
-/* Generated Fri Apr 04 15:19:41 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.history.learn.BNHaystackLearnHistoriesJob(2979906276)1.0$ @*/
+/* Generated Fri Nov 17 11:48:22 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackLearnHistoriesJob.class);
 
@@ -56,16 +57,18 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
         this.server = server;
     }
 
-    public void doCancel(Context ctx) 
+    @Override
+    public void doCancel(Context ctx)
     {
         super.doCancel(ctx);
         throw new JobCancelException();
     }
 
-    public void run(Context ctx) throws Exception 
+    @Override
+    public void run(Context ctx) throws Exception
     {
         NameGenerator nameGen = new NameGenerator();
-        Map entries = new TreeMap();
+        Map<String, BNHaystackHistoryEntry> entries = new TreeMap<>();
 
         //Map deviceNames = new HashMap();
 
@@ -94,16 +97,13 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
             }
         }
 
-        Iterator it = entries.keySet().iterator();
-        while (it.hasNext())
+        for (Entry<String, BNHaystackHistoryEntry> entry : entries.entrySet())
         {
-            String name = (String) it.next();
-            BNHaystackHistoryEntry entry = (BNHaystackHistoryEntry) entries.get(name);
-            add(name, entry);
+            add(entry.getKey(), entry.getValue());
         }
     }
 
-    private String hisName(HRow row)
+    private static String hisName(HRow row)
     {
         if (row.has("navName")) return row.getStr("navName");
         if (row.has("dis")) return row.getStr("dis");
@@ -129,5 +129,5 @@ public class BNHaystackLearnHistoriesJob extends BSimpleJob
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-   private BNHaystackServer server = null;
+   private BNHaystackServer server;
 }

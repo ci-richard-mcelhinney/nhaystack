@@ -3,21 +3,47 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   10 Feb 2013  Mike Jarmy  Creation
+//   10 Feb 2013  Mike Jarmy     Creation
+//   09 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack;
 
-import java.io.*;
-import javax.baja.sys.*;
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BIcon;
+import javax.baja.sys.BObject;
+import javax.baja.sys.BSimple;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.io.HZincReader;
+import org.projecthaystack.io.HZincWriter;
 
 /**
  *  BHGrid wraps a Haystack HGrid
  */
+@NiagaraType
 public final class BHGrid
     extends BSimple
 {
+    /** * The default is HGrid.EMPTY. */
+    public static final BHGrid DEFAULT = new BHGrid(HGrid.EMPTY);
+
+/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
+/*@ $nhaystack.BHGrid(2979906276)1.0$ @*/
+/* Generated Wed Nov 29 14:36:23 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+
+////////////////////////////////////////////////////////////////
+// Type
+////////////////////////////////////////////////////////////////
+  
+  @Override
+  public Type getType() { return TYPE; }
+  public static final Type TYPE = Sys.loadType(BHGrid.class);
+
+/*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
     /**
       * Make a BHGrid instance from an HGrid.
       */
@@ -55,7 +81,7 @@ public final class BHGrid
 
         if (!(obj instanceof BHGrid)) return false;
         BHGrid that = (BHGrid) obj;
-        return (grid.equals(that.grid));
+        return grid.equals(that.grid);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -65,6 +91,7 @@ public final class BHGrid
     /**
       * Encode to ZINC format
       */
+    @Override
     public void encode(DataOutput encoder) throws IOException
     { 
         encoder.writeUTF(HZincWriter.gridToString(grid));
@@ -73,6 +100,7 @@ public final class BHGrid
     /**
       * Decode from ZINC format
       */
+    @Override
     public BObject decode(DataInput decoder) throws IOException
     { 
         HZincReader zr = new HZincReader(decoder.readUTF());
@@ -82,6 +110,7 @@ public final class BHGrid
     /**
       * Encode to ZINC format
       */
+    @Override
     public String encodeToString() throws IOException
     { 
         return HZincWriter.gridToString(grid);
@@ -90,6 +119,7 @@ public final class BHGrid
     /**
       * Decode from ZINC format
       */
+    @Override
     public BObject decodeFromString(String s) throws IOException
     { 
         HZincReader zr = new HZincReader(s);
@@ -109,14 +139,9 @@ public final class BHGrid
 // Attributes
 //////////////////////////////////////////////////////////////// 
 
+    @Override
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
-
-    /** * The default is HGrid.EMPTY. */
-    public static final BHGrid DEFAULT = new BHGrid(HGrid.EMPTY);
-
-    public Type getType() { return TYPE; }
-    public static final Type TYPE = Sys.loadType(BHGrid.class);
 
     private final HGrid grid;
 }

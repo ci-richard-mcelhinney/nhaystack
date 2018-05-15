@@ -3,103 +3,140 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.driver.history;
 
-import java.util.logging.*;
-
-import javax.baja.driver.history.*;
-import javax.baja.history.*;
-import javax.baja.history.db.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import nhaystack.*;
-import nhaystack.driver.*;
-import nhaystack.driver.point.learn.*;
-import nhaystack.util.*;
-import nhaystack.worker.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.driver.history.BHistoryImport;
+import javax.baja.history.BBooleanTrendRecord;
+import javax.baja.history.BCapacity;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.history.BHistoryId;
+import javax.baja.history.BHistoryService;
+import javax.baja.history.BIHistory;
+import javax.baja.history.BNumericTrendRecord;
+import javax.baja.history.BTrendRecord;
+import javax.baja.history.HistorySpaceConnection;
+import javax.baja.history.db.BHistoryDatabase;
+import javax.baja.history.db.HistoryDatabaseConnection;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.status.BStatus;
+import javax.baja.sys.Action;
+import javax.baja.sys.BAbsTime;
+import javax.baja.sys.BComplex;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BRelTime;
+import javax.baja.sys.BValue;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Context;
+import javax.baja.sys.Flags;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.util.BTypeSpec;
+import javax.baja.util.IFuture;
+import javax.baja.util.Invocation;
+import nhaystack.BHRef;
+import nhaystack.driver.BHTags;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.driver.point.learn.BNHaystackLearnPointsJob;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDateTime;
+import org.projecthaystack.HDateTimeRange;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRow;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HVal;
+import org.projecthaystack.client.HClient;
 
 /**
   * BNHaystackHistoryImport transfers remote haystack history data
   * into a local Baja history.
   */
+
+@NiagaraType
+@NiagaraProperty(
+  name = "id",
+  type = "BHRef",
+  defaultValue = "BHRef.DEFAULT"
+)
+@NiagaraProperty(
+  name = "importedTags",
+  type = "BHTags",
+  defaultValue = "BHTags.DEFAULT",
+  flags = Flags.READONLY
+)
 public class BNHaystackHistoryImport extends BHistoryImport
 {
-    /*-
-    class BNHaystackHistoryImport
-    {
-        properties
-        {
-            id: BHRef default{[ BHRef.DEFAULT ]}
-            importedTags: BHTags default{[ BHTags.DEFAULT ]} flags { readonly }
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.history.BNHaystackHistoryImport(2248446507)1.0$ @*/
-/* Generated Thu Apr 10 15:13:14 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.history.BNHaystackHistoryImport(187490102)1.0$ @*/
+/* Generated Fri Nov 17 11:50:35 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "id"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>id</code> property.
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#getId
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#setId
+   * Slot for the {@code id} property.
+   * @see #getId
+   * @see #setId
    */
-  public static final Property id = newProperty(0, BHRef.DEFAULT,null);
+  public static final Property id = newProperty(0, BHRef.DEFAULT, null);
   
   /**
-   * Get the <code>id</code> property.
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#id
+   * Get the {@code id} property.
+   * @see #id
    */
   public BHRef getId() { return (BHRef)get(id); }
   
   /**
-   * Set the <code>id</code> property.
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#id
+   * Set the {@code id} property.
+   * @see #id
    */
-  public void setId(BHRef v) { set(id,v,null); }
+  public void setId(BHRef v) { set(id, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "importedTags"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>importedTags</code> property.
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#getImportedTags
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#setImportedTags
+   * Slot for the {@code importedTags} property.
+   * @see #getImportedTags
+   * @see #setImportedTags
    */
-  public static final Property importedTags = newProperty(Flags.READONLY, BHTags.DEFAULT,null);
+  public static final Property importedTags = newProperty(Flags.READONLY, BHTags.DEFAULT, null);
   
   /**
-   * Get the <code>importedTags</code> property.
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#importedTags
+   * Get the {@code importedTags} property.
+   * @see #importedTags
    */
   public BHTags getImportedTags() { return (BHTags)get(importedTags); }
   
   /**
-   * Set the <code>importedTags</code> property.
-   * @see nhaystack.driver.history.BNHaystackHistoryImport#importedTags
+   * Set the {@code importedTags} property.
+   * @see #importedTags
    */
-  public void setImportedTags(BHTags v) { set(importedTags,v,null); }
+  public void setImportedTags(BHTags v) { set(importedTags, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackHistoryImport.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
+    @Override
     protected final IFuture postExecute(Action action, BValue value, Context cx)
     {
         if(!isRunning()) return null;
@@ -133,6 +170,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
         return null;
     }
 
+    @Override
     public final void doExecute()
     {
         executeInProgress();
@@ -274,7 +312,7 @@ public class BNHaystackHistoryImport extends BHistoryImport
     private BNHaystackServer server()
     {
         BComplex comp = getParent();
-        while ((comp != null) && (!(comp instanceof BNHaystackServer)))
+        while ((comp != null) && !(comp instanceof BNHaystackServer))
             comp = comp.getParent();
         return (BNHaystackServer) comp;
     }

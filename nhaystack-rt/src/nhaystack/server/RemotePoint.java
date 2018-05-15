@@ -7,20 +7,17 @@
 //
 package nhaystack.server;
 
-import java.util.logging.*;
-
-import javax.baja.control.*;
-import javax.baja.control.ext.*;
-import javax.baja.driver.*;
-import javax.baja.fox.*;
-import javax.baja.history.*;
-import javax.baja.naming.*;
-import javax.baja.security.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-//import nhaystack.driver.*;
-//import nhaystack.driver.point.*;
+import java.util.logging.Logger;
+import javax.baja.control.BControlPoint;
+import javax.baja.control.ext.BAbstractProxyExt;
+import javax.baja.driver.BDevice;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.SlotPath;
+import javax.baja.sys.BComplex;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.util.BTypeSpec;
 
 /**
   * A RemotePoint represents a point that is present in
@@ -120,7 +117,7 @@ class RemotePoint
         // This doesn't *quite* match the "pointId" slot on the 
         // proxy point since it goes all the way to 
         // the History Ext.  So we'll get rid of that last slot.
-        int last = slotPath.lastIndexOf("/");
+        int last = slotPath.lastIndexOf('/');
         slotPath = slotPath.substring(0, last);
 
         // done
@@ -131,7 +128,7 @@ class RemotePoint
     {
         if (!slotPathStr.startsWith("slot:"))
             throw new IllegalStateException(
-                "Unexpected slot path value: '" + slotPathStr + "'");
+                "Unexpected slot path value: '" + slotPathStr + '\'');
 
         this.stationName = stationName;
         this.slotPath = new SlotPath("slot", slotPathStr.substring("slot:".length()));
@@ -157,7 +154,7 @@ class RemotePoint
     {
         return "[RemotePoint " +
             "stationName:" + stationName + ", " +
-            "slotPath:" + slotPath + "]";
+            "slotPath:" + slotPath + ']';
     }
 
     public boolean equals(Object obj) 

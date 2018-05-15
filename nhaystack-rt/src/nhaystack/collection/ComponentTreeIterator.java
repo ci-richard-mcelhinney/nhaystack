@@ -3,13 +3,14 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Oct 2012  Mike Jarmy  Creation
+//   01 Oct 2012  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Added generics and missing @Override annotations
 //
 package nhaystack.collection;
 
-import java.util.*;
-import javax.baja.sys.*;
-import javax.baja.nre.util.*;
+import java.util.Iterator;
+import java.util.Stack;
+import javax.baja.sys.BComponent;
 
 /**
   * ComponentTreeIterator iterates through a tree
@@ -19,7 +20,7 @@ import javax.baja.nre.util.*;
   * of the tree, first the parent is returned, and 
   * then the parent's children.
   */
-public class ComponentTreeIterator implements Iterator
+public class ComponentTreeIterator implements Iterator<BComponent>
 {
     public ComponentTreeIterator(BComponent root)
     {
@@ -30,11 +31,12 @@ public class ComponentTreeIterator implements Iterator
       * Return true if there are any more BComponents
       * left to iterate.
       */
+    @Override
     public boolean hasNext()
     {
         for (int i = stack.size()-1; i >= 0; i--)
         {
-            Iterator itr = (Iterator) stack.get(i);
+            Iterator<BComponent> itr = stack.get(i);
             if (itr.hasNext()) return true;
         }
         return false;
@@ -43,18 +45,19 @@ public class ComponentTreeIterator implements Iterator
     /**
       * Return the next BComponent in the iteration.
       */
-    public Object next()
+    @Override
+    public BComponent next()
     {
-        Iterator itr = (Iterator) stack.peek();
+        Iterator<BComponent> itr = stack.peek();
         while (!itr.hasNext())
         {
             stack.pop();
-            itr = (Iterator) stack.peek();
+            itr = stack.peek();
         }
 
-        BComponent comp = (BComponent) itr.next();
+        BComponent comp = itr.next();
         stack.push(
-            new CursorIterator(
+            new CursorIterator<BComponent>(
                 comp.getProperties(),
                 BComponent.class));
         return comp;
@@ -63,6 +66,7 @@ public class ComponentTreeIterator implements Iterator
     /**
       * @throws UnsupportedOperationException
       */
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException();
@@ -72,7 +76,7 @@ public class ComponentTreeIterator implements Iterator
 // RootIterator
 ////////////////////////////////////////////////////////////////
 
-    private static class RootIterator implements Iterator
+    private static class RootIterator implements Iterator<BComponent>
     {
         private RootIterator(BComponent root) 
         { 
@@ -80,18 +84,27 @@ public class ComponentTreeIterator implements Iterator
             this.hasNext = true;
         }
 
-        public boolean hasNext() { return hasNext; }
+        @Override
+        public boolean hasNext()
+        {
+            return hasNext;
+        }
 
-        public Object next()
+        @Override
+        public BComponent next()
         {
             if (!hasNext) throw new IllegalStateException();
             hasNext = false;
             return root;
         }
 
-        public void remove() { throw new UnsupportedOperationException(); }
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
+        }
 
-        private BComponent root;
+        private final BComponent root;
         private boolean hasNext;
     }
 
@@ -101,5 +114,5 @@ public class ComponentTreeIterator implements Iterator
 
     public int getStackDepth() { return stack.size(); }
 
-    private final Array stack = new Array(Iterator.class);
+    private final Stack<Iterator<BComponent>> stack = new Stack<>();
 }
