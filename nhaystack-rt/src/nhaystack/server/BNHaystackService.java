@@ -221,8 +221,8 @@ public class BNHaystackService
     implements BINHaystackWorkerParent
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(2741368347)1.0$ @*/
-/* Generated Thu May 10 11:02:52 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.server.BNHaystackService(1484096566)1.0$ @*/
+/* Generated Mon May 14 23:00:03 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
