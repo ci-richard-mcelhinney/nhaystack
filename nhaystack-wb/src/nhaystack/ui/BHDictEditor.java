@@ -3,85 +3,126 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   27 Jan 2013  Mike Jarmy Creation
+//   27 Jan 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
+//                               added use of generics
 //
 
 package nhaystack.ui;
 
-import java.util.*;
-
-import javax.baja.gx.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.enums.*;
-import javax.baja.ui.event.*;
-import javax.baja.ui.pane.*;
-import javax.baja.util.*;
-import javax.baja.nre.util.*;
-import javax.baja.workbench.fieldeditor.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
-import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.server.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.baja.gx.BFont;
+import javax.baja.gx.BImage;
+import javax.baja.gx.BInsets;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.OrdQuery;
+import javax.baja.nre.annotations.NiagaraAction;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Action;
+import javax.baja.sys.BBoolean;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BString;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BBorder;
+import javax.baja.ui.BButton;
+import javax.baja.ui.BDialog;
+import javax.baja.ui.BLabel;
+import javax.baja.ui.BListDropDown;
+import javax.baja.ui.BNullWidget;
+import javax.baja.ui.BTextDropDown;
+import javax.baja.ui.BTextField;
+import javax.baja.ui.BWidget;
+import javax.baja.ui.Command;
+import javax.baja.ui.CommandArtifact;
+import javax.baja.ui.enums.BButtonStyle;
+import javax.baja.ui.enums.BHalign;
+import javax.baja.ui.enums.BValign;
+import javax.baja.ui.event.BWidgetEvent;
+import javax.baja.ui.pane.BBorderPane;
+import javax.baja.ui.pane.BConstrainedPane;
+import javax.baja.ui.pane.BEdgePane;
+import javax.baja.ui.pane.BGridPane;
+import javax.baja.util.Lexicon;
+import javax.baja.workbench.fieldeditor.BWbFieldEditor;
+import nhaystack.BHDict;
+import nhaystack.BHFloor;
+import nhaystack.BHNum;
+import nhaystack.BHTimeZone;
+import nhaystack.BHUnit;
+import nhaystack.NHRef;
+import nhaystack.res.Resources;
+import nhaystack.server.TagManager;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HMarker;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HVal;
+import org.projecthaystack.io.HZincReader;
 
 /**
   * BHDictEditor is the editor for BHDicts.
   */
+@NiagaraType
+@NiagaraAction(
+  name = "kindsModified",
+  parameterType = "BWidgetEvent",
+  defaultValue = "new BWidgetEvent()"
+)
+@NiagaraAction(
+  name = "namesModified",
+  parameterType = "BWidgetEvent",
+  defaultValue = "new BWidgetEvent()"
+)
 public class BHDictEditor extends BEdgePane
 {
-    /*-
-    class BHDictEditor
-    {
-        actions
-        {
-            kindsModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]}
-            namesModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]} 
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHDictEditor(982388845)1.0$ @*/
-/* Generated Tue Apr 23 17:53:08 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHDictEditor(1567712249)1.0$ @*/
+/* Generated Mon Nov 20 11:13:15 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Action "kindsModified"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>kindsModified</code> action.
-   * @see nhaystack.ui.BHDictEditor#kindsModified()
+   * Slot for the {@code kindsModified} action.
+   * @see #kindsModified(BWidgetEvent parameter)
    */
-  public static final Action kindsModified = newAction(0,new BWidgetEvent(),null);
+  public static final Action kindsModified = newAction(0, new BWidgetEvent(), null);
   
   /**
-   * Invoke the <code>kindsModified</code> action.
-   * @see nhaystack.ui.BHDictEditor#kindsModified
+   * Invoke the {@code kindsModified} action.
+   * @see #kindsModified
    */
-  public void kindsModified(BWidgetEvent event) { invoke(kindsModified,event,null); }
+  public void kindsModified(BWidgetEvent parameter) { invoke(kindsModified, parameter, null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "namesModified"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>namesModified</code> action.
-   * @see nhaystack.ui.BHDictEditor#namesModified()
+   * Slot for the {@code namesModified} action.
+   * @see #namesModified(BWidgetEvent parameter)
    */
-  public static final Action namesModified = newAction(0,new BWidgetEvent(),null);
+  public static final Action namesModified = newAction(0, new BWidgetEvent(), null);
   
   /**
-   * Invoke the <code>namesModified</code> action.
-   * @see nhaystack.ui.BHDictEditor#namesModified
+   * Invoke the {@code namesModified} action.
+   * @see #namesModified
    */
-  public void namesModified(BWidgetEvent event) { invoke(namesModified,event,null); }
+  public void namesModified(BWidgetEvent parameter) { invoke(namesModified, parameter, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHDictEditor.class);
 
@@ -92,7 +133,7 @@ public class BHDictEditor extends BEdgePane
     public BHDictEditor(
         BHDictEditorGroup editorGroup, 
         int editorType,
-        Map origTags)
+        Map<String, HVal> origTags)
     {
         this.editorGroup = editorGroup;
         this.editorType = editorType;
@@ -130,13 +171,11 @@ public class BHDictEditor extends BEdgePane
       */
     private void loadMainGrid()
     {
-        this.rows = new Array(Row.class);
-        Iterator it = origTags.entrySet().iterator();
-        while (it.hasNext())
+        this.rows = new ArrayList<>();
+        for (Map.Entry<String, HVal> entry : origTags.entrySet())
         {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            HVal val = (HVal) entry.getValue();
+            String name = entry.getKey();
+            HVal val = entry.getValue();
 
             this.rows.add(new Row(this, name, val));
         }
@@ -155,15 +194,15 @@ public class BHDictEditor extends BEdgePane
         HDictBuilder builder = new HDictBuilder();
 
         // from mainGrid rows
-        Set used = new HashSet();
+        Set<String> used = new HashSet<>();
         for (int i = 0; i < rows.size(); i++)
         {
-            Row row = (Row) rows.get(i);
+            Row row = rows.get(i);
             String kind = (String) row.kinds.getSelectedItem();
             String name = row.names.getText();
 
             // check blank name
-            if (name.equals(""))
+            if (name.isEmpty())
                 throw new BajaRuntimeException("Name is blank in row " + (i+1));
 
             // check duplicate name
@@ -175,50 +214,47 @@ public class BHDictEditor extends BEdgePane
             ///////////////////////////////////////////////////////////////////
 
             // add to builder
-            if (kind.equals("Marker"))
+            switch (kind)
             {
+            case "Marker":
                 builder.add(name);
-            }
-            else if (kind.equals("Number"))
-            {
-                HNum num = ((BHNum) row.fe.saveValue()).getNum();
+                break;
+            case "Number":
+                HNum num = ((BHNum)row.fe.saveValue()).getNum();
                 builder.add(name, num);
-            }
-            else if (kind.equals("Str"))
-            {
-                if (name.equals("unit"))
+                break;
+            case "Str":
+                switch (name)
                 {
-                    BHUnit unit = (BHUnit) row.fe.saveValue();
+                case "unit":
+                    BHUnit unit = (BHUnit)row.fe.saveValue();
                     builder.add(name, unit.getSymbol());
-                }
-                else if (name.equals("tz"))
-                {
-                    BHTimeZone tz = (BHTimeZone) row.fe.saveValue();
+                    break;
+                case "tz":
+                    BHTimeZone tz = (BHTimeZone)row.fe.saveValue();
                     builder.add(name, tz.getTimeZone().name);
-                }
-                else if (name.equals("floorName"))
-                {
-                    BHFloor floor = (BHFloor) row.fe.saveValue();
+                    break;
+                case "floorName":
+                    BHFloor floor = (BHFloor)row.fe.saveValue();
                     builder.add(name, floor.getFloor());
-                }
-                else
-                {
-                    BString str = (BString) row.fe.saveValue();
+                    break;
+                default:
+                    BString str = (BString)row.fe.saveValue();
                     builder.add(name, str.getString());
+                    break;
                 }
-            }
-            else if (kind.equals("Ref"))
-            {
+                break;
+            case "Ref":
                 // For equipRefs, if the field editor hasn't been modified,
-                // then auto-generated implicit equipRefs shouldn't be saved 
+                // then auto-generated implicit equipRefs shouldn't be saved
                 if (name.equals("equipRef") && !row.fe.isModified())
                 {
-                    HDict anno = BHDict.findTagAnnotation(group().component());
-                    if (anno == null || !anno.has("equipRef"))
+                    HDict annotation = BHDict.findTagAnnotation(group().component());
+                    if (annotation == null || !annotation.has("equipRef"))
                         continue;
                 }
 
-                BOrd ord = (BOrd) row.fe.saveValue();
+                BOrd ord = (BOrd)row.fe.saveValue();
 
                 // if its a null ord, just don't add anything to the builder
                 if (!ord.equals(BOrd.DEFAULT))
@@ -228,7 +264,7 @@ public class BHDictEditor extends BEdgePane
 
                     if (query.getScheme().equals("slot"))
                     {
-                        BComponent comp = (BComponent) 
+                        BComponent comp = (BComponent)
                             ord.resolve(editorGroup.session(), null).get();
                         if (!comp.isMounted())
                             throw new BajaRuntimeException(
@@ -255,13 +291,14 @@ public class BHDictEditor extends BEdgePane
                             "Cannot save '" + ord + "' as an HRef.");
                     }
                 }
-            }
-            else if (kind.equals("Bool"))
-            {
-                BBoolean bool = (BBoolean) row.fe.saveValue();
+                break;
+            case "Bool":
+                BBoolean bool = (BBoolean)row.fe.saveValue();
                 builder.add(name, bool.getBoolean());
+                break;
+            default:
+                throw new IllegalStateException();
             }
-            else throw new IllegalStateException();
         }
 
         // encode to zinc and back just to be sure
@@ -276,7 +313,7 @@ public class BHDictEditor extends BEdgePane
     public void doKindsModified(BWidgetEvent event)
     {
         BListDropDown kinds = (BListDropDown) event.getWidget();
-        Row row = (Row) rows.get(kindsIndex(kinds));
+        Row row = rows.get(kindsIndex(kinds));
 
         String kind = (String) kinds.getSelectedItem();
 
@@ -297,7 +334,7 @@ public class BHDictEditor extends BEdgePane
         BTextDropDown names = (BTextDropDown) text.getParent();
         String name = names.getText();
 
-        Row row = (Row) rows.get(namesIndex(names));
+        Row row = rows.get(namesIndex(names));
         String kind = (String) row.kinds.getSelectedItem();
         if (kind.equals("Str"))
         {
@@ -309,7 +346,7 @@ public class BHDictEditor extends BEdgePane
                 fillMainGrid();
             }
             // change away from tz
-            else if (!name.equals("tz") && (row.fe instanceof BHTimeZoneFE))
+            else if (!name.equals("tz") && row.fe instanceof BHTimeZoneFE)
             {
                 if (name.equals("unit"))
                 {
@@ -331,7 +368,7 @@ public class BHDictEditor extends BEdgePane
                 fillMainGrid();
             }
             // change away from unit
-            else if (!name.equals("unit") && (row.fe instanceof BHUnitFE))
+            else if (!name.equals("unit") && row.fe instanceof BHUnitFE)
             {
                 if (name.equals("tz"))
                 {
@@ -352,7 +389,7 @@ public class BHDictEditor extends BEdgePane
     {
         for (int i = 0; i < rows.size(); i++)
         {
-            Row row = (Row) rows.get(i);
+            Row row = rows.get(i);
             if (row.kinds == kinds) return i;
         }
         throw new IllegalStateException();
@@ -362,7 +399,7 @@ public class BHDictEditor extends BEdgePane
     {
         for (int i = 0; i < rows.size(); i++)
         {
-            Row row = (Row) rows.get(i);
+            Row row = rows.get(i);
             if (row.names == names) return i;
         }
         throw new IllegalStateException();
@@ -376,8 +413,10 @@ public class BHDictEditor extends BEdgePane
     {
         public AddRowIcon() { super(BHDictEditor.this, ""); }
 
+        @Override
         public BImage getIcon() { return ADD; }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             String[] tags = Resources.getKindTags("Marker");
@@ -394,6 +433,7 @@ public class BHDictEditor extends BEdgePane
     {
         public AddRowButton() { super(BHDictEditor.this, LEX.getText("addTag")); }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             String[] tags = Resources.getKindTags("Marker");
@@ -414,8 +454,10 @@ public class BHDictEditor extends BEdgePane
             this.index = index;
         }
 
+        @Override
         public BImage getIcon() { return REMOVE; }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             rows.remove(index);
@@ -433,6 +475,7 @@ public class BHDictEditor extends BEdgePane
     {
         public AddMarkerSet() { super(BHDictEditor.this, LEX, "addMarkerSet"); }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             BMarkerSet markerSet = new BMarkerSet();
@@ -445,20 +488,18 @@ public class BHDictEditor extends BEdgePane
 
             if (result == BDialog.OK)
             {
-                Set used = new HashSet();
-                for (int i = 0; i < rows.size(); i++)
+                Set<String> used = new HashSet<>();
+                for (Row row : rows)
                 {
-                    Row row = (Row) rows.get(i);
                     used.add(row.names.getText());
                 }
 
                 String[] markers = markerSet.getMarkers();
-
-                for (int i = 0; i < markers.length; i++)
+                for (String marker : markers)
                 {
-                    if (!used.contains(markers[i]))
+                    if (!used.contains(marker))
                         rows.add(new Row(
-                            BHDictEditor.this, markers[i], HMarker.VAL));
+                            BHDictEditor.this, marker, HMarker.VAL));
                 }
 
                 fillMainGrid();
@@ -477,7 +518,7 @@ public class BHDictEditor extends BEdgePane
     {
         mainGrid.removeAll();
 
-        if (rows.size() > 0)
+        if (!rows.isEmpty())
         {
             mainGrid.add(null, new BNullWidget());
             mainGrid.add(null, new BLabel(LEX.getText("type"), BOLD));
@@ -486,11 +527,11 @@ public class BHDictEditor extends BEdgePane
 
             for (int i = 0; i < rows.size(); i++)
             {
-                Row row = (Row) rows.get(i);
+                Row row = rows.get(i);
 
-                mainGrid.add(null, (editorType == OPTIONAL) ?
-                    (BWidget) makeAddRemove(new RemoveRow(i)) :
-                    (BWidget) new BNullWidget());
+                mainGrid.add(null, editorType == OPTIONAL ?
+                    makeAddRemove(new RemoveRow(i)) :
+                    new BNullWidget());
 
                 mainGrid.add(null, row.kinds);
                 mainGrid.add(null, row.names);
@@ -557,7 +598,7 @@ public class BHDictEditor extends BEdgePane
 
     private static final Lexicon LEX = Lexicon.make("nhaystack");
     private static final String NONE = LEX.getText("none");
-    private static BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
+    private static final BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
 
     private static final BImage ADD    = BImage.make("module://nhaystack/nhaystack/icons/tag_add.png");
     private static final BImage REMOVE = BImage.make("module://nhaystack/nhaystack/icons/tag_remove.png");
@@ -590,12 +631,12 @@ public class BHDictEditor extends BEdgePane
 
     private BHDictEditorGroup editorGroup;
     private int editorType;
-    private Map origTags;
+    private Map<String, HVal> origTags;
 
-    private Array rows;
+    private List<Row> rows;
 
     private BGridPane mainGrid;
 
-    private BHDict tags = null;
-    private String zinc = null;
+    private BHDict tags;
+    private String zinc;
 }

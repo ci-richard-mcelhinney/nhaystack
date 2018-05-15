@@ -3,41 +3,42 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.driver.point;
 
-import javax.baja.status.*;
-import javax.baja.sys.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import nhaystack.util.*;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.status.BStatus;
+import javax.baja.status.BStatusString;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HVal;
+import org.projecthaystack.client.HClient;
 
 /**
   * BNHaystackStrProxyExt is a proxy extension for string remote haystack points.
   */
+@NiagaraType
 public class BNHaystackStrProxyExt extends BNHaystackProxyExt
 {
-    /*-
-    class BNHaystackStrProxyExt
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackStrProxyExt(3391908686)1.0$ @*/
-/* Generated Sun Jun 01 09:34:38 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.BNHaystackStrProxyExt(2979906276)1.0$ @*/
+/* Generated Sat Nov 18 17:32:48 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackStrProxyExt.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
+    @Override
     public void doRead(HVal curVal, HStr curStatus)
     {
         BStatus status = TypeUtil.toBajaStatus(curStatus);
@@ -49,10 +50,10 @@ public class BNHaystackStrProxyExt extends BNHaystackProxyExt
         else
         {
             readFail("read fault");
-            return;
         }
     }
 
+    @Override
     public void doWrite() throws Exception
     {
         BStatusString writeValue = (BStatusString) getWriteValue();

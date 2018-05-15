@@ -7,20 +7,26 @@
 //
 package nhaystack.server;
 
-import java.util.logging.*;
-
-import javax.baja.alarm.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.server.*;
-import nhaystack.driver.alarm.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.alarm.AlarmDbConnection;
+import javax.baja.alarm.BAlarmRecord;
+import javax.baja.alarm.BAlarmService;
+import javax.baja.sys.Sys;
+import javax.baja.util.BUuid;
+import nhaystack.driver.alarm.BNHaystackAlarmRecipient;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HRow;
+import org.projecthaystack.server.HOp;
+import org.projecthaystack.server.HServer;
 
 class AlarmAckOp extends HOp
 {
+    @Override
     public String name() { return "alarmAck"; }
+    @Override
     public String summary() { return "Alarm Ack"; }
+    @Override
     public HGrid onService(HServer db, HGrid req)
     {
         NHServer server = (NHServer) db;
@@ -52,10 +58,9 @@ class AlarmAckOp extends HOp
                     // We have to ignore the alarm while we are acking it
                     // so we don't get caught in a loop.
                     BAlarmService service = (BAlarmService) Sys.getService(BAlarmService.TYPE);
-                    BNHaystackAlarmRecipient[] recips = (BNHaystackAlarmRecipient[]) 
-                        service.getChildren(BNHaystackAlarmRecipient.class);
-                    for (int i = 0; i < recips.length; i++)
-                        recips[i].beginIgnore(uuid);
+                    BNHaystackAlarmRecipient[] recips = service.getChildren(BNHaystackAlarmRecipient.class);
+                    for (BNHaystackAlarmRecipient recip : recips)
+                        recip.beginIgnore(uuid);
 
                     // ack the alarm
                     alarm.ackAlarm();

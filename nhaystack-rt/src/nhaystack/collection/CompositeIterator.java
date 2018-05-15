@@ -3,18 +3,19 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Oct 2012  Mike Jarmy  Creation
+//   01 Oct 2012  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Added generics and missing @Override annotations
 //
 package nhaystack.collection;
 
-import java.util.*;
+import java.util.Iterator;
 
 /**
   * CompositeIterator iterates through an array of Iterators.
   */
-public class CompositeIterator implements Iterator
+public class CompositeIterator implements Iterator<Object>
 {
-    public CompositeIterator(Iterator[] iterators)
+    public CompositeIterator(Iterator<?>[] iterators)
     {
         this.iterators = iterators;
         this.index = 0;
@@ -25,11 +26,13 @@ public class CompositeIterator implements Iterator
 // Iterator
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public boolean hasNext()
     {
         return nextObj != null;
     }
 
+    @Override
     public Object next()
     {
         Object obj = nextObj;
@@ -40,6 +43,7 @@ public class CompositeIterator implements Iterator
     /**
       * @throws UnsupportedOperationException
       */
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException();
@@ -67,7 +71,7 @@ public class CompositeIterator implements Iterator
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private final Iterator[] iterators;
+    private final Iterator<?>[] iterators;
     private int index;
     private Object nextObj;
 }

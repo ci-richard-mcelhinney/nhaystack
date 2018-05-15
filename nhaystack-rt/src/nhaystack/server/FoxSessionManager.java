@@ -3,34 +3,35 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   30 Mar 2013  Mike Jarmy  Creation
+//   30 Mar 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Added missing @Overrides annotations, added use of generics
 //
 package nhaystack.server;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.logging.Logger;
+import javax.baja.driver.BDevice;
+import javax.baja.fox.BFoxProxySession;
+import javax.baja.naming.BHost;
+import javax.baja.naming.BOrd;
+import javax.baja.security.BIUserCredentials;
 import com.tridium.fox.sys.BFoxClientConnection;
-
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.driver.*;
-import javax.baja.fox.*;
-import javax.baja.naming.*;
-import javax.baja.security.*;
-
-import com.tridium.nd.*;
+import com.tridium.nd.BNiagaraStation;
 
 class FoxSessionManager
 {
     /**
       * getSession
       */
-    BFoxProxySession getSession(BDevice station, long leaseInterval)
-    throws Exception
+    BFoxProxySession getSession(BDevice station, long leaseInterval) throws Exception
     {
         synchronized(sessions)
         {
             String slotPath = station.getSlotPath().toString();
-            FoxSession fs = (FoxSession) sessions.get(slotPath);
+            FoxSession fs = sessions.get(slotPath);
 
             if (fs == null)
             {
@@ -48,8 +49,7 @@ class FoxSessionManager
     /**
       * makeSession
       */
-    private static BFoxProxySession makeSession(BDevice station)
-    throws Exception
+    private static BFoxProxySession makeSession(BDevice station) throws Exception
     {
         BNiagaraStation s = (BNiagaraStation) station;
 
@@ -86,6 +86,7 @@ class FoxSessionManager
 
         class Timeout extends TimerTask
         {
+            @Override
             public void run()
             {
                 synchronized(sessions)
@@ -102,7 +103,7 @@ class FoxSessionManager
         final long leaseInterval;
 
         final Timer timer = new Timer();
-        Timeout timeout = null;
+        Timeout timeout;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -110,6 +111,5 @@ class FoxSessionManager
 ////////////////////////////////////////////////////////////////
 
     private static final Logger LOG = Logger.getLogger("nhaystack.fox");
-    private final Map sessions = new HashMap();
+    private final Map<String, FoxSession> sessions = new HashMap<>();
 }
-

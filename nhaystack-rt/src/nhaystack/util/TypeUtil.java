@@ -3,23 +3,46 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   22 Mar 2013  Mike Jarmy  Creation
+//   22 Mar 2013  Mike Jarmy     Creation
+//   09 May 2018  Eric Anderson  Added support for the BMarker baja type, added use of generics
 //
 package nhaystack.util;
 
-import java.util.*;
-
-import javax.baja.control.*;
-import javax.baja.history.*;
-import javax.baja.history.db.*;
-import javax.baja.naming.*;
-import javax.baja.security.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.timezone.*;
-
-import org.projecthaystack.*;
-import nhaystack.res.*;
+import java.util.Iterator;
+import java.util.Map;
+import javax.baja.control.BEnumWritable;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.history.BIHistory;
+import javax.baja.history.HistorySpaceConnection;
+import javax.baja.history.db.BHistoryDatabase;
+import javax.baja.naming.BOrd;
+import javax.baja.security.BPermissions;
+import javax.baja.status.BStatus;
+import javax.baja.sys.Action;
+import javax.baja.sys.BBoolean;
+import javax.baja.sys.BComplex;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BDouble;
+import javax.baja.sys.BEnum;
+import javax.baja.sys.BEnumRange;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BMarker;
+import javax.baja.sys.BNumber;
+import javax.baja.sys.BRelTime;
+import javax.baja.sys.BSimple;
+import javax.baja.sys.BString;
+import javax.baja.sys.BValue;
+import javax.baja.sys.Context;
+import javax.baja.timezone.BTimeZone;
+import nhaystack.res.Resources;
+import nhaystack.res.Unit;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HMarker;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HVal;
 
 /**
   * TypeUtil maps between Haystack types and Baja types.
@@ -32,13 +55,14 @@ public abstract class TypeUtil
         {
             return BString.make(((HStr) val).val); 
         }
-        else if (val instanceof HNum)
+
+        if (val instanceof HNum)
         {
             HNum num = (HNum) val;
 
             if (num.unit == null)
             {
-                return BDouble.make(num.val); 
+                return BDouble.make(num.val);
             }
             else
             {
@@ -46,14 +70,20 @@ public abstract class TypeUtil
                 if (unit.quantity.equals("time"))
                     return makeRelTime(num, unit);
                 else
-                    return BDouble.make(num.val); 
+                    return BDouble.make(num.val);
             }
         }
-        else if (val instanceof HBool)
+
+        if (val instanceof HBool)
         {
-            return BBoolean.make(((HBool) val).val); 
+            return BBoolean.make(((HBool) val).val);
         }
-        
+
+        if (val instanceof HMarker)
+        {
+            return BMarker.MARKER;
+        }
+
         throw new IllegalStateException("Cannot convert " + 
             val.getClass() + ": " + val);
     }
@@ -114,10 +144,10 @@ public abstract class TypeUtil
         // simple
         else if (def instanceof BSimple)
         {
-            Map.Entry e = (Map.Entry) args.iterator().next();
-            HVal val = (HVal) e.getValue();
+            Map.Entry<String, HVal> e = (Map.Entry<String, HVal>)args.iterator().next();
+            HVal val = e.getValue();
 
-            BSimple simple = null;
+            BSimple simple;
             if (comp instanceof BEnumWritable)
             {
                 String str = SlotUtil.toNiagara(((HStr) val).val);
@@ -144,13 +174,11 @@ public abstract class TypeUtil
 
             // Set each slot in the BComplex to a dict entry.
             // Note that we do not currently support nesting structs within structs.
-            Iterator it = args.iterator();
+            Iterator<Map.Entry<String, HVal>> it = args.iterator();
             while (it.hasNext())
             {
-                Map.Entry e = (Map.Entry) it.next();
-                cpx.set(
-                    (String) e.getKey(), 
-                    toBajaSimple((HVal) e.getValue()));
+                Map.Entry<String, HVal> e = it.next();
+                cpx.set(e.getKey(), toBajaSimple(e.getValue()));
             }
 
             return cpx;

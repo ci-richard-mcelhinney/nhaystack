@@ -1,8 +1,10 @@
 //  Copyright (c) 2012, J2 Innovations
 //  Licensed under the Academic Free License version 3.0
-// 
+//
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+
+description = "nhaystack workbench module"
 
 niagaraModule {
   preferredSymbol = "nh"
@@ -23,7 +25,6 @@ dependencies {
   compile "Tridium:bajaui-wb:4.0.0"
   compile "Tridium:gx-wb:4.0.0"
   compile "Tridium:fox-rt:4.0.0"
-  
-  compile "Project Haystack:nhaystack-rt:1.2.7"
-  
+
+  compile project(":nhaystack-rt")
 }

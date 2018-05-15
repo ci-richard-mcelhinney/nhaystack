@@ -3,52 +3,73 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   09 Apr 2013  Mike Jarmy  Creation
+//   09 Apr 2013  Mike Jarmy          Creation
 //   12 Nov 2014  Christian Tremblay  Added buttons and load custom dict feature
+//   10 May 2018  Eric Anderson       Migrated to slot annotations, added missing @Overrides
+//                                    annotations, added use of generics
 //
 package nhaystack.ui.view;
 
-import java.util.*;
-
-import javax.baja.gx.*;
-import javax.baja.sys.*;
-import javax.baja.sys.Sys;
-import javax.baja.ui.*;
-import javax.baja.ui.enums.*;
-import javax.baja.ui.pane.*;
-import javax.baja.ui.tree.*;
-import javax.baja.util.*;
-import javax.baja.workbench.view.*;
-import javax.baja.xml.*;
-
-import nhaystack.res.Resources;
-import nhaystack.server.*;
-import nhaystack.site.*;
-
-import javax.baja.file.BIFile;
+import java.util.HashMap;
+import java.util.Map;
+import javax.baja.gx.BFont;
+import javax.baja.gx.BImage;
+import javax.baja.gx.BInsets;
 import javax.baja.naming.BOrd;
 import javax.baja.naming.SlotPath;
-import javax.baja.naming.UnresolvedException;
+import javax.baja.nre.annotations.AgentOn;
+import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.BObject;
+import javax.baja.sys.BString;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BBorder;
+import javax.baja.ui.BButton;
+import javax.baja.ui.BHyperlinkLabel;
+import javax.baja.ui.BLabel;
+import javax.baja.ui.BToggleButton;
+import javax.baja.ui.Command;
+import javax.baja.ui.CommandArtifact;
+import javax.baja.ui.enums.BHalign;
+import javax.baja.ui.pane.BBorderPane;
+import javax.baja.ui.pane.BEdgePane;
+import javax.baja.ui.pane.BGridPane;
+import javax.baja.ui.pane.BScrollPane;
+import javax.baja.ui.tree.BTree;
+import javax.baja.ui.tree.TreeModel;
+import javax.baja.ui.tree.TreeNode;
+import javax.baja.util.BTypeSpec;
+import javax.baja.util.Lexicon;
+import javax.baja.workbench.view.BWbComponentView;
+import javax.baja.xml.XElem;
+import javax.baja.xml.XParser;
+import nhaystack.res.Resources;
+import nhaystack.server.BNHaystackService;
+import nhaystack.site.BHEquip;
+import nhaystack.site.BHSite;
 
 /**
   * BNHaystackServiceView is a view on BNHaystackService
   */
+@NiagaraType(
+  agent = @AgentOn(
+    types = "nhaystack:NHaystackService"
+  )
+)
 public class BNHaystackServiceView extends BWbComponentView
 {
-    /*-
-    class BNHaystackServiceView
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BNHaystackServiceView(1870466022)1.0$ @*/
-/* Generated Tue Apr 09 09:47:22 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.view.BNHaystackServiceView(636049357)1.0$ @*/
+/* Generated Mon Nov 20 10:43:59 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackServiceView.class);
 
@@ -81,21 +102,20 @@ public class BNHaystackServiceView extends BWbComponentView
         this.loadSepTree = new LoadSepTree(this);
         this.rebuildCache = new RebuildCacheCommand(this);
         this.initialize = new InitializeCommand(this);
-        this.loadCustomTagDict = new LoadCustomTagDictionnary(this);
+        this.loadCustomTagDict = new LoadCustomTagDictionary(this);
         BButton button = new BButton(loadSepTree);
         BButton buttonRebuild = new BButton(rebuildCache);
         BButton buttonInit = new BButton(initialize);
         BButton buttonLoadCustomTagDict = new BButton(loadCustomTagDict);
-        
-        
+
         BBorderPane b4 = new BBorderPane(button);
         b4.setSize(10, 20);
         b4.setPadding(BInsets.make(0, 0, 2, 0));
-        
+
         BBorderPane b5 = new BBorderPane(buttonRebuild);
         b5.setSize(10, 20);
         b5.setPadding(BInsets.make(0, 0, 2, 0));
-        
+
         BBorderPane b6 = new BBorderPane(buttonInit);
         b6.setSize(10, 20);
         b6.setPadding(BInsets.make(0, 0, 2, 0));
@@ -107,18 +127,19 @@ public class BNHaystackServiceView extends BWbComponentView
         BBorderPane b8 = new BBorderPane(buttonLoadCustomTagDict);
         b8.setSize(10, 20);
         b8.setPadding(BInsets.make(0, 0, 2, 0));      
-        
+
         // BFileChooser fc = new BFileChooser(this,"Choose your own list");
         // We should be able to access to the file...or choose the file we want... actually just tell us what file it is
-        
-        BHyperlinkLabel labelCustomTags = new BHyperlinkLabel(LEX.getText("editCustomTagsDict") + "    ->    (" + customTagsDictFilePath + ")", BOrd.make(customTagsDictFilePath));
-        
+
+        BHyperlinkLabel labelCustomTags = new BHyperlinkLabel(LEX.getText("editCustomTagsDict") +
+            "    ->    (" + customTagsDictFilePath + ')', BOrd.make(customTagsDictFilePath));
+
         labelCustomTags.setHalign(BHalign.left);
         BBorderPane b9 = new BBorderPane(labelCustomTags);
         b9.setBorder(BBorder.make("inset"));
         b9.setPadding(BInsets.make(2, 2, 2, 2));
         b9.setMargin(BInsets.make(4, 4, 8, 4));
-        
+
         BGridPane gp = new BGridPane(5);
         gp.setColumnGap(5);
         gp.setUniformColumnWidth(false);
@@ -158,11 +179,13 @@ public class BNHaystackServiceView extends BWbComponentView
             this.view = view;
         }
 
+        @Override
         public String getLabel()
         {
             return LEX.getText("load");
         }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             String xml = ((BString) service.invoke(
@@ -206,11 +229,13 @@ public class BNHaystackServiceView extends BWbComponentView
             this.view = view;
         }
 
+        @Override
         public String getLabel()
         {
             return LEX.getText("rebuildCache");
         }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             service.rebuildCache();
@@ -220,24 +245,26 @@ public class BNHaystackServiceView extends BWbComponentView
         final BNHaystackServiceView view;
     }
 
-    class LoadCustomTagDictionnary extends Command
+    class LoadCustomTagDictionary extends Command
     {
-      LoadCustomTagDictionnary(BNHaystackServiceView view)
+        LoadCustomTagDictionary(BNHaystackServiceView view)
         {
             super(view, "");
             this.view = view;
         }
 
+        @Override
         public String getLabel()
         {
             return LEX.getText("loadcustomTagDict");
         }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             try
             {
-              System.out.println("Refreshing custom tag dictionnary");
+              System.out.println("Refreshing custom tag dictionary");
               Resources.loadAutoMarkers(BOrd.make(customTagsDictFilePath));
               // File must be local on the PC
               // local:|file:/C:/JCI/FXWorkbench-6.0/stations/StationVide/nHaystack/customTagsDict.csv
@@ -265,11 +292,13 @@ public class BNHaystackServiceView extends BWbComponentView
             this.view = view;
         }
 
+        @Override
         public String getLabel()
         {
             return LEX.getText("initialize");
         }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             service.initializeHaystack();
@@ -278,15 +307,15 @@ public class BNHaystackServiceView extends BWbComponentView
 
         final BNHaystackServiceView view;
     }
-    
-    
-    
-    public void stopped() throws Exception 
+
+    @Override
+    public void stopped() throws Exception
     {
         super.stopped();
         unregisterForAllComponentEvents();
     }
 
+    @Override
     protected void doLoadValue(BObject value, Context cx)
     {
         this.service = (BNHaystackService) value;
@@ -294,18 +323,22 @@ public class BNHaystackServiceView extends BWbComponentView
         loadSepTree.setEnabled(service.getEnabled());
     }
 
-    class NullTreeModel extends TreeModel
+    static class NullTreeModel extends TreeModel
     {
+        @Override
         public int getRootCount() { return 0; }
+        @Override
         public TreeNode getRoot(int index) { throw new IllegalStateException(); }
     }
 
-    class NavTreeModel extends TreeModel
+    static class NavTreeModel extends TreeModel
     {
+        @Override
         public int getRootCount()
         {
             return sites.length;
         }
+        @Override
         public TreeNode getRoot(int index)
         {
             return sites[index];
@@ -319,7 +352,7 @@ public class BNHaystackServiceView extends BWbComponentView
         SiteNode(NavTreeModel model, XElem xsite)
         {
             super(model);
-            this.text = toggleTextFormat(xsite.get("navName"),buttonToggleFormat.isSelected());
+            this.text = toggleTextFormat(xsite.get("navName"), buttonToggleFormat.isSelected());
 
             XElem[] xequips = xsite.elems("equip");
             equips = new EquipNode[xequips.length];
@@ -329,22 +362,25 @@ public class BNHaystackServiceView extends BWbComponentView
             setExpanded(true);
         }
 
+        @Override
         public String getText() { return text; }
+        @Override
         public BImage getIcon() { return BImage.make(BHSite.ICON); }
+        @Override
         public int getChildCount() { return equips.length; }
+        @Override
         public TreeNode getChild(int index) { return equips[index]; }
 
         private final String text;
         private final EquipNode[] equips;
-    };
+    }
 
     class EquipNode extends TreeNode
     {
         EquipNode(NavTreeModel model, XElem xequip)
         {
             super(model);
-            //this.text = xequip.get("navName");
-            this.text = toggleTextFormat(xequip.get("navName"),buttonToggleFormat.isSelected());
+            this.text = toggleTextFormat(xequip.get("navName"), buttonToggleFormat.isSelected());
 
             XElem[] xpoints = xequip.elems("point");
             points = new PointNode[xpoints.length];
@@ -354,25 +390,28 @@ public class BNHaystackServiceView extends BWbComponentView
             setExpanded(false);
         }
 
+        @Override
         public String getText() { return text; }
+        @Override
         public BImage getIcon() { return BImage.make(BHEquip.ICON); }
+        @Override
         public int getChildCount() { return points.length; }
+        @Override
         public TreeNode getChild(int index) { return points[index]; }
 
         private final String text;
         private final PointNode[] points;
-    };
+    }
 
     class PointNode extends TreeNode
     {
         PointNode(NavTreeModel model, XElem xpoint)
         {
             super(model);
-            //this.text = xpoint.get("navName");
-            this.text = toggleTextFormat(xpoint.get("navName"),buttonToggleFormat.isSelected());
+            this.text = toggleTextFormat(xpoint.get("navName"), buttonToggleFormat.isSelected());
 
             String type = xpoint.get("axType");
-            this.icon = (BImage) POINT_ICONS.get(type);
+            this.icon = POINT_ICONS.get(type);
             if (this.icon == null)
             {
                 BTypeSpec spec = BTypeSpec.make(type);
@@ -382,38 +421,50 @@ public class BNHaystackServiceView extends BWbComponentView
             }
         }
 
+        @Override
         public String getText() { return text; }
+        @Override
         public BImage getIcon() { return icon; }
+        @Override
         public int getChildCount() { return 0; }
+        @Override
         public TreeNode getChild(int index) { throw new IllegalStateException(); }
 
         private final String text;
         private BImage icon;
-    };
+    }
 
-    class EmptyTreeModel extends TreeModel
+    static class EmptyTreeModel extends TreeModel
     {
+        @Override
         public int getRootCount() { return 1; }
 
+        @Override
         public TreeNode getRoot(int index)
         {
             if (index != 0) throw new IllegalStateException();
 
             return new TreeNode(this)
             {
+                @Override
                 public String getText() { return LEX.getText("noSites"); }
+                @Override
                 public BImage getIcon() { return SITE; }
+                @Override
                 public int getChildCount() { return 0; }
+                @Override
                 public TreeNode getChild(int index) { throw new IllegalStateException(); }
             };
         }
     }
-    
-    private String toggleTextFormat(String str, boolean format){
-      if (format == false){
-        str = SlotPath.unescape(TextUtil.replace(str,"~", "$")); 
-      }
-      return str;
+
+    private static String toggleTextFormat(String str, boolean format)
+    {
+        if (!format)
+        {
+            str = SlotPath.unescape(TextUtil.replace(str,"~", "$"));
+        }
+        return str;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -421,21 +472,21 @@ public class BNHaystackServiceView extends BWbComponentView
 ////////////////////////////////////////////////////////////////
 
     private static final Lexicon LEX = Lexicon.make("nhaystack");
-    private static BImage SITE = BImage.make(new BHSite().getIcon());
-    private static BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
+    private static final BImage SITE = BImage.make(new BHSite().getIcon());
+    private static final BFont BOLD = BFont.make("Tahoma", 11.0, BFont.BOLD);
 
-    private static final Map POINT_ICONS = new HashMap();
+    private static final Map<String, BImage> POINT_ICONS = new HashMap<>();
 
     private final BTree tree;
-    private BAddHaystackSlot addSlot;
+    private final BAddHaystackSlot addSlot;
 
     BNHaystackService service;
     private final LoadSepTree loadSepTree;
     private final RebuildCacheCommand rebuildCache;
     private final InitializeCommand initialize;
-    private final LoadCustomTagDictionnary loadCustomTagDict;
+    private final LoadCustomTagDictionary loadCustomTagDict;
     BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
     
     String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
     private final String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
- }
+}

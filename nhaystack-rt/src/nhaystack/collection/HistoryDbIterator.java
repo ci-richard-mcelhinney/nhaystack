@@ -3,19 +3,21 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Oct 2012  Mike Jarmy  Creation
+//   01 Oct 2012  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Added generics and missing @Override annotations
 //
 package nhaystack.collection;
 
-import java.util.*;
-import javax.baja.history.*;
-import javax.baja.history.db.*;
+import java.util.Iterator;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.history.BIHistory;
+import javax.baja.history.db.BHistoryDatabase;
 
 /**
   * HistoryDbIterator iterates through all
   * the BHistoryConfig entries in a BHistoryDatabase.
   */
-public class HistoryDbIterator implements Iterator
+public class HistoryDbIterator implements Iterator<BHistoryConfig>
 {
     public HistoryDbIterator(BHistoryDatabase db)
     {
@@ -27,15 +29,17 @@ public class HistoryDbIterator implements Iterator
       * Return true if there are any more BHistoryConfigs
       * left to iterate.
       */
+    @Override
     public boolean hasNext()
     {
-        return (index < histories.length);
+        return index < histories.length;
     }
 
     /**
       * Return the next BHistoryConfig in the iteration.
       */
-    public Object next()
+    @Override
+    public BHistoryConfig next()
     {
         return histories[index++].getConfig();
     }
@@ -43,6 +47,7 @@ public class HistoryDbIterator implements Iterator
     /**
       * @throws UnsupportedOperationException
       */
+    @Override
     public void remove()
     {
         throw new UnsupportedOperationException();

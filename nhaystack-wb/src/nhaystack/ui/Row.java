@@ -4,22 +4,41 @@
 //
 // History:
 //   02 Feb 2013  Mike Jarmy Creation
+//   10 May 2018  Eric Anderson  Added use of generics
 //
 
 package nhaystack.ui;
 
-import javax.baja.fox.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.list.*;
-import javax.baja.nre.util.*;
-import javax.baja.workbench.fieldeditor.*;
-
-import org.projecthaystack.*;
-import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.server.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import javax.baja.fox.BFoxProxySession;
+import javax.baja.naming.BOrd;
+import javax.baja.sys.BBoolean;
+import javax.baja.sys.BString;
+import javax.baja.ui.BDropDown;
+import javax.baja.ui.BListDropDown;
+import javax.baja.ui.BTextDropDown;
+import javax.baja.ui.list.BList;
+import javax.baja.workbench.fieldeditor.BWbFieldEditor;
+import nhaystack.BHDict;
+import nhaystack.BHFloor;
+import nhaystack.BHNum;
+import nhaystack.BHRef;
+import nhaystack.BHTimeZone;
+import nhaystack.BHUnit;
+import nhaystack.res.Resources;
+import nhaystack.server.BNHaystackService;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HMarker;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HUri;
+import org.projecthaystack.HVal;
 
 class Row
 {
@@ -61,62 +80,65 @@ class Row
     {
         BList list = names.getList();
         list.removeAllItems();
-        String[] tags = Resources.getKindTags(kind);
+        List<String> tags = new ArrayList<>(Arrays.asList(Resources.getKindTags(kind)));
 
         // smuggle navNameFormat into the dropdown
         if (kind.equals("Str"))
         {
-            Array arr = new Array(tags);
-            arr.add("navNameFormat");
-            tags = (String[]) arr.sort().trim();
+            tags.add("navNameFormat");
+            Collections.sort(tags);
         }
 
-        for (int i = 0; i < tags.length; i++)
+        for (String tag : tags)
         {
-            if (tags[i].equals("id")) continue;
-            if (tags[i].equals("siteRef")) continue;
-            if (tags[i].equals("equipRef")) continue;
+            if (tag.equals("id")) continue;
+            if (tag.equals("siteRef")) continue;
+            if (tag.equals("equipRef")) continue;
 
-            list.addItem(tags[i]);
+            list.addItem(tag);
         }
     }
 
     static BWbFieldEditor initValueFE(String kind)
     {
-        if (kind.equals("Marker"))
+        switch (kind)
         {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            fe.setReadonly(true);
-            return fe;
+            case "Marker":
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.DEFAULT);
+                fe.setReadonly(true);
+                return fe;
+            }
+            case "Number":
+            {
+                BWbFieldEditor fe = new BHNumFE();
+                fe.loadValue(BHNum.DEFAULT);
+                return fe;
+            }
+            case "Str":
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.DEFAULT);
+                return fe;
+            }
+            case "Ref":
+            {
+                // because we removed siteRef and equipRef from the names dropdown,
+                // its OK to just use the default ord FE
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
+                fe.loadValue(BOrd.DEFAULT);
+                return fe;
+            }
+            case "Bool":
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
+                fe.loadValue(BBoolean.DEFAULT);
+                return fe;
+            }
+            default:
+                throw new IllegalStateException();
         }
-        else if (kind.equals("Number"))
-        {
-            BWbFieldEditor fe = new BHNumFE();
-            fe.loadValue(BHNum.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Str"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Ref"))
-        {
-            // because we removed siteRef and equipRef from the names dropdown,
-            // its OK to just use the default ord FE
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
-            fe.loadValue(BOrd.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Bool"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
-            fe.loadValue(BBoolean.DEFAULT);
-            return fe;
-        }
-        else throw new IllegalStateException();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -192,33 +214,36 @@ class Row
 
     private static BWbFieldEditor makeStrFE(String name, HStr str)
     {
-        if (name.equals("tz"))
+        switch (name)
         {
-            BWbFieldEditor fe = new BHTimeZoneFE();
-            fe.loadValue(BHTimeZone.make(HTimeZone.make(str.val)));
-            return fe;
-        }
-        else if (name.equals("unit"))
-        {
-            BWbFieldEditor fe = new BHUnitFE();
-            fe.loadValue(BHUnit.make(Resources.getSymbolUnit(str.val).symbol));
-            return fe;
-        }
-        else if (name.equals("floorName"))
-        {
-            BWbFieldEditor fe = new BHFloorFE();
-            fe.loadValue(BHFloor.make(str.val));
-            return fe;
-        }
-        else
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.make(str.val));
+            case "tz":
+            {
+                BWbFieldEditor fe = new BHTimeZoneFE();
+                fe.loadValue(BHTimeZone.make(HTimeZone.make(str.val)));
+                return fe;
+            }
+            case "unit":
+            {
+                BWbFieldEditor fe = new BHUnitFE();
+                fe.loadValue(BHUnit.make(Resources.getSymbolUnit(str.val).symbol));
+                return fe;
+            }
+            case "floorName":
+            {
+                BWbFieldEditor fe = new BHFloorFE();
+                fe.loadValue(BHFloor.make(str.val));
+                return fe;
+            }
+            default:
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.make(str.val));
 
-            if (name.equals("weeklySchedule"))
-                fe.setReadonly(true);
+                if (name.equals("weeklySchedule"))
+                    fe.setReadonly(true);
 
-            return fe;
+                return fe;
+            }
         }
     }
 
@@ -230,7 +255,7 @@ class Row
         // create ord
         BOrd ord = BOrd.DEFAULT;
 
-        if (!(BHRef.make(ref).equals(BHRef.DEFAULT)))
+        if (!BHRef.make(ref).equals(BHRef.DEFAULT))
         {
             HDict dict = ((BHDict) editor.group().service().invoke(
                     BNHaystackService.readById, BHRef.make(ref))).getDict();
@@ -243,18 +268,18 @@ class Row
         }
 
         // create field editor
-        BWbFieldEditor fe = null;
-        if (name.equals("siteRef"))
+        BWbFieldEditor fe;
+        switch (name)
         {
+        case "siteRef":
             fe = new BSiteRefFE(editor.group());
-        }
-        else if (name.equals("equipRef"))
-        {
+            break;
+        case "equipRef":
             fe = new BEquipRefFE(editor.group());
-        }
-        else
-        {
+            break;
+        default:
             fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
+            break;
         }
 
         // load
@@ -273,7 +298,7 @@ class Row
 // Attribs
 ////////////////////////////////////////////////////////////////
 
-    BListDropDown kinds;
-    BTextDropDown names;
+    final BListDropDown kinds;
+    final BTextDropDown names;
     BWbFieldEditor fe;
 }

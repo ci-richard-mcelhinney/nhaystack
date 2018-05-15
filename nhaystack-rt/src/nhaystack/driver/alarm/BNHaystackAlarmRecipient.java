@@ -3,119 +3,142 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   26 Feb 2015  Mike Jarmy  Creation
+//   26 Feb 2015  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
+//                               replaced deprecated getScalar with getVal, added use of generics
 
 package nhaystack.driver.alarm;
 
-import java.util.logging.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.alarm.BAlarmRecipient;
+import javax.baja.alarm.BAlarmRecord;
+import javax.baja.alarm.BAlarmService;
+import javax.baja.alarm.BSourceState;
+import javax.baja.control.BControlPoint;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.SlotPath;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.util.BFormat;
+import javax.baja.util.BUuid;
+import nhaystack.BHDict;
+import nhaystack.NHRef;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.server.BNHaystackService;
+import nhaystack.util.SlotUtil;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.client.HClient;
+import org.projecthaystack.io.HZincReader;
 
-import javax.baja.alarm.*;
-import javax.baja.alarm.ext.*;
-import javax.baja.control.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-import org.projecthaystack.io.*;
-import nhaystack.*;
-import nhaystack.driver.*;
-import nhaystack.server.*;
-import nhaystack.util.*;
-
+@NiagaraType
+@NiagaraProperty(
+  name = "haystackServer",
+  type = "BOrd",
+  defaultValue = "BOrd.DEFAULT"
+)
+@NiagaraProperty(
+  name = "miscAlarmRef",
+  type = "String",
+  defaultValue = ""
+)
+@NiagaraProperty(
+  name = "haystackConnRef",
+  type = "String",
+  defaultValue = ""
+)
 public class BNHaystackAlarmRecipient
     extends BAlarmRecipient
 {
-    /*-
-    class BNHaystackAlarmRecipient
-    {
-        properties
-        {
-            haystackServer: BOrd default{[ BOrd.DEFAULT ]}
-            miscAlarmRef: String default{[ "" ]}
-            haystackConnRef: String default{[ "" ]}
-        }
-    }
-   -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(1587153237)1.0$ @*/
-/* Generated Fri Jun 12 08:14:38 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.alarm.BNHaystackAlarmRecipient(689562049)1.0$ @*/
+/* Generated Fri Nov 17 11:43:50 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackServer"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>haystackServer</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getHaystackServer
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setHaystackServer
+   * Slot for the {@code haystackServer} property.
+   * @see #getHaystackServer
+   * @see #setHaystackServer
    */
-  public static final Property haystackServer = newProperty(0, BOrd.DEFAULT,null);
+  public static final Property haystackServer = newProperty(0, BOrd.DEFAULT, null);
   
   /**
-   * Get the <code>haystackServer</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackServer
+   * Get the {@code haystackServer} property.
+   * @see #haystackServer
    */
   public BOrd getHaystackServer() { return (BOrd)get(haystackServer); }
   
   /**
-   * Set the <code>haystackServer</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackServer
+   * Set the {@code haystackServer} property.
+   * @see #haystackServer
    */
-  public void setHaystackServer(BOrd v) { set(haystackServer,v,null); }
+  public void setHaystackServer(BOrd v) { set(haystackServer, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "miscAlarmRef"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>miscAlarmRef</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getMiscAlarmRef
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setMiscAlarmRef
+   * Slot for the {@code miscAlarmRef} property.
+   * @see #getMiscAlarmRef
+   * @see #setMiscAlarmRef
    */
-  public static final Property miscAlarmRef = newProperty(0, "",null);
+  public static final Property miscAlarmRef = newProperty(0, "", null);
   
   /**
-   * Get the <code>miscAlarmRef</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmRef
+   * Get the {@code miscAlarmRef} property.
+   * @see #miscAlarmRef
    */
   public String getMiscAlarmRef() { return getString(miscAlarmRef); }
   
   /**
-   * Set the <code>miscAlarmRef</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#miscAlarmRef
+   * Set the {@code miscAlarmRef} property.
+   * @see #miscAlarmRef
    */
-  public void setMiscAlarmRef(String v) { setString(miscAlarmRef,v,null); }
+  public void setMiscAlarmRef(String v) { setString(miscAlarmRef, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackConnRef"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>haystackConnRef</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#getHaystackConnRef
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#setHaystackConnRef
+   * Slot for the {@code haystackConnRef} property.
+   * @see #getHaystackConnRef
+   * @see #setHaystackConnRef
    */
-  public static final Property haystackConnRef = newProperty(0, "",null);
+  public static final Property haystackConnRef = newProperty(0, "", null);
   
   /**
-   * Get the <code>haystackConnRef</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackConnRef
+   * Get the {@code haystackConnRef} property.
+   * @see #haystackConnRef
    */
   public String getHaystackConnRef() { return getString(haystackConnRef); }
   
   /**
-   * Set the <code>haystackConnRef</code> property.
-   * @see nhaystack.driver.alarm.BNHaystackAlarmRecipient#haystackConnRef
+   * Set the {@code haystackConnRef} property.
+   * @see #haystackConnRef
    */
-  public void setHaystackConnRef(String v) { setString(haystackConnRef,v,null); }
+  public void setHaystackConnRef(String v) { setString(haystackConnRef, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackAlarmRecipient.class);
 
@@ -124,6 +147,7 @@ public class BNHaystackAlarmRecipient
     /**
       * handleAlarm
       */
+    @Override
     public void handleAlarm(BAlarmRecord alarm)
     {
         try
@@ -186,7 +210,7 @@ public class BNHaystackAlarmRecipient
     /**
       * getAlarmFacetValue
       */
-    private String getAlarmFacetValue(BAlarmRecord alarm, String key)
+    private static String getAlarmFacetValue(BAlarmRecord alarm, String key)
     {
         if (key.equals("sourceOrd"))
             return alarm.getSource().toString();
@@ -221,7 +245,7 @@ public class BNHaystackAlarmRecipient
         hdb.add("priority",        alarm.getPriority());
         hdb.add("alarmText",       getAlarmFacetValue(alarm, BAlarmRecord.MSG_TEXT));
         hdb.add("instructions",    getAlarmFacetValue(alarm, BAlarmRecord.INSTRUCTIONS));
-        hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
+        hdb.add("haystackConnRef", new HZincReader(getHaystackConnRef()).readVal());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
@@ -246,7 +270,7 @@ public class BNHaystackAlarmRecipient
         hdb.add("priority",        alarm.getPriority());
         hdb.add("alarmText",       getAlarmFacetValue(alarm, BAlarmRecord.MSG_TEXT));
         hdb.add("instructions",    getAlarmFacetValue(alarm, BAlarmRecord.INSTRUCTIONS));
-        hdb.add("haystackConnRef", (new HZincReader(getHaystackConnRef())).readScalar());
+        hdb.add("haystackConnRef", new HZincReader(getHaystackConnRef()).readVal());
 
         return HGridBuilder.dictsToGrid(
             new HDict[] { hdb.toDict(), fetchAlarmClassTags(alarm) });
@@ -255,7 +279,7 @@ public class BNHaystackAlarmRecipient
     /**
       * fetchAlarmClassTags
       */
-    private HDict fetchAlarmClassTags(BAlarmRecord alarm)
+    private static HDict fetchAlarmClassTags(BAlarmRecord alarm)
     {
         // look up the extra tags on the alarm class, if any
         BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
@@ -275,13 +299,13 @@ public class BNHaystackAlarmRecipient
     /**
       * dumpAlarmRecord
       */
-    private void dumpAlarmRecord(BAlarmRecord alarm)
+    private static void dumpAlarmRecord(BAlarmRecord alarm)
     {
         System.out.println("--------------------------------------");
         BFacets facets = alarm.getAlarmData();
         String[] keys = facets.list();
-        for (int i = 0; i < keys.length; i++)
-            System.out.println(keys[i] + ", " + getAlarmFacetValue(alarm, keys[i]));
+        for (String key : keys)
+            System.out.println(key + ", " + getAlarmFacetValue(alarm, key));
     }
 
 ////////////////////////////////////////////////////////////////
@@ -293,7 +317,7 @@ public class BNHaystackAlarmRecipient
       */
     public void beginIgnore(BUuid alarmId)
     {
-        ignore.put(alarmId, alarmId);
+        ignore.put(alarmId, false);
     }
 
     /**
@@ -301,8 +325,7 @@ public class BNHaystackAlarmRecipient
       */
     private static boolean isIgnore(BUuid alarmId)
     {
-        boolean result = ignore.containsKey(alarmId);
-        return result;
+        return ignore.containsKey(alarmId);
     }
 
     /**
@@ -317,7 +340,7 @@ public class BNHaystackAlarmRecipient
 // attribs
 ////////////////////////////////////////////////////////////////
 
-    private static final ConcurrentHashMap ignore = new ConcurrentHashMap();
+    private static final ConcurrentHashMap<BUuid, Boolean> ignore = new ConcurrentHashMap<>();
 
     private static final Logger LOG = Logger.getLogger("nhaystack.driverAlarm");
 }
