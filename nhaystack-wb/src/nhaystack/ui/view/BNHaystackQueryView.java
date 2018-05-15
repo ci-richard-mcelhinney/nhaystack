@@ -45,7 +45,7 @@ import org.projecthaystack.HVal;
   * BNHaystackQueryView displays the Site-Equip-Point nav table.
   */
 @NiagaraType(
-  agent =   @AgentOn(
+  agent = @AgentOn(
     types = "nhaystack:NHaystackService"
   )
 )

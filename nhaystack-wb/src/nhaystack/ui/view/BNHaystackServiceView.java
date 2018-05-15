@@ -55,7 +55,7 @@ import nhaystack.site.BHSite;
   * BNHaystackServiceView is a view on BNHaystackService
   */
 @NiagaraType(
-  agent =   @AgentOn(
+  agent = @AgentOn(
     types = "nhaystack:NHaystackService"
   )
 )

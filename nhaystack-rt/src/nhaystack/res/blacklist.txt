@@ -1,0 +1,5 @@
+weeklySchedule
+navNameFormat
+schedulable
+geoLat
+geoLon

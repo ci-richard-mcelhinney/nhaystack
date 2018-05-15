@@ -7,8 +7,11 @@
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
 //   10 May 2018  Eric Anderson       Migrated to slot annotations, added missing @Overrides
 //                                    annotations
+//   14 May 2018  Rowyn Brunner       Added schema version and haystack slot conversion task
 //
 package nhaystack.server;
+
+import static nhaystack.server.HaystackSlotUtil.replaceHaystackSlot;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +22,7 @@ import javax.baja.nre.annotations.NiagaraAction;
 import javax.baja.nre.annotations.NiagaraProperty;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.nre.util.TextUtil;
+import javax.baja.space.BComponentSpace;
 import javax.baja.sys.Action;
 import javax.baja.sys.BAbstractService;
 import javax.baja.sys.BComponent;
@@ -109,6 +113,13 @@ import org.projecthaystack.client.CallNetworkException;
     type = "boolean",
     defaultValue = "false",
     flags = Flags.HIDDEN
+)
+
+@NiagaraProperty(
+    name = "schemaVersion",
+    type = "int",
+    defaultValue = "0",
+    flags = Flags.READONLY | Flags.HIDDEN
 )
 
 /**
@@ -447,6 +458,29 @@ public class BNHaystackService
   public void setTranslateEnums(boolean v) { setBoolean(translateEnums, v, null); }
 
 ////////////////////////////////////////////////////////////////
+// Property "schemaVersion"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the {@code schemaVersion} property.
+   * @see #getSchemaVersion
+   * @see #setSchemaVersion
+   */
+  public static final Property schemaVersion = newProperty(Flags.READONLY | Flags.HIDDEN, 0, null);
+  
+  /**
+   * Get the {@code schemaVersion} property.
+   * @see #schemaVersion
+   */
+  public int getSchemaVersion() { return getInt(schemaVersion); }
+  
+  /**
+   * Set the {@code schemaVersion} property.
+   * @see #schemaVersion
+   */
+  public void setSchemaVersion(int v) { setInt(schemaVersion, v, null); }
+
+////////////////////////////////////////////////////////////////
 // Action "readById"
 ////////////////////////////////////////////////////////////////
   
@@ -671,6 +705,10 @@ public class BNHaystackService
     public void serviceStarted() throws Exception
     {
         LOG.info("NHaystack Service started");
+        if (this.getSchemaVersion() == 0)
+        {
+            new Thread(this::replaceHaystackSlots).start();
+        }
         this.server = createServer();
     }
 
@@ -695,6 +733,32 @@ public class BNHaystackService
         {
             LOG.info("Delaying NHaystack initialization for " + initDelay);
             Clock.schedule(this, initDelay, initializeHaystack, null);
+        }
+    }
+
+    private void replaceHaystackSlots()
+    {
+        try
+        {
+            BComponentSpace componentSpace = Sys.getStation().getComponentSpace();
+            if (componentSpace == null)
+            {
+                return;
+            }
+
+            for (BComponent component : componentSpace.getAllComponents())
+            {
+                replaceHaystackSlot(component);
+            }
+
+            if (getSchemaVersion() < 1)
+            {
+                setSchemaVersion(1);
+            }
+        }
+        catch (Exception e)
+        {
+            LOG.log(Level.WARNING, e, () -> "Exception encountered replacing haystack slots within the station");
         }
     }
 
