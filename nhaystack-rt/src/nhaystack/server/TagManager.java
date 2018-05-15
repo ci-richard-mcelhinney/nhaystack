@@ -13,12 +13,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.baja.control.BBooleanPoint;
 import javax.baja.control.BControlPoint;
 import javax.baja.control.BEnumPoint;
 import javax.baja.control.BNumericPoint;
 import javax.baja.control.BStringPoint;
+import javax.baja.data.BIDataValue;
 import javax.baja.driver.BDevice;
 import javax.baja.history.BBooleanTrendRecord;
 import javax.baja.history.BEnumTrendRecord;
@@ -45,14 +47,25 @@ import javax.baja.status.BStatusNumeric;
 import javax.baja.status.BStatusString;
 import javax.baja.status.BStatusValue;
 import javax.baja.sys.Action;
+import javax.baja.sys.BBoolean;
 import javax.baja.sys.BComponent;
+import javax.baja.sys.BDouble;
 import javax.baja.sys.BEnumRange;
 import javax.baja.sys.BFacets;
+import javax.baja.sys.BFloat;
+import javax.baja.sys.BInteger;
+import javax.baja.sys.BLong;
+import javax.baja.sys.BMarker;
 import javax.baja.sys.BNumber;
 import javax.baja.sys.BObject;
+import javax.baja.sys.BString;
 import javax.baja.sys.BValue;
 import javax.baja.sys.Flags;
 import javax.baja.sys.Type;
+import javax.baja.tag.Id;
+import javax.baja.tag.Relation;
+import javax.baja.tag.Tag;
+import javax.baja.timezone.BTimeZone;
 import javax.baja.units.BUnit;
 import javax.baja.units.BUnitConversion;
 import javax.baja.util.BFormat;
@@ -60,6 +73,7 @@ import nhaystack.BHDict;
 import nhaystack.NHRef;
 import nhaystack.res.Resources;
 import nhaystack.res.Unit;
+import nhaystack.site.BHSite;
 import nhaystack.site.BHTagged;
 import nhaystack.util.SlotUtil;
 import org.projecthaystack.HBool;
@@ -67,6 +81,7 @@ import org.projecthaystack.HDict;
 import org.projecthaystack.HDictBuilder;
 import org.projecthaystack.HGrid;
 import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HMarker;
 import org.projecthaystack.HNum;
 import org.projecthaystack.HRef;
 import org.projecthaystack.HStr;
@@ -208,6 +223,27 @@ public class TagManager
         }
     }
 
+    /**
+     * Convert a given HRef to a BOrd
+     */
+    public static BOrd hrefToOrd(HRef hRef)
+    {
+        NHRef nh = NHRef.make(hRef);
+
+        // component space
+        if (nh.getSpace().equals(NHRef.COMP) ||
+            nh.getSpace().equals(NHRef.COMP_BASE64))
+        {
+            BOrd ord = BOrd.make("station:|" +
+                (nh.getSpace().equals(NHRef.COMP) ?
+                    "slot:" + SlotUtil.toNiagara(nh.getPath()) :
+                    Base64.URI.decodeUTF8(nh.getPath())));
+
+            return ord;
+        }
+        return BOrd.NULL;
+    }
+
     public static NHRef makeSlotPathRef(BComponent comp)
     {
         String path = comp.getSlotPath().toString();
@@ -223,6 +259,114 @@ public class TagManager
             NHRef.SEP, 
             SlotUtil.fromNiagara(
                 TextUtil.join(navPath, '/')));
+    }
+
+    /**
+     *  Generate a HDict tag representation of given component
+     */
+    public HDict generateComponentTags(BComponent comp)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+        for (Tag tag : comp.tags())
+        {
+            if (tag.getId().getDictionary().equals("hs"))
+            {
+                String tagName = tag.getId().getName();
+                BIDataValue tagValue = tag.getValue();
+                Type tagValueType = tagValue.getType();
+
+                // special processing for curVal
+                // don't add curVal tag if value is "null"
+                // TODO: May want to change BCurValTag behavior
+                if (tagName.equals("curVal") && tagValueType == BString.TYPE &&
+                    ((BString)tagValue).getString().equals("null"))
+                {
+                    continue;
+                }
+
+                if (tagName.equals("writeVal") && tagValueType == BString.TYPE &&
+                    ((BString)tagValue).getString().equals("null"))
+                {
+                    continue;
+                }
+
+                if (tagValueType == BMarker.TYPE)
+                {
+                    hdb.add(tagName, HMarker.VAL);
+                }
+                else if (tagValueType == BLong.TYPE)
+                {
+                    hdb.add(tagName, HNum.make(((BLong)tagValue).getLong()));
+                }
+                else if (tagValueType == BDouble.TYPE)
+                {
+                    hdb.add(tagName, HNum.make(((BDouble)tagValue).getDouble()));
+                }
+                else if (tagValueType == BFloat.TYPE)
+                {
+                    hdb.add(tagName, HNum.make(((BFloat)tagValue).getFloat()));
+                }
+                else if (tagValueType == BInteger.TYPE)
+                {
+                    hdb.add(tagName, HNum.make(((BInteger)tagValue).getInt()));
+                }
+                else if (tagValueType == BBoolean.TYPE)
+                {
+                    hdb.add(tagName, HBool.make(((BBoolean)tagValue).getBoolean()));
+                }
+                else if (tagValueType == BString.TYPE)
+                {
+                    hdb.add(tagName, HStr.make(((BString)tagValue).getString()));
+                }
+                else if (tagValueType == BTimeZone.TYPE)
+                {
+                    hdb.add(tagName, HStr.make(((BTimeZone)tagValue).getId()));
+                }
+                else if (tagValueType == BOrd.TYPE && tagName.equals("id"))
+                {
+                    hdb.add(tagName, makeComponentRef(comp).getHRef());
+                }
+                else if (tagValueType == BUnit.TYPE)
+                {
+                    if (tagName.equals("unit") && !((BUnit)tagValue).isNull())
+                    {
+                        hdb.add(tagName, ((BUnit)tagValue).getSymbol());
+                    }
+                }
+                else
+                {
+                    LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue);
+                }
+            }
+        }
+
+        return hdb.toDict();
+    }
+
+    /**
+     * Generate a HDict HRef tags representation of the given component haystack relations
+     */
+    public static HDict convertRelationsToRefTags(TagManager tagMgr, BComponent comp)
+    {
+        HDictBuilder hdb = new HDictBuilder();
+        for (Relation relation : comp.relations())
+        {
+            if (relation.getId().getDictionary().equals("hs"))
+            {
+                BComponent relationEndpoint = (BComponent) relation.getEndpoint();
+                LOG.fine(() -> "process relation: " + relation.getId() +
+                    (relation.isOutbound() ? " out " : " in ") + relationEndpoint.getSlotPath());
+
+                if (relation.isOutbound())
+                {
+                    String relName = relation.getId().getName();
+                    HRef hRef = tagMgr.makeComponentRef(relationEndpoint).getHRef();
+                    hdb.add(relName, hRef);
+                }
+            }
+        }
+
+        return hdb.toDict();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -257,16 +401,16 @@ public class TagManager
             return null;
         }
 
-        // history space
         if (comp instanceof BHistoryConfig)
         {
+            // history space
             BHistoryConfig cfg = (BHistoryConfig) comp;
             return spaceMgr.isVisibleHistory(cfg) ? 
                 cfg : null;
         }
-        // component space
         else if (comp instanceof BControlPoint)
         {
+            // component space
             return spaceMgr.lookupHistoryFromPoint((BControlPoint) comp);
         }
         else
@@ -294,6 +438,9 @@ public class TagManager
         }
         else
         {
+            hdb.add(generateComponentTags(comp));
+            hdb.add(convertRelationsToRefTags(this, comp));
+
             // add existing tags
             HDict tags = BHDict.findTagAnnotation(comp);
             if (tags == null) 
@@ -322,15 +469,24 @@ public class TagManager
 
             // dis
             String dis = createDis(comp, tags, hdb);
-            hdb.add("dis", dis);
+            // if the dis tag wasn't converted from niagara tags, add it the nhaystack way.
+            if (!hdb.has("dis"))
+            {
+                hdb.add("dis", dis);
+            }
 
-            // add id
-            HRef id = makeComponentRef(comp).getHRef();
-            hdb.add("id", HRef.make(id.val, dis));
+            // add id if it doesn't exist
+            if (!hdb.has("id"))
+            {
+                HRef id = makeComponentRef(comp).getHRef();
+                hdb.add("id", HRef.make(id.val, dis));
+            }
 
-            // add device
-            if (comp instanceof BDevice)
+            // add device if it doesn't exist
+            if (comp instanceof BDevice && !hdb.has("device"))
+            {
                 hdb.add("device", comp.getType().getModule().getModuleName());
+            }
         }
 
         // add custom tags
@@ -744,14 +900,27 @@ public class TagManager
             {
                 hdb.add("equipRef", makeComponentRef(equip).getHRef());
 
-                // try to look up  siteRef too
-                HDict equipTags = BHDict.findTagAnnotation(equip);
-                if (equipTags.has("siteRef"))
+                // try to look up siteRef too
+                HRef siteRef = null;
+                // check for hs:siteRef niagara relation on the equip component
+                Optional<Relation> optRelation = equip.relations().get(Id.newId("hs:siteRef"));
+                if (optRelation.isPresent())
                 {
-                    HRef siteRef = convertAnnotatedRefTag(equipTags.getRef("siteRef"));
-                    if (siteRef != null)
-                        hdb.add("siteRef", siteRef);
+                    BHSite site = (BHSite)optRelation.get().getEndpoint();
+                    siteRef = makeComponentRef(site).getHRef();
                 }
+
+                if (siteRef == null)
+                {
+                    HDict equipTags = BHDict.findTagAnnotation(equip);
+                    if (equipTags.has("siteRef"))
+                    {
+                        siteRef = convertAnnotatedRefTag(equipTags.getRef("siteRef"));
+                    }
+                }
+
+                if (siteRef != null)
+                    hdb.add("siteRef", siteRef);
             }
         }
     }
@@ -1067,25 +1236,33 @@ public class TagManager
         "axStatus",
 
         "actions",
+        "connection", //Niagara haystack implied tag
         "cur",
         "curStatus",
         "curVal",
         "dis",
+        "device",  //Niagara haystack implied tag
         "enum",
         "equip",
         "his",
+        "hisErr",   //Niagara haystack implied tag
         "hisInterpolate",
         "id",
         "kind",
         "maxVal",
         "minVal",
+        "network",    //Niagara haystack implied tag
         "navName",
         "point",
         "precision",
         "site",
         "tz",
         "unit",
-        "writable"
+        "writable",
+        "writeErr",  //Niagara haystack implied tag
+        "writeLevel",  //Niagara haystack implied tag
+        "writeStatus", //Niagara haystack implied tag
+        "writeVal"     //Niagara haystack implied tag
     };
 
     private static final Logger LOG = Logger.getLogger("nhaystack");

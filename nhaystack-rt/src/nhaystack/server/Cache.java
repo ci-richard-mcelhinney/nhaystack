@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.logging.Logger;
@@ -32,6 +33,9 @@ import javax.baja.sys.Context;
 import javax.baja.sys.Property;
 import javax.baja.sys.SlotCursor;
 import javax.baja.sys.Sys;
+import javax.baja.tag.Id;
+import javax.baja.tag.Relation;
+import javax.baja.tag.Relations;
 import nhaystack.BHDict;
 import nhaystack.NHRef;
 import nhaystack.collection.ComponentTreeIterator;
@@ -354,15 +358,21 @@ class Cache
     private void handleEquip(BComponent component, HDict tags, BHEquip curImplicitEquip)
     {
         // explicit equip
+        Optional<Relation> optRelation = component.relations().get(Id.newId("hs:equipRef"), Relations.OUT);
         if (tags.has("equipRef"))
         {
             HRef ref = tags.getRef("equipRef");
             BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
             addPointToEquip(equip, component);
         }
-        // implicit equip
+        else if (optRelation.isPresent())
+        {
+            BHEquip equip = (BHEquip)optRelation.get().getEndpoint();
+            addPointToEquip(equip, component);
+        }
         else
         {
+            // implicit equip
             if (curImplicitEquip != null)
             {
                 addPointToEquip(curImplicitEquip, component);
@@ -393,22 +403,31 @@ class Cache
     private void processEquip(BHEquip equip)
     {
         HDict equipTags = BHDict.findTagAnnotation(equip);
+        BHSite site = null;
         if (equipTags.has("siteRef"))
         {
             HRef ref = equipTags.getRef("siteRef");
-            BHSite site = (BHSite) server.getTagManager().lookupComponent(ref);
-            if (site != null)
+            site = (BHSite)server.getTagManager().lookupComponent(ref);
+        }
+        else  //check for niagara "hs:siteRef" relation to initialize site.
+        {
+            Optional<Relation> optRelation = equip.relations().get(Id.newId("hs:siteRef"));
+            if (optRelation.isPresent())
             {
-                addEquipToSite(site, equip);
-
-                // save the equip nav 
-                HDict siteTags = BHDict.findTagAnnotation(site);
-                equipNavs.put(
-                    Nav.makeEquipNavId(
-                        Nav.makeNavName(site, siteTags),
-                        Nav.makeNavName(equip, equipTags)),
-                    equip);
+                site = (BHSite)optRelation.get().getEndpoint();
             }
+        }
+        if (site != null)
+        {
+            addEquipToSite(site, equip);
+
+            // save the equip nav
+            HDict siteTags = BHDict.findTagAnnotation(site);
+            equipNavs.put(
+                Nav.makeEquipNavId(
+                    Nav.makeNavName(site, siteTags),
+                    Nav.makeNavName(equip, equipTags)),
+                equip);
         }
     }
 

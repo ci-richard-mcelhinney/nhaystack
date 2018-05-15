@@ -9,6 +9,8 @@
 
 package nhaystack.ui;
 
+import static nhaystack.server.HaystackSlotUtil.refactorHaystackSlot;
+
 import javax.baja.gx.BImage;
 import javax.baja.gx.BInsets;
 import javax.baja.naming.BOrd;
@@ -30,11 +32,11 @@ import javax.baja.ui.enums.BButtonStyle;
 import javax.baja.ui.pane.BBorderPane;
 import javax.baja.ui.pane.BEdgePane;
 import javax.baja.util.BServiceContainer;
-import javax.baja.util.Lexicon;
 import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import javax.baja.workbench.view.BWbComponentView;
 import nhaystack.BHDict;
 import nhaystack.server.BNHaystackService;
+import org.projecthaystack.HDict;
 
 /**
   * BHDictFE displays a BHDict, and allows editing via a BHDictEditor.
@@ -43,7 +45,7 @@ import nhaystack.server.BNHaystackService;
   * mounted somewhere inside of a BWbComponentView.
   */
 @NiagaraType(
-  agent =   @AgentOn(
+  agent = @AgentOn(
     types = "nhaystack:HDict"
   )
 )
@@ -88,13 +90,20 @@ public class BHDictFE extends BWbFieldEditor
         tags = (BHDict) value;
         textField.setText(tags.encodeToString());
 
-        this.comp = (BComponent) findParentView().getCurrentValue();
-        this.service = findService();
+        comp = (BComponent) findParentView().getCurrentValue();
+        service = findService();
     }
 
     @Override
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
+        // convert BHDict tags to niagara tags and relations on the cached component
+        // and return the modified BHDict
+        comp.lease();
+        // TODO Does the tag dictionary service really need to be leased?
+        ((BComponent)comp.getTagDictionaryService()).lease(Integer.MAX_VALUE);
+        HDict hDict = refactorHaystackSlot(comp, tags.getDict());
+        tags = BHDict.make(hDict);
         return tags;
     }
 
@@ -160,8 +169,6 @@ public class BHDictFE extends BWbFieldEditor
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
-
-    private static final Lexicon LEX = Lexicon.make("nhaystack");
 
     private static final int COLUMNS = 50;
     private static final BImage ARROW = BImage.make("module://icons/x16/arrowRight.png");

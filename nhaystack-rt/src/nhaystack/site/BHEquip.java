@@ -80,6 +80,8 @@ public class BHEquip extends BHTagged
     public HDict generateTags(NHServer server)
     {
         HDictBuilder hdb = new HDictBuilder();
+        hdb.add(server.getTagManager().generateComponentTags(this));
+        hdb.add(TagManager.convertRelationsToRefTags(server.getTagManager(), this));
 
         // add annotated
         HDict tags = getHaystack().getDict();
