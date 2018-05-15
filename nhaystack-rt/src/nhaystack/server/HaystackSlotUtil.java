@@ -25,6 +25,7 @@ import javax.baja.file.FilePath;
 import javax.baja.naming.BOrd;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BModule;
+import javax.baja.sys.BRelation;
 import javax.baja.sys.BSimple;
 import javax.baja.sys.Property;
 import javax.baja.tag.Entity;
@@ -163,7 +164,10 @@ public final class HaystackSlotUtil
 
                         if (!exists)
                         {
-                            componentRelations.add(relationId, refedComp);
+                            // Relation needs to be added with an endpoint ord because, if called
+                            // from workbench, the component is only a proxy component and will not
+                            // be marshaled back correctly.
+                            componentRelations.add(new BRelation(relationId, refedComp.getSlotPathOrd()));
                         }
                     }
                     else
