@@ -58,6 +58,11 @@ import org.projecthaystack.client.HClient;
   */
 @NiagaraType
 @NiagaraProperty(
+  name = "tls",
+  type = "boolean",
+  defaultValue = "false"
+)
+@NiagaraProperty(
   name = "internetAddress",
   type = "BInternetAddress",
   defaultValue = "BInternetAddress.NULL"
@@ -130,8 +135,8 @@ public class BNHaystackServer
     implements BINHaystackWorkerParent, BIPollable
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.BNHaystackServer(1816008879)1.0$ @*/
-/* Generated Mon Nov 20 15:02:37 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.driver.BNHaystackServer(3188354716)1.0$ @*/
+/* Generated Mon May 14 23:00:03 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "tls"
@@ -142,7 +147,7 @@ public class BNHaystackServer
    * @see nhaystack.driver.BNHaystackServer#getTls
    * @see nhaystack.driver.BNHaystackServer#setTls
    */
-  public static final Property tls = newProperty(0, ((BBoolean)(BBoolean.FALSE)).getBoolean(),null);
+  public static final Property tls = newProperty(0, false, null);
 
   /**
    * Get the <code>tls</code> property.
