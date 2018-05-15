@@ -8,6 +8,8 @@
 //
 package nhaystack.server;
 
+import static nhaystack.server.HaystackSlotUtil.replaceHaystackSlot;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -328,10 +330,10 @@ final class NHServerOps
             {
                 if (comp instanceof BHEquip)
                 {
-                    BHEquip toEquip = (BHEquip) comp;
-                    if (toEquip == from) continue;
+                    if (comp == from) continue;
 
-                    toEquip.setHaystack(cloneDict(from.getHaystack()));
+                    ((BHEquip)comp).setHaystack(cloneDict(BHDict.make(from.generateTags(server))));
+                    replaceHaystackSlot(comp);
                 }
                 else
                 {
@@ -344,7 +346,8 @@ final class NHServerOps
                     }
                     else if (toEquip == from) continue;
 
-                    toEquip.setHaystack(cloneDict(from.getHaystack()));
+                    toEquip.setHaystack(cloneDict(BHDict.make(from.generateTags(server))));
+                    replaceHaystackSlot(toEquip);
                 }
             }
 
@@ -498,6 +501,8 @@ final class NHServerOps
                 comp.add("haystack", BHDict.make(hdb.toDict()));
             else
                 comp.set("haystack", BHDict.make(hdb.toDict()));
+            replaceHaystackSlot(comp);
+
         }
 
         HDictBuilder hdb = new HDictBuilder();
@@ -540,6 +545,8 @@ final class NHServerOps
 
             HDict row = applyTagsToDict(origTags, newTags);
             target.set("haystack", BHDict.make(row));
+            replaceHaystackSlot(target);
+
             rows[i] = row;
         }
 
@@ -760,6 +767,7 @@ final class NHServerOps
                     equip.setHaystack(BHDict.make(hdb.toDict()));
                 }
                 target.add("equip", equip);
+                replaceHaystackSlot(equip);
             }
         }
 
@@ -804,6 +812,7 @@ final class NHServerOps
                 point.add("haystack", BHDict.make(hdb.toDict()));
             else
                 point.set("haystack", BHDict.make(hdb.toDict()));
+            replaceHaystackSlot(point);
         }
 
         HDictBuilder hdb = new HDictBuilder();
