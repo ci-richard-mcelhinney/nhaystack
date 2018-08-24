@@ -9,29 +9,57 @@
 
 package nhaystack.driver;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.alarm.BAlarmSourceInfo;
+import javax.baja.driver.BDevice;
+import javax.baja.driver.util.BIPollable;
+import javax.baja.driver.util.BPollFrequency;
+import javax.baja.naming.BOrd;
+import javax.baja.net.BInternetAddress;
+import javax.baja.nre.annotations.NiagaraAction;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.security.BPassword;
+import javax.baja.security.BUsernameAndPassword;
+import javax.baja.sys.Action;
+import javax.baja.sys.BAbsTime;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BRelTime;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Clock;
+import javax.baja.sys.Context;
+import javax.baja.sys.Flags;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.util.IFuture;
+import javax.baja.util.Invocation;
+import javax.baja.util.QueueFullException;
 import nhaystack.driver.history.BNHaystackHistoryDeviceExt;
 import nhaystack.driver.history.learn.BNHaystackLearnExpHistoriesJob;
 import nhaystack.driver.history.learn.BNHaystackLearnHistoriesJob;
 import nhaystack.driver.point.*;
 import nhaystack.driver.point.learn.*;
 import nhaystack.driver.worker.PingInvocation;
-import nhaystack.worker.*;
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import javax.baja.alarm.BAlarmSourceInfo;
-import javax.baja.driver.BDevice;
-import javax.baja.driver.util.*;
-import javax.baja.naming.BOrd;
-import javax.baja.net.BInternetAddress;
-import javax.baja.nre.annotations.*;
-import javax.baja.security.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-import java.security.*;
-import java.util.*;
-import java.util.logging.*;
-
+import nhaystack.worker.BINHaystackWorker;
+import nhaystack.worker.BINHaystackWorkerParent;
+import nhaystack.worker.BNHaystackWorker;
+import nhaystack.worker.WorkerChore;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HRow;
+import org.projecthaystack.HWatch;
+import org.projecthaystack.client.CallNetworkException;
+import org.projecthaystack.client.HClient;
 
 /**
  * BNHaystackServer models a device which is serving up haystack data
@@ -512,6 +540,12 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
 
   /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
+  public BNHaystackServer() {
+    super();
+    featureDetectExpiry = null;
+    supportsCrud = false;
+  }
+
   @Override
   public void changed(Property property, Context context)
   {
@@ -779,6 +813,72 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
     return (BNHaystackNetwork) getNetwork();
   }
 
+  /**
+   * Detect the features supported on the server.
+   */
+  public void detectFeatures()
+  {
+    /* Retrieve the 'ops' supported */
+    HClient client = getHaystackClient();
+    HGrid ops = client.ops();
+    Set<String> opsSet = new HashSet<String>();
+    Iterator it = ops.iterator();
+    while (it.hasNext())
+    {
+      HRow row = (HRow)it.next();
+      if (row.has("name"))
+      {
+        opsSet.add(row.getStr("name"));
+      }
+    }
+
+    /*
+     * read is part of the core Haystack API;
+     * create, update and delete are extensions.
+     */
+    supportsCrud = opsSet.contains("createRec")
+      && opsSet.contains("updateRec")
+      && opsSet.contains("deleteRec");
+
+    /*
+     * Update the expiry time
+     */
+    featureDetectExpiry = BAbsTime.make().add(FEATURE_DETECT_EXPIRY_TIME);
+  }
+
+  /**
+   * Return true if the feature detection information is current.
+   *
+   * @return  true if featureDetectExpiry is in the future
+   * @return  false if featureDetectExpiry is null or in the past
+   */
+  public boolean isFeatureDetectionValid()
+  {
+    if (featureDetectExpiry == null)
+    {
+      return false;
+    }
+
+    if (featureDetectExpiry.isAfter(BAbsTime.make()))
+    {
+      return true;
+    }
+
+    featureDetectExpiry = null;
+    return false;
+  }
+
+  /**
+   * Return true if the server supports CRUD (Create, Read, Update, Delete)
+   * operations.
+   */
+  public boolean isCrudSupported()
+  {
+    if (!isFeatureDetectionValid())
+      detectFeatures();
+    return supportsCrud;
+  }
+
 ////////////////////////////////////////////////////////////////
 // BINHaystackWorkerParent
 ////////////////////////////////////////////////////////////////
@@ -815,6 +915,8 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
       hwatch = null;
     }
 
+    featureDetectExpiry = null;
+
     if (isRunning() && LOG.isLoggable(Level.FINE))
     {
       LOG.fine(getHaystackUrl() + " reset client");
@@ -825,9 +927,32 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
 // attributes
 ////////////////////////////////////////////////////////////////
 
+  /**
+   * Feature detection expiry; after 5 minutes.
+   */
+  private static final BRelTime FEATURE_DETECT_EXPIRY_TIME
+    = BRelTime.makeMinutes(5);
+
   private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 
   private HClient hclient;
   private HWatch hwatch;
   private final Map<HRef, BNHaystackProxyExt> proxyExts = new HashMap<>();
+
+  /**
+   * The time of expiry for feature detection.
+   *
+   * If this is null or a time in the past, then we will need to poll the
+   * server's ops and about endpoints to determine what features are
+   * supported.
+   */
+  private BAbsTime featureDetectExpiry;
+
+  /**
+   * Whether or not the server supports CRUD (Create, Read, Update Delete)
+   * operations.
+   *
+   * This is determined by the feature detection code.
+   */
+  private boolean supportsCrud;
 }
