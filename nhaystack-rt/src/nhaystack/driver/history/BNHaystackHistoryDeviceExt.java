@@ -36,19 +36,24 @@ public class BNHaystackHistoryDeviceExt extends BHistoryDeviceExt
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    public final BNHaystackNetwork getNHaystackNetwork()
-    {
-        return (BNHaystackNetwork)getNetwork();
-    }
+  public final BNHaystackNetwork getNHaystackNetwork()
+  {
+    return (BNHaystackNetwork)getNetwork();
+  }
 
-    public final BNHaystackServer getHaystackServer()
-    {
-        return (BNHaystackServer) getDevice();
-    }
+  public final BNHaystackServer getHaystackServer()
+  {
+    return (BNHaystackServer) getDevice();
+  }
 
-    @Override
-    public Type getImportDescriptorType()
-    {
-        return BNHaystackHistoryImport.TYPE;
-    }
+  @Override
+  public Type getImportDescriptorType()
+  {
+    return BNHaystackHistoryImport.TYPE;
+  }
+
+  public Type getExportDescriptorType()
+  {
+    return BNHaystackHistoryExport.TYPE;
+  }
 }
