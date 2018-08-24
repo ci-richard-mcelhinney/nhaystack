@@ -10,6 +10,7 @@
 package nhaystack.driver;
 
 import nhaystack.driver.history.BNHaystackHistoryDeviceExt;
+import nhaystack.driver.history.learn.BNHaystackLearnExpHistoriesJob;
 import nhaystack.driver.history.learn.BNHaystackLearnHistoriesJob;
 import nhaystack.driver.point.*;
 import nhaystack.driver.point.learn.*;
@@ -51,6 +52,7 @@ import java.util.logging.*;
 @NiagaraProperty(name = "leaseInterval", type = "BRelTime", defaultValue = "BRelTime.make(2 * BRelTime.MINUTE.getMillis())")
 @NiagaraProperty(name = "structureSettings", type = "BStructureSettings", defaultValue = "new BStructureSettings()")
 @NiagaraAction(name = "submitLearnHistoriesJob", returnType = "BOrd", flags = Flags.HIDDEN)
+@NiagaraAction(name = "submitLearnExpHistoriesJob", returnType = "BOrd", flags = Flags.HIDDEN)
 @NiagaraAction(name = "submitLearnPointsJob", returnType = "BOrd", flags = Flags.HIDDEN)
 @NiagaraAction(name = "learnStructure", returnType = "BOrd")
 public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent, BIPollable
@@ -439,6 +441,22 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
   }
 
 ////////////////////////////////////////////////////////////////
+// Action "submitLearnExpHistoriesJob"
+////////////////////////////////////////////////////////////////
+
+  /**
+   * Slot for the {@code submitLearnExpHistoriesJob} action.
+   * @see #submitLearnExpHistoriesJob()
+   */
+  public static final Action submitLearnExpHistoriesJob = newAction(Flags.HIDDEN, null);
+
+  /**
+   * Invoke the {@code submitLearnExpHistoriesJob} action.
+   * @see #submitLearnExpHistoriesJob
+   */
+  public BOrd submitLearnExpHistoriesJob() { return (BOrd)invoke(submitLearnExpHistoriesJob, null, null); }
+
+////////////////////////////////////////////////////////////////
 // Action "submitLearnPointsJob"
 ////////////////////////////////////////////////////////////////
 
@@ -566,12 +584,14 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
       HClient client = getHaystackClient();
       client.about();
       pingOk();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       resetClient();
       pingFail(e.getMessage());
       throw new BajaRuntimeException(e);
-    } finally
+    }
+    finally
     {
       if (LOG.isLoggable(Level.FINE))
       {
@@ -588,6 +608,12 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
   public BOrd doSubmitLearnHistoriesJob()
   {
     BNHaystackLearnHistoriesJob job = new BNHaystackLearnHistoriesJob(this);
+    return job.submit(null);
+  }
+
+  public BOrd doSubmitLearnExpHistoriesJob()
+  {
+    BNHaystackLearnExpHistoriesJob job = new BNHaystackLearnExpHistoriesJob(this);
     return job.submit(null);
   }
 
@@ -643,11 +669,13 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
     try
     {
       worker.enqueueChore(chore);
-    } catch (QueueFullException e)
+    }
+    catch (QueueFullException e)
     {
       e.printStackTrace();
       LOG.severe(getHaystackUrl() + " Cannot enqueue chore " + chore + ": QueueFullException");
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       e.printStackTrace();
       LOG.severe(getHaystackUrl() + " Cannot enqueue chore " + chore + ": " + e.getMessage());
