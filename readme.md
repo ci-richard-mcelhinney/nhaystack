@@ -684,6 +684,129 @@ enum tag is stored as a 'range' facet on the N4 ControlPoint.
 [curStatus]: http://project-haystack.org/tag/curStatus
 [curVal]: http://project-haystack.org/tag/curVal
 
+#### 7.1. Exporting history to another Project Haystack server
+
+The NHaystack client can be used to push history stored on the Niagara station
+to an upstream Project Haystack-compatible server.  This feature has been
+successfully tested on both NHaystack server and on VRT WideSky, but should
+work with any Project Haystack server.
+
+The NHaystack History Export Manager can be found by right-clicking on
+Histories beneath your Project Haystack server instance and selecting Views →
+NHaystack History Export Manager.  From here, clicking Discover will present
+you with a list of all the histories on the station.
+
+After selecting the histories of interest, click Add, and you'll be presented
+with a dialogue box listing the histories and the options to be set.
+
+From this form, each history must be associated with the `Ref` of the `point`
+to which it will write its historical data.  There are three ways this can be
+done.
+
+##### 7.1.1 Manual association of points via the Add form
+
+The lowest-common denominator method here is to use a standard Project
+Haystack client to get a list of valid points from your server, then manually
+copying the `id` of each `point` into the `Id` field on the Add form.
+
+This should work for any Project Haystack server.  The `point` is assumed to
+carry a `his` tag, be of the correct `kind` for the type of history being
+exported, and either carries a `tz` tag matching that of the history, or is on
+a server that supports time-zone conversion.
+
+For more detail on tagging assumptions, see section 7.1.2 below.
+
+##### 7.1.2 Automatic look-up using `axStation` and `axHistoryId`.
+
+Depending on the Project Haystack server, it may be easier to retrieve a list
+of histories from the station and tag the points so the station can find them.
+Such a list can be obtained from WorkPlace via the following procedure:
+
+1. Double click on your station's "History" space (it'll take you to a chart
+   view)
+2. Press CTRL+L to bring up the ORD dialogue
+3. At the end of the text field (after `history:`), add
+   `bql:select id, recordType, timeZone from /`
+4. From the File menu, select Export.
+5. Choose "Text to CSV" and "Save to File"
+6. Enter the path where you want the file and click OK.
+
+Filter out of that list the histories you want to upload.  To associate a
+history in this list to a point in your asset model, tag the point with the
+following two tags:
+
+* `axStation` (Str): should be the name of your Niagara station (as seen in
+  brackets in the WorkPlace navigation tree, e.g. `mystation`).
+* `axHistoryId` (Str): should be the ID of the history taken from your BQL
+  query dump.
+
+The `point` will also need to have `kind` and `tz` set up properly:
+
+* Histories of type `history:NumericTrendRecord` should be tagged with
+  `kind=="Number"`.  Ideally these should also be tagged `unit` (Str) with an
+  appropriate Project Haystack unit.
+* Histories of type `history:BooleanTrendRecord` should be tagged with
+  `kind=="Bool"`
+* Histories of type `history:EnumTrendRecord` should be tagged with
+  `kind=="Str"` and ideally should also be tagged `enum` (Str) with a
+  comma-separated list of valid enum values.
+* Histories of other types should be tagged with `kind=="Str"`.
+
+##### 7.1.3 Automatic creation of points
+
+If the server supports the `createRec` call, then points will be automatically
+created on the Project Haystack server.  The station will issue a HTTP POST
+instruction to the server's `createRec` endpoint with a single-row grid
+containing the following columns:
+
+* `name` (Str): This will be the name of the control point, or if that's not known,
+  the name of the history.
+* `dis` (Str): This will be the Display Name of the control point (or
+  history), or if those are blank/null/not known, the `name` of the new point.
+* `point` (Marker)
+* `his` (Marker)
+* `kind` (Str): The point kind; one of `Str`, `Bool` or `Number`, depending on
+  the type of history being exported.
+* `tz` (Str): The timezone of the history (this is set in the Add dialogue,
+  default is automatically determined from the history database).
+* `axStation` (Str): The name of the Niagara station exporting the history
+* `axHistoryId` (Str): The ID of the history being exported
+* `axSlotPath` (Str): If known, the slot path of the control point (may be
+  omitted if not known).
+* `unit` (Str): If known and history is a `NumericTrendRecord`, the
+  measurement unit for the control point
+* `enum` (Str): If known and history is a `EnumTrendRecord`, the list of valid
+  enumeration values for the control point
+
+It is assumed that `siteRef` and `equipRef` are optional and can be filled in
+later via other CRUD ops by the end user.  The `axStation` and `axHistoryId`
+should be used to obtain listings of the orphaned `point` entities so they can
+be associated with the correct `site` and `equip`.
+
+#### 7.2 Fine tuning payload sizes
+
+The number of records exported at a time can be tuned by configuring the
+Upload Size.  This is a count of the number of rows used in each `hisWrite`
+request.  It defaults to 10000, which depending on the server may work, or may
+result in a "Request Entity Too Large" error message from the server.
+
+In such cases, the driver will automatically divide this value by two and try
+again, so if the server experiences difficulty processing the set number of
+records, you'll see smaller payloads (5000, 2500, 1250, etc) attempted.  (It
+will not go any smaller than 1 record.)
+
+You can manually set this value to any payload size suits your requirements.
+
+#### 7.3 Setting an alternate start point
+
+By default, exports begin at the very first record in the history.  This can
+be configured via the "Upload From Time" field.  This specifies the start
+point for the very next export task.
+
+It can be used to "skip over" invalid data that was captured during the
+commissioning process, as well as to re-upload data in the event that data is
+lost or corrupted on the upstream Project Haystack server.
+
 ## Version History Notes
 ### Version 2.1.2
 - Small updates to this documentation file have been made for clarification
