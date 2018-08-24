@@ -34,6 +34,7 @@
   <!--nhaystack.driver.history-->
   <type class="nhaystack.driver.history.BNHaystackHistoryDeviceExt" name="NHaystackHistoryDeviceExt"/>
   <type class="nhaystack.driver.history.BNHaystackHistoryImport" name="NHaystackHistoryImport"/>
+  <type class="nhaystack.driver.history.BNHaystackHistoryExport" name="NHaystackHistoryExport"/>
   <!--nhaystack.driver.history.learn-->
   <type class="nhaystack.driver.history.learn.BNHaystackHistoryEntry" name="NHaystackHistoryEntry"/>
   <type class="nhaystack.driver.history.learn.BNHaystackLearnHistoriesJob" name="NHaystackLearnHistoriesJob"/>
