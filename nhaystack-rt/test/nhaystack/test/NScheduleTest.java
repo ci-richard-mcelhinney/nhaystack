@@ -16,7 +16,7 @@ import org.projecthaystack.util.*;
 /**
  * NScheduleTest
  */
-public class NScheduleTest
+public class NScheduleTest extends TestCore
 {
     final String URI = "http://localhost/haystack/";
     HClient client;
@@ -27,7 +27,7 @@ public class NScheduleTest
 
     public void test() throws Exception
     {
-        this.client = HClient.open(URI, "admin", "Abcde12345");
+        this.client = HClient.open(URI, "admin", "Vk3ldb237847");
 
         verifySchedule();
     }
