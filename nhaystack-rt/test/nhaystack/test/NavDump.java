@@ -10,7 +10,7 @@ package nhaystack.test;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
-public class NavDump
+public class NavDump extends TestCore
 {
     public NavDump(String uri, String user, String password, String strDepth)
     {
