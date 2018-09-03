@@ -21,7 +21,7 @@ public class TestCore
 //////////////////////////////////////////////////////////////////////////
 
     /** URI to the nhaystack_simple station */
-    protected final String SIMPLE_URI = "http://127.0.0.1:82/haystack/";
+    protected final String SIMPLE_URI = "http://localhost:82/haystack/";
 
     /** Valid username for nhaystack_simple station */
     protected final String SIMPLE_USER = "admin";
