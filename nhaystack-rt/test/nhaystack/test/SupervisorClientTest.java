@@ -48,8 +48,8 @@ public class SupervisorClientTest extends TestCore
     this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid grid = client.readAll("point");
 
-    for (int i = 0; i < grid.numRows(); i++)
-      System.out.println(i + ", " + grid.row(i).get("id"));
+//    for (int i = 0; i < grid.numRows(); i++)
+//      System.out.println(i + ", " + grid.row(i).get("id"));
 
     Assert.assertEquals(grid.numRows(), 11);
     Assert.assertEquals(grid.row(0).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.Sensor1"));
