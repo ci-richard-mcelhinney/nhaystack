@@ -389,12 +389,12 @@ public class NHServer extends HServer
 
                 HHisItem[] items = (HHisItem[]) arr.trim();
                 LOG.fine("Found " + recCounter + " items...");
-                LOG.fine("Start range check, is the found item (" + items[0].ts.millis() + ") after the queried item (" + range.start.millis() + ")?");
-                if (range.start.millis() < items[0].ts.millis())
-                    LOG.fine("Start range check passed!");
-                else
-                    LOG.fine("Start range check failed...");
-
+                if (items.length > 0)
+                {
+                    LOG.fine("Start range check, is the found item (" + items[0].ts.millis() + ") after the queried item (" + range.start.millis() + ")?");
+                    if (range.start.millis() < items[0].ts.millis()) LOG.fine("Start range check passed!");
+                    else LOG.fine("Start range check failed...");
+                }
                 // done
                 return items;
             }
