@@ -97,9 +97,10 @@ public class SimpleClientTest extends TestCore
     // non-secure
     this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HDict r = client.about();
-    Assert.assertEquals(r.getStr("haystackVersion"), "2.1");
+    Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
     Assert.assertEquals(r.getStr("productVersion"), "4.4.73.24");
+    Assert.assertEquals(r.getStr("moduleVersion"), "2.1.2");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -460,6 +461,11 @@ public class SimpleClientTest extends TestCore
 
     Assert.assertEquals(numVal(his.row(0)).unit, "°F");
 
+    his = client.hisRead(dict.id(), "2018-01-01");
+//    System.out.println("******************************** " + his.numRows());
+//    his.dump();
+    Assert.assertTrue(his.isEmpty());
+
     ///////////////////////////////////////////////
 
     dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
@@ -469,6 +475,12 @@ public class SimpleClientTest extends TestCore
 
     last = his.numRows()-1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
+
+    // test read with no data expected
+    his = client.hisRead(dict.id(), "2018-01-01");
+//    System.out.println("******************************** " + his.numRows());
+//    his.dump();
+    Assert.assertTrue(his.isEmpty());
 
     ///////////////////////////////////////////////
 
@@ -749,7 +761,7 @@ public class SimpleClientTest extends TestCore
 
   void verifyEx(Exception e)
   {
-    System.out.println(e.toString());
+//    System.out.println(e.toString());
     Assert.assertTrue(!e.toString().contains("Test failed"));
   }
 
