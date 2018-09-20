@@ -2,9 +2,8 @@
 
 ## ![NHaystack](docs/tag.png) NHaystack
 
-NHaystack is an open-source [Niagara AX](https://www.tridium.com/en/products-services/niagara-ax) 
-and [Niagara4](https://www.tridium.com/en/products-services/niagara4) module 
-that enables Niagara stations (JACE and WebSupervisor) to act as either servers 
+NHaystack is an open-source [Niagara4](https://www.tridium.com/en/products-services/niagara4)
+module that enables Niagara stations (JACE and WebSupervisor) to act as either servers
 _or_ clients in the [Project Haystack](http://project-haystack.org) format, via 
 a [RESTful](http://project-haystack.org/doc/Rest) protocol.  Using NHaystack, 
 external applications receive data that includes essential meta data (tags) 
@@ -20,47 +19,52 @@ NHaystack-as-a-server also streamlines the process of adding user-specified
 Haystack tags to Niagara systems, by providing a GUI tool that allows users to 
 add the tags directly to Niagara components. Once tags have been defined, the 
 data associated with the Niagara components, including the tags, are available 
-over the Rest communications interface. This combination of the tagging tool 
+over the REST communications interface. This combination of the tagging tool
 and the Haystack protocol "engine" reduces the effort involved in connecting 
 Niagara data to external software applications.
 
-NHaystack can also act as a Haystack client, via an AX driver that models
-remote servers as AX devices. This allows haystack devices to exist "underneath"
-AX stations.  See Section 7 of this document for an explanation of how that works.
+NHaystack can also act as a Haystack client, via a Niagara 4 driver that models
+remote servers as Niagara devices. This allows Haystack devices to exist "underneath"
+stations.  See Section 7 of this document for an explanation of how that works.
 
 NHaystack is licensed under the
 [Academic Free License ("AFL") v. 3.0](http://opensource.org/licenses/AFL-3.0).
 
 The development of NHaystack has been funded by 
-[J2 Innovations](http://www.j2inn.com).  
+[J2 Innovations](http://www.j2inn.com) and
+[Conserve It](http://www.conserveit.com.au).
+
+Further contributions have been made by:
+* Christian Tremblay, Servisys Inc.
+* Stuart Longland, VRT Systems
 
 ###Benefits
 
 * The ability to include meta data tags as part of Niagara data structures 
 allows external applications to automatically interpret the meaning of data 
 acquired from a Niagara system.
-* The Haystack HTTP protocol is efficient and includes features coalesce 
+* The Haystack HTTP protocol is efficient and includes features that coalesce
 requests to minimize network traffic and message size.
 * The NHaystack module includes extensive features under the covers to unify 
 real time and historical data structures in Niagara, which greatly simplifies 
 access to data, and presentation in third party applications.
-* The Haystack HTTP protocol tightly defines the relationship between client 
+* The Haystack REST API tightly defines the relationship between client 
 and server machines, allowing for third-parties to integrate easily with your 
 equipment and data.
 
 ###Key Features
 
-* Provides drop-in support for the Haystack protocol on an AX system.
+* Provides drop-in support for the Haystack REST API on a Niagara 4 system.
 * Unifies the Component and History namespaces
 * Allows for arbitrary queries of the station based on Haystack tags
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
-* Provides a standard AX driver so that remote Haystack servers can be modeled 
-inside of AX.
+* Provides a standard Niagara 4 driver so that remote Haystack servers can be 
+modeled inside of AX.
 
 ### 1. Using NHaystack as a server
 
-To get started with exposing an AX station as a haystack server, install 
-nhaystack.jar into an AX station.  Then open the nhaystack palette in 
+To get started with exposing a Niagara 4 station as a Haystack server, install 
+nhaystack-rt.jar into a Niagara 4 station.  Then open the nhaystack palette in 
 Workbench, and drag-and-drop the NHaystackService onto the "/Services" folder 
 of your station.
 
@@ -73,7 +77,7 @@ Many of the tags that are defined as being associated with `points`, like
 
 ### 2. How point recs are generated
 
-In Niagara AX, ControlPoints and Histories exist in separate namespaces. 
+In Niagara 4, ControlPoints and Histories exist in separate namespaces. 
 There is one object in the station database which represents the current state 
 of the point, (including its current value, actions to command it, and so 
 forth), and a different object to represent its historical log of 
@@ -85,7 +89,7 @@ which indicates the `point` has capability for subscription to its real-time
 current value, and it can have a `his` tag, which indicates that a 
 `point` is historized with a history log of timestamp/value pairs.
 
-NHaystack handles this mismatch by unifiying the AX namespaces.
+NHaystack handles this mismatch by unifiying the namespaces.
 It automatically maps ControlPoints and Histories together 
 so that only one Haystack rec is generated, with both a `cur` tag and a 
 `his` tag.  If only one of the objects is present, then either 
@@ -155,8 +159,8 @@ rec has a different `id` than the rec that has disappeared.
 #### 2.2 A more complex station
 
 Now lets look at a more complex station -- one that is similar to what
-one often sees on an AX Supervisor.  A very frequent case for supervisors is 
-that they just import lots of Histories from jaces.
+one often sees on a Niagara Supervisor.  A very frequent case for 
+supervisors is that they just import lots of Histories from jaces.
 
     ----        station:|slot:/Drivers/NiagaraNetwork/jace1/Histories/Remote_NumericWritable
     ----        station:|slot:/Drivers/NiagaraNetwork/jace1/Histories/Remote_BooleanWritable
@@ -173,7 +177,7 @@ This station has six recs:  two for the station's own audit and log Histories,
 and four for the imported Histories.  Note that the four NiagaraHistoryImport 
 objects do not have a `point` associated with them.
 
-Now lets change the station by importing the ControlPoints for the first jace,
+Now lets change the station by importing the ControlPoints for the first Jace,
 and running `rebuildCache`.  Here is what the station looks like now:
 
     {point,cur,his} station:|slot:/Drivers/NiagaraNetwork/jace1/points/NumericWritable
@@ -201,23 +205,24 @@ NiagaraHistoryDeviceExt, and the Histories found in the station's HistorySpace.
 If NHaystack creates a [cur][cur] tag, then it will also create a
 [curStatus][curStatus] tag, and (usually) a [curVal][curVal] tag.
 
-In AX, a Status value is a set of flags, and at least in theory a given Status
-can contain any combination of the flags.  However, in the haystack tagging
+In N4, a Status value is a set of status flags and an associated value, 
+and at least in theory a given 
+Status can contain any combination of the flags.  However, in the haystack tagging
 system, `curStatus` always only has exactly one value -- one of "ok", "fault",
 "down", "disabled", or "unknown".
 
-NHaystack translates from an AX Status to curStatus by checking the following
-AX Status flags in order:
+NHaystack translates from an N4 Status to curStatus by checking the following
+N4 Status flags in order:
 
-    AX ok       maps to `curStatus`:"ok"
-    AX disabled maps to `curStatus`:"disabled"
-    AX fault    maps to `curStatus`:"fault"
-    AX down     maps to `curStatus`:"down
+    N4 ok       maps to `curStatus`:"ok"
+    N4 disabled maps to `curStatus`:"disabled"
+    N4 fault    maps to `curStatus`:"fault"
+    N4 down     maps to `curStatus`:"down
 
 *Anything else* (overridden, null, alarm, stale, unackedAlarm) is simply
 translated into `curStatus`:"ok".
 
-NHaystack creates a `curVal` tag *only* if `curStatus` is "ok" *and* the AX
+NHaystack creates a `curVal` tag *only* if `curStatus` is "ok" *and* the N4
 status is not null. This means that if a point in AX has the "null" status flag
 set, then it will be reported with a curStatus of "ok", but it will simply not
 have a curVal.
@@ -254,25 +259,24 @@ Whenever you alter a tag with the FieldEditor, you usually need to run
 `rebuildCache`. Its best to just get in the habit of running it any time you
 change a tag or alter the structure of a station.
 
-Note that tagging of Histories is not currently supported.  A future version
-of NHaystack will probably support this.
-
-### 3.2 A better Workbench Interface
+### 3.1 A better Workbench Interface
 The nHaystack Service View is really simple. There's no need to rebuild 
 everything but adding a few buttons add a lot of flexibility to the view. 
-I also modified the showed text so we can get rid of ~ codes and retrieve 
-familiar characters. For those who want to see ~ codes, just toggle de Codes vs Text button.
+The displayed text has also been modified so we can get rid of ~ codes and retrieve 
+familiar characters. For those who want to see ~ codes, just toggle the 
+Codes vs Text button.
 
 ![New service view](docs/service.PNG)
 
-If you change your local dictionnary file (local:|file:/C:/Users/USERNAME/Niagara4.2/tridium/shared/nHaystack/customTagsDict.csv) 
+If you change your local dictionary file 
+(local:|file:/C:/Users/<USERNAME>/Niagara4.<version>/tridium/shared/nHaystack/customTagsDict.csv) 
 just push the "Reload Custom Tag List" button and all new haystack slot will use 
 the new file to tag your points based on name.
 
-You can also click on the label "Edit your custom Tags" and you will be rediected to the workbench text editor.
-
-Note that if the file doesn't exist, you will get an error. To make this feature work, 
-create a folder named "nHaystack" in your shared folder. Then create a simple file named
+You can also click on the label "Edit your custom Tags" and you will be 
+redirected to the workbench text editor.  Note that if the file doesn't exist, 
+you will get an error. To make this feature work, create a folder named 
+"nHaystack" in your shared folder. Then create a simple file named 
 customTagsDict.csv.
 
 The format of the file is the following ::
