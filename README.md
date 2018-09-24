@@ -1,5 +1,5 @@
 <link href="markdown.css" rel="stylesheet"/>
-
+ 
 ## ![NHaystack](docs/tag.png) NHaystack
 
 NHaystack is an open-source [Niagara4](https://www.tridium.com/en/products-services/niagara4)
@@ -59,7 +59,7 @@ equipment and data.
 * Allows for arbitrary queries of the station based on Haystack tags
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
 * Provides a standard Niagara 4 driver so that remote Haystack servers can be 
-modeled inside of AX.
+modelled inside of N4.
 
 ### 1. Using NHaystack as a server
 
@@ -223,7 +223,7 @@ N4 Status flags in order:
 translated into `curStatus`:"ok".
 
 NHaystack creates a `curVal` tag *only* if `curStatus` is "ok" *and* the N4
-status is not null. This means that if a point in AX has the "null" status flag
+status is not null. This means that if a point in N4 has the "null" status flag
 set, then it will be reported with a curStatus of "ok", but it will simply not
 have a curVal.
 
@@ -333,7 +333,7 @@ rec and a Device.  Any Device can have its `points` belong to more than one
 `equip`,  and any `equip` can have `points` from more than one Device.  
 
 This flexibility allows us to get away completely from the network-centric 
-view of the world that one finds in an AX Station.  You can create 
+view of the world that one finds in an N4 Station.  You can create 
 representations of your data that reflect the real-world equipment on your 
 site, rather than the layout of your controller network.
 
@@ -414,7 +414,7 @@ numbers of `equipRef` tags without having to visit every `point`.
 
 By the way, the reason that we added the `navNameFormat` to the `equip` was so
 that it would show up in our nav tree as "AHU1", rather than "my_equip". By
-default the `navName` of any object is just its AX displayName, but you
+default the `navName` of any object is just its N4 displayName, but you
 can rig the nav tree so that alternate names are used. This is important 
 because you must always ensure that all the children of a nav tree item
 have a unique `navName`.
@@ -488,7 +488,7 @@ that will make it easier for you to find the broken refs and fix them.
 
 #### 5.2 Using TimeZone Aliases
 
-Sometimes an AX TimeZone (a.k.a BTimeZone) do not map cleanly into a 
+Sometimes an N4 TimeZone (a.k.a BTimeZone) do not map cleanly into a 
 Haystack TimeZone (a.k.a HTimeZone).  This happens when the BTimeZone uses
 an offset-style TimeZone ID, like "GMT-05:00", rather than a valid 
 [Olson](https://en.wikipedia.org/wiki/Tz_database) 
@@ -503,7 +503,7 @@ In cases like this, NHaystack simply omits the `tz` tag for the historized
 However, NHaystack also allows you to  provide a custom mapping that overcomes 
 this problem, via the "timeZoneAliases" folder on your BHaystackService.  Go to 
 the nhaystack palette in Workbench, drag a "timeZoneAlias" onto the 
-"timeZoneAliases" folder, and configure it so that the bogus AX TimeZone ID, 
+"timeZoneAliases" folder, and configure it so that the bogus N4 TimeZone ID, 
 like "GMT-05:00", is mapped onto a proper HTimezone, such as 
 "America/New_York".  Now when NHaystack is attempting to generate the `tz` tag, 
 it will know how to proceed when it encounters non-Olson timezones.
@@ -566,8 +566,8 @@ Nhaystack no longer generates IDs with this form, but it can resolve them.
 
 ### 7. Using NHaystack as a client
 
-NHaystack can also model remote haystack servers as AX devices.  This is done 
-via a standard AX driver that maps the Haystack protocol into the AX driver 
+NHaystack can also model remote haystack servers as N4 devices.  This is done 
+via a standard N4 driver that maps the Haystack protocol into the N4 driver 
 framework.
 
 You do *not* need to have an NHaystackService installed in your station to do 
@@ -585,7 +585,7 @@ NHaystackServer.  The internetAddress adress should just be the hostname or IP
 address (plus a colon and then the port number if something other than port 
 80 is being used).  The uriPath should be of the form "api/myProjectName" if 
 the remote server is running FIN|Stack or SkySpark.  If the remote server is an 
-AX station that is running nhaystack-as-a-server, then the uriPath should 
+N4 station that is running nhaystack-as-a-server, then the uriPath should 
 simply be "haystack".
 
 After you've configured the NHaystackServer, manually do a ping to make sure its
@@ -597,7 +597,7 @@ Note that currently, the driver imports ["Str" points](http://project-haystack.o
 as Baja BStringPoint and BStringWritable objects, even if the haystack point
 has an enum tag which specifies a list allowable values.  BEnumPoint and 
 BEnumWritable objects are currently not created by the driver.  Instead, the 
-enum tag is stored as a 'range' facet on the AX ControlPoint.
+enum tag is stored as a 'range' facet on the N4 ControlPoint.
 
 [rec]: http://project-haystack.org/doc/TagModel#entities
 [structure]: http://project-haystack.org/doc/Structure
@@ -606,3 +606,10 @@ enum tag is stored as a 'range' facet on the AX ControlPoint.
 [curStatus]: http://project-haystack.org/tag/curStatus
 [curVal]: http://project-haystack.org/tag/curVal
 
+## Version History Notes
+### Version 2.1.2
+- Small updates to this documentation file have been made for clarification
+- This version contains a bug fix for when a `hisRead` was made and no records were 
+found.  Previously a NullPointerException was thrown, this is now handled and an 
+empty grid is returned as a response via the REST API.
+- This release has been tested with Niagara 4.4.73.24
