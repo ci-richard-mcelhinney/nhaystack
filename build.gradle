@@ -53,19 +53,19 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
 ///////////////////////////////////////////////////////////////////////////
 
 def srcList = [
-  'http://project-haystack.org/download/equip-points/ahu',
-  'http://project-haystack.org/download/equip-points/boiler',
-  'http://project-haystack.org/download/equip-points/chilledWaterPlant',
-  'http://project-haystack.org/download/equip-points/chiller',
-  'http://project-haystack.org/download/equip-points/coolingTower',
-  'http://project-haystack.org/download/equip-points/elecMeter',
-  'http://project-haystack.org/download/equip-points/heatExchanger',
-  'http://project-haystack.org/download/equip-points/hotWaterPlant',
-  'http://project-haystack.org/download/equip-points/steamPlant',
-  'http://project-haystack.org/download/equip-points/tank',
-  'http://project-haystack.org/download/equip-points/vav',
-  'http://project-haystack.org/download/equip-points/vfd',
-  'http://project-haystack.org/download/equip-points/zone']
+  'https://project-haystack.org/download/equip-points/ahu',
+  'https://project-haystack.org/download/equip-points/boiler',
+  'https://project-haystack.org/download/equip-points/chilledWaterPlant',
+  'https://project-haystack.org/download/equip-points/chiller',
+  'https://project-haystack.org/download/equip-points/coolingTower',
+  'https://project-haystack.org/download/equip-points/elecMeter',
+  'https://project-haystack.org/download/equip-points/heatExchanger',
+  'https://project-haystack.org/download/equip-points/hotWaterPlant',
+  'https://project-haystack.org/download/equip-points/steamPlant',
+  'https://project-haystack.org/download/equip-points/tank',
+  'https://project-haystack.org/download/equip-points/vav',
+  'https://project-haystack.org/download/equip-points/vfd',
+  'https://project-haystack.org/download/equip-points/zone']
 
 def targetList = [
   new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
@@ -91,9 +91,9 @@ task downloadTags (type: FilesDownload) {
 
 
 def resList = [
-  'http://project-haystack.org/download/tags.csv',
-  'http://project-haystack.org/download/tz.txt',
-  'http://project-haystack.org/download/units.txt']
+  'https://project-haystack.org/download/tags.csv',
+  'https://project-haystack.org/download/tz.txt',
+  'https://project-haystack.org/download/units.txt']
 
 def resTargetList = [
   new File('nhaystack-rt/src/nhaystack/res/tags.csv'),
