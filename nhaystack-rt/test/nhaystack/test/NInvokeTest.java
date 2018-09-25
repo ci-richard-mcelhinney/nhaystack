@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
  * NInvokeTest
  */
 @Test
-public class NInvokeTest
+public class NInvokeTest extends TestCore
 {
   final String URI = "http://localhost:82/haystack/";
 
@@ -29,7 +29,7 @@ public class NInvokeTest
   @Test(enabled = true)
   public void test() throws Exception
   {
-    HClient client = HClient.open(URI, "admin", "abcd1234");
+    HClient client = HClient.open(URI, "admin", "Vk3ldb237847");
     verifyInvoke(client);
   }
 

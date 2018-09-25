@@ -13,18 +13,18 @@ niagaraModule {
 }
 
 dependencies {
-  compile "Tridium:nre:4.0.0"
-  compile "Tridium:baja:4.0.0"
-  compile "Tridium:alarm-rt:4.0.0"
-  compile "Tridium:driver-rt:4.0.0"
-  compile "Tridium:gx-rt:4.0.0"
-  compile "Tridium:control-rt:4.0.0"
-  compile "Tridium:driver-wb:4.0.0"
-  compile "Tridium:basicDriver-rt:4.0.0"
-  compile "Tridium:workbench-wb:4.0.0"
-  compile "Tridium:bajaui-wb:4.0.0"
-  compile "Tridium:gx-wb:4.0.0"
-  compile "Tridium:fox-rt:4.0.0"
+  compile "Tridium:nre:4.4.73.24"
+  compile "Tridium:baja:4.4.73.24"
+  compile "Tridium:alarm-rt:4.4.73.24"
+  compile "Tridium:driver-rt:4.4.73.24"
+  compile "Tridium:gx-rt:4.4.73.24"
+  compile "Tridium:control-rt:4.4.73.24"
+  compile "Tridium:driver-wb:4.4.73.24"
+  compile "Tridium:basicDriver-rt:4.4.73.24"
+  compile "Tridium:workbench-wb:4.4.73.24"
+  compile "Tridium:bajaui-wb:4.4.73.24"
+  compile "Tridium:gx-wb:4.4.73.24"
+  compile "Tridium:fox-rt:4.4.73.24"
 
   compile project(":nhaystack-rt")
 }

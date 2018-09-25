@@ -24,14 +24,13 @@ import static org.testng.Assert.fail;
  */
 
 @Test
-public class SimpleClientTest
+public class SimpleClientTest extends TestCore
 {
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
-  final String URI = "http://localhost:82/haystack/";
   HClient client;
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,7 +42,7 @@ public class SimpleClientTest
   {
     try
     {
-      this.client = HClient.open(URI, "admin", "abcd1234");
+      this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
       client.about();
     }
     catch(Exception e)
@@ -66,14 +65,14 @@ public class SimpleClientTest
   {
     // get bad credentials
     try
-    {  HClient.open(URI, "baduser", "badpass").about(); fail(); }
+    {  HClient.open(SIMPLE_URI, INVALID_USER, INVALID_PASS).about(); fail(); }
     catch (Exception e)
     {
       Assert.assertTrue(true);
     }
 
     try
-    {  HClient.open(URI, "admin", "badpass").about(); fail(); }
+    {  HClient.open(SIMPLE_URI, SIMPLE_USER, INVALID_PASS).about(); fail(); }
     catch (CallException e)
     {
       Assert.assertTrue(true);
@@ -81,7 +80,7 @@ public class SimpleClientTest
 
     try
     {
-      this.client = HClient.open(URI, "admin", "abcd1234");
+      this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
       client.about();
     }
     catch(Exception e)
@@ -96,11 +95,12 @@ public class SimpleClientTest
   void verifyAbout() throws Exception
   {
     // non-secure
-    this.client = HClient.open(URI, "admin", "abcd1234");
+    this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
     Assert.assertEquals(r.getStr("productVersion"), "4.4.73.24");
+    Assert.assertEquals(r.getStr("moduleVersion"), "2.1.2");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -110,7 +110,7 @@ public class SimpleClientTest
   @Test(enabled = true)
   public void verifyOps() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "abcd1234");
+    this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HGrid g = client.ops();
 
     // verify required columns
@@ -461,6 +461,11 @@ public class SimpleClientTest
 
     Assert.assertEquals(numVal(his.row(0)).unit, "°F");
 
+    his = client.hisRead(dict.id(), "2018-01-01");
+//    System.out.println("******************************** " + his.numRows());
+//    his.dump();
+    Assert.assertTrue(his.isEmpty());
+
     ///////////////////////////////////////////////
 
     dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
@@ -470,6 +475,12 @@ public class SimpleClientTest
 
     last = his.numRows()-1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
+
+    // test read with no data expected
+    his = client.hisRead(dict.id(), "2018-01-01");
+//    System.out.println("******************************** " + his.numRows());
+//    his.dump();
+    Assert.assertTrue(his.isEmpty());
 
     ///////////////////////////////////////////////
 
@@ -564,7 +575,7 @@ public class SimpleClientTest
   void manualPointWrite()
   {
     HRef ref = HRef.make("C.AHU2.NumericWritable");
-    this.client = HClient.open(URI, "admin", "abcd1234");
+    this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HGrid grid = client.pointWrite(ref, 10, "admin", HNum.make(222), null);
   }
 
@@ -572,7 +583,7 @@ public class SimpleClientTest
   void manualPointWriteLevelRelease()
   {
     HRef ref = HRef.make("C.AHU2.NumericWritable");
-    this.client = HClient.open(URI, "admin", "abcd1234");
+    this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HGrid grid = client.pointWrite(ref, 10, "admin", null, null);
   }
 
@@ -614,7 +625,7 @@ public class SimpleClientTest
       }
     }
 
-    grid = client.pointWrite(id, 10, "admin", null, null);
+    grid = client.pointWrite(id, 10, SIMPLE_USER, null, null);
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
@@ -750,7 +761,7 @@ public class SimpleClientTest
 
   void verifyEx(Exception e)
   {
-    System.out.println(e.toString());
+//    System.out.println(e.toString());
     Assert.assertTrue(!e.toString().contains("Test failed"));
   }
 

@@ -25,24 +25,23 @@ repositories {
 dependencies {
   compile fileTree(dir: 'lib', include: ['*.jar'])
 
-  compile "Tridium:nre:4.0.22"
-  compile "Tridium:alarm-rt:4.0.22"
-  compile "Tridium:baja:4.0.22"
-  compile "Tridium:bql-rt:4.0.22"
-  compile "Tridium:control-rt:4.0.22"
-  compile "Tridium:driver-rt:4.0.22"
-  compile "Tridium:fox-rt:4.0.22"
-  compile "Tridium:history-rt:4.0.22"
-  compile "Tridium:net-rt:4.0.22"
-  compile "Tridium:niagaraDriver-rt:4.0.22"
-  compile "Tridium:schedule-rt:4.0.22"
-  compile "Tridium:web-rt:4.0.22"
+  compile "Tridium:nre:4.4.73.24"
+  compile "Tridium:alarm-rt:4.4.73.24"
+  compile "Tridium:baja:4.4.73.24"
+  compile "Tridium:bql-rt:4.4.73.24"
+  compile "Tridium:control-rt:4.4.73.24"
+  compile "Tridium:driver-rt:4.4.73.24"
+  compile "Tridium:fox-rt:4.4.73.24"
+  compile "Tridium:history-rt:4.4.73.24"
+  compile "Tridium:net-rt:4.4.73.24"
+  compile "Tridium:niagaraDriver-rt:4.4.73.24"
+  compile "Tridium:schedule-rt:4.4.73.24"
+  compile "Tridium:web-rt:4.4.73.24"
 
-  niagaraModuleTestCompile "Tridium:test-se:4.0.0"
+  niagaraModuleTestCompile "Tridium:test-se:4.4.73.24"
 
   testCompile 'org.testng:testng:6.10'
-  testCompile 'Tridium:alarm-rt:4.0.22'
-//  testCompile 'org.mockito:mockito-core:2.+'
+  testCompile "Tridium:alarm-rt:4.4.73.24"
   testCompile fileTree(dir: 'lib', include: ['*.jar'])
 
   uberjar "javax.servlet:javax.servlet-api:3.0.1"

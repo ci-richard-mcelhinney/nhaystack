@@ -19,7 +19,7 @@ import static nhaystack.test.TestUtils.ts;
 /**
  * NSupervisorClientTest -- this test uses nhaystack_sup
  */
-public class SupervisorClientTest //extends TestUtils
+public class SupervisorClientTest extends TestCore
 {
     final String URI = "http://localhost:85/haystack/";
     HClient client;
@@ -29,7 +29,7 @@ public class SupervisorClientTest //extends TestUtils
     {
       try
       {
-        this.client = HClient.open(URI, "admin", "Abcde12345");
+        this.client = HClient.open(URI, "admin", "Vk3ldb237847");
       }
       catch(Exception e)
       {
@@ -45,11 +45,11 @@ public class SupervisorClientTest //extends TestUtils
   @Test(enabled = true)
   void verifySupRead()
   {
-    this.client = HClient.open(URI, "admin", "Abcde12345");
+    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid grid = client.readAll("point");
 
-    for (int i = 0; i < grid.numRows(); i++)
-      System.out.println(i + ", " + grid.row(i).get("id"));
+//    for (int i = 0; i < grid.numRows(); i++)
+//      System.out.println(i + ", " + grid.row(i).get("id"));
 
     Assert.assertEquals(grid.numRows(), 11);
     Assert.assertEquals(grid.row(0).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.Sensor1"));
@@ -253,7 +253,7 @@ public class SupervisorClientTest //extends TestUtils
   @Test(enabled = true)
   void verifySupHisRead()
   {
-    this.client = HClient.open(URI, "admin", "Abcde12345");
+    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid grid = client.readAll("his");
     Assert.assertEquals(grid.numRows(), 6);
 
@@ -286,7 +286,7 @@ public class SupervisorClientTest //extends TestUtils
   @Test(enabled = true)
   void verifySupWatches() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Abcde12345");
+    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
 
     // create new watch
     HWatch w = client.watchOpen("NHaystack Supervisor Test", HNum.make(120, "s"));
