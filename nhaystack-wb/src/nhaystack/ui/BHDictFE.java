@@ -3,14 +3,17 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   27 Jan 2013  Mike Jarmy     Creation
-//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
+//   27 Jan 2013  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides annotations
+//   26 Sep 2018  Andrew Saunders  Managing interaction with Niagara Haystack tags
 //
 
 package nhaystack.ui;
 
 import static nhaystack.server.HaystackSlotUtil.refactorHaystackSlot;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.baja.gx.BImage;
 import javax.baja.gx.BInsets;
 import javax.baja.naming.BOrd;
@@ -36,6 +39,7 @@ import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import javax.baja.workbench.view.BWbComponentView;
 import nhaystack.BHDict;
 import nhaystack.server.BNHaystackService;
+import nhaystack.server.HaystackSlotUtil;
 import org.projecthaystack.HDict;
 
 /**
@@ -100,9 +104,15 @@ public class BHDictFE extends BWbFieldEditor
         // convert BHDict tags to niagara tags and relations on the cached component
         // and return the modified BHDict
         comp.lease();
-        // TODO Does the tag dictionary service really need to be leased?
-        ((BComponent)comp.getTagDictionaryService()).lease(Integer.MAX_VALUE);
-        HDict hDict = refactorHaystackSlot(comp, tags.getDict());
+        for (String slotName : slotsToRemove)
+        {
+            try
+            {
+                comp.remove(slotName);
+            }
+            catch(Exception ignore) {}
+        }
+        HDict hDict = HaystackSlotUtil.refactorHaystackSlot(comp, tags.getDict());
         tags = BHDict.make(hDict);
         return tags;
     }
@@ -125,12 +135,13 @@ public class BHDictFE extends BWbFieldEditor
     private void edit()
     {
         BHDictEditorGroup edGroup = new BHDictEditorGroup(service, comp);
-
+        slotsToRemove = new ArrayList<>();
         BHDictDialog dialog = BHDictDialog.make(this, edGroup);
         dialog.setBoundsCenteredOnOwner();
         dialog.open();
 
         BHDict result = edGroup.getTags();
+        slotsToRemove = edGroup.slotsToRemove();
         if (result != null && !result.equals(tags))
         {
             tags = result;
@@ -138,6 +149,11 @@ public class BHDictFE extends BWbFieldEditor
             textField.relayout();
             setModified();
         }
+        else if(slotsToRemove.size() > 0) //this will catch the last direct tag removed.
+        {
+            setModified();
+        }
+
     }
 
     private BWbComponentView findParentView()
@@ -180,6 +196,8 @@ public class BHDictFE extends BWbFieldEditor
 
     private BComponent comp;
     private BNHaystackService service;
+
+    private List<String> slotsToRemove;
 
     private final Subscriber subscriber = new Subscriber()
     {
