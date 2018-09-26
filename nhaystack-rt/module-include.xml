@@ -1,11 +1,12 @@
 <!--
   Copyright (c) 2012, J2 Innovations
   Licensed under the Academic Free License version 3.0
- 
+
   History:
     07 Nov 2011  Richard McElhinney  Creation
     28 Sep 2012  Mike Jarmy          Ported from axhaystack
     10 May 2018  Eric Anderson       Re-built using Niagara annotations, removed UI component
+    26 Sep 2018  Andrew Saunders     Added Haystack slot conversion job
 -->
 
 <types>
@@ -61,6 +62,7 @@
   <type class="nhaystack.server.BTimeZoneAliasFolder" name="TimeZoneAliasFolder"/>
   <type class="nhaystack.server.BUniqueEquipTypeArgs" name="UniqueEquipTypeArgs"/>
   <type class="nhaystack.server.BUniqueEquipTypeJob" name="UniqueEquipTypeJob"/>
+  <type class="nhaystack.server.BNHaystackConvertHaystackSlotsJob" name="NHaystackConvertHaystackSlotsJob"/>
   <!--nhaystack.site-->
   <type class="nhaystack.site.BHEquip" name="HEquip"/>
   <type class="nhaystack.site.BHSite" name="HSite"/>

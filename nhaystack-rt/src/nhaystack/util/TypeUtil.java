@@ -3,8 +3,9 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   22 Mar 2013  Mike Jarmy     Creation
-//   09 May 2018  Eric Anderson  Added support for the BMarker baja type, added use of generics
+//   22 Mar 2013  Mike Jarmy       Creation
+//   09 May 2018  Eric Anderson    Added support for the BMarker baja type, added use of generics
+//   26 Sep 2018  Andrew Saunders  Added support for the geoCoord tag
 //
 package nhaystack.util;
 
@@ -37,6 +38,7 @@ import javax.baja.timezone.BTimeZone;
 import nhaystack.res.Resources;
 import nhaystack.res.Unit;
 import org.projecthaystack.HBool;
+import org.projecthaystack.HCoord;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HMarker;
 import org.projecthaystack.HNum;
@@ -82,6 +84,11 @@ public abstract class TypeUtil
         if (val instanceof HMarker)
         {
             return BMarker.MARKER;
+        }
+
+        if (val instanceof HCoord)
+        {
+            return BString.make(val.toString());
         }
 
         throw new IllegalStateException("Cannot convert " + 
