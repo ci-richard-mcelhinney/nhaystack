@@ -3,6 +3,9 @@
 //
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+//    26 Sep 2018  Andrew Saunders     Added dependency on tagdictionary to support Niagara
+//                                     Haystack tags
+//
 
 description = "nhaystack workbench module"
 
@@ -25,6 +28,7 @@ dependencies {
   compile "Tridium:bajaui-wb:4.4.73.24"
   compile "Tridium:gx-wb:4.4.73.24"
   compile "Tridium:fox-rt:4.4.73.24"
+  compile "Tridium:tagdictionary-rt:4.4.73.24"
 
   compile project(":nhaystack-rt")
 }

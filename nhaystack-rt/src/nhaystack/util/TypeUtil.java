@@ -5,13 +5,15 @@
 // History:
 //   22 Mar 2013  Mike Jarmy       Creation
 //   09 May 2018  Eric Anderson    Added support for the BMarker baja type, added use of generics
-//   26 Sep 2018  Andrew Saunders  Added support for the geoCoord tag
+//   26 Sep 2018  Andrew Saunders  Added support for the geoCoord tag, added fromBajaDataValue to
+//                                 support UI updates
 //
 package nhaystack.util;
 
 import java.util.Iterator;
 import java.util.Map;
 import javax.baja.control.BEnumWritable;
+import javax.baja.data.BIDataValue;
 import javax.baja.history.BHistoryConfig;
 import javax.baja.history.BIHistory;
 import javax.baja.history.HistorySpaceConnection;
@@ -35,6 +37,7 @@ import javax.baja.sys.BString;
 import javax.baja.sys.BValue;
 import javax.baja.sys.Context;
 import javax.baja.timezone.BTimeZone;
+import javax.baja.units.BUnit;
 import nhaystack.res.Resources;
 import nhaystack.res.Unit;
 import org.projecthaystack.HBool;
@@ -131,6 +134,37 @@ public abstract class TypeUtil
         }
         else
             throw new IllegalStateException("Cannot convert " + simple.getClass());
+    }
+
+    public static HVal fromBajaDataValue(BIDataValue dataValue)
+    {
+        if (dataValue instanceof BString)
+        {
+            return HStr.make(((BString)dataValue).getString());
+        }
+        else if (dataValue instanceof BNumber)
+        {
+            return HNum.make(((BNumber) dataValue).getDouble());
+        }
+        else if (dataValue instanceof BBoolean)
+        {
+            return HBool.make(((BBoolean) dataValue).getBoolean());
+        }
+        else if (dataValue instanceof BMarker)
+        {
+            return HMarker.VAL;
+        }
+        else if (dataValue instanceof BUnit)
+        {
+            if ( ((BUnit)dataValue).isNull() )
+                return null;
+            else
+            {
+                return HStr.make(((BUnit)dataValue).getSymbol());
+            }
+        }
+        else
+            throw new IllegalStateException("Cannot convert " + dataValue.getClass());
     }
 
     /**

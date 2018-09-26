@@ -6,7 +6,9 @@
     07 Nov 2011  Richard McElhinney  Creation
     28 Sep 2012  Mike Jarmy          Ported from axhaystack
     10 May 2018  Eric Anderson       Re-built using Niagara annotations, moved UI components from -rt module
-    26 Sep 2018  Andrew Saunders     Added field editor for the geoCoord tag
+    26 Sep 2018  Andrew Saunders     Added field editor for the geoCoord tag and reference
+                                     ords; added component chooser that accounts for
+                                     nhaystack visibility
 -->
 
 <types>
@@ -49,6 +51,8 @@
   </type>
   <type class="nhaystack.ui.BMarkerSet" name="MarkerSet"/>
   <type class="nhaystack.ui.BSiteRefFE" name="SiteRefFE"/>
+  <type class="nhaystack.ui.BRefOrdFE" name="RefOrdFE"/>
+  <type class="nhaystack.ui.BNHComponentChooser" name="NHComponentChooser"/>
   <type class="nhaystack.ui.BHCoordFE" name="HCoordFE"/>
   <!--nhaystack.ui.history-->
   <type class="nhaystack.ui.history.BNHaystackHistoryImportManager" name="NHaystackHistoryImportManager">
