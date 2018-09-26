@@ -253,7 +253,7 @@ public class Nav
             hdb.add("navId", comp.getSlotPath().toString());
         }
 
-        if (spaceMgr.isVisibleComponent(comp))
+        if (SpaceManager.isVisibleComponent(comp))
         {
             hdb.add(tagMgr.createComponentTags(comp));
         }
