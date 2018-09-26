@@ -1,3 +1,14 @@
+hs$3aarea=hs:area
+hs$3ageoAddr=hs:geoAddr
+hs$3ageoCity=hs:geoCity
+hs$3ageoCoord=hs:geoCoord
+hs$3ageoCountry=hs:geoCountry
+hs$3ageoPostalCode=hs:geoPostalCode
+hs$3ageoState=hs:geoState
+hs$3ageoStreet=hs:geoStreet
+hs$3asite=hs:site
+hs$3atz=hs:tz
+
 haystack.slot.conv.start=Checking for the haystack slot on {0} components
 haystack.slot.conv.end=Converted: {0} haystack slots.  Warnings: {1}, Errors {2}
 haystack.slot.conv.notInList={0}: The entry "{1}" is not in the white or black lists; it will remain in the haystack slot
