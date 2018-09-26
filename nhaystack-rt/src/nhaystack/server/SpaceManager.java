@@ -3,8 +3,9 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   04 Oct 2012  Mike Jarmy     Creation
-//   10 May 2018  Eric Anderson  Added missing @Overrides annotations, added use of generics
+//   04 Oct 2012  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Added missing @Overrides annotations, added use of generics
+//   26 Sep 2018  Andrew Saunders  Provided access to isVisibleComponent method from wb module
 //
 package nhaystack.server;
 
@@ -39,7 +40,7 @@ import org.projecthaystack.HDict;
   * the HistorySpace, including iterating through the spaces, and relating the
   * two spaces to each other.
   */
-class SpaceManager
+public class SpaceManager
 {
     SpaceManager(NHServer server)
     {
@@ -63,7 +64,7 @@ class SpaceManager
       * Return whether the given component
       * ought to be turned into a Haystack record.
       */
-    boolean isVisibleComponent(BComponent comp)
+    public static boolean isVisibleComponent(BComponent comp)
     {
         // check permissions on this Thread's saved context
         Context cx = ThreadContext.getContext(Thread.currentThread());
