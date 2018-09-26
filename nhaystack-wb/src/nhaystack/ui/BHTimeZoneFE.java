@@ -3,9 +3,11 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Feb 2013  Mike Jarmy     Creation
-//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
-//                               added use of generics
+//   01 Feb 2013  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides annotations,
+//                                 added use of generics
+//   05 Sep 2018  Andrew Saunders  Added support for String instead of BHTimeZone tag values; Niagara
+//                                 time zone tags are encoded as Strings
 //
 
 package nhaystack.ui;
@@ -21,6 +23,7 @@ import javax.baja.nre.annotations.NiagaraAction;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.Action;
 import javax.baja.sys.BObject;
+import javax.baja.sys.BString;
 import javax.baja.sys.Context;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
@@ -101,7 +104,15 @@ public class BHTimeZoneFE extends BWbFieldEditor
     @Override
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
-        HTimeZone tz = ((BHTimeZone) value).getTimeZone();
+        HTimeZone tz;
+        if (value instanceof BString)
+        {
+            tz = BHTimeZone.make(HTimeZone.make(((BString)value).getString())).getTimeZone();
+        }
+        else
+        {
+            tz = ((BHTimeZone)value).getTimeZone();
+        }
 
         String region = regionsByZone.get(tz.name);
         populateTzDropDown(region, tzDropDown);
@@ -116,7 +127,14 @@ public class BHTimeZoneFE extends BWbFieldEditor
     @Override
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
-        return BHTimeZone.make(HTimeZone.make((String) tzDropDown.getSelectedItem()));
+        if (value instanceof BString)
+        {
+            return BString.make(HTimeZone.make((String)tzDropDown.getSelectedItem()).name);
+        }
+        else
+        {
+            return BHTimeZone.make(HTimeZone.make((String) tzDropDown.getSelectedItem()));
+        }
     }
 
     public void doRegionsModified(BWidgetEvent event)
