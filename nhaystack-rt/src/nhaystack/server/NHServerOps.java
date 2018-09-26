@@ -3,12 +3,13 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   05 Jun 2014  Mike Jarmy     Creation
-//   10 May 2018  Eric Anderson  Added missing @Overrides annotations, added use of generics
+//   05 Jun 2014  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Added missing @Overrides annotations, added use of generics
+//   26 Sep 2018  Andrew Saunders  Added shared constants for siteRef and equipRef tag names
 //
 package nhaystack.server;
 
-import static nhaystack.server.HaystackSlotUtil.replaceHaystackSlot;
+import static nhaystack.server.HaystackSlotUtil.migrateHaystackTags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,7 @@ import nhaystack.BHDict;
 import nhaystack.BHGrid;
 import nhaystack.NHRef;
 import nhaystack.collection.ComponentTreeIterator;
+import nhaystack.util.NHaystackConst;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
 import nhaystack.site.BHTagged;
@@ -63,7 +65,7 @@ import org.projecthaystack.server.HServer;
 /**
   * Custom Ops for NHServer
   */
-final class NHServerOps
+final class NHServerOps implements NHaystackConst
 {
     private NHServerOps()
     {
@@ -333,7 +335,7 @@ final class NHServerOps
                     if (comp == from) continue;
 
                     ((BHEquip)comp).setHaystack(cloneDict(BHDict.make(from.generateTags(server))));
-                    replaceHaystackSlot(comp);
+                    HaystackSlotUtil.migrateHaystackTags(comp);
                 }
                 else
                 {
@@ -347,7 +349,7 @@ final class NHServerOps
                     else if (toEquip == from) continue;
 
                     toEquip.setHaystack(cloneDict(BHDict.make(from.generateTags(server))));
-                    replaceHaystackSlot(toEquip);
+                    HaystackSlotUtil.migrateHaystackTags(toEquip);
                 }
             }
 
@@ -501,7 +503,7 @@ final class NHServerOps
                 comp.add("haystack", BHDict.make(hdb.toDict()));
             else
                 comp.set("haystack", BHDict.make(hdb.toDict()));
-            replaceHaystackSlot(comp);
+            HaystackSlotUtil.migrateHaystackTags(comp);
 
         }
 
@@ -545,7 +547,7 @@ final class NHServerOps
 
             HDict row = applyTagsToDict(origTags, newTags);
             target.set("haystack", BHDict.make(row));
-            replaceHaystackSlot(target);
+            HaystackSlotUtil.migrateHaystackTags(target);
 
             rows[i] = row;
         }
@@ -761,13 +763,13 @@ final class NHServerOps
                 if (siteRef != null)
                 {
                     HDictBuilder hdb = new HDictBuilder();
-                    hdb.add("siteRef", siteRef);
+                    hdb.add(SITE_REF, siteRef);
                     hdb.add("navNameFormat", "%parent.displayName%");
 
                     equip.setHaystack(BHDict.make(hdb.toDict()));
                 }
                 target.add("equip", equip);
-                replaceHaystackSlot(equip);
+                HaystackSlotUtil.migrateHaystackTags(equip);
             }
         }
 
@@ -804,15 +806,15 @@ final class NHServerOps
                 hdb.add(oldDict);
 
             // add new tags
-            hdb.add("siteRef", siteRef);
-            hdb.add("equipRef", equipRef);
+            hdb.add(SITE_REF, siteRef);
+            hdb.add(EQUIP_REF, equipRef);
 
             // set new haystack slot
             if (point.get("haystack") == null)
                 point.add("haystack", BHDict.make(hdb.toDict()));
             else
                 point.set("haystack", BHDict.make(hdb.toDict()));
-            replaceHaystackSlot(point);
+            HaystackSlotUtil.migrateHaystackTags(point);
         }
 
         HDictBuilder hdb = new HDictBuilder();
@@ -882,7 +884,7 @@ final class NHServerOps
 
             // add site ref to equip tags
             HDictBuilder hdb = new HDictBuilder();
-            hdb.add("siteRef", siteRef);
+            hdb.add(SITE_REF, siteRef);
             equip.setHaystack(BHDict.make(hdb.toDict()));
 
             // add equip underneath site

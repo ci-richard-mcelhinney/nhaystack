@@ -3,9 +3,10 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy     Creation
-//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
-//                               added use of generics
+//   14 Apr 2014  Mike Jarmy       Creation
+//   08 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides
+//                                 annotations, added use of generics
+//   26 Sep 2018  Andrew Saunders  Added shared constants for siteRef and equipRef tag names
 
 package nhaystack.driver.point.learn;
 
@@ -27,6 +28,7 @@ import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import nhaystack.BHDict;
 import nhaystack.BHRef;
+import nhaystack.util.NHaystackConst;
 import nhaystack.driver.BHTags;
 import nhaystack.driver.BNHaystackServer;
 import nhaystack.driver.BPointGrouping;
@@ -66,7 +68,7 @@ import org.projecthaystack.client.HClient;
   * points from a remote haystack server, and puts them into a folder structure.
   */
 @NiagaraType
-public class BNHaystackLearnStructureJob extends BSimpleJob 
+public class BNHaystackLearnStructureJob extends BSimpleJob implements NHaystackConst
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.driver.point.learn.BNHaystackLearnStructureJob(2979906276)1.0$ @*/
@@ -214,13 +216,13 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
                 if (server.getHistories().get(hisName) == null)
                 {
                     // site name
-                    BHSite site = (BHSite) idComponents.get(rec.getRef("siteRef"));
+                    BHSite site = (BHSite) idComponents.get(rec.getRef(SITE_REF));
                     HDict d = site.getHaystack().getDict();
                     String siteName = d.has("dis") ?  d.getStr("dis") : d.getStr("navName");
                     siteName = SlotPath.escape(siteName);
 
                     // equip name
-                    BHEquip equip = (BHEquip) idComponents.get(rec.getRef("equipRef"));
+                    BHEquip equip = (BHEquip) idComponents.get(rec.getRef(EQUIP_REF));
                     d = equip.getHaystack().getDict();
                     String equipName = d.has("dis") ?  d.getStr("dis") : d.getStr("navName");
                     equipName = SlotPath.escape(equipName);
@@ -256,13 +258,13 @@ public class BNHaystackLearnStructureJob extends BSimpleJob
 
     private BHEquip createEquip(HDict rec, String name)
     {
-        BHSite site = (BHSite) idComponents.get(rec.getRef("siteRef"));
+        BHSite site = (BHSite) idComponents.get(rec.getRef(SITE_REF));
 
         BHEquip equip = new BHEquip();
 
         // create haystack dict, with ref to site
         HDictBuilder hdb = createHaystackDict(rec);
-        hdb.add("siteRef", TagManager.makeSlotPathRef(site).getHRef());
+        hdb.add(SITE_REF, TagManager.makeSlotPathRef(site).getHRef());
         hdb.add("navNameFormat", "%parent.displayName%");
         equip.setHaystack(BHDict.make(hdb.toDict()));
         idComponents.put(rec.id(), equip);

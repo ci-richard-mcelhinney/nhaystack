@@ -269,7 +269,10 @@ class NHWatch extends HWatch
         if (LOG.isLoggable(Level.FINE))
             LOG.fine("NHWatch.close " + watchId);
 
-        if (timeout != null) timeout.cancel();
+        if (timeout != null)
+            timeout.cancel();
+
+        timer.cancel();
         open = false;
 
         subscriber.unsubscribeAll();
@@ -338,7 +341,8 @@ class NHWatch extends HWatch
 
     private void scheduleLeaseTimeout()
     {
-        if (timeout != null) timeout.cancel();
+        if (timeout != null)
+            timeout.cancel();
 
         timer.schedule(timeout = new Timeout(), leaseInterval);
     }

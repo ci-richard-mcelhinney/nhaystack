@@ -3,8 +3,9 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   29 Mar 2013  Mike Jarmy     Creation
-//   09 May 2018  Eric Anderson  Added use of generics
+//   29 Mar 2013  Mike Jarmy       Creation
+//   09 May 2018  Eric Anderson    Added use of generics
+//   26 Sep 2018  Andrew Saunders  Added shared constants for siteRef and equipRef tag names
 //
 package nhaystack.server;
 
@@ -33,13 +34,13 @@ import javax.baja.sys.Context;
 import javax.baja.sys.Property;
 import javax.baja.sys.SlotCursor;
 import javax.baja.sys.Sys;
-import javax.baja.tag.Id;
 import javax.baja.tag.Relation;
 import javax.baja.tag.Relations;
 import nhaystack.BHDict;
 import nhaystack.NHRef;
 import nhaystack.collection.ComponentTreeIterator;
 import nhaystack.collection.HistoryDbIterator;
+import nhaystack.util.NHaystackConst;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
 import nhaystack.site.BHTagged;
@@ -49,7 +50,7 @@ import org.projecthaystack.HRef;
 /**
   * Cache stores various data structures that make it faster to look things up.
   */
-class Cache
+class Cache implements NHaystackConst
 {
     Cache(NHServer server, ScheduleManager schedMgr)
     {
@@ -358,10 +359,10 @@ class Cache
     private void handleEquip(BComponent component, HDict tags, BHEquip curImplicitEquip)
     {
         // explicit equip
-        Optional<Relation> optRelation = component.relations().get(Id.newId("hs:equipRef"), Relations.OUT);
-        if (tags.has("equipRef"))
+        Optional<Relation> optRelation = component.relations().get(ID_EQUIP_REF, Relations.OUT);
+        if (tags.has(EQUIP_REF))
         {
-            HRef ref = tags.getRef("equipRef");
+            HRef ref = tags.getRef(EQUIP_REF);
             BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
             addPointToEquip(equip, component);
         }
@@ -404,14 +405,14 @@ class Cache
     {
         HDict equipTags = BHDict.findTagAnnotation(equip);
         BHSite site = null;
-        if (equipTags.has("siteRef"))
+        if (equipTags.has(SITE_REF))
         {
-            HRef ref = equipTags.getRef("siteRef");
+            HRef ref = equipTags.getRef(SITE_REF);
             site = (BHSite)server.getTagManager().lookupComponent(ref);
         }
         else  //check for niagara "hs:siteRef" relation to initialize site.
         {
-            Optional<Relation> optRelation = equip.relations().get(Id.newId("hs:siteRef"));
+            Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
             if (optRelation.isPresent())
             {
                 site = (BHSite)optRelation.get().getEndpoint();

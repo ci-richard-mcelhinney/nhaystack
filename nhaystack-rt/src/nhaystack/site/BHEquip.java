@@ -3,8 +3,10 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   06 Feb 2013  Mike Jarmy     Creation
-//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
+//   06 Feb 2013  Mike Jarmy       Creation
+//   08 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides annotations
+//   26 Sep 2018  Andrew Saunders  Added shared constants
+//
 
 package nhaystack.site;
 
@@ -16,6 +18,7 @@ import javax.baja.sys.Property;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import nhaystack.BHDict;
+import nhaystack.util.NHaystackConst;
 import nhaystack.server.NHServer;
 import nhaystack.server.Nav;
 import nhaystack.server.TagManager;
@@ -34,7 +37,7 @@ import org.projecthaystack.HStr;
   defaultValue = "BHDict.make(\"navNameFormat:\\\"%parent.displayName%\\\"\")",
   override = true
 )
-public class BHEquip extends BHTagged
+public class BHEquip extends BHTagged implements NHaystackConst
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.site.BHEquip(2564166230)1.0$ @*/
@@ -114,9 +117,9 @@ public class BHEquip extends BHTagged
         String dis = navName;
 
         // site
-        if (tags.has("siteRef"))
+        if (tags.has(SITE_REF))
         {
-            BComponent site = server.getTagManager().lookupComponent(tags.getRef("siteRef"));
+            BComponent site = server.getTagManager().lookupComponent(tags.getRef(SITE_REF));
             if (site != null)
             {
                 HDict siteTags = BHDict.findTagAnnotation(site);
@@ -142,7 +145,7 @@ public class BHEquip extends BHTagged
     static
     {
         HDictBuilder hd = new HDictBuilder();
-        hd.add("siteRef", HRef.make("null"));
+        hd.add(SITE_REF, HRef.make("null"));
         hd.add("floorName", HStr.make(""));
         ESSENTIALS = hd.toDict();
     }
