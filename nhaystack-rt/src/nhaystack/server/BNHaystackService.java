@@ -8,10 +8,13 @@
 //   10 May 2018  Eric Anderson       Migrated to slot annotations, added missing @Overrides
 //                                    annotations
 //   14 May 2018  Rowyn Brunner       Added schema version and haystack slot conversion task
+//   26 Sep 2018  Andrew Saunders     Converted Haystack slot replacement to a job, added 
+//                                    Convert Haystack Slots action, handling conversion
+//                                    retries
 //
 package nhaystack.server;
 
-import static nhaystack.server.HaystackSlotUtil.replaceHaystackSlot;
+import static nhaystack.server.BNHaystackConvertHaystackSlotsJob.RETRY_UPGRADE_ON_RESTART;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,9 +25,9 @@ import javax.baja.nre.annotations.NiagaraAction;
 import javax.baja.nre.annotations.NiagaraProperty;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.nre.util.TextUtil;
-import javax.baja.space.BComponentSpace;
 import javax.baja.sys.Action;
 import javax.baja.sys.BAbstractService;
+import javax.baja.sys.BBoolean;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BIcon;
 import javax.baja.sys.BRelTime;
@@ -216,13 +219,23 @@ import org.projecthaystack.client.CallNetworkException;
     returnType = "BOrd",
     flags = Flags.OPERATOR|Flags.ASYNC
 )
-public class BNHaystackService 
+
+/**
+ * Convert haystack slot tags to Niagara tags and relations
+ */
+@NiagaraAction(
+    name = "convertHaystackSlots",
+    returnType = "BOrd",
+    flags = Flags.OPERATOR
+)
+
+public class BNHaystackService
     extends BAbstractService
     implements BINHaystackWorkerParent
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1484096566)1.0$ @*/
-/* Generated Mon May 14 23:00:03 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.server.BNHaystackService(2314774720)1.0$ @*/
+/* Generated Fri Jul 06 10:51:33 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -679,6 +692,24 @@ public class BNHaystackService
   public BOrd removeBrokenRefs() { return (BOrd)invoke(removeBrokenRefs, null, null); }
 
 ////////////////////////////////////////////////////////////////
+// Action "convertHaystackSlots"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the {@code convertHaystackSlots} action.
+   * Remove all the invalid refs
+   * @see #convertHaystackSlots()
+   */
+  public static final Action convertHaystackSlots = newAction(Flags.OPERATOR, null);
+  
+  /**
+   * Invoke the {@code convertHaystackSlots} action.
+   * Remove all the invalid refs
+   * @see #convertHaystackSlots
+   */
+  public BOrd convertHaystackSlots() { return (BOrd)invoke(convertHaystackSlots, null, null); }
+
+////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
@@ -705,10 +736,35 @@ public class BNHaystackService
     public void serviceStarted() throws Exception
     {
         LOG.info("NHaystack Service started");
-        if (this.getSchemaVersion() == 0)
+
+        // If the retryUpgradeOnRestart exists but is set to false, remove it.
+        // If it exists and is set to true, kick off the Haystack slot
+        // conversion job even if the schema version is already incremented.
+        BValue retryUpgradeOnRestart = get(RETRY_UPGRADE_ON_RESTART);
+        if (retryUpgradeOnRestart == null)
         {
-            new Thread(this::replaceHaystackSlots).start();
+            retryUpgradeOnRestart = BBoolean.FALSE;
         }
+        else if (!(retryUpgradeOnRestart instanceof BBoolean) ||
+                 !((BBoolean)retryUpgradeOnRestart).getBoolean())
+        {
+            // Property is not a BBoolean or is set to false; remove it
+            remove(RETRY_UPGRADE_ON_RESTART);
+            retryUpgradeOnRestart = BBoolean.FALSE;
+        }
+
+        int schemaVersion = getSchemaVersion();
+        if (schemaVersion == 0 || ((BBoolean)retryUpgradeOnRestart).getBoolean())
+        {
+            // If a future schema increment occurs but the retryUpgradeOnRestart
+            // is set to true, do not reset the schema version to 1.
+            if (schemaVersion < 1)
+            {
+                setSchemaVersion(1);
+            }
+            convertHaystackSlots();
+        }
+
         this.server = createServer();
     }
 
@@ -733,32 +789,6 @@ public class BNHaystackService
         {
             LOG.info("Delaying NHaystack initialization for " + initDelay);
             Clock.schedule(this, initDelay, initializeHaystack, null);
-        }
-    }
-
-    private void replaceHaystackSlots()
-    {
-        try
-        {
-            BComponentSpace componentSpace = Sys.getStation().getComponentSpace();
-            if (componentSpace == null)
-            {
-                return;
-            }
-
-            for (BComponent component : componentSpace.getAllComponents())
-            {
-                replaceHaystackSlot(component);
-            }
-
-            if (getSchemaVersion() < 1)
-            {
-                setSchemaVersion(1);
-            }
-        }
-        catch (Exception e)
-        {
-            LOG.log(Level.WARNING, e, () -> "Exception encountered replacing haystack slots within the station");
         }
     }
 
@@ -870,6 +900,19 @@ public class BNHaystackService
 
     public void doInitializeHaystack()
     {
+        // If slot conversion is in progress, set the
+        // initBlockedBySlotConversion so that the initializeHaystack action
+        // will be invoked once the slot conversion job is finished.
+        synchronized (slotConversionActivityLock)
+        {
+            if (slotConversionInProgress)
+            {
+                initBlockedBySlotConversion = true;
+                LOG.warning("Cannot initialize NHaystack server while haystack conversion job is in process.");
+                throw new RuntimeException("Haystack slot conversion job is in process.");
+            }
+        }
+
         LOG.info("Begin initializing NHaystack");
 
         getHaystackServer().getCache().rebuild(getStats());
@@ -888,6 +931,12 @@ public class BNHaystackService
     public BOrd doRemoveBrokenRefs()
     {
         BNHaystackRemoveBrokenRefsJob job = new BNHaystackRemoveBrokenRefsJob(this);
+        return job.submit(null);
+    }
+
+    public BOrd doConvertHaystackSlots()
+    {
+        BNHaystackConvertHaystackSlotsJob job = new BNHaystackConvertHaystackSlotsJob(this);
         return job.submit(null);
     }
 
@@ -930,6 +979,29 @@ public class BNHaystackService
         return niagaraNetwork;
     }
 
+    public void setSlotConversionInProgress(boolean value)
+    {
+        synchronized (slotConversionActivityLock)
+        {
+            slotConversionInProgress = value;
+        }
+    }
+
+    /**
+     * Returns true if the initializeHaystack action was cancelled because slot
+     * conversion was in progress.  Calling this method always clears the
+     * initBlockedBySlotConversion flag.
+     */
+    public boolean wasInitBlockedBySlotConversion()
+    {
+        synchronized (slotConversionActivityLock)
+        {
+            boolean result = initBlockedBySlotConversion;
+            initBlockedBySlotConversion = false;
+            return result;
+        }
+    }
+
 ////////////////////////////////////////////////////////////////
 // BINHaystackWorkerParent
 ////////////////////////////////////////////////////////////////
@@ -964,6 +1036,10 @@ public class BNHaystackService
     private static final Type[] SERVICE_TYPES = { TYPE };
 
     private NHServer server;
+
+    private final Object slotConversionActivityLock = new Object();
+    private boolean slotConversionInProgress;
+    private boolean initBlockedBySlotConversion;
 
     private BHistoryDatabase historyDb;
     private BDeviceNetwork niagaraNetwork;

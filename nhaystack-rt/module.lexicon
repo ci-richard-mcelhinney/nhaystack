@@ -1,0 +1,18 @@
+haystack.slot.conv.start=Checking for the haystack slot on {0} components
+haystack.slot.conv.end=Converted: {0} haystack slots.  Warnings: {1}, Errors {2}
+haystack.slot.conv.notInList={0}: The entry "{1}" is not in the white or black lists; it will remain in the haystack slot
+haystack.slot.conv.exception={0}: The tag "{1}" is on the white list but an exception was encountered; it will remain in the haystack slot
+haystack.slog.conv.replace.exception=Exception encountered replacing haystack slots within the station
+haystack.slot.conv.current={0}: Convert haystack slot, contents: {1}
+haystack.slot.conv.keepBlackListTag={0}: Keeping black list tag "{1}"
+haystack.slot.conv.refTag.noResolve={0}: Haystack href tag cannot be resolved locally: {1}
+haystack.slot.conv.invalid.value={0}: The tag "{1}" is on the white list but its value is not a BIDataValue. It will remain in the haystack slot
+haystack.slot.conv.noChange={0}: Haystack slot no change: {1}
+haystack.slot.conv.change={0}: Converted haystack slot: {1}
+haystack.slot.conv.initializeHaystack=Initialize NHaystackService after slot conversion.
+haystack.slot.conv.geoLatLon={0}: geoLat and geoLon tags converted to geoCoord tag: {1}
+haystack.slot.conv.geoCoord={0}: using existing Niagara geoCoord tag: {1}
+
+haystack.slot.conv.complete.errors=Job Completed with Errors
+haystack.slot.conv.complete.warnings=Job Completed with Warnings
+haystack.slot.conv.complete.noErrors=Job Completed with No Errors

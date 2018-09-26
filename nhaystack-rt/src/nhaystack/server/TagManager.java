@@ -6,6 +6,7 @@
 //   07 Nov 2011  Richard McElhinney  Creation
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
 //   10 May 2018  Eric Anderson       Added missing @Overrides annotations, added use of generics
+//   26 Sep 2018  Andrew Saunders     Added shared constants and handling for geoCoord tag
 //
 package nhaystack.server;
 
@@ -62,7 +63,6 @@ import javax.baja.sys.BString;
 import javax.baja.sys.BValue;
 import javax.baja.sys.Flags;
 import javax.baja.sys.Type;
-import javax.baja.tag.Id;
 import javax.baja.tag.Relation;
 import javax.baja.tag.Tag;
 import javax.baja.timezone.BTimeZone;
@@ -71,12 +71,14 @@ import javax.baja.units.BUnitConversion;
 import javax.baja.util.BFormat;
 import nhaystack.BHDict;
 import nhaystack.NHRef;
+import nhaystack.util.NHaystackConst;
 import nhaystack.res.Resources;
 import nhaystack.res.Unit;
 import nhaystack.site.BHSite;
 import nhaystack.site.BHTagged;
 import nhaystack.util.SlotUtil;
 import org.projecthaystack.HBool;
+import org.projecthaystack.HCoord;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HDictBuilder;
 import org.projecthaystack.HGrid;
@@ -94,7 +96,7 @@ import org.projecthaystack.util.Base64;
   * TagManager does various task associated with generating tags
   * and looking things up based on ids, etc.
   */
-public class TagManager
+public class TagManager implements NHaystackConst
 {
     TagManager(
         NHServer server,
@@ -170,7 +172,7 @@ public class TagManager
 
             if (!mustBeVisible) return comp;
 
-            return spaceMgr.isVisibleComponent(comp) ? comp : null;
+            return SpaceManager.isVisibleComponent(comp) ? comp : null;
 
         // history space
         case NHRef.HIS_BASE64:
@@ -316,7 +318,14 @@ public class TagManager
                 }
                 else if (tagValueType == BString.TYPE)
                 {
-                    hdb.add(tagName, HStr.make(((BString)tagValue).getString()));
+                    if (tagName.equals("geoCoord"))
+                    {
+                        hdb.add(tagName, HCoord.make(tagValue.toString()));
+                    }
+                    else
+                    {
+                        hdb.add(tagName, HStr.make(((BString)tagValue).getString()));
+                    }
                 }
                 else if (tagValueType == BTimeZone.TYPE)
                 {
@@ -432,15 +441,14 @@ public class TagManager
     HDict createComponentTags(BComponent comp)
     {
         HDictBuilder hdb = new HDictBuilder();
+        hdb.add(generateComponentTags(comp));
+        hdb.add(convertRelationsToRefTags(this, comp));
         if (comp instanceof BHTagged)
         {
             hdb.add(((BHTagged) comp).generateTags(server));
         }
         else
         {
-            hdb.add(generateComponentTags(comp));
-            hdb.add(convertRelationsToRefTags(this, comp));
-
             // add existing tags
             HDict tags = BHDict.findTagAnnotation(comp);
             if (tags == null) 
@@ -673,8 +681,17 @@ public class TagManager
       */
     private HRef convertAnnotatedRefTag(HRef ref)
     {
-        BComponent comp = lookupComponent(ref);
-
+        BComponent comp = null;
+        try
+        {
+            comp = lookupComponent(ref);
+        }
+        catch (Exception e)
+        {
+            // cannot resolve
+            return ref;
+        }
+        
         // note: its possible for the component to be null if e.g. its not
         // visible under the current Context.
         if (comp == null)
@@ -692,10 +709,10 @@ public class TagManager
 
         if (hdb.has("point"))
         {
-            String equipDis = lookupDisName(hdb, "equipRef");
+            String equipDis = lookupDisName(hdb, EQUIP_REF);
             if (equipDis != null)
             {
-                String siteDis = lookupDisName(hdb, "siteRef");
+                String siteDis = lookupDisName(hdb, SITE_REF);
                 if (siteDis != null)
                 {
                     dis = siteDis + ' ' + equipDis + ' ' + dis;
@@ -708,7 +725,7 @@ public class TagManager
         }
         else if (hdb.has("equip"))
         {
-            String siteDis = lookupDisName(hdb, "siteRef");
+            String siteDis = lookupDisName(hdb, SITE_REF);
             if (siteDis != null)
                 dis = siteDis + ' ' + dis;
         }
@@ -875,20 +892,21 @@ public class TagManager
         HDict tags)
     {
         // the point is explicitly tagged with an equipRef
-        if (tags.has("equipRef"))
+        // the hdb will contain an equipRef tag converted from a equipRef relation if it exist.
+        if (hdb.has(EQUIP_REF))
         {
-            BComponent equip = lookupComponent((HRef) tags.get("equipRef"));
+            BComponent equip = lookupComponent((HRef) hdb.get(EQUIP_REF));
 
             if (equip != null)
             {
+                // this will convert an existing siteRef relation to a siteRef tag in thie HDict equipTags
+                final HDict equipTags = convertRelationsToRefTags(this, equip);
                 // try to look up siteRef too
-                HDict equipTags = BHDict.findTagAnnotation(equip);
-
-                if (equipTags.has("siteRef"))
+                if (equipTags.has(SITE_REF))
                 {
-                    HRef siteRef = convertAnnotatedRefTag(equipTags.getRef("siteRef"));
+                    HRef siteRef = convertAnnotatedRefTag(equipTags.getRef(SITE_REF));
                     if (siteRef != null)
-                        hdb.add("siteRef", siteRef);
+                        hdb.add(SITE_REF, siteRef);
                 }
             }
         }
@@ -898,12 +916,12 @@ public class TagManager
             BComponent equip = server.getCache().getImplicitEquip(point);
             if (equip != null)
             {
-                hdb.add("equipRef", makeComponentRef(equip).getHRef());
+                hdb.add(EQUIP_REF, makeComponentRef(equip).getHRef());
 
                 // try to look up siteRef too
                 HRef siteRef = null;
                 // check for hs:siteRef niagara relation on the equip component
-                Optional<Relation> optRelation = equip.relations().get(Id.newId("hs:siteRef"));
+                Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
                 if (optRelation.isPresent())
                 {
                     BHSite site = (BHSite)optRelation.get().getEndpoint();
@@ -913,14 +931,14 @@ public class TagManager
                 if (siteRef == null)
                 {
                     HDict equipTags = BHDict.findTagAnnotation(equip);
-                    if (equipTags.has("siteRef"))
+                    if (equipTags.has(SITE_REF))
                     {
-                        siteRef = convertAnnotatedRefTag(equipTags.getRef("siteRef"));
+                        siteRef = convertAnnotatedRefTag(equipTags.getRef(SITE_REF));
                     }
                 }
 
                 if (siteRef != null)
-                    hdb.add("siteRef", siteRef);
+                    hdb.add(SITE_REF, siteRef);
             }
         }
     }
@@ -1236,22 +1254,19 @@ public class TagManager
         "axStatus",
 
         "actions",
-        "connection", //Niagara haystack implied tag
         "cur",
+        "curErr",
         "curStatus",
         "curVal",
         "dis",
-        "device",  //Niagara haystack implied tag
         "enum",
         "equip",
         "his",
-        "hisErr",   //Niagara haystack implied tag
         "hisInterpolate",
         "id",
         "kind",
         "maxVal",
         "minVal",
-        "network",    //Niagara haystack implied tag
         "navName",
         "point",
         "precision",
@@ -1259,10 +1274,9 @@ public class TagManager
         "tz",
         "unit",
         "writable",
-        "writeErr",  //Niagara haystack implied tag
-        "writeLevel",  //Niagara haystack implied tag
-        "writeStatus", //Niagara haystack implied tag
-        "writeVal"     //Niagara haystack implied tag
+        "writeErr",
+        "writeLevel",
+        "writeStatus"
     };
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
