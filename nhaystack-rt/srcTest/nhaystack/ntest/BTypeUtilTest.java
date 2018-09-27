@@ -77,16 +77,11 @@ public class BTypeUtilTest extends BTestNg
       Assert.assertEquals(res.getClass(), BBoolean.class);
       Assert.assertEquals(((BBoolean)res).getBoolean(), true);
 
-      try
-      {
-        System.out.println("  -- HMarker -> IllegalStateException");
-        TypeUtil.toBajaSimple(HMarker.VAL);
-        Assert.fail();
-      }
-      catch(Exception ise)
-      {
-        Assert.assertEquals(ise.getClass(), IllegalStateException.class);
-      }
+      // HMarker -> BMarker.MARKER
+      System.out.println("  -- HMarker -> BMarker.MARKER");
+      res = TypeUtil.toBajaSimple(HMarker.VAL);
+      Assert.assertEquals(res.getClass(), BMarker.class);
+      Assert.assertEquals((BMarker)res, BMarker.MARKER);
     }
     catch(IOException e)
     {
