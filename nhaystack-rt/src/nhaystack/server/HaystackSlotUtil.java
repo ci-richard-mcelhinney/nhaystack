@@ -57,6 +57,7 @@ public final class HaystackSlotUtil
     {
     }
 
+    private static final Lexicon LEX = Lexicon.make("nhaystack");
     private static final Logger LOG = Logger.getLogger("nhaystack");
 
     public static void migrateHaystackTags(BComponent component)
@@ -79,9 +80,13 @@ public final class HaystackSlotUtil
         {
             String logMsg = LEX.getText("haystack.slot.conv.replace.exception");
             if (job == null)
+            {
                 LOG.log(Level.WARNING, e, () -> logMsg);
+            }
             else
+            {
                 job.log().message(logMsg + ": " + e);
+            }
         }
     }
 
@@ -97,7 +102,7 @@ public final class HaystackSlotUtil
         return refactorHaystackSlot(component, dict, null);
     }
 
-    public static HDict refactorHaystackSlot(BComponent component, HDict dict, BNHaystackConvertHaystackSlotsJob job)
+    private static HDict refactorHaystackSlot(BComponent component, HDict dict, BNHaystackConvertHaystackSlotsJob job)
     {
         if (job != null)
         {
@@ -121,7 +126,7 @@ public final class HaystackSlotUtil
         @SuppressWarnings("unchecked")
         Iterator<Entry<String, HVal>> tags = (Iterator<Map.Entry<String, HVal>>)dict.iterator();
         // setup for geoLat & geoLon conversion
-        HCoord coord = null;
+        HCoord coord;
         if (dict.has(GEO_LAT) || dict.has(GEO_LON))
         {
             // an existing niagara geoCoord tag will override HDict geoLat, Lon, or Coord tags
@@ -216,7 +221,9 @@ public final class HaystackSlotUtil
                         for (BRelation relation : component.getComponentRelations())
                         {
                             if (!relation.getId().equals(relationId))
+                            {
                                 continue;
+                            }
                                 
                             Entity endpoint = relation.getEndpoint();
                             if (endpoint.equals(refedComp))
@@ -311,9 +318,13 @@ public final class HaystackSlotUtil
         if (job != null)
         {
             if (dict.equals(rtnValue))
+            {
                 job.log().message(LEX.getText("haystack.slot.conv.noChange", new Object[] {component.getSlotPath(), dict}));
+            }
             else
+            {
                 job.log().message(LEX.getText("haystack.slot.conv.change", new Object[] {component.getSlotPath(), rtnValue}));
+            }
         }
         return rtnValue;
     }
@@ -397,12 +408,27 @@ public final class HaystackSlotUtil
                 return true;
             }
         }
-        catch (Exception ignore)
+        catch (Exception e)
         {
-            ignore.printStackTrace();
+            e.printStackTrace();
         }
 
         return false;
+    }
+
+    private static Set<String> getWhitelist()
+    {
+        return ListHolder.whitelist;
+    }
+
+    private static Set<String> getBlacklist()
+    {
+        return ListHolder.blacklist;
+    }
+
+    private static Set<String> getTagGroupList()
+    {
+        return ListHolder.tagGroupList;
     }
 
     private static final class ListHolder
@@ -430,53 +456,35 @@ public final class HaystackSlotUtil
             blacklist = Collections.unmodifiableSet(tempBlacklist);
             tagGroupList = Collections.unmodifiableSet(tempTagGroupList);
         }
-    }
 
-    private static Set<String> getWhitelist()
-    {
-        return ListHolder.whitelist;
-    }
-
-    private static Set<String> getBlacklist()
-    {
-        return ListHolder.blacklist;
-    }
-
-    private static Set<String> getTagGroupList()
-    {
-        return ListHolder.tagGroupList;
-    }
-
-    /**
-     * Given the location of a list of tag names, get a set of those strings.
-     * Intended for use obtaining white and black lists of tags.
-     */
-    private static Set<String> getTagListFromFile(String fileName) throws Exception
-    {
-        BModule module = BNHaystackService.TYPE.getModule();
-        BIFile dataDir = module.findFile(new FilePath("/nhaystack/res"));
-        BIFile listFile = module.getChild(dataDir, fileName);
-        if (listFile == null)
+        /**
+         * Given the location of a list of tag names, get a set of those strings.
+         * Intended for use obtaining white and black lists of tags.
+         */
+        private static Set<String> getTagListFromFile(String fileName) throws Exception
         {
-            throw new Exception("Missing tag list file " + fileName);
-        }
-
-        Set<String> tagNames = new HashSet<>();
-        try
-        {
-            Scanner scanner = new Scanner(listFile.getInputStream());
-            while (scanner.hasNext())
+            BModule module = BNHaystackService.TYPE.getModule();
+            BIFile dataDir = module.findFile(new FilePath("/nhaystack/res"));
+            BIFile listFile = module.getChild(dataDir, fileName);
+            if (listFile == null)
             {
-                tagNames.add(scanner.next());
+                throw new Exception("Missing tag list file " + fileName);
             }
+
+            Set<String> tagNames = new HashSet<>();
+            try
+            {
+                Scanner scanner = new Scanner(listFile.getInputStream());
+                while (scanner.hasNext())
+                {
+                    tagNames.add(scanner.next());
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error loading tag list file " + fileName, e);
+            }
+            return tagNames;
         }
-        catch (Exception e)
-        {
-            throw new Exception("Error loading tag list file " + fileName, e);
-        }
-        return tagNames;
     }
-
-    private static final Lexicon LEX = Lexicon.make("nhaystack");
-
 }
