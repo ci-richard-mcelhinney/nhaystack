@@ -66,7 +66,7 @@ import org.projecthaystack.HTimeZone;
     name = "hs$3ageoCoord",
     type = "String",
     flags = Flags.METADATA,
-    defaultValue = "",
+    defaultValue = "\"C(0,0)\"",
     facets = @Facet(name = "BFacets.FIELD_EDITOR", value = "BString.make(\"nhaystack:HCoordFE\")")
 )
 @NiagaraProperty(
@@ -103,8 +103,8 @@ import org.projecthaystack.HTimeZone;
 public class BHSite extends BHTagged
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHSite(3789999108)1.0$ @*/
-/* Generated Tue Sep 04 10:05:15 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.site.BHSite(3540364429)1.0$ @*/
+/* Generated Thu Sep 27 17:29:58 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "hs$3aarea"
@@ -184,7 +184,7 @@ public class BHSite extends BHTagged
    * @see #getHs$3ageoCoord
    * @see #setHs$3ageoCoord
    */
-  public static final Property hs$3ageoCoord = newProperty(Flags.METADATA, "", BFacets.make(BFacets.FIELD_EDITOR, BString.make("nhaystack:HCoordFE")));
+  public static final Property hs$3ageoCoord = newProperty(Flags.METADATA, "C(0,0)", BFacets.make(BFacets.FIELD_EDITOR, BString.make("nhaystack:HCoordFE")));
   
   /**
    * Get the {@code hs$3ageoCoord} property.
