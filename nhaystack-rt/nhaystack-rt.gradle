@@ -39,7 +39,9 @@ dependencies {
   compile "Tridium:web-rt:4.4.73.24"
 
   niagaraModuleTestCompile "Tridium:test-se:4.4.73.24"
-
+  niagaraModuleTestCompile "Tridium:haystack-rt:4.4"
+  niagaraModuleTestCompile "Tridium:kitControl-rt:4.0.22"
+  
   testCompile 'org.testng:testng:6.10'
   testCompile "Tridium:alarm-rt:4.4.73.24"
   testCompile fileTree(dir: 'lib', include: ['*.jar'])
