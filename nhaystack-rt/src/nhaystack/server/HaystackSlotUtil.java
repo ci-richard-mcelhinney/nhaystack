@@ -173,8 +173,6 @@ public final class HaystackSlotUtil
             else if (tagGroupList.contains(tagName))
             {
                 // tagGroupId tags should be ignored
-                // TODO NCCB-34662 Change handling of tag groups- do not include in the haystack field editor at all
-                // and handle keeping or breaking it up here
                 continue;
             }
             else if (!whitelist.contains(tagName))
@@ -203,7 +201,6 @@ public final class HaystackSlotUtil
                         Id relationId = Id.newId(NAME_SPACE, tagName);
                         HRef href = (HRef)tag.getValue();
 
-                        // TODO NCCB-34661: Haystack refs that refer to an entity outside the station should be preserved in the haystack slot
                         BOrd refedOrd = TagManager.hrefToOrd(href);
                         if (refedOrd.isNull())
                         {
@@ -296,21 +293,6 @@ public final class HaystackSlotUtil
                 }
             }
         }
-
-        // TODO NCCB-34667: Remove outbound haystack relations that no longer have a corresponding href
-//        // check for relations that have been removed
-//        for (BRelation relation : relations)
-//        {
-//            if (relationMap.containsKey(relation.getName()))
-//                continue;
-//
-//            if (!relation.getId().getDictionary().equals("hs"))
-//                continue;
-//
-//            // TODO: Not sure it safe to actually remove the relation
-//            // Assumes all haystack relations were also HRef HDict tags.
-//            System.out.println("*** remove relation candidate: " + relation.getId() + "-->" /*+ ((BComponent)relation.getEndpoint()).getSlotPath()*/);
-//        }
 
         // Don't call isEmpty on HDictBuilder: if the internal map is
         // null, it throws a null pointer exception

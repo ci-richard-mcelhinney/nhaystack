@@ -6,7 +6,7 @@ Richard McElhinney  rmcelhinney@airmaster.com.au
 Christian Tremblay  christian.tremblay@servisys.com
 Stuart Longland     stuartl@vrt.com.au
 Andrew Saunders     asaunders@tridium.com
-Eric Anderson       eric.anderson3@tridium.com
+Eric Anderson       eanderson@tridium.com
 Rowyn Brunner       rowyn.brunner@tridium.com
 
 -----------------------------------------------------------------------------

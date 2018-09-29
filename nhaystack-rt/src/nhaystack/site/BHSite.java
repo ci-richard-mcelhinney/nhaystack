@@ -43,7 +43,6 @@ import org.projecthaystack.HTimeZone;
  */
 @SuppressWarnings("DollarSignInName")
 @NiagaraType
-
 @NiagaraProperty(
     name = "hs$3aarea",
     type = "double",
@@ -99,7 +98,6 @@ import org.projecthaystack.HTimeZone;
     flags = Flags.METADATA,
     defaultValue = "BMarker.DEFAULT"
 )
-
 public class BHSite extends BHTagged
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/

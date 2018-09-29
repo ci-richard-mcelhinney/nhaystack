@@ -124,12 +124,7 @@ public class BHaystackClientTest extends BStationTestBase
 
         services.add("LogHistoryService", new BLogHistoryService());
 
-//        BTagDictionaryService tagDictionaryService =
-//          addChild("TagDictionaryService", new BTagDictionaryService(), services);
-//        BHsTagDictionary haystackDictionary =
-//          addChild("Haystack", new BHsTagDictionary(), tagDictionaryService);
-//        haystackDictionary.importDictionary(null);
-
+        // Looking up the type through the registry so direct module dependencies are not required.
         final TypeInfo tdsTypeInfo = Sys.getRegistry().getType("tagdictionary:TagDictionaryService");
         final TypeInfo hstdTypeInfo = Sys.getRegistry().getType("haystack:HsTagDictionary");
         BComponent tagDictionaryService =
@@ -215,7 +210,6 @@ public class BHaystackClientTest extends BStationTestBase
     @Test(priority = 1)  // must be first test to run
     public void testConversionInitLockout() throws InterruptedException
     {
-//        openClient(); // just let stuff initialize.
         assertFalse(isSlotConversionInProgress(haystackService));
         final BOrd bOrd = haystackService.convertHaystackSlots();
         final BNHaystackConvertHaystackSlotsJob job = (BNHaystackConvertHaystackSlotsJob) bOrd.resolve(haystackService).get();
@@ -249,7 +243,6 @@ public class BHaystackClientTest extends BStationTestBase
             }
         }
         Thread.sleep(3000L); // provide some time for the convert job's initializeHaystack to complete.
-
     }
 
     @Test(priority = 10)
@@ -347,7 +340,6 @@ public class BHaystackClientTest extends BStationTestBase
         assertEquals(grid.row(11).get(SITE_REF_TAG_NAME), HRef.make("S.SiteB"));
         assertEquals(grid.row(14).get("axPointRef"), HRef.make("S.SiteA.EquipA.sineWave1"));
 
-        // TODO add check for equipRef to Equip2
         assertEquals(grid.row(2).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
         assertEquals(grid.row(3).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
         assertEquals(grid.row(4).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
@@ -532,20 +524,6 @@ public class BHaystackClientTest extends BStationTestBase
 
         grid = client.call("nav", makeNavGrid(HStr.make("sep:/SiteB/EquipA")));
         assertEquals(grid.numRows(), 0);
-
-//        HGridBuilder hb = new HGridBuilder();
-//        hb.addCol(FUNCTION_OP_NAME);
-//        hb.addCol("filter");
-//        hb.addRow(new HVal[]{HStr.make("makeDynamicWritable"), HStr.make("id")});
-//        try
-//        {
-//            grid = client.call("extended", hb.toGrid());
-//            grid.dump();
-//        }
-//        catch(Exception e)
-//        {
-//            e.printStackTrace();
-//        }
     }
 
 ////////////////////////////////////////////////////////////////////////////
