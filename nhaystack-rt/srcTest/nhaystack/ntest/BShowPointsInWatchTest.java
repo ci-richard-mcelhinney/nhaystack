@@ -71,15 +71,6 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
         equip1Folder.add("BW2", bw2);
     }
 
-    @BeforeTest(alwaysRun = true)
-    @Override
-    public void setupStation() throws Exception
-    {
-        super.setupStation();
-
-
-    }
-
     public void testAbout()
     {
         HDict r = hClient.about();

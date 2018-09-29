@@ -73,9 +73,13 @@ public abstract class TypeUtil
             {
                 Unit unit = Resources.getSymbolUnit(num.unit);
                 if (unit.quantity.equals("time"))
+                {
                     return makeRelTime(num, unit);
+                }
                 else
+                {
                     return BDouble.make(num.val);
+                }
             }
         }
 
@@ -100,18 +104,19 @@ public abstract class TypeUtil
 
     private static BRelTime makeRelTime(HNum num, Unit unit)
     {
-        if      (unit.name.equals("nanosecond"))        return BRelTime.make((long) (num.val / 1000 / 1000));
-        else if (unit.name.equals("microsecond"))       return BRelTime.make((long) (num.val / 1000));
-        else if (unit.name.equals("millisecond"))       return BRelTime.make((long) num.val);
-        else if (unit.name.equals("hundredths_second")) return BRelTime.make((long) (num.val * 10));
-        else if (unit.name.equals("tenths_second"))     return BRelTime.make((long) (num.val * 100));
-        else if (unit.name.equals("second"))            return BRelTime.makeSeconds ((int) num.val);
-        else if (unit.name.equals("minute"))            return BRelTime.makeMinutes ((int) num.val);
-        else if (unit.name.equals("hour"))              return BRelTime.makeHours   ((int) num.val);
-        else if (unit.name.equals("day"))               return BRelTime.makeHours   ((int) (num.val * 24));
-
-        else throw new IllegalStateException(
-            "Cannot convert " + num + " to RelTime");
+        switch (unit.name)
+        {
+            case "nanosecond":        return BRelTime.make((long) (num.val / 1000 / 1000));
+            case "microsecond":       return BRelTime.make((long) (num.val / 1000));
+            case "millisecond":       return BRelTime.make((long) num.val);
+            case "hundredths_second": return BRelTime.make((long) (num.val * 10));
+            case "tenths_second":     return BRelTime.make((long) (num.val * 100));
+            case "second":            return BRelTime.makeSeconds((int) num.val);
+            case "minute":            return BRelTime.makeMinutes((int) num.val);
+            case "hour":              return BRelTime.makeHours((int) num.val);
+            case "day":               return BRelTime.makeHours((int) (num.val * 24));
+            default: throw new IllegalStateException("Cannot convert " + num + " to RelTime");
+        }
     }
 
     public static HVal fromBajaSimple(BSimple simple, boolean translateEnum)
@@ -120,20 +125,23 @@ public abstract class TypeUtil
         {
             return HStr.make(simple.toString());
         }
-        else if (simple instanceof BNumber)
+
+        if (simple instanceof BNumber)
         {
             return HNum.make(((BNumber) simple).getDouble());
         }
-        else if (simple instanceof BBoolean)
+
+        if (simple instanceof BBoolean)
         {
             return HBool.make(((BBoolean) simple).getBoolean());
         }
-        else if (simple instanceof BEnum)
+
+        if (simple instanceof BEnum)
         {
             return HStr.make(SlotUtil.fromEnum(((BEnum) simple).getTag(), translateEnum));
         }
-        else
-            throw new IllegalStateException("Cannot convert " + simple.getClass());
+
+        throw new IllegalStateException("Cannot convert " + simple.getClass());
     }
 
     public static HVal fromBajaDataValue(BIDataValue dataValue)
@@ -142,29 +150,35 @@ public abstract class TypeUtil
         {
             return HStr.make(((BString)dataValue).getString());
         }
-        else if (dataValue instanceof BNumber)
+
+        if (dataValue instanceof BNumber)
         {
             return HNum.make(((BNumber) dataValue).getDouble());
         }
-        else if (dataValue instanceof BBoolean)
+
+        if (dataValue instanceof BBoolean)
         {
             return HBool.make(((BBoolean) dataValue).getBoolean());
         }
-        else if (dataValue instanceof BMarker)
+
+        if (dataValue instanceof BMarker)
         {
             return HMarker.VAL;
         }
-        else if (dataValue instanceof BUnit)
+
+        if (dataValue instanceof BUnit)
         {
-            if ( ((BUnit)dataValue).isNull() )
+            if (((BUnit)dataValue).isNull())
+            {
                 return null;
+            }
             else
             {
                 return HStr.make(((BUnit)dataValue).getSymbol());
             }
         }
-        else
-            throw new IllegalStateException("Cannot convert " + dataValue.getClass());
+
+        throw new IllegalStateException("Cannot convert " + dataValue.getClass());
     }
 
     /**
@@ -202,9 +216,11 @@ public abstract class TypeUtil
             }
 
             if (!simple.getType().is(action.getParameterType()))
+            {
                 throw new IllegalStateException(
-                    "type mismatch: " + simple.getType() + 
+                    "type mismatch: " + simple.getType() +
                     " is not " + action.getParameterType());
+            }
 
             return simple;
         }
@@ -233,11 +249,30 @@ public abstract class TypeUtil
 
     public static BStatus toBajaStatus(HStr curStatus)
     {
-        if (curStatus.val.equals("ok"))       return BStatus.ok;
-        if (curStatus.val.equals("fault"))    return BStatus.fault;
-        if (curStatus.val.equals("down"))     return BStatus.down;
-        if (curStatus.val.equals("disabled")) return BStatus.disabled;
-        if (curStatus.val.equals("unknown"))  return BStatus.nullStatus;
+        if (curStatus.val.equals("ok"))
+        {
+            return BStatus.ok;
+        }
+
+        if (curStatus.val.equals("fault"))
+        {
+            return BStatus.fault;
+        }
+
+        if (curStatus.val.equals("down"))
+        {
+            return BStatus.down;
+        }
+
+        if (curStatus.val.equals("disabled"))
+        {
+            return BStatus.disabled;
+        }
+
+        if (curStatus.val.equals("unknown"))
+        {
+            return BStatus.nullStatus;
+        }
 
         throw new IllegalStateException("Cannot convert " + curStatus.val + " to BStatus");
     }
@@ -292,7 +327,10 @@ public abstract class TypeUtil
             try (HistorySpaceConnection conn = historyDb.getConnection(null))
             {
                 BIHistory history = conn.getHistory(cfg.getId());
-                if (history == null) return BPermissions.DEFAULT;
+                if (history == null)
+                {
+                    return BPermissions.DEFAULT;
+                }
                 return history.getPermissions(cx);
             }
         }
