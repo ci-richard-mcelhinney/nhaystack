@@ -316,7 +316,7 @@ class NHServerOps
         }
         else
         {
-            BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
+            BComponent[] kids = comp.getChildren(BComponent.class);
             for (int i = 0; i < kids.length; i++)
                 applyPointDicts(kids[i], pointDictMap, cx);
         }
@@ -339,7 +339,7 @@ class NHServerOps
         }
         else
         {
-            BComponent[] kids = (BComponent[]) comp.getChildren(BComponent.class);
+            BComponent[] kids = comp.getChildren(BComponent.class);
             for (int i = 0; i < kids.length; i++)
                 collectPointDicts(kids[i], pointDictMap, cx);
         }
@@ -499,7 +499,7 @@ class NHServerOps
             String key = (String) e.getKey();
             HVal   val = (HVal)   e.getValue();
 
-            HVal rem = (HVal) newTags.get(key, false);
+            HVal rem = newTags.get(key, false);
             if (!(rem != null && rem.equals(REMOVE)))
                 hdb.add(key, val);
         }

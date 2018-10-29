@@ -52,8 +52,7 @@ class AlarmAckOp extends HOp
                     // We have to ignore the alarm while we are acking it
                     // so we don't get caught in a loop.
                     BAlarmService service = (BAlarmService) Sys.getService(BAlarmService.TYPE);
-                    BNHaystackAlarmRecipient[] recips = (BNHaystackAlarmRecipient[]) 
-                        service.getChildren(BNHaystackAlarmRecipient.class);
+                    BNHaystackAlarmRecipient[] recips = service.getChildren(BNHaystackAlarmRecipient.class);
                     for (int i = 0; i < recips.length; i++)
                         recips[i].beginIgnore(uuid);
 

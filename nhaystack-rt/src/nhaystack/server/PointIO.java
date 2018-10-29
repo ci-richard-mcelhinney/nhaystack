@@ -182,7 +182,7 @@ class PointIO
                     if (!sn.getStatus().isNull())
                         vals[i] = HNum.make(sn.getValue());
                 }
-                BStatusNumeric sn = (BStatusNumeric) nw.getFallback();
+                BStatusNumeric sn = nw.getFallback();
                 if (!sn.getStatus().isNull())
                     vals[16] = HNum.make(sn.getValue());
             }
@@ -196,7 +196,7 @@ class PointIO
                     if (!sb.getStatus().isNull())
                         vals[i] = HBool.make(sb.getValue());
                 }
-                BStatusBoolean sb = (BStatusBoolean) bw.getFallback();
+                BStatusBoolean sb = bw.getFallback();
                 if (!sb.getStatus().isNull())
                     vals[16] = HBool.make(sb.getValue());
             }
@@ -212,7 +212,7 @@ class PointIO
                             se.getValue().getTag(),
                             service.getTranslateEnums()));
                 }
-                BStatusEnum se = (BStatusEnum) ew.getFallback();
+                BStatusEnum se = ew.getFallback();
                 if (!se.getStatus().isNull())
                     vals[16] = HStr.make(SlotUtil.fromEnum(
                         se.getValue().getTag(),
@@ -228,7 +228,7 @@ class PointIO
                     if (!s.getStatus().isNull())
                         vals[i] = HStr.make(s.getValue());
                 }
-                BStatusString s = (BStatusString) sw.getFallback();
+                BStatusString s = sw.getFallback();
                 if (!s.getStatus().isNull())
                     vals[16] = HStr.make(s.getValue());
             }

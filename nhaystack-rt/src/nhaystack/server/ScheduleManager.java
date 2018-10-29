@@ -74,7 +74,7 @@ class ScheduleManager
     {
         HRef id = event.getId().getRef();
 
-        BComponent point = (BComponent) server.getTagManager().lookupComponent(id);
+        BComponent point = server.getTagManager().lookupComponent(id);
         HDict tags = BHDict.findTagAnnotation(point);
 
         // set the point

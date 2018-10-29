@@ -106,6 +106,6 @@ public class BStructureSettings extends BComponent
     
     public BPointGrouping[] getPointGroupings()
     {
-        return (BPointGrouping[]) getChildren(BPointGrouping.class);
+        return getChildren(BPointGrouping.class);
     }
 }

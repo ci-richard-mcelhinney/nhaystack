@@ -97,7 +97,7 @@ class NHWatch extends HWatch
         Array pointArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
-            HRef id = (HRef) ids[i];
+            HRef id = ids[i];
 
             try
             {
@@ -160,7 +160,7 @@ class NHWatch extends HWatch
         Array pointArr = new Array(BComponent.class);
         for (int i = 0; i < ids.length; i++)
         {
-            HRef id = (HRef) ids[i];
+            HRef id = ids[i];
 
             BComponent comp = server.getTagManager().lookupComponent(id);
             if ((comp != null) && allSubscribed.containsKey(comp))
