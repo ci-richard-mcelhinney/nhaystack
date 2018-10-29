@@ -161,8 +161,7 @@ public class BNHaystackPointManager extends BPointManager
 
     private void updateDiscoveryRows(BComponent event)
     {
-        BNHaystackPointEntry[] rows = (BNHaystackPointEntry[])
-            event.getChildren(BNHaystackPointEntry.class);
+        BNHaystackPointEntry[] rows = event.getChildren(BNHaystackPointEntry.class);
 
         for (int i = 0; i < rows.length; i++)
             rows[i].loadSlots();  

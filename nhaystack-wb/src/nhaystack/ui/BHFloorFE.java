@@ -104,7 +104,7 @@ public class BHFloorFE extends BWbFieldEditor
         if (!getEnabled()) throw new IllegalStateException();
 
         String a = (String) prefix.getSelectedItem();
-        String b = (String) suffix.getText();
+        String b = suffix.getText();
 
         if (a.equals("Floor") && b.equals(""))
             return BHFloor.DEFAULT;

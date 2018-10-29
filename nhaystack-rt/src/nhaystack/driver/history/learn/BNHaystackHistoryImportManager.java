@@ -133,7 +133,7 @@ public final class BNHaystackHistoryImportManager extends BHistoryImportManager
 
     private void updateDiscoveryRows(BComponent event)
     {
-        BNHaystackHistoryEntry[] rows = (BNHaystackHistoryEntry[])event.getChildren(BNHaystackHistoryEntry.class); 
+        BNHaystackHistoryEntry[] rows = event.getChildren(BNHaystackHistoryEntry.class);
 
         for (int i = 0; i < rows.length; i++)
             rows[i].loadSlots();  

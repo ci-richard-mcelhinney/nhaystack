@@ -40,6 +40,6 @@ public class BTimeZoneAliasFolder extends BFolder
 
     public BTimeZoneAlias[] getAliases()
     {
-        return (BTimeZoneAlias[]) getChildren(BTimeZoneAlias.class);
+        return getChildren(BTimeZoneAlias.class);
     }
 }

@@ -130,7 +130,7 @@ public class BHDictFE extends BWbFieldEditor
         BServiceContainer services = (BServiceContainer) ord.get(comp, null);
 
         subscriber.subscribe(services, 2);
-        BNHaystackService[] kids = (BNHaystackService[]) services.getChildren(BNHaystackService.class);
+        BNHaystackService[] kids = services.getChildren(BNHaystackService.class);
         subscriber.unsubscribe(services);
 
         return (kids.length == 0) ? null : kids[0];

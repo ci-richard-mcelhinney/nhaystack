@@ -351,7 +351,7 @@ public class NHServer extends HServer
                             if (isTrendRecord)
                             {
                                 // extract value from BTrendRecord
-                                BValue value = (BValue) hrec.get("value");
+                                BValue value = hrec.get("value");
 
                                 Type recType = cfg.getRecordType().getResolvedType();
                                 if (recType.is(BNumericTrendRecord.TYPE))
