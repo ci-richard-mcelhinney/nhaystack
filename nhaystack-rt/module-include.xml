@@ -7,6 +7,7 @@
     28 Sep 2012  Mike Jarmy          Ported from axhaystack
     10 May 2018  Eric Anderson       Re-built using Niagara annotations, removed UI component
     26 Sep 2018  Andrew Saunders     Added Haystack slot conversion job
+    31 Oct 2018  Andrew Saunders     Added NCurValTag and NWriteValTag
 -->
 
 <types>
@@ -72,4 +73,7 @@
   <type class="nhaystack.worker.BINHaystackWorkerParent" name="INHaystackWorkerParent"/>
   <type class="nhaystack.worker.BNHaystackThreadPoolWorker" name="NHaystackThreadPoolWorker"/>
   <type class="nhaystack.worker.BNHaystackWorker" name="NHaystackWorker"/>
+  <!--nhaystack.server.tags-->
+  <type class="nhaystack.server.tags.BNCurValTag" name="NCurValTag"/>
+  <type class="nhaystack.server.tags.BNWriteValTag" name="NWriteValTag"/>
 </types>

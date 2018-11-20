@@ -13,7 +13,10 @@ import static nhaystack.ntest.helper.NHaystackTestUtil.addEquip;
 import static nhaystack.ntest.helper.NHaystackTestUtil.addFolder;
 import static nhaystack.ntest.helper.NHaystackTestUtil.addSite;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.baja.control.BBooleanWritable;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BStation;
@@ -32,7 +35,6 @@ import org.projecthaystack.HNum;
 import org.projecthaystack.HRef;
 import org.projecthaystack.HStr;
 import org.projecthaystack.HWatch;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 @NiagaraType
@@ -89,18 +91,34 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
             HRef bw2ref = nhServer.getTagManager().makeComponentRef(bw2).getHRef();
             watch.sub(new HRef[] {bw1ref, bw2ref});
 
-            HDictBuilder req = new HDictBuilder()
-                .add(FUNCTION_OP_ARG_NAME, HStr.make("showPointsInWatch"))
-                .add("watchId", HRef.make(watch.id()));
-            HGrid res = hClient.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(req.toDict()));
+            HGrid response = callShowPointsInWatch(watch);
 
-            assertEquals(res.numRows(), 2, "Number of rows in the response");
-            assertEquals(res.row(0).get("id"), bw1ref, "BW1 href");
-            assertEquals(res.row(1).get("id"), bw2ref, "BW2 href");
+            List<HRef> actualHRefs = collectHRefs(response);
+            assertEquals(actualHRefs.size(), 2, "Number of rows in the response");
+            assertTrue(actualHRefs.contains(bw1ref), "BW1 href");
+            assertTrue(actualHRefs.contains(bw2ref), "BW2 href");
         }
         finally
         {
             watch.close();
         }
+    }
+
+    private HGrid callShowPointsInWatch(HWatch watch)
+    {
+        HDictBuilder req = new HDictBuilder()
+            .add(FUNCTION_OP_ARG_NAME, HStr.make("showPointsInWatch"))
+            .add("watchId", HRef.make(watch.id()));
+        return hClient.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(req.toDict()));
+    }
+
+    private static List<HRef> collectHRefs(HGrid res)
+    {
+        List<HRef> hRefs = new ArrayList<>(res.numRows());
+        for (int i = 0; i < res.numRows(); i++)
+        {
+            hRefs.add((HRef)res.row(i).get("id"));
+        }
+        return hRefs;
     }
 }

@@ -36,7 +36,6 @@ import com.tridium.workbench.ord.BComponentChooser;
 public class BRefOrdFE
   extends BOrdFE
 {
-
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.ui.BRefOrdFE(2023509165)1.0$ @*/
 /* Generated Mon Jul 30 20:27:51 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */

@@ -1,3 +1,15 @@
+#
+# Copyright 2018 Tridium, Inc. All Rights Reserved.
+# Licensed under the Academic Free License version 3.0
+#
+# History:
+#   09 Jul 2018  Andrew Saunders  Creation
+#   05 Sep 2018  Andrew Saunders  Added display names for BHSite frozen tag slots
+#   31 Oct 2018  Andrew Saunders  Haystack tag dictionary initialize messages
+#
+# Lexicon for the nhaystack module.
+#
+
 hs$3aarea=hs:area
 hs$3ageoAddr=hs:geoAddr
 hs$3ageoCity=hs:geoCity
@@ -27,3 +39,6 @@ haystack.slot.conv.geoCoord={0}: using existing Niagara geoCoord tag: {1}
 haystack.slot.conv.complete.errors=Job Completed with Errors
 haystack.slot.conv.complete.warnings=Job Completed with Warnings
 haystack.slot.conv.complete.noErrors=Job Completed with No Errors
+
+haystackDictionary.notInstalled=Haystack Tag Dictionary is not installed.
+haystackDictionary.tagsImportFile.alreadySet=The Haystack Tag Dictionary "Tags Import File" is already in use: {0}.

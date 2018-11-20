@@ -25,10 +25,10 @@ import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import org.projecthaystack.HCoord;
 
 /**
-  * BHFloorFE edits a haystack floor.
+  * BHCoordFE edits a String encoded HCoord, providing separate field editors for the latitude and
+  * longitude.
   */
 @NiagaraType
-
 public class BHCoordFE extends BWbFieldEditor
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/

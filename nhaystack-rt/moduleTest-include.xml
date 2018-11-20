@@ -6,6 +6,7 @@
   <type class="nhaystack.ntest.BShowPointsInWatchTest" name="ShowPointsInWatchTest"/>
   <type class="nhaystack.ntest.BSlotUtilTest" name="SlotUtilTest"/>
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
+  <type class="nhaystack.ntest.BHaystackImportOverlayTest" name="HaystackImportOverlayTest"/>
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
 </types>
