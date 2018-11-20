@@ -3,27 +3,27 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   05 Jun 2014  Mike Jarmy  Creation
+//   05 Jun 2014  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Added use of generics
 //
 package nhaystack.server;
 
-import java.util.*;
-
-import javax.baja.control.*;
-import javax.baja.log.*;
-import javax.baja.naming.*;
-import javax.baja.security.*;
-import javax.baja.sys.*;
-import javax.baja.nre.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
-import org.projecthaystack.server.*;
-
-import nhaystack.*;
-import nhaystack.collection.*;
-import nhaystack.site.*;
-import nhaystack.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.BComponent;
+import nhaystack.BHDict;
+import nhaystack.site.BHEquip;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HRef;
 
 /**
   * Custom Ops for NHServer
@@ -41,18 +41,16 @@ public class UniqueEquipTypes
     public HGrid createTypes(BComponent[] equips, String filter, double percentMatch, boolean applyTags)
     {
         // find all the distinct types
-        Map typeMap = new HashMap();
-        for (int i = 0; i < equips.length; i++)
+        Map<String, EquipType> typeMap = new HashMap<>();
+        for (BComponent equip : equips)
         {
-            HDict equipTags = server.getTagManager().createTags(equips[i]);
-            Set pointNames = findPointNames(server, (BHEquip) equips[i]);
+            HDict equipTags = server.getTagManager().createTags(equip);
+            Set<String> pointNames = findPointNames(server, (BHEquip)equip);
 
             String key = pointNames.toString();
-            EquipType type = (EquipType) typeMap.get(key);
-            if (type == null)
-                typeMap.put(key, type = new EquipType(pointNames));
+            EquipType type = typeMap.computeIfAbsent(key, k -> new EquipType(pointNames));
 
-            type.equips.add(equips[i]);
+            type.equips.add(equip);
             type.equipTags.add(equipTags);
         }
 
@@ -61,11 +59,11 @@ public class UniqueEquipTypes
 
         // save types to array
         EquipType[] types = new EquipType[typeMap.size()];
-        Iterator it = typeMap.values().iterator();
+        Iterator<EquipType> it = typeMap.values().iterator();
         int n = 0;
         while (it.hasNext())
         {
-            EquipType type = (EquipType) it.next();
+            EquipType type = it.next();
             types[n] = type;
 
             // init matching
@@ -76,7 +74,7 @@ public class UniqueEquipTypes
             {
                 for (int i = 0; i < type.equips.size(); i++)
                 {
-                    BComponent equip = (BComponent) type.equips.get(i);
+                    BComponent equip = type.equips.get(i);
                     HDict tags = BHDict.findTagAnnotation(equip);
                     if (tags == null) tags = HDict.EMPTY;
 
@@ -114,7 +112,7 @@ public class UniqueEquipTypes
         meta.add("filter", filter);
         meta.add("percentMatch", percentMatch);
 
-        Array arr = new Array(HDict.class);
+        ArrayList<HDict> arr = new ArrayList<>();
         for (int i = 0; i < types.length; i++)
         {
             EquipType type = types[i];
@@ -131,25 +129,25 @@ public class UniqueEquipTypes
             arr.add(hdb.toDict());
         }
 
-        return HGridBuilder.dictsToGrid(meta.toDict(), (HDict[]) arr.trim());
+        return HGridBuilder.dictsToGrid(meta.toDict(), arr.toArray(EMPTY_HDICT_ARRAY));
     }
 
     private static String padZero(int number, int width)
     {
-        String s = TextUtil.padLeft(""+number, width);
+        String s = TextUtil.padLeft(String.valueOf(number), width);
         return TextUtil.replace(s, " ", "0");
     }
 
     /**
       * findPointNames
       */
-    private static Set findPointNames(NHServer server, BHEquip equip)
+    private static Set<String> findPointNames(NHServer server, BHEquip equip)
     {
-        Set set = new TreeSet();
+        Set<String> set = new TreeSet<>();
         BComponent[] points = server.getCache().getEquipPoints(equip);
-        for (int i = 0; i < points.length; i++)
+        for (BComponent point : points)
         {
-            HDict pointTags = server.getTagManager().createTags(points[i]);
+            HDict pointTags = server.getTagManager().createTags(point);
             set.add(pointTags.getStr("navName"));
         }
         return set;
@@ -160,11 +158,11 @@ public class UniqueEquipTypes
       */
     static class EquipType
     {
-        EquipType(Set pointNames)
+        EquipType(Set<String> pointNames)
         {
             this.pointNames = pointNames;
-            this.equips = new ArrayList();
-            this.equipTags = new ArrayList();
+            this.equips = new ArrayList<>();
+            this.equipTags = new ArrayList<>();
         }
 
         /**
@@ -172,12 +170,12 @@ public class UniqueEquipTypes
           */
         String listOfEquipIds()
         {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < equipTags.size(); i++)
             {
-                if (i > 0) sb.append(",");
-                HDict tags = (HDict) equipTags.get(i);
-                sb.append("@");
+                if (i > 0) sb.append(',');
+                HDict tags = equipTags.get(i);
+                sb.append('@');
                 sb.append(tags.id());
             }
             return sb.toString();
@@ -192,16 +190,16 @@ public class UniqueEquipTypes
         {
             double dblPerc = percentMatch / 100;
 
-            StringBuffer st = new StringBuffer();
+            StringBuilder st = new StringBuilder();
             int n = 0;
             for (int i = 0; i < similarity.length; i++)
             {
                 // similar
-                if ((i != thisType) && (similarity[i] >= dblPerc))
+                if (i != thisType && similarity[i] >= dblPerc)
                 {
                     if (n++ > 0) st.append(", ");
                     st.append("@type" + padZero(i,3));
-                    st.append(" (" + ((int) (similarity[i] * 100)) + "%)");
+                    st.append(" (" + (int)(similarity[i] * 100) + "%)");
 
                     hdb.add("type"+padZero(i,3)+"Missing", diffTypes(this, types[i]));
                     hdb.add("type"+padZero(i,3)+"Has",     diffTypes(types[i], this));
@@ -217,34 +215,35 @@ public class UniqueEquipTypes
           */
         double jaccardIndex(EquipType that)
         {
-            Set intersection = new TreeSet(pointNames);
+            Set<String> intersection = new TreeSet<>(pointNames);
             intersection.retainAll(that.pointNames);
 
-            Set union = new TreeSet(pointNames);
+            Set<String> union = new TreeSet<>(pointNames);
             union.addAll(that.pointNames);
 
-            if (union.size() == 0) return 1;
-            return ((double) intersection.size())/((double) union.size());
+            if (union.isEmpty())
+                return 1;
+            else
+                return (double)intersection.size() / union.size();
         }
 
-        Set pointNames;
-        List equips;
-        List equipTags;
+        final Set<String> pointNames;
+        final List<BComponent> equips;
+        final List<HDict> equipTags;
         double[] similarity; // percentage
     }
 
     static String diffTypes(EquipType a, EquipType b)
     {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
-        Set s = new TreeSet(a.pointNames); 
+        Set<String> s = new TreeSet<>(a.pointNames);
         s.removeAll(b.pointNames);
         int n = 0;
-        Iterator it = s.iterator();
-        while (it.hasNext())
+        for (String value : s)
         {
-            if (n++ > 0) sb.append(",");
-            sb.append(it.next());
+            if (n++ > 0) sb.append(',');
+            sb.append(value);
         }
         return sb.toString();
     }
@@ -253,5 +252,7 @@ public class UniqueEquipTypes
 // attribs
 ////////////////////////////////////////////////////////////////
 
-    private NHServer server;
+    private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
+
+    private final NHServer server;
 }

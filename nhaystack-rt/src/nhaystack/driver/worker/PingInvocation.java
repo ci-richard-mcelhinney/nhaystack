@@ -3,14 +3,15 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Added missing @Overrides annotations
 
 package nhaystack.driver.worker;
 
-import javax.baja.status.*;
-import javax.baja.util.*;
-
-import nhaystack.worker.*;
+import javax.baja.status.BStatus;
+import javax.baja.util.Invocation;
+import nhaystack.worker.BNHaystackThreadPoolWorker;
+import nhaystack.worker.WorkerChore;
 
 /**
   * PingInvocation handles pinging a BNHaystackServer
@@ -23,6 +24,7 @@ public final class PingInvocation extends DriverChore
         this.invocation = invocation;
     }
 
+    @Override
     public void doRun()
     {
         BStatus status = worker.getWorkerParent().getStatus();
@@ -35,11 +37,13 @@ public final class PingInvocation extends DriverChore
     /**
       * Pings are merged by just ignoring new Ping requests
       */
+    @Override
     public boolean merge(WorkerChore chore)
     {
-        return (chore instanceof PingInvocation);
+        return chore instanceof PingInvocation;
     }
 
+    @Override
     public boolean isPing() { return true; }
 
     private final Invocation invocation;

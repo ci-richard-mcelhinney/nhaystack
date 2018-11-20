@@ -32,7 +32,8 @@ NHaystack is licensed under the
 
 The development of NHaystack has been funded by 
 [J2 Innovations](http://www.j2inn.com) and
-[Conserve It](http://www.conserveit.com.au).
+[Conserve It](http://www.conserveit.com.au) and
+[Tridium](https://www.tridium.com).
 
 Further contributions have been made by:
 * Christian Tremblay, Servisys Inc.

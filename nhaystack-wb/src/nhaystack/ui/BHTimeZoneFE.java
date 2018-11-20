@@ -3,61 +3,79 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Feb 2013  Mike Jarmy Creation
+//   01 Feb 2013  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides annotations,
+//                                 added use of generics
+//   05 Sep 2018  Andrew Saunders  Added support for String instead of BHTimeZone tag values; Niagara
+//                                 time zone tags are encoded as Strings
 //
 
 package nhaystack.ui;
 
-import java.util.*;
-
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.event.*;
-import javax.baja.ui.pane.*;
-import javax.baja.workbench.*;
-import javax.baja.workbench.fieldeditor.*;
-
-import org.projecthaystack.*;
-import nhaystack.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import javax.baja.nre.annotations.AgentOn;
+import javax.baja.nre.annotations.NiagaraAction;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Action;
+import javax.baja.sys.BObject;
+import javax.baja.sys.BString;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BDropDown;
+import javax.baja.ui.BListDropDown;
+import javax.baja.ui.event.BWidgetEvent;
+import javax.baja.ui.pane.BGridPane;
+import javax.baja.workbench.BWbPlugin;
+import javax.baja.workbench.fieldeditor.BWbFieldEditor;
+import nhaystack.BHTimeZone;
+import org.projecthaystack.HTimeZone;
 
 /**
   * BHTimeZoneFE edits a Haystack timezone.
   */
+@NiagaraType(
+  agent =   @AgentOn(
+    types = "nhaystack:HTimeZone"
+  )
+)
+@NiagaraAction(
+  name = "regionsModified",
+  parameterType = "BWidgetEvent",
+  defaultValue = "new BWidgetEvent()"
+)
 public class BHTimeZoneFE extends BWbFieldEditor
 {
-    /*-
-    class BHTimeZoneFE
-    {
-        actions
-        {
-            regionsModified(event: BWidgetEvent) default {[ new BWidgetEvent() ]}
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHTimeZoneFE(2453278263)1.0$ @*/
-/* Generated Sat May 04 12:25:24 GMT-05:00 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHTimeZoneFE(2508526793)1.0$ @*/
+/* Generated Mon Nov 20 13:12:15 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Action "regionsModified"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>regionsModified</code> action.
-   * @see nhaystack.ui.BHTimeZoneFE#regionsModified()
+   * Slot for the {@code regionsModified} action.
+   * @see #regionsModified(BWidgetEvent parameter)
    */
-  public static final Action regionsModified = newAction(0,new BWidgetEvent(),null);
+  public static final Action regionsModified = newAction(0, new BWidgetEvent(), null);
   
   /**
-   * Invoke the <code>regionsModified</code> action.
-   * @see nhaystack.ui.BHTimeZoneFE#regionsModified
+   * Invoke the {@code regionsModified} action.
+   * @see #regionsModified
    */
-  public void regionsModified(BWidgetEvent event) { invoke(regionsModified,event,null); }
+  public void regionsModified(BWidgetEvent parameter) { invoke(regionsModified, parameter, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHTimeZoneFE.class);
 
@@ -65,9 +83,8 @@ public class BHTimeZoneFE extends BWbFieldEditor
 
     public BHTimeZoneFE()
     {
-        Iterator it = zonesByRegion.keySet().iterator();
-        while (it.hasNext())
-            regionDropDown.getList().addItem(it.next());
+        for (String s : zonesByRegion.keySet())
+            regionDropDown.getList().addItem(s);
 
         linkTo(regionDropDown, BDropDown.valueModified, regionsModified);
         linkTo(tzDropDown, BDropDown.valueModified, BWbPlugin.setModified);
@@ -78,16 +95,26 @@ public class BHTimeZoneFE extends BWbFieldEditor
         setContent(gridPane);
     }
 
+    @Override
     protected void doSetReadonly(boolean readonly)
     {
         tzDropDown.setEnabled(!readonly);
     }
 
+    @Override
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
-        HTimeZone tz = ((BHTimeZone) value).getTimeZone();
+        HTimeZone tz;
+        if (value instanceof BString)
+        {
+            tz = BHTimeZone.make(HTimeZone.make(((BString)value).getString())).getTimeZone();
+        }
+        else
+        {
+            tz = ((BHTimeZone)value).getTimeZone();
+        }
 
-        String region = (String) regionsByZone.get(tz.name);
+        String region = regionsByZone.get(tz.name);
         populateTzDropDown(region, tzDropDown);
 
         regionDropDown.setSelectedItem(region);
@@ -97,9 +124,17 @@ public class BHTimeZoneFE extends BWbFieldEditor
         loaded = true;
     }
 
+    @Override
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
-        return BHTimeZone.make(HTimeZone.make((String) tzDropDown.getSelectedItem()));
+        if (value instanceof BString)
+        {
+            return BString.make(HTimeZone.make((String)tzDropDown.getSelectedItem()).name);
+        }
+        else
+        {
+            return BHTimeZone.make(HTimeZone.make((String) tzDropDown.getSelectedItem()));
+        }
     }
 
     public void doRegionsModified(BWidgetEvent event)
@@ -119,48 +154,40 @@ public class BHTimeZoneFE extends BWbFieldEditor
     {
         tzDropDown.getList().removeAllItems();
 
-        TreeSet zones = (TreeSet) zonesByRegion.get(region);
-        Iterator it = zones.iterator();
-        while (it.hasNext())
-            tzDropDown.getList().addItem(it.next());
+        for (String zone : zonesByRegion.get(region))
+            tzDropDown.getList().addItem(zone);
     }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private boolean loaded = false;
+    private boolean loaded;
 
-    private BGridPane gridPane = new BGridPane();
-    private BListDropDown regionDropDown = new BListDropDown();
-    private BListDropDown tzDropDown = new BListDropDown();
+    private final BGridPane gridPane = new BGridPane();
+    private final BListDropDown regionDropDown = new BListDropDown();
+    private final BListDropDown tzDropDown = new BListDropDown();
 
-    private static final Map regionsByZone = new HashMap(); // String -> String
-    private static final Map zonesByRegion = new TreeMap(); // String -> TreeSet<String>
+    private static final Map<String, String> regionsByZone = new HashMap<>();
+    private static final Map<String, Set<String>> zonesByRegion = new TreeMap<>();
 
     static
     {
         String[] ids = TimeZone.getAvailableIDs();
-        for (int i=0; i<ids.length; ++i)
+        for (String id : ids)
         {
-            String java = ids[i];
-
             // skip ids not formatted as Region/City
-            int slash = java.indexOf('/');
+            int slash = id.indexOf('/');
             if (slash < 0) continue;
-            String region = java.substring(0, slash);
+            String region = id.substring(0, slash);
             if (!BHTimeZone.TZ_REGIONS.contains(region)) continue;
 
             // get city name as haystack id
-            slash = java.lastIndexOf('/');
-            String zone = java.substring(slash+1);
+            slash = id.lastIndexOf('/');
+            String zone = id.substring(slash + 1);
 
             regionsByZone.put(zone, region);
-
-            Set zones = (Set) zonesByRegion.get(region);
-            if (zones == null) zonesByRegion.put(
-                region, zones = new TreeSet());
-            zones.add(zone);
+            zonesByRegion.computeIfAbsent(region, k -> new TreeSet<>()).add(zone);
         }
     }
 }

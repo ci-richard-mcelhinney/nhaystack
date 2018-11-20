@@ -3,48 +3,52 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations,
+//                               added use of generics
 
 package nhaystack.driver.point.learn;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.job.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.nre.util.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import nhaystack.*;
-import nhaystack.driver.*;
-import nhaystack.res.*;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.logging.Logger;
+import javax.baja.job.BSimpleJob;
+import javax.baja.job.JobCancelException;
+import javax.baja.naming.SlotPath;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.BEnumRange;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.BHRef;
+import nhaystack.driver.BHTags;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.driver.NameGenerator;
+import nhaystack.res.Resources;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HRow;
+import org.projecthaystack.client.HClient;
 
 /**
   * BNHaystackLearnPointsJob is a Job which 'learns' all the remote
   * points from a remote haystack server.
   */
+@NiagaraType
 public class BNHaystackLearnPointsJob extends BSimpleJob 
 {
-    /*-
-    class BNHaystackLearnPointsJob
-    {
-        properties
-        {
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackLearnPointsJob(677323658)1.0$ @*/
-/* Generated Mon Apr 07 08:34:06 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.point.learn.BNHaystackLearnPointsJob(2979906276)1.0$ @*/
+/* Generated Fri Nov 17 11:55:13 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackLearnPointsJob.class);
 
@@ -57,16 +61,18 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         this.server = server;
     }
 
-    public void doCancel(Context ctx) 
+    @Override
+    public void doCancel(Context ctx)
     {
         super.doCancel(ctx);
         throw new JobCancelException();
     }
 
-    public void run(Context ctx) throws Exception 
+    @Override
+    public void run(Context ctx) throws Exception
     {
         NameGenerator nameGen = new NameGenerator();
-        Map entries = new TreeMap();
+        Map<String, BNHaystackPointEntry> entries = new TreeMap<>();
         
         HClient client = server.getHaystackClient();
         HGrid grid = client.readAll("point");
@@ -85,12 +91,9 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
             entries.put(name, entry);
         }
 
-        Iterator it = entries.keySet().iterator();
-        while (it.hasNext())
+        for (Entry<String, BNHaystackPointEntry> entry : entries.entrySet())
         {
-            String name = (String) it.next();
-            BNHaystackPointEntry entry = (BNHaystackPointEntry) entries.get(name);
-            add(name, entry);
+            add(entry.getKey(), entry.getValue());
         }
     }
 
@@ -141,8 +144,8 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
         String[] tokens = TextUtil.split(rec.getStr("enum"), ',');
 
-        for (int i = 0; i < tokens.length; i++)
-            if (!SlotPath.isValidName(tokens[i])) return BFacets.NULL;
+        for (String token : tokens)
+            if (!SlotPath.isValidName(token)) return BFacets.NULL;
 
         return BFacets.makeEnum(BEnumRange.make(tokens));
     }
@@ -153,5 +156,5 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
 
     private static final Logger LOG = Logger.getLogger("nhaystack.driver");
 
-    private BNHaystackServer server = null;
+    private BNHaystackServer server;
 }

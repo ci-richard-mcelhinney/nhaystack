@@ -3,102 +3,114 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   10 Apr 2013  Mike Jarmy  Creation
+//   10 Apr 2013  Mike Jarmy     Creation
+//   09 May 2018  Eric Anderson  Migrated to slot annotations
 //
 package nhaystack.server;
 
-import javax.baja.sys.*;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BStruct;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
 
+@NiagaraType
+@NiagaraProperty(
+  name = "filter",
+  type = "String",
+  defaultValue = "equip"
+)
+@NiagaraProperty(
+  name = "percentMatch",
+  type = "int",
+  defaultValue = "80"
+)
+@NiagaraProperty(
+  name = "applyTags",
+  type = "boolean",
+  defaultValue = "false"
+)
 public class BUniqueEquipTypeArgs extends BStruct
 {
-    /*-
-    class BUniqueEquipTypeArgs
-    {
-        properties
-        {
-            filter: String default{[ "equip" ]}
-            percentMatch: int default{[ 80 ]}
-            applyTags: boolean default{[ false ]}
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BUniqueEquipTypeArgs(99543646)1.0$ @*/
-/* Generated Wed May 06 09:30:55 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BUniqueEquipTypeArgs(1436495067)1.0$ @*/
+/* Generated Sat Nov 18 21:08:17 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "filter"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>filter</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#getFilter
-   * @see nhaystack.server.BUniqueEquipTypeArgs#setFilter
+   * Slot for the {@code filter} property.
+   * @see #getFilter
+   * @see #setFilter
    */
-  public static final Property filter = newProperty(0, "equip",null);
+  public static final Property filter = newProperty(0, "equip", null);
   
   /**
-   * Get the <code>filter</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#filter
+   * Get the {@code filter} property.
+   * @see #filter
    */
   public String getFilter() { return getString(filter); }
   
   /**
-   * Set the <code>filter</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#filter
+   * Set the {@code filter} property.
+   * @see #filter
    */
-  public void setFilter(String v) { setString(filter,v,null); }
+  public void setFilter(String v) { setString(filter, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "percentMatch"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>percentMatch</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#getPercentMatch
-   * @see nhaystack.server.BUniqueEquipTypeArgs#setPercentMatch
+   * Slot for the {@code percentMatch} property.
+   * @see #getPercentMatch
+   * @see #setPercentMatch
    */
-  public static final Property percentMatch = newProperty(0, 80,null);
+  public static final Property percentMatch = newProperty(0, 80, null);
   
   /**
-   * Get the <code>percentMatch</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#percentMatch
+   * Get the {@code percentMatch} property.
+   * @see #percentMatch
    */
   public int getPercentMatch() { return getInt(percentMatch); }
   
   /**
-   * Set the <code>percentMatch</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#percentMatch
+   * Set the {@code percentMatch} property.
+   * @see #percentMatch
    */
-  public void setPercentMatch(int v) { setInt(percentMatch,v,null); }
+  public void setPercentMatch(int v) { setInt(percentMatch, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "applyTags"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>applyTags</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#getApplyTags
-   * @see nhaystack.server.BUniqueEquipTypeArgs#setApplyTags
+   * Slot for the {@code applyTags} property.
+   * @see #getApplyTags
+   * @see #setApplyTags
    */
-  public static final Property applyTags = newProperty(0, false,null);
+  public static final Property applyTags = newProperty(0, false, null);
   
   /**
-   * Get the <code>applyTags</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#applyTags
+   * Get the {@code applyTags} property.
+   * @see #applyTags
    */
   public boolean getApplyTags() { return getBoolean(applyTags); }
   
   /**
-   * Set the <code>applyTags</code> property.
-   * @see nhaystack.server.BUniqueEquipTypeArgs#applyTags
+   * Set the {@code applyTags} property.
+   * @see #applyTags
    */
-  public void setApplyTags(boolean v) { setBoolean(applyTags,v,null); }
+  public void setApplyTags(boolean v) { setBoolean(applyTags, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BUniqueEquipTypeArgs.class);
 

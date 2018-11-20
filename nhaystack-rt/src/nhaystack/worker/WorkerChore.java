@@ -7,10 +7,11 @@
 
 package nhaystack.worker;
 
-import java.util.logging.*;
-import javax.baja.sys.*;
-
-import org.projecthaystack.client.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Clock;
+import org.projecthaystack.client.CallNetworkException;
 
 /**
   * A WorkerChore is a Runnable that is used to post work to a
@@ -18,7 +19,7 @@ import org.projecthaystack.client.*;
   */
 public abstract class WorkerChore implements Runnable
 {
-    public WorkerChore(BINHaystackWorker worker, String name) 
+    protected WorkerChore(BINHaystackWorker worker, String name)
     { 
         this.worker = worker;
         this.name = name; 
@@ -29,6 +30,7 @@ public abstract class WorkerChore implements Runnable
         return name;
     }
 
+    @Override
     public final void run()
     {
         long begin = Clock.ticks();

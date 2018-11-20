@@ -3,13 +3,14 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Added missing @Overrides annotations
 
 package nhaystack.driver.worker;
 
-import nhaystack.driver.*;
-import nhaystack.driver.point.*;
-import nhaystack.worker.*;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.driver.point.BNHaystackProxyExt;
+import nhaystack.worker.WorkerChore;
 
 /**
   * ReadUnsubscribeChore handles unsubscribing from a point
@@ -25,6 +26,7 @@ public class ReadUnsubscribeChore extends AbstractSubscribeChore
         putProxyExt(ext);
     }
 
+    @Override
     public void doRun()
     {
         if (server.isDisabled() || server.isDown() || server.isFault())
@@ -37,6 +39,7 @@ public class ReadUnsubscribeChore extends AbstractSubscribeChore
       * A merge succeeds when a ReadUnsubscribeChore is passed in.
       * The proxyExts are combined together.
       */
+    @Override
     public boolean merge(WorkerChore chore)
     {
         if (chore instanceof ReadUnsubscribeChore)

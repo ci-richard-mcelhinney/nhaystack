@@ -5,40 +5,41 @@
 // History:
 //   07 Nov 2011  Richard McElhinney  Creation
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//   09 May 2018  Eric Anderson       Migrated to slot annotations, added missing @Overrides annotations
 //
 package nhaystack.server;
 
-import java.io.*;
-import java.util.logging.*;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-
-import javax.baja.sys.*;
-import javax.baja.web.*;
-
-import org.projecthaystack.server.*;
+import java.io.IOException;
+import java.util.logging.Logger;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BIcon;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.web.BWebServlet;
+import javax.baja.web.WebOp;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+import org.projecthaystack.server.HServer;
+import org.projecthaystack.server.HServlet;
 
 /**
   * BNHaystackServlet relays GET and POST requests 
   * to the NHServer that is made available 
   * by the BNHaystackService.
   */
+@NiagaraType
 public class BNHaystackServlet extends BWebServlet
 {
-    /*-
-    class BNHaystackServlet
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $haystack.ax.BNHaystackServlet(4016421877)1.0$ @*/
-/* Generated Thu Sep 27 14:59:43 EDT 2012 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BNHaystackServlet(2979906276)1.0$ @*/
+/* Generated Sat Nov 18 18:37:27 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackServlet.class);
 
@@ -49,6 +50,7 @@ public class BNHaystackServlet extends BWebServlet
         setServletName("haystack");
     }
 
+    @Override
     public void serviceStarted() throws Exception
     {
         // Disable the servlet when its started.  It will be re-enabled 
@@ -66,9 +68,9 @@ public class BNHaystackServlet extends BWebServlet
 // BWebServlet
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public void doGet(WebOp op) throws IOException, ServletException
     {   
-//System.out.println("BNHaystackServlet.doGet: " + op);
         // save the op so we can use it later to check permissions
         ThreadContext.putContext(Thread.currentThread(), op);
 
@@ -86,9 +88,9 @@ public class BNHaystackServlet extends BWebServlet
         }
     }
 
+    @Override
     public void doPost(WebOp op) throws IOException, ServletException
     {
-//System.out.println("BNHaystackServlet.doPost: " + op);
         // save the op so we can use it later to check permissions
         ThreadContext.putContext(Thread.currentThread(), op);
 
@@ -125,11 +127,13 @@ public class BNHaystackServlet extends BWebServlet
                 getServletName().length() + 1);
         }
 
+        @Override
         public String getPathInfo() { return pathInfo; }
 
+        @Override
         public String getServletPath()
         {
-            return "/" + getServletName();
+            return '/' + getServletName();
         }
 
         private final String pathInfo;
@@ -141,6 +145,9 @@ public class BNHaystackServlet extends BWebServlet
 
     private class NServlet extends HServlet
     {
+      private static final long serialVersionUID = -6738104616680194375L;
+
+      @Override
         public HServer db()
         {        
             if (db == null)
@@ -160,6 +167,7 @@ public class BNHaystackServlet extends BWebServlet
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
 
+    @Override
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
 

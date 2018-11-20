@@ -5,34 +5,72 @@
 // History:
 //   07 Nov 2011  Richard McElhinney  Creation
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//   10 May 2018  Eric Anderson       Added missing @Overrides annotations, added use of generics
 //
 package nhaystack.server;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.collection.*;
-import javax.baja.control.*;
-import javax.baja.control.enums.*;
-import javax.baja.fox.*;
-import javax.baja.history.*;
-import javax.baja.history.db.*;
-import javax.baja.log.*;
-import javax.baja.naming.*;
-import javax.baja.schedule.*;
-import javax.baja.security.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.timezone.*;
-import javax.baja.nre.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
-import org.projecthaystack.server.*;
-import nhaystack.*;
-import nhaystack.collection.*;
-import nhaystack.driver.history.*;
-import nhaystack.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.collection.BITable;
+import javax.baja.collection.TableCursor;
+import javax.baja.history.BBooleanTrendRecord;
+import javax.baja.history.BEnumTrendRecord;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.history.BHistoryRecord;
+import javax.baja.history.BIHistory;
+import javax.baja.history.BNumericTrendRecord;
+import javax.baja.history.BTrendRecord;
+import javax.baja.history.HistorySpaceConnection;
+import javax.baja.naming.BOrd;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.security.PermissionException;
+import javax.baja.status.BStatus;
+import javax.baja.sys.Action;
+import javax.baja.sys.BAbsTime;
+import javax.baja.sys.BBoolean;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BDynamicEnum;
+import javax.baja.sys.BEnumRange;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BNumber;
+import javax.baja.sys.BSimple;
+import javax.baja.sys.BValue;
+import javax.baja.sys.Clock;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.timezone.BTimeZone;
+import nhaystack.BHDict;
+import nhaystack.BHTimeZone;
+import nhaystack.NHRef;
+import nhaystack.collection.ComponentTreeIterator;
+import nhaystack.collection.CompositeIterator;
+import nhaystack.util.SlotUtil;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDateTime;
+import org.projecthaystack.HDateTimeRange;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HHisItem;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HUri;
+import org.projecthaystack.HVal;
+import org.projecthaystack.HWatch;
+import org.projecthaystack.server.HOp;
+import org.projecthaystack.server.HServer;
+import org.projecthaystack.server.HStdOps;
 
 /**
   * NHServer is responsible for serving up 
@@ -59,6 +97,7 @@ public class NHServer extends HServer
     /**
       * Return the operations supported by this database.
       */
+    @Override
     public HOp[] ops()
     {
         if (!cache.initialized()) 
@@ -70,6 +109,7 @@ public class NHServer extends HServer
     /**
       * Return the 'about' tags.
       */
+    @Override
     public HDict onAbout()
     {
         if (!cache.initialized()) 
@@ -101,6 +141,7 @@ public class NHServer extends HServer
         }
     }
 
+    @Override
     public HGrid onReadAll(String filter, int limit)
     {
         if (!cache.initialized()) 
@@ -130,14 +171,15 @@ public class NHServer extends HServer
       * Iterate every haystack-annotated entry in both the 
       * BComponentSpace and the BHistoryDatabase.
       */
-    public Iterator iterator()
+    @Override
+    public Iterator<Object> iterator()
     {
         if (!cache.initialized()) 
             throw new IllegalStateException(Cache.NOT_INITIALIZED);
 
         try
         {
-            return new CompositeIterator(new Iterator[] { 
+            return new CompositeIterator(new Iterator<?>[] {
                 spaceMgr.makeComponentSpaceIterator(),
                 spaceMgr.makeHistorySpaceIterator() });
         }
@@ -155,6 +197,7 @@ public class NHServer extends HServer
       * Return null if the BComponent cannot be found,
       * or if it is not haystack-annotated.
       */
+    @Override
     public HDict onReadById(HRef id)
     {
         if (!cache.initialized()) 
@@ -166,7 +209,7 @@ public class NHServer extends HServer
         try
         {
             BComponent comp = tagMgr.lookupComponent(id);
-            return (comp == null) ? null : tagMgr.createTags(comp);
+            return comp == null ? null : tagMgr.createTags(comp);
         }
         catch (RuntimeException e)
         {
@@ -179,6 +222,7 @@ public class NHServer extends HServer
       * Return navigation tree children for given navId.
       * The grid must define the "navId" column.
       */
+    @Override
     public HGrid onNav(String navId)
     {
         if (!cache.initialized()) 
@@ -201,6 +245,7 @@ public class NHServer extends HServer
     /**
       * Open a new watch.
       */
+    @Override
     public HWatch onWatchOpen(String dis, HNum lease)
     {
         if (!cache.initialized()) 
@@ -232,6 +277,7 @@ public class NHServer extends HServer
     /**
       * Return current watches
       */
+    @Override
     public HWatch[] onWatches()
     {
         if (!cache.initialized()) 
@@ -254,6 +300,7 @@ public class NHServer extends HServer
     /**
       * Look up a watch by id
       */
+    @Override
     public HWatch onWatch(String id)
     {
         if (!cache.initialized()) 
@@ -264,7 +311,7 @@ public class NHServer extends HServer
 
         try
         {
-            synchronized(watches) { return (HWatch) watches.get(id); }
+            synchronized(watches) { return watches.get(id); }
         }
         catch (RuntimeException e)
         {
@@ -276,6 +323,7 @@ public class NHServer extends HServer
     /**
       * Implementation hook for pointWriteArray
       */
+    @Override
     public HGrid onPointWriteArray(HDict rec)
     {
         return pointIO.onPointWriteArray(rec);
@@ -284,6 +332,7 @@ public class NHServer extends HServer
     /**
       * Implementation hook for pointWrite
       */
+    @Override
     public void onPointWrite(
         HDict rec, int level, HVal val, String who, HNum dur, HDict opts)
     {
@@ -294,6 +343,7 @@ public class NHServer extends HServer
       * Read the history for the given BComponent.
       * The items wil be exclusive of start and inclusive of end time.
       */
+    @Override
     public HHisItem[] onHisRead(HDict rec, HDateTimeRange range)
     {
         if (!cache.initialized())
@@ -305,7 +355,7 @@ public class NHServer extends HServer
         try
         {
             BHistoryConfig cfg = tagMgr.lookupHistoryConfig(rec.id());
-            if (cfg == null) return new HHisItem[0];
+            if (cfg == null) return EMPTY_HIS_ITEM_ARR;
 
             HStr unit = (HStr) rec.get("unit", false);
 
@@ -324,20 +374,20 @@ public class NHServer extends HServer
             {
                 BIHistory history = conn.getHistory(cfg.getId());
 
-                BITable table = (BITable) conn.timeQuery(history, rangeStart, rangeEnd);
+                BITable<BHistoryRecord> table = conn.timeQuery(history, rangeStart, rangeEnd);
 
                 // this will be null if its not a BTrendRecord
                 boolean isTrendRecord = cfg.getRecordType().getResolvedType().is(BTrendRecord.TYPE);
 
                 int recCounter = 0;
-                Array arr = new Array(HHisItem.class);
-                try (TableCursor cursor = table.cursor())
+                ArrayList<HHisItem> arr = new ArrayList<>();
+                try (TableCursor<BHistoryRecord> cursor = table.cursor())
                 {
                     // iterate over results and extract HHisItem's
                     while (cursor.next())
                     {
                         recCounter++;
-                        BHistoryRecord hrec = (BHistoryRecord) cursor.get();
+                        BHistoryRecord hrec = cursor.get();
                         BAbsTime timestamp = (BAbsTime) hrec.get("timestamp");
 
                         // ignore inclusive start value
@@ -347,7 +397,7 @@ public class NHServer extends HServer
                             HDateTime ts = HDateTime.make(timestamp.getMillis(), tz);
 
                             // create val
-                            HVal val = null;
+                            HVal val;
                             if (isTrendRecord)
                             {
                                 // extract value from BTrendRecord
@@ -357,7 +407,7 @@ public class NHServer extends HServer
                                 if (recType.is(BNumericTrendRecord.TYPE))
                                 {
                                     BNumber num = (BNumber) value;
-                                    val = (unit == null) ?
+                                    val = unit == null ?
                                             HNum.make(num.getDouble()) :
                                             HNum.make(num.getDouble(), unit.val);
                                 } else if (recType.is(BBooleanTrendRecord.TYPE))
@@ -387,7 +437,7 @@ public class NHServer extends HServer
                     }
                 }
 
-                HHisItem[] items = (HHisItem[]) arr.trim();
+                HHisItem[] items = arr.toArray(EMPTY_HIS_ITEM_ARR);
                 LOG.fine("Found " + recCounter + " items...");
                 if (items.length > 0)
                 {
@@ -408,6 +458,7 @@ public class NHServer extends HServer
     /**
       * Write the history for the given BComponent.
       */
+    @Override
     public void onHisWrite(HDict rec, HHisItem[] items)
     {
         if (!cache.initialized()) 
@@ -427,17 +478,17 @@ public class NHServer extends HServer
         {
             BIHistory history = conn.getHistory(cfg.getId());
             String kind = rec.getStr("kind");
-            for (int i = 0; i < items.length; i++)
+            for (HHisItem item : items)
                 conn.append(
                     history,
-                    makeTrendRecord(
-                        kind, items[i].ts, items[i].val));
+                    makeTrendRecord(kind, item.ts, item.val));
         }
     }
 
     /**
       * Implementation hook for invokeAction
       */
+    @Override
     public HGrid onInvokeAction(HDict rec, String actionName, HDict args)
     {
         if (!cache.initialized()) 
@@ -456,13 +507,13 @@ public class NHServer extends HServer
                 throw new PermissionException("Cannot invoke on " + rec.id()); 
 
             Action[] actions = comp.getActionsArray();
-            for (int i = 0; i < actions.length; i++)
+            for (Action action : actions)
             {
-                if (actions[i].getName().equals(actionName))
+                if (action.getName().equals(actionName))
                 {
                     BValue result = comp.invoke(
-                        actions[i], 
-                        TypeUtil.actionArgsToBaja(args, comp, actions[i]));
+                        action,
+                        TypeUtil.actionArgsToBaja(args, comp, action));
 
                     if (result == null)
                     {
@@ -499,6 +550,7 @@ public class NHServer extends HServer
      * Implementation hook for navReadByUri.  Return null if not
      * found.  Do NOT raise any exceptions.
      */
+    @Override
     public HDict onNavReadByUri(HUri uri)
     {
         if (!cache.initialized()) 
@@ -514,7 +566,7 @@ public class NHServer extends HServer
 
         NHRef ref = TagManager.makeSepRef(navNames);
         BComponent comp = cache.lookupComponentBySepRef(ref);
-        return (comp == null) ?  null : tagMgr.createTags(comp);
+        return comp == null ?  null : tagMgr.createTags(comp);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -558,7 +610,7 @@ public class NHServer extends HServer
         String tzName = timeZone.getId();
 
         // lop off the region, e.g. "America" 
-        int n = tzName.indexOf("/");
+        int n = tzName.indexOf('/');
         if (n != -1) 
         {
             String region = tzName.substring(0, n);
@@ -574,10 +626,10 @@ public class NHServer extends HServer
         {
             // look through the aliases
             BTimeZoneAlias[] aliases = service.getTimeZoneAliases().getAliases();
-            for (int i = 0; i < aliases.length; i++)
+            for (BTimeZoneAlias alias : aliases)
             {
-                if (aliases[i].getAxTimeZoneId().equals(timeZone.getId()))
-                    return aliases[i].getHaystackTimeZone().getTimeZone();
+                if (alias.getAxTimeZoneId().equals(timeZone.getId()))
+                    return alias.getHaystackTimeZone().getTimeZone();
             }
 
             // cannot create timezone tag
@@ -605,24 +657,24 @@ public class NHServer extends HServer
 
         if (LOG.isLoggable(Level.FINE)) LOG.fine("BEGIN removeBrokenRefs"); 
 
-        Iterator compItr = new ComponentTreeIterator(
+        Iterator<BComponent> compItr = new ComponentTreeIterator(
             (BComponent) BOrd.make("slot:/").resolve(service, null).get());
 
         // check every component
         while (compItr.hasNext())
         {
-            BComponent comp = (BComponent) compItr.next();
+            BComponent comp = compItr.next();
             HDict tags = BHDict.findTagAnnotation(comp);
             if (tags == null) continue;
 
             // check if any of the tags are a broken ref
-            Set brokenRefs = null;
-            Iterator tagItr = tags.iterator();
+            Set<String> brokenRefs = null;
+            Iterator<Map.Entry<String, HVal>> tagItr = tags.iterator();
             while (tagItr.hasNext())
             {
-                Map.Entry e = (Map.Entry) tagItr.next();
-                String name = (String) e.getKey();
-                HVal val = (HVal) e.getValue();
+                Map.Entry<String, HVal> e = tagItr.next();
+                String name = e.getKey();
+                HVal val = e.getValue();
 
                 if (val instanceof HRef)
                 {
@@ -641,7 +693,7 @@ public class NHServer extends HServer
                             comp.getSlotPath());
 
                         if (brokenRefs == null)
-                            brokenRefs = new HashSet();
+                            brokenRefs = new HashSet<>();
                         brokenRefs.add(name);
                     }
                 }
@@ -654,9 +706,9 @@ public class NHServer extends HServer
                 tagItr = tags.iterator();
                 while (tagItr.hasNext())
                 {
-                    Map.Entry e = (Map.Entry) tagItr.next();
-                    String name = (String) e.getKey();
-                    HVal val = (HVal) e.getValue();
+                    Map.Entry<String, HVal> e = tagItr.next();
+                    String name = e.getKey();
+                    HVal val = e.getValue();
 
                     if (!brokenRefs.contains(name))
                         hdb.add(name, val);
@@ -681,16 +733,15 @@ public class NHServer extends HServer
         {
             HWatch[] arr = new HWatch[watches.size()];
             int n = 0;
-            Iterator itr = watches.values().iterator();
-            while (itr.hasNext())
-                arr[n++] = (HWatch) itr.next();
+            for (NHWatch nhWatch : watches.values())
+                arr[n++] = nhWatch;
             return arr;
         }
     }
 
     HWatch getWatch(String watchId)
     {
-        synchronized(watches) { return (HWatch) watches.get(watchId); }
+        synchronized(watches) { return watches.get(watchId); }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -739,8 +790,9 @@ public class NHServer extends HServer
     private static final Logger LOG_WATCH = Logger.getLogger("nhaystack.watch");
 
     private static final String LAST_WRITE = "haystackLastWrite";
+    private static final HHisItem[] EMPTY_HIS_ITEM_ARR = new HHisItem[0];
 
-    private static final HOp[] OPS = new HOp[]
+    private static final HOp[] OPS =
     {
         HStdOps.about,
         HStdOps.ops,
@@ -759,7 +811,7 @@ public class NHServer extends HServer
         new AlarmAckOp()
     };
 
-    private final HashMap watches = new HashMap();
+    private final Map<String, NHWatch> watches = new HashMap<>();
 
     private final BNHaystackService service;
     private final SpaceManager spaceMgr;

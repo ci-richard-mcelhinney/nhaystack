@@ -3,19 +3,17 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Added missing @Overrides annotations, added use of generics
 
 package nhaystack.driver.worker;
 
-import java.util.*;
-
-import javax.baja.nre.util.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-
-import nhaystack.driver.*;
-import nhaystack.driver.point.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import nhaystack.driver.BNHaystackServer;
+import nhaystack.driver.point.BNHaystackProxyExt;
+import org.projecthaystack.HRef;
 
 /**
   * AbstractSubscribeChore handles subscribing and unsubscribing a point
@@ -32,22 +30,23 @@ public abstract class AbstractSubscribeChore extends DriverChore
 
     public String toString()
     {
-        StringBuffer sb = new StringBuffer(name);
-        sb.append("[");
-        Iterator it = proxyExts.keySet().iterator();
+        StringBuilder sb = new StringBuilder(name);
+        sb.append('[');
+        Iterator<HRef> it = proxyExts.keySet().iterator();
         int n = 0;
         while (it.hasNext())
         {
-            HRef ref = (HRef) it.next();
-            if (n++ > 0) sb.append(",");
-            sb.append("(");
+            HRef ref = it.next();
+            if (n++ > 0) sb.append(',');
+            sb.append('(');
             sb.append(ref.toCode());
-            sb.append(")");
+            sb.append(')');
         }
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 
+    @Override
     public boolean isPing() { return false; }
 
 ////////////////////////////////////////////////////////////////
@@ -66,25 +65,17 @@ public abstract class AbstractSubscribeChore extends DriverChore
 
     protected HRef[] getProxyExtIds()
     {
-        Array arr = new Array(HRef.class);
-        Iterator it = proxyExts.keySet().iterator();
-        while (it.hasNext())
-            arr.add(it.next());
-        return (HRef[]) arr.trim();
+        return proxyExts.keySet().toArray(new HRef[proxyExts.size()]);
     }
 
     protected BNHaystackProxyExt[] getProxyExts()
     {
-        Array arr = new Array(BNHaystackProxyExt.class);
-        Iterator it = proxyExts.values().iterator();
-        while (it.hasNext())
-            arr.add(it.next());
-        return (BNHaystackProxyExt[]) arr.trim();
+        return proxyExts.values().toArray(new BNHaystackProxyExt[proxyExts.size()]);
     }
 
     protected BNHaystackProxyExt getProxyExt(HRef id)
     {
-        return (BNHaystackProxyExt) proxyExts.get(id);
+        return proxyExts.get(id);
     }
 
 ////////////////////////////////////////////////////////////////
@@ -92,5 +83,5 @@ public abstract class AbstractSubscribeChore extends DriverChore
 ////////////////////////////////////////////////////////////////
 
     protected final BNHaystackServer server;
-    private final Map proxyExts = new HashMap();
+    private final Map<HRef, BNHaystackProxyExt> proxyExts = new HashMap<>();
 }

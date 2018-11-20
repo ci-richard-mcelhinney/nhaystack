@@ -3,60 +3,71 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Feb 2013  Mike Jarmy Creation
+//   01 Feb 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 //
 
 package nhaystack.ui;
 
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.enums.*;
-import javax.baja.ui.pane.*;
-import javax.baja.util.*;
-import javax.baja.workbench.*;
-import javax.baja.workbench.fieldeditor.*;
-
-import org.projecthaystack.*;
-import nhaystack.*;
+import javax.baja.nre.annotations.AgentOn;
+import javax.baja.nre.annotations.NiagaraAction;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Action;
+import javax.baja.sys.BDouble;
+import javax.baja.sys.BObject;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BAbstractButton;
+import javax.baja.ui.BCheckBox;
+import javax.baja.ui.enums.BHalign;
+import javax.baja.ui.enums.BValign;
+import javax.baja.ui.pane.BGridPane;
+import javax.baja.util.Lexicon;
+import javax.baja.workbench.BWbPlugin;
+import javax.baja.workbench.fieldeditor.BWbFieldEditor;
+import nhaystack.BHNum;
+import nhaystack.BHUnit;
+import org.projecthaystack.HNum;
 
 /**
   * BHNumFE edits an HNum
   */
+@NiagaraType(
+  agent =   @AgentOn(
+    types = "nhaystack:HNum"
+  )
+)
+@NiagaraAction(
+  name = "hasUnitModified"
+)
 public class BHNumFE extends BWbFieldEditor
 {
-    /*-
-    class BHNumFE
-    {
-        actions
-        {
-            hasUnitModified()
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BHNumFE(298792993)1.0$ @*/
-/* Generated Tue Feb 05 14:25:56 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHNumFE(3766775585)1.0$ @*/
+/* Generated Mon Nov 20 13:07:30 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Action "hasUnitModified"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>hasUnitModified</code> action.
-   * @see nhaystack.ui.BHNumFE#hasUnitModified()
+   * Slot for the {@code hasUnitModified} action.
+   * @see #hasUnitModified()
    */
-  public static final Action hasUnitModified = newAction(0,null);
+  public static final Action hasUnitModified = newAction(0, null);
   
   /**
-   * Invoke the <code>hasUnitModified</code> action.
-   * @see nhaystack.ui.BHNumFE#hasUnitModified
+   * Invoke the {@code hasUnitModified} action.
+   * @see #hasUnitModified
    */
-  public void hasUnitModified() { invoke(hasUnitModified,null,null); }
+  public void hasUnitModified() { invoke(hasUnitModified, null, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHNumFE.class);
 
@@ -78,7 +89,7 @@ public class BHNumFE extends BWbFieldEditor
         setContent(grid);
 
         linkTo(valFE,   BWbPlugin.pluginModified,  BWbPlugin.setModified);
-        linkTo(hasUnit, BCheckBox.actionPerformed, hasUnitModified);
+        linkTo(hasUnit, BAbstractButton.actionPerformed, hasUnitModified);
         linkTo(unitFE,  BWbPlugin.pluginModified,  BWbPlugin.setModified);
         eventsEnabled = true;
     }
@@ -100,6 +111,7 @@ public class BHNumFE extends BWbFieldEditor
         }
     }
 
+    @Override
     protected void doSetReadonly(boolean readonly)
     {
         valFE.setEnabled(!readonly);
@@ -107,13 +119,14 @@ public class BHNumFE extends BWbFieldEditor
         unitFE.setEnabled(!readonly);
     }
 
+    @Override
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
         HNum num = ((BHNum) value).getNum();
 
         eventsEnabled = false;
 
-        boolean restrictUnits = (cx == null) ? 
+        boolean restrictUnits = cx == null ?
             false : cx.getFacets().getb(RESTRICT_UNITS, false);
 
         valFE.loadValue(BDouble.make(num.val));
@@ -139,6 +152,7 @@ public class BHNumFE extends BWbFieldEditor
         eventsEnabled = true;
     }
 
+    @Override
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
         BDouble val = (BDouble) valFE.saveValue();
@@ -169,7 +183,7 @@ public class BHNumFE extends BWbFieldEditor
 
     private boolean eventsEnabled;
 
-    private BWbFieldEditor valFE;
-    private BCheckBox hasUnit;
-    private BHUnitFE unitFE;
+    private final BWbFieldEditor valFE;
+    private final BCheckBox hasUnit;
+    private final BHUnitFE unitFE;
 }
