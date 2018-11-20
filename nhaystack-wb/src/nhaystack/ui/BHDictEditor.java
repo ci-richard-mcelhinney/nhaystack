@@ -209,7 +209,6 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
         // used determine if this editor changed anything.
         try { save(); }
         catch (Exception ignore) { }
-
     }
 
     /**
@@ -408,8 +407,8 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
             }
         }
 
-        //nccb-34668: delete removed tags
-        if(editorType == BHDictEditor.OPTIONAL)
+        // Handle row removals
+        if (editorType == BHDictEditor.OPTIONAL)
         {
             for (Row row : removedRows)
             {
@@ -429,6 +428,7 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
                 catch (Exception ignore)
                 {
                 }
+
                 if (!row.isDirectTag)
                 {
                     for (BRelation bRelation : group().hsTagGroupRelations())
@@ -437,13 +437,16 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
                     }
                 }
             }
+
             removedRows.clear();
             removeRenamedTags();
             removeModifiedRefs();
         }
+
         // encode to zinc and back just to be sure
         this.zinc = builder.toDict().toZinc();
         this.tags = BHDict.make(new HZincReader(zinc).readDict());
+
         // initialize startingHDict if null
         if(startingHDict == null)
         {
@@ -548,7 +551,6 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
             row.names.setEnabled(true);
             row.kinds.setEnabled(true);
         }
-
     }
 
     private int kindsIndex(BListDropDown kinds)
@@ -744,7 +746,6 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
             for (int i = 0; i < rows.size(); i++)
             {
                 Row row = rows.get(i);
-                //nccb-34668 don't add remove button on the row if row tag is NOT a direct tag.
                 mainGrid.add(null, editorType == OPTIONAL ?
                     makeAddRemove(new RemoveRow(i)) :
                     new BNullWidget());
@@ -854,9 +855,7 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
                 }
                 catch(Exception ignore) {}
             }
-
         }
-
     }
 
     void removeModifiedRefs()
@@ -887,9 +886,7 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
                 }
                 catch(Exception ignore) {}
             }
-
         }
-
     }
 
 ////////////////////////////////////////////////////////////////

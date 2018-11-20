@@ -52,7 +52,7 @@ import com.tridium.tagdictionary.BNiagaraTagDictionary;
 @NiagaraType
 public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
 {
-  /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
+/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.ui.BHDictEditorGroup(2979906276)1.0$ @*/
 /* Generated Mon Nov 20 12:23:31 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
@@ -201,8 +201,6 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
                 }
             }
         }
-
-
 
         //////////////////////
         // widgets
@@ -359,7 +357,6 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
         }
         return tgRelations;
     }
-
 
 ////////////////////////////////////////////////////////////////
 // Access

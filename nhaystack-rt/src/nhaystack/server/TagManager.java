@@ -7,6 +7,8 @@
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
 //   10 May 2018  Eric Anderson       Added missing @Overrides annotations, added use of generics
 //   26 Sep 2018  Andrew Saunders     Added shared constants and handling for geoCoord tag
+//   31 Oct 2018  Andrew Saunders     Removed special handling for curVal and writeVal tags-
+//                                    handled by new smart tag types BNCurValTag and BNWriteValTag
 //
 package nhaystack.server;
 
@@ -51,6 +53,7 @@ import javax.baja.sys.Action;
 import javax.baja.sys.BBoolean;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BDouble;
+import javax.baja.sys.BDynamicEnum;
 import javax.baja.sys.BEnumRange;
 import javax.baja.sys.BFacets;
 import javax.baja.sys.BFloat;
@@ -277,21 +280,6 @@ public class TagManager implements NHaystackConst
                 BIDataValue tagValue = tag.getValue();
                 Type tagValueType = tagValue.getType();
 
-                // special processing for curVal
-                // don't add curVal tag if value is "null"
-                // TODO: May want to change BCurValTag behavior
-                if (tagName.equals("curVal") && tagValueType == BString.TYPE &&
-                    ((BString)tagValue).getString().equals("null"))
-                {
-                    continue;
-                }
-
-                if (tagName.equals("writeVal") && tagValueType == BString.TYPE &&
-                    ((BString)tagValue).getString().equals("null"))
-                {
-                    continue;
-                }
-
                 if (tagValueType == BMarker.TYPE)
                 {
                     hdb.add(tagName, HMarker.VAL);
@@ -342,9 +330,13 @@ public class TagManager implements NHaystackConst
                         hdb.add(tagName, ((BUnit)tagValue).getSymbol());
                     }
                 }
+                else if (tagValueType == BDynamicEnum.TYPE)
+                {
+                    hdb.add(tagName, HStr.make(((BDynamicEnum)tagValue).getTag()));
+                }
                 else
                 {
-                    LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue);
+                    LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue + ":" + tagValueType);
                 }
             }
         }

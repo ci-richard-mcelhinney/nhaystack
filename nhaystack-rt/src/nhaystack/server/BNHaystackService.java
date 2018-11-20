@@ -11,11 +11,13 @@
 //   26 Sep 2018  Andrew Saunders     Converted Haystack slot replacement to a job, added 
 //                                    Convert Haystack Slots action, handling conversion
 //                                    retries
+//   31 Oct 2018  Andrew Saunders     Added initializeHaystackDictionary action
 //
 package nhaystack.server;
 
 import static nhaystack.server.BNHaystackConvertHaystackSlotsJob.RETRY_UPGRADE_ON_RESTART;
 
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.baja.driver.BDeviceNetwork;
@@ -40,9 +42,11 @@ import javax.baja.sys.Flags;
 import javax.baja.sys.Property;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
+import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BServiceContainer;
 import javax.baja.util.IFuture;
 import javax.baja.util.Invocation;
+import javax.baja.util.Lexicon;
 import nhaystack.BHDict;
 import nhaystack.BHGrid;
 import nhaystack.BHRef;
@@ -55,6 +59,7 @@ import nhaystack.worker.WorkerInvocation;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HGridBuilder;
 import org.projecthaystack.client.CallNetworkException;
+import com.tridium.haystack.BHsTagDictionary;
 
 /**
  * BNHaystackService makes an NHServer available.
@@ -229,13 +234,21 @@ import org.projecthaystack.client.CallNetworkException;
     flags = Flags.OPERATOR
 )
 
+/**
+ * Initialize the HsTagDictionary tagsImportFile property with the res/tagsMerge.csv file BOrd.
+ * This file is used to override the standard haystack tag definitions.
+ */
+@NiagaraAction(
+    name = "initializeHaystackDictionary",
+    flags = Flags.OPERATOR|Flags.ASYNC
+)
 public class BNHaystackService
     extends BAbstractService
     implements BINHaystackWorkerParent
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(2314774720)1.0$ @*/
-/* Generated Fri Jul 06 10:51:33 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.server.BNHaystackService(1110017872)1.0$ @*/
+/* Generated Tue Oct 30 19:51:59 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -697,17 +710,37 @@ public class BNHaystackService
   
   /**
    * Slot for the {@code convertHaystackSlots} action.
-   * Remove all the invalid refs
+   * Convert haystack slot tags to Niagara tags and relations
    * @see #convertHaystackSlots()
    */
   public static final Action convertHaystackSlots = newAction(Flags.OPERATOR, null);
   
   /**
    * Invoke the {@code convertHaystackSlots} action.
-   * Remove all the invalid refs
+   * Convert haystack slot tags to Niagara tags and relations
    * @see #convertHaystackSlots
    */
   public BOrd convertHaystackSlots() { return (BOrd)invoke(convertHaystackSlots, null, null); }
+
+////////////////////////////////////////////////////////////////
+// Action "initializeHaystackDictionary"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the {@code initializeHaystackDictionary} action.
+   * Initialize the HsTagDictionary tagsImportFile property with the res/tagsMerge.csv file BOrd.
+   * this file is used to override the standard hasystack tag definitions.
+   * @see #initializeHaystackDictionary()
+   */
+  public static final Action initializeHaystackDictionary = newAction(Flags.OPERATOR | Flags.ASYNC, null);
+  
+  /**
+   * Invoke the {@code initializeHaystackDictionary} action.
+   * Initialize the HsTagDictionary tagsImportFile property with the res/tagsMerge.csv file BOrd.
+   * this file is used to override the standard hasystack tag definitions.
+   * @see #initializeHaystackDictionary
+   */
+  public void initializeHaystackDictionary() { invoke(initializeHaystackDictionary, null, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
@@ -859,11 +892,12 @@ public class BNHaystackService
     @Override
     public IFuture post(Action action, BValue value, Context cx)
     {
-        if ((action == initializeHaystack) ||
-            (action == rebuildCache) ||
-            (action == removeBrokenRefs) ||
-            (action == findUniqueEquipTypes) ||
-            (action == applySchedule))
+        if (action == initializeHaystack ||
+            action == rebuildCache ||
+            action == removeBrokenRefs ||
+            action == findUniqueEquipTypes ||
+            action == applySchedule ||
+            action == initializeHaystackDictionary)
         {
             return postAsyncChore(
                 new WorkerInvocation(
@@ -871,7 +905,6 @@ public class BNHaystackService
                     action.getName(),
                     new Invocation(this, action, value, cx)));
         }
-
         else return super.post(action, value, cx);
     }
 
@@ -952,6 +985,24 @@ public class BNHaystackService
         return job.submit(null);
     }
 
+    public void doInitializeHaystackDictionary()
+    {
+        BHsTagDictionary hsDict = getHaystackDictionary()
+            .orElseThrow(() -> new RuntimeException(LEX.getText("haystackDictionary.notInstalled")));
+
+        if (hsDict.getTagsImportFile().equals(BOrd.DEFAULT))
+        {
+            hsDict.setTagsImportFile(TAGS_IMPORT_FILE);
+        }
+        else if (!hsDict.getTagsImportFile().equals(TAGS_IMPORT_FILE))
+        {
+            throw new RuntimeException(LEX.getText("haystackDictionary.tagsImportFile.alreadySet",
+                new Object[] { hsDict.getTagsImportFile() } ));
+        }
+
+        hsDict.importDictionary();
+    }
+
 ////////////////////////////////////////////////////////////////
 // public
 ////////////////////////////////////////////////////////////////
@@ -974,9 +1025,17 @@ public class BNHaystackService
     {
         if (niagaraNetwork == null)
             niagaraNetwork = (BDeviceNetwork)
-                NIAGARA_NETWORK.resolve(this, null).get();
+            NIAGARA_NETWORK.resolve(this, null).get();
 
         return niagaraNetwork;
+    }
+
+    private static Optional<BHsTagDictionary> getHaystackDictionary()
+    {
+        BTagDictionaryService service = (BTagDictionaryService)Sys.getService(BTagDictionaryService.TYPE);
+        return service.getTagDictionary(BHsTagDictionary.HS_NAME_SPACE)
+            .filter(d -> d instanceof BHsTagDictionary)
+            .map(d -> (BHsTagDictionary) d);
     }
 
     public void setSlotConversionInProgress(boolean value)
@@ -1026,12 +1085,14 @@ public class BNHaystackService
 ////////////////////////////////////////////////////////////////
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
+    private static final Lexicon LEX = Lexicon.make("nhaystack");
 
     @Override
     public BIcon getIcon() { return ICON; }
     private static final BIcon ICON = BIcon.make("module://nhaystack/nhaystack/icons/tag.png");
 
     private static final BOrd NIAGARA_NETWORK = BOrd.make("station:|slot:/Drivers/NiagaraNetwork");
+    private static final BOrd TAGS_IMPORT_FILE = BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv");
 
     private static final Type[] SERVICE_TYPES = { TYPE };
 

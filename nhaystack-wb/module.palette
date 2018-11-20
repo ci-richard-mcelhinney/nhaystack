@@ -65,5 +65,10 @@
   <p n="PointGrouping" t="nh:PointGrouping">
   </p>
  </p>
+ <!-- Haystack dictionary -->
+ <p n="Haystack" m="haystack=haystack" t="haystack:HsTagDictionary">
+  <!-- specify the tagsImportFile to override tags -->
+  <p n="tagsImportFile" t="b:Ord" v="module://nhaystack/nhaystack/res/tagsMerge.csv"/>
+ </p>
 </p>
 </bajaObjectGraph>

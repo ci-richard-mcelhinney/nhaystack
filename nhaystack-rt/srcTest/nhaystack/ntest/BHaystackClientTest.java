@@ -3,9 +3,9 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   05 Dec 2017  Rowyn Brunner  Creation
+//   05 Dec 2017  Rowyn Brunner    Creation
+//   31 Oct 2018  Andrew Saunders  Added Haystack tag dictionary import asserts
 //
-
 package nhaystack.ntest;
 
 import static nhaystack.ntest.helper.NHaystackTestUtil.AIR_ID;
@@ -29,7 +29,6 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -42,7 +41,6 @@ import javax.baja.control.BStringWritable;
 import javax.baja.history.ext.BNumericCovHistoryExt;
 import javax.baja.naming.BOrd;
 import javax.baja.nre.annotations.NiagaraType;
-import javax.baja.registry.TypeInfo;
 import javax.baja.sys.BComplex;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BEnumRange;
@@ -56,6 +54,7 @@ import javax.baja.sys.Type;
 import javax.baja.tag.Entity;
 import javax.baja.tag.Id;
 import javax.baja.tag.Relation;
+import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.units.BUnit;
 import javax.baja.util.BFolder;
 import javax.baja.util.BServiceContainer;
@@ -84,10 +83,13 @@ import org.projecthaystack.HVal;
 import org.projecthaystack.client.CallErrException;
 import org.projecthaystack.client.HClient;
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
+import com.tridium.haystack.BHsTagDictionary;
 import com.tridium.history.log.BLogHistoryService;
 import com.tridium.kitControl.util.BSineWave;
 import com.tridium.testng.BStationTestBase;
+import com.tridium.testng.TestUtil;
 
 @NiagaraType
 @SuppressWarnings("MagicNumber")
@@ -124,16 +126,13 @@ public class BHaystackClientTest extends BStationTestBase
 
         services.add("LogHistoryService", new BLogHistoryService());
 
-        // Looking up the type through the registry so direct module dependencies are not required.
-        final TypeInfo tdsTypeInfo = Sys.getRegistry().getType("tagdictionary:TagDictionaryService");
-        final TypeInfo hstdTypeInfo = Sys.getRegistry().getType("haystack:HsTagDictionary");
-        BComponent tagDictionaryService =
-          addChild("TagDictionaryService", tdsTypeInfo.getInstance().asComponent(), services);
-        BComponent haystackDictionary =
-          addChild("Haystack", hstdTypeInfo.getInstance().asComponent(), tagDictionaryService);
-        final Method importDictionary = haystackDictionary.getClass().getDeclaredMethod("importDictionary");
-        importDictionary.setAccessible(true);
-        importDictionary.invoke(haystackDictionary);
+        services.add("tagDictionaryService", new BTagDictionaryService());
+        BTagDictionaryService service = (BTagDictionaryService)Sys.getService(BTagDictionaryService.TYPE);
+        service.add("haystack", new BHsTagDictionary());
+        haystackDict = (BHsTagDictionary)service.getSmartTagDictionary("hs").orElseThrow(() -> new Exception("No haystack dictionary"));
+
+        // Set tagsImportFile
+        haystackDict.setTagsImportFile(BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv"));
 
         services.add("NHaystackService", haystackService);
         haystackService.setSchemaVersion(1);
@@ -200,6 +199,16 @@ public class BHaystackClientTest extends BStationTestBase
         siteAEquipAFolder.add("sineWave2", new BSineWave());
         siteAequipA.add("sineWave3", new BSineWave());
         siteAequipA.add("sineWave4", new BSineWave());
+    }
+
+    @BeforeTest(alwaysRun = true, description = "Setup and start test station")
+    @Override
+    public void setupStation() throws Exception
+    {
+        super.setupStation();
+
+        TestUtil.waitFor(10, () -> "3.0.2.1 (import)".equals(haystackDict.getVersion()), "Waiting for asynchronous import to finish");
+        assertEquals(haystackDict.getVersion(), "3.0.2.1 (import)", "dictionary version after import");
     }
 
     private static boolean isSlotConversionInProgress(BNHaystackService haystackService)
@@ -1180,6 +1189,7 @@ public class BHaystackClientTest extends BStationTestBase
     private final BComponent testFolder = new BFolder();
     private final BComponent testFolder2 = new BFolder();
     private BComponent addedEquip;
+    private BHsTagDictionary haystackDict;
 
     // used for Numeric point testing
     private static final HNum[] NUM_ARRAY =

@@ -173,7 +173,7 @@ class Row implements NHaystackConst
         else if (val instanceof HStr)    return "Str";
         else if (val instanceof HRef)    return "Ref";
         else if (val instanceof HBool)   return "Bool";
-        else if (val instanceof HUri)      return "Str"; //"Uri";
+        else if (val instanceof HUri)    return "Str"; //"Uri";
         else if (val instanceof HCoord)  return "Str";
 //        else if (val instanceof HBin)      return "Bin";
 //        else if (val instanceof HDate)     return "Date";

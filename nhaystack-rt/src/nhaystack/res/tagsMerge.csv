@@ -1,0 +1,6 @@
+version,3.0.2.1,,,,,,,,,,
+,,,impliedTagRules,,,,Validity Rules,,,,
+name,kind,SmartType,hasTags,isType,hasAncestors,filter,hasTags,isType,hasAncestor,filter,units
+** change the SmartType of the curVal and writeVal tags,,,,,,,,,,,
+curVal,Obj,nhaystack:NCurValTag,,control:ControlPoint,,,point,,,,
+writeVal,Obj,nhaystack:NWriteValTag,,control:ControlPoint,,,point,,,,
