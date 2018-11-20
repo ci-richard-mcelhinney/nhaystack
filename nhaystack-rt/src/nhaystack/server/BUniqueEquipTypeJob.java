@@ -3,45 +3,36 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   09 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.server;
 
-import java.util.*;
-
-import javax.baja.history.*;
-import javax.baja.job.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.client.*;
-
-import nhaystack.*;
-//import nhaystack.driver.*;
+import javax.baja.job.BSimpleJob;
+import javax.baja.job.JobCancelException;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.BHGrid;
+import org.projecthaystack.HGrid;
 
 /**
   * BUniqueEquipTypeJob 
   */
+@NiagaraType
 public class BUniqueEquipTypeJob extends BSimpleJob 
 {
-    /*-
-    class BUniqueEquipTypeJob
-    {
-        properties
-        {
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BUniqueEquipTypeJob(3858554168)1.0$ @*/
-/* Generated Mon May 04 14:25:30 EDT 2015 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BUniqueEquipTypeJob(2979906276)1.0$ @*/
+/* Generated Sat Nov 18 21:09:04 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BUniqueEquipTypeJob.class);
 
@@ -58,21 +49,23 @@ public class BUniqueEquipTypeJob extends BSimpleJob
         this.applyTags = applyTags;
     }
 
-    public void doCancel(Context ctx) 
+    @Override
+    public void doCancel(Context ctx)
     {
         super.doCancel(ctx);
         throw new JobCancelException();
     }
 
-    public void run(Context ctx) throws Exception 
+    @Override
+    public void run(Context ctx) throws Exception
     {
         NHServer server = service.getHaystackServer();
 
         HGrid grid = HGrid.EMPTY;
         BComponent[] equips = NHServerOps.getFilterComponents(
-            server, "equip and (" + filter + ")", null);
+            server, "equip and (" + filter + ')', null);
         if (equips.length > 0)
-            grid = (new UniqueEquipTypes(server)).createTypes(
+            grid = new UniqueEquipTypes(server).createTypes(
                 equips, filter, percentMatch, applyTags);
 
         if (service.get(UNIQUE_EQUIP_TYPES) == null)
@@ -87,7 +80,7 @@ public class BUniqueEquipTypeJob extends BSimpleJob
 
     public static final String UNIQUE_EQUIP_TYPES = "uniquipEquipTypes";
 
-    private BNHaystackService service = null;
+    private BNHaystackService service;
     private String filter;
     private double percentMatch;
     private boolean applyTags;

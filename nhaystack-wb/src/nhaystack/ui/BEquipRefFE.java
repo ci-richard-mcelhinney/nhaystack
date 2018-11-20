@@ -3,40 +3,43 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   10 Feb 2013  Mike Jarmy  Creation
+//   10 Feb 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 //
 
 package nhaystack.ui;
 
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.list.*;
-import javax.baja.util.*;
-import javax.baja.workbench.fieldeditor.*;
-
-import org.projecthaystack.*;
-import nhaystack.*;
-import nhaystack.server.*;
+import javax.baja.naming.BOrd;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BObject;
+import javax.baja.sys.Context;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BDropDown;
+import javax.baja.ui.BListDropDown;
+import javax.baja.ui.list.BList;
+import javax.baja.util.Lexicon;
+import javax.baja.workbench.fieldeditor.BWbFieldEditor;
+import nhaystack.BHGrid;
+import nhaystack.server.BNHaystackService;
+import org.projecthaystack.HGrid;
 
 /**
   * BEquipRefFE edits a 'equipRef' BOrd
   */
+@NiagaraType
 public class BEquipRefFE extends BWbFieldEditor
 {
-    /*-
-    class BEquipRefFE
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BEquipRefFE(3045417629)1.0$ @*/
-/* Generated Sun Feb 10 10:52:19 EST 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BEquipRefFE(2979906276)1.0$ @*/
+/* Generated Mon Nov 20 11:08:06 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BEquipRefFE.class);
 
@@ -83,7 +86,7 @@ public class BEquipRefFE extends BWbFieldEditor
         for (int i = 0; i < equipsGrid.numRows(); i++)
         {
             String slotPath = equipsGrid.row(i).getStr("axSlotPath");
-            int n = slotPath.lastIndexOf("/");
+            int n = slotPath.lastIndexOf('/');
             String parentSlotPath = slotPath.substring(0, n);
             
             if (compSlotPath.startsWith(parentSlotPath))
@@ -92,11 +95,13 @@ public class BEquipRefFE extends BWbFieldEditor
         return null;
     }
 
+    @Override
     protected void doSetReadonly(boolean readonly)
     {
         dropDown.setEnabled(!readonly);
     }
 
+    @Override
     protected void doLoadValue(BObject value, Context cx) throws Exception
     {
         BOrd ord = (BOrd) value;
@@ -130,6 +135,7 @@ public class BEquipRefFE extends BWbFieldEditor
         }
     }
 
+    @Override
     protected BObject doSaveValue(BObject value, Context cx) throws Exception
     {
         String str = (String) dropDown.getSelectedItem();

@@ -3,12 +3,14 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   26 Nov 2014  Mike Jarmy  Creation
+//   26 Nov 2014  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Added use of generics
 //
 package nhaystack.server;
 
-import java.util.concurrent.*;
-import javax.baja.sys.*;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import javax.baja.sys.Context;
 
 /**
   * ThreadContext manages Context meta-data associated with a Thread.
@@ -20,7 +22,7 @@ public abstract class ThreadContext
       */
     public static Context getContext(Thread thread)
     {
-        return (Context) HASH.get(thread.toString());
+        return HASH.get(thread.toString());
     }
 
     /**
@@ -39,6 +41,6 @@ public abstract class ThreadContext
         HASH.remove(thread.toString());
     }
 
-    private static final ConcurrentHashMap HASH = new ConcurrentHashMap();
+    private static final Map<String, Context> HASH = new ConcurrentHashMap<>();
 }
 

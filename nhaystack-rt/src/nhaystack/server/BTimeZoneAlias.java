@@ -3,91 +3,99 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   04 May 2013  Mike Jarmy  Creation
+//   04 May 2013  Mike Jarmy     Creation
+//   09 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotation
 //
 package nhaystack.server;
 
-import javax.baja.sys.*;
-
-import nhaystack.*;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.BHTimeZone;
 
 /**
   * BTimeZoneAlias provides for a custom mapping between AX TimeZones
   * and Haystack TimeZones.
   */
+@NiagaraType
+@NiagaraProperty(
+  name = "axTimeZoneId",
+  type = "String",
+  defaultValue = ""
+)
+@NiagaraProperty(
+  name = "haystackTimeZone",
+  type = "BHTimeZone",
+  defaultValue = "BHTimeZone.DEFAULT"
+)
 public class BTimeZoneAlias extends BComponent
 {
-    /*-
-    class BTimeZoneAlias
-    {
-        properties
-        {
-            axTimeZoneId: String default {[ "" ]}
-            haystackTimeZone: BHTimeZone default {[ BHTimeZone.DEFAULT ]}
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BTimeZoneAlias(1755663353)1.0$ @*/
-/* Generated Sat May 04 11:45:47 GMT-05:00 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.server.BTimeZoneAlias(2627705236)1.0$ @*/
+/* Generated Sat Nov 18 18:40:11 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "axTimeZoneId"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>axTimeZoneId</code> property.
-   * @see nhaystack.server.BTimeZoneAlias#getAxTimeZoneId
-   * @see nhaystack.server.BTimeZoneAlias#setAxTimeZoneId
+   * Slot for the {@code axTimeZoneId} property.
+   * @see #getAxTimeZoneId
+   * @see #setAxTimeZoneId
    */
-  public static final Property axTimeZoneId = newProperty(0, "",null);
+  public static final Property axTimeZoneId = newProperty(0, "", null);
   
   /**
-   * Get the <code>axTimeZoneId</code> property.
-   * @see nhaystack.server.BTimeZoneAlias#axTimeZoneId
+   * Get the {@code axTimeZoneId} property.
+   * @see #axTimeZoneId
    */
   public String getAxTimeZoneId() { return getString(axTimeZoneId); }
   
   /**
-   * Set the <code>axTimeZoneId</code> property.
-   * @see nhaystack.server.BTimeZoneAlias#axTimeZoneId
+   * Set the {@code axTimeZoneId} property.
+   * @see #axTimeZoneId
    */
-  public void setAxTimeZoneId(String v) { setString(axTimeZoneId,v,null); }
+  public void setAxTimeZoneId(String v) { setString(axTimeZoneId, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "haystackTimeZone"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>haystackTimeZone</code> property.
-   * @see nhaystack.server.BTimeZoneAlias#getHaystackTimeZone
-   * @see nhaystack.server.BTimeZoneAlias#setHaystackTimeZone
+   * Slot for the {@code haystackTimeZone} property.
+   * @see #getHaystackTimeZone
+   * @see #setHaystackTimeZone
    */
-  public static final Property haystackTimeZone = newProperty(0, BHTimeZone.DEFAULT,null);
+  public static final Property haystackTimeZone = newProperty(0, BHTimeZone.DEFAULT, null);
   
   /**
-   * Get the <code>haystackTimeZone</code> property.
-   * @see nhaystack.server.BTimeZoneAlias#haystackTimeZone
+   * Get the {@code haystackTimeZone} property.
+   * @see #haystackTimeZone
    */
   public BHTimeZone getHaystackTimeZone() { return (BHTimeZone)get(haystackTimeZone); }
   
   /**
-   * Set the <code>haystackTimeZone</code> property.
-   * @see nhaystack.server.BTimeZoneAlias#haystackTimeZone
+   * Set the {@code haystackTimeZone} property.
+   * @see #haystackTimeZone
    */
-  public void setHaystackTimeZone(BHTimeZone v) { set(haystackTimeZone,v,null); }
+  public void setHaystackTimeZone(BHTimeZone v) { set(haystackTimeZone, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BTimeZoneAlias.class);
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
+    @Override
     public boolean isParentLegal(BComponent parent)
     {
-        return (parent instanceof BTimeZoneAliasFolder);
+        return parent instanceof BTimeZoneAliasFolder;
     }
 }

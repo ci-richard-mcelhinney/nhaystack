@@ -3,33 +3,34 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   07 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.driver.history;
 
-import javax.baja.driver.history.*;
-import javax.baja.sys.*;
-import nhaystack.driver.*;
+import javax.baja.driver.history.BHistoryDeviceExt;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.driver.BNHaystackNetwork;
+import nhaystack.driver.BNHaystackServer;
 
 /**
   * BNHaystackHistoryDeviceExt maps haystack history data
   * into Baja histories.
   */
+@NiagaraType
 public class BNHaystackHistoryDeviceExt extends BHistoryDeviceExt
 {
-    /*-
-    class BNHaystackHistoryDeviceExt
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.history.BNHaystackHistoryDeviceExt(2279933918)1.0$ @*/
-/* Generated Fri Apr 04 07:54:01 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.driver.history.BNHaystackHistoryDeviceExt(2979906276)1.0$ @*/
+/* Generated Fri Nov 17 11:49:32 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackHistoryDeviceExt.class);
 
@@ -45,6 +46,7 @@ public class BNHaystackHistoryDeviceExt extends BHistoryDeviceExt
         return (BNHaystackServer) getDevice();
     }
 
+    @Override
     public Type getImportDescriptorType()
     {
         return BNHaystackHistoryImport.TYPE;

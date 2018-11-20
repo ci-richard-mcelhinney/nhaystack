@@ -3,64 +3,65 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   06 Feb 2013  Mike Jarmy  Creation
-//
+//   06 Feb 2013  Mike Jarmy     Creation
+//   08 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.site;
 
-import javax.baja.sys.*;
-
-import org.projecthaystack.*;
-import nhaystack.*;
-import nhaystack.server.*;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import nhaystack.BHDict;
+import nhaystack.server.NHServer;
+import org.projecthaystack.HDict;
 
 /**
  * A BHTagged is a BComponent that is tagged
  * with haystack properties in a stylized way.
  */
+@NiagaraType
+@NiagaraProperty(
+  name = "haystack",
+  type = "BHDict",
+  defaultValue = "BHDict.DEFAULT"
+)
 public abstract class BHTagged extends BComponent
 {
-    /*-
-    class BHTagged
-    {
-        properties
-        {
-            haystack:  BHDict 
-                default{[ BHDict.DEFAULT ]}
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHTagged(2191060138)1.0$ @*/
-/* Generated Fri Mar 29 19:40:38 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.site.BHTagged(1147514850)1.0$ @*/
+/* Generated Sun Nov 19 22:47:54 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystack"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>haystack</code> property.
-   * @see nhaystack.site.BHTagged#getHaystack
-   * @see nhaystack.site.BHTagged#setHaystack
+   * Slot for the {@code haystack} property.
+   * @see #getHaystack
+   * @see #setHaystack
    */
-  public static final Property haystack = newProperty(0, BHDict.DEFAULT,null);
+  public static final Property haystack = newProperty(0, BHDict.DEFAULT, null);
   
   /**
-   * Get the <code>haystack</code> property.
-   * @see nhaystack.site.BHTagged#haystack
+   * Get the {@code haystack} property.
+   * @see #haystack
    */
   public BHDict getHaystack() { return (BHDict)get(haystack); }
   
   /**
-   * Set the <code>haystack</code> property.
-   * @see nhaystack.site.BHTagged#haystack
+   * Set the {@code haystack} property.
+   * @see #haystack
    */
-  public void setHaystack(BHDict v) { set(haystack,v,null); }
+  public void setHaystack(BHDict v) { set(haystack, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHTagged.class);
 

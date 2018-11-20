@@ -5,32 +5,63 @@
 // History:
 //   07 Nov 2011  Richard McElhinney  Creation
 //   28 Sep 2012  Mike Jarmy          Ported from axhaystack
+//   10 May 2018  Eric Anderson       Added missing @Overrides annotations, added use of generics
 //
 package nhaystack.server;
 
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.logging.*;
-
-import javax.baja.control.*;
-import javax.baja.history.*;
-import javax.baja.history.ext.*;
-import javax.baja.naming.*;
-import javax.baja.schedule.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.timezone.*;
-import javax.baja.units.*;
-import javax.baja.nre.util.*;
-
-import org.projecthaystack.*;
-import org.projecthaystack.io.*;
-import org.projecthaystack.util.*;
-
-import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.site.*;
-import nhaystack.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.control.BControlPoint;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.schedule.BEnumSchedule;
+import javax.baja.schedule.BWeekSchedule;
+import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.status.BStatus;
+import javax.baja.status.BStatusBoolean;
+import javax.baja.status.BStatusEnum;
+import javax.baja.status.BStatusNumeric;
+import javax.baja.status.BStatusString;
+import javax.baja.status.BStatusValue;
+import javax.baja.sys.BAbsTime;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BEnum;
+import javax.baja.sys.BEnumRange;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BIBoolean;
+import javax.baja.sys.BIEnum;
+import javax.baja.sys.BINumeric;
+import javax.baja.sys.BRelTime;
+import javax.baja.sys.BSimple;
+import javax.baja.sys.BTime;
+import javax.baja.sys.BValue;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Clock;
+import javax.baja.sys.Clock.Ticket;
+import nhaystack.BHDict;
+import nhaystack.BHRef;
+import nhaystack.util.SlotUtil;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HDateTime;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HHisItem;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTime;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HVal;
+import org.projecthaystack.io.HZincReader;
+import org.projecthaystack.io.HZincWriter;
 
 /**
   * ScheduleManager does various task associated with generating tags
@@ -51,19 +82,19 @@ class ScheduleManager
       */
     void makePointEvents(BComponent[] points)
     {
-        for (int i = 0; i < points.length; i++)
+        for (BComponent point : points)
         {
-            HRef id = server.getTagManager().makeComponentRef(points[i]).getHRef();
+            HRef id = server.getTagManager().makeComponentRef(point).getHRef();
 
             // cancel any existing ticket
-            Clock.Ticket ticket = (Clock.Ticket) ticketById.remove(id);
-            if (ticket != null) 
+            Ticket ticket = ticketById.remove(id);
+            if (ticket != null)
             {
                 ticket.cancel();
             }
 
             // make a new ticket
-            makeTicketFromItems(id, hisItems(points[i]));
+            makeTicketFromItems(id, hisItems(point));
         }
     }
 
@@ -140,12 +171,12 @@ class ScheduleManager
         if (orig == null) orig = HDict.EMPTY;
 
         HDictBuilder hdb = new HDictBuilder();
-        Iterator itr = orig.iterator();
+        Iterator<Map.Entry<String, HVal>> itr = orig.iterator();
         while (itr.hasNext())
         {
-            Map.Entry e = (Map.Entry) itr.next();
-            String name = (String) e.getKey();
-            HVal val = (HVal) e.getValue();
+            Map.Entry<String, HVal> e = itr.next();
+            String name = e.getKey();
+            HVal val = e.getValue();
 
             if (name.equals("weeklySchedule")) continue;
             if (name.equals("tz") && items.length > 0) continue;
@@ -166,7 +197,7 @@ class ScheduleManager
         makeTicketFromItems(id, items);
     } 
 
-    private void writeWeeklySchedule(BWeeklySchedule sched, HHisItem[] items)
+    private static void writeWeeklySchedule(BWeeklySchedule sched, HHisItem[] items)
     {
         items = normalizeWeek(items);
 
@@ -201,7 +232,7 @@ class ScheduleManager
                     TypeUtil.toBajaTimeZone(items[i].ts.tz)));
 
             // finish (just before midnight if its the last one)
-            BTime finish = null;
+            BTime finish;
             if (i < items.length-1)
             {
                 finish = BTime.make(
@@ -285,7 +316,7 @@ class ScheduleManager
     private static HHisItem[] hisItems(BComponent point)
     {
         HDict tags = BHDict.findTagAnnotation(point);
-        HGrid grid = (new HZincReader(tags.getStr("weeklySchedule"))).readGrid();
+        HGrid grid = new HZincReader(tags.getStr("weeklySchedule")).readGrid();
         return HHisItem.gridToItems(grid);
     }
 
@@ -323,10 +354,8 @@ class ScheduleManager
         HDateTime now = HDateTime.now(items[0].ts.tz);
 
         // try to find an item from the future
-        for (int i = 0; i < items.length; i++)
+        for (HHisItem item : items)
         {
-            HHisItem item = items[i];
-
             if (item.ts.millis() > now.millis())
             {
                 BAbsTime absTime = BAbsTime.make(
@@ -361,20 +390,21 @@ class ScheduleManager
         if (items.length == 0) throw new IllegalStateException();
 
         HTimeZone tz = items[0].ts.tz;
-        Array arr = new Array(HHisItem.class);
-        Set timestamps = new HashSet();
+        ArrayList<HHisItem> arr = new ArrayList<>();
+
+        Set<HDateTime> timestamps = new HashSet<>();
 
         // compute sunday of next week
         HDateTime nextSun = HDateTime.make(
             thisSun.date.plusDays(7), 
             HTime.MIDNIGHT, tz);
 
-        for (int i = 0; i < items.length; i++)
+        for (HHisItem item : items)
         {
             // Skip null values
-            if (items[i].val == null) continue;
+            if (item.val == null) continue;
 
-            HDateTime ts = items[i].ts;
+            HDateTime ts = item.ts;
 
             // subtract weeks until we are before next sunday
             while (ts.millis() >= nextSun.millis())
@@ -388,18 +418,17 @@ class ScheduleManager
             // This way we don't end up normalizing values that 'wrap-around'.
             if (timestamps.contains(ts)) continue;
 
-            arr.add(HHisItem.make(ts, items[i].val));
+            arr.add(HHisItem.make(ts, item.val));
             timestamps.add(ts);
         }
 
-        HHisItem[] result = (HHisItem[]) arr.trim();
+        HHisItem[] result = arr.toArray(EMPTY_HIS_ITEM_ARRAY);
 
         Arrays.sort(
             result,
-            new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    HHisItem h1 = (HHisItem) o1;
-                    HHisItem h2 = (HHisItem) o2;
+            new Comparator<HHisItem>() {
+                @Override
+                public int compare(HHisItem h1, HHisItem h2) {
                     return (int) (h1.ts.millis() - h2.ts.millis());
                 }
             });
@@ -412,6 +441,7 @@ class ScheduleManager
 ////////////////////////////////////////////////////////////////
 
     private static final long MILLIS_IN_WEEK = BRelTime.MILLIS_IN_DAY * 7;
+    private static final HHisItem[] EMPTY_HIS_ITEM_ARRAY = new HHisItem[0];
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
 
@@ -419,6 +449,6 @@ class ScheduleManager
     private final BNHaystackService service;
 
     // <HRef,Clock.Ticket>
-    private final ConcurrentHashMap ticketById = new ConcurrentHashMap(); 
+    private final Map<HRef, Ticket> ticketById = new ConcurrentHashMap<>();
 }
 
