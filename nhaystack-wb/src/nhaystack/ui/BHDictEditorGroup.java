@@ -273,8 +273,9 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
         }
         catch (Exception e)
         {
+            // Show message when there is an issue and do not launch editor.
             e.printStackTrace();
-            return HDict.EMPTY;
+            throw new RuntimeException(e.getCause());
         }
     }
 
