@@ -6,10 +6,9 @@
 //   05 Jun 2014  Mike Jarmy       Creation
 //   10 May 2018  Eric Anderson    Added missing @Overrides annotations, added use of generics
 //   26 Sep 2018  Andrew Saunders  Added shared constants for siteRef and equipRef tag names
+//   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
 //
 package nhaystack.server;
-
-import static nhaystack.server.HaystackSlotUtil.migrateHaystackTags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,14 +33,15 @@ import javax.baja.sys.Context;
 import javax.baja.sys.Flags;
 import javax.baja.sys.Property;
 import javax.baja.sys.Sys;
+
 import nhaystack.BHDict;
 import nhaystack.BHGrid;
 import nhaystack.NHRef;
 import nhaystack.collection.ComponentTreeIterator;
-import nhaystack.util.NHaystackConst;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
 import nhaystack.site.BHTagged;
+import nhaystack.util.NHaystackConst;
 import nhaystack.util.TypeUtil;
 import org.projecthaystack.HBool;
 import org.projecthaystack.HDateTimeRange;
@@ -323,7 +323,9 @@ final class NHServerOps implements NHaystackConst
             if (params.has("toEquips"))
                 toEquipIds = params.getStr("toEquips");
 
-            BHEquip from = (BHEquip) server.getTagManager().lookupComponent(fromId);
+            BComponent from = server.getTagManager().lookupComponent(fromId);
+            HDict fromTags = from instanceof BHEquip ?
+                ((BHEquip) from).generateTags(server) : HDict.EMPTY;
 
             BComponent[] toEquips = getFilterComponents(server, targetFilter, toEquipIds);
 
@@ -334,7 +336,7 @@ final class NHServerOps implements NHaystackConst
                 {
                     if (comp == from) continue;
 
-                    ((BHEquip)comp).setHaystack(cloneDict(BHDict.make(from.generateTags(server))));
+                    ((BHEquip)comp).setHaystack(cloneDict(BHDict.make(fromTags)));
                     HaystackSlotUtil.migrateHaystackTags(comp);
                 }
                 else
@@ -348,7 +350,7 @@ final class NHServerOps implements NHaystackConst
                     }
                     else if (toEquip == from) continue;
 
-                    toEquip.setHaystack(cloneDict(BHDict.make(from.generateTags(server))));
+                    toEquip.setHaystack(cloneDict(BHDict.make(fromTags)));
                     HaystackSlotUtil.migrateHaystackTags(toEquip);
                 }
             }
@@ -745,7 +747,7 @@ final class NHServerOps implements NHaystackConst
             }
             else
             {
-                BHSite site = (BHSite) server.getTagManager().lookupComponent(
+                BComponent site = server.getTagManager().lookupComponent(
                     siteGrid.getRef("id"));
                 siteRef = TagManager.makeSlotPathRef(site).getHRef();
             }
@@ -844,7 +846,7 @@ final class NHServerOps implements NHaystackConst
         else
         {
             HRef id = navRec.getRef("id");
-            BHSite site = (BHSite) server.getTagManager().lookupComponent(id);
+            BComponent site = server.getTagManager().lookupComponent(id);
             return TagManager.makeSlotPathRef(site).getHRef();
         }
     }
@@ -874,7 +876,7 @@ final class NHServerOps implements NHaystackConst
         HDict navRec = lookupEquipNav(server, siteNav, equipNav);
         if (navRec == null)
         {
-            BHSite site = (BHSite) server.getTagManager().lookupComponent(siteRef);
+            BComponent site = server.getTagManager().lookupComponent(siteRef);
 
             // check permissions on this Thread's saved context
             if (!TypeUtil.canWrite(site, cx)) 
@@ -894,7 +896,7 @@ final class NHServerOps implements NHaystackConst
         else
         {
             HRef id = navRec.getRef("id");
-            BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(id);
+            BComponent equip = server.getTagManager().lookupComponent(id);
             return TagManager.makeSlotPathRef(equip).getHRef();
         }
     }
@@ -1109,8 +1111,8 @@ final class NHServerOps implements NHaystackConst
         Cache cache = server.getCache();
 
         ArrayList<HDict> result = new ArrayList<>();
-        BHEquip[] equips = cache.getAllEquips();
-        for (BHEquip equip : equips)
+        BComponent[] equips = cache.getAllEquips();
+        for (BComponent equip : equips)
         {
             BComponent[] points = cache.getEquipPoints(equip);
 
@@ -1230,11 +1232,11 @@ final class NHServerOps implements NHaystackConst
                 for (HRef ref : refs)
                 {
                     BComponent comp = tagMgr.doLookupComponent(ref, false);
-                    if (!TypeUtil.canWrite(comp, cx))
-                        throw new PermissionException("Cannot write to " + ref);
-
                     if (comp != null)
                     {
+                        if (!TypeUtil.canWrite(comp, cx))
+                            throw new PermissionException("Cannot write to " + ref);
+
                         compArr.add(comp);
                         dictArr.add(tagMgr.createTags(comp));
                     }

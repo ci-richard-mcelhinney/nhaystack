@@ -1,6 +1,7 @@
 <types>
   <!--nhaystack.ntest-->
   <type class="nhaystack.ntest.BHaystackClientTest" name="HaystackClientTest"/>
+  <type class="nhaystack.ntest.BHaystackClientTest2" name="HaystackClientTest2"/>
   <type class="nhaystack.ntest.BMigrateHaystackTagsTest" name="MigrateHaystackTagsTest"/>
   <type class="nhaystack.ntest.BReplaceHaystackSlotStationTest" name="ReplaceHaystackSlotStationTest"/>
   <type class="nhaystack.ntest.BShowPointsInWatchTest" name="ShowPointsInWatchTest"/>
