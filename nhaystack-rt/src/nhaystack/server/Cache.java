@@ -6,6 +6,7 @@
 //   29 Mar 2013  Mike Jarmy       Creation
 //   09 May 2018  Eric Anderson    Added use of generics
 //   26 Sep 2018  Andrew Saunders  Added shared constants for siteRef and equipRef tag names
+//   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
 //
 package nhaystack.server;
 
@@ -40,10 +41,10 @@ import nhaystack.BHDict;
 import nhaystack.NHRef;
 import nhaystack.collection.ComponentTreeIterator;
 import nhaystack.collection.HistoryDbIterator;
+import nhaystack.site.BHTagged;
 import nhaystack.util.NHaystackConst;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
-import nhaystack.site.BHTagged;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HRef;
 
@@ -133,33 +134,33 @@ class Cache implements NHaystackConst
     /**
       * Return the implicit 'equip' for the point, or null.
       */
-    synchronized BHEquip getImplicitEquip(BComponent point)
+    synchronized BComponent getImplicitEquip(BComponent point)
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
         return implicitEquips.get(point);
     }
 
-    synchronized BHSite[] getAllSites()
+    synchronized BComponent[] getAllSites()
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
-        return sites.toArray(EMPTY_SITE_ARR);
+        return sites.toArray(EMPTY_COMPONENT_ARRAY);
     }
 
-    synchronized BHEquip[] getAllEquips()
+    synchronized BComponent[] getAllEquips()
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
-        return equips.toArray(EMPTY_EQUIP_ARR);
+        return equips.toArray(EMPTY_COMPONENT_ARRAY);
     }
 
     /**
       * Get all the equips associated with the given site navId.
       */
-    synchronized BHEquip[] getNavSiteEquips(String siteNav)
+    synchronized BComponent[] getNavSiteEquips(String siteNav)
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
 
-        Collection<BHEquip> arr = siteEquips.get(siteNavs.get(siteNav));
-        return arr == null ? EMPTY_EQUIP_ARR : arr.toArray(EMPTY_EQUIP_ARR);
+        Collection<BComponent> arr = siteEquips.get(siteNavs.get(siteNav));
+        return arr == null ? EMPTY_COMPONENT_ARRAY : arr.toArray(EMPTY_COMPONENT_ARRAY);
     }
 
     /**
@@ -174,7 +175,7 @@ class Cache implements NHaystackConst
     /**
       * Get all the points associated with the given equip.
       */
-    synchronized BComponent[] getEquipPoints(BHEquip equip)
+    synchronized BComponent[] getEquipPoints(BComponent equip)
     {
         Collection<BComponent> arr = equipPoints.get(equip);
         return arr == null ? EMPTY_COMPONENT_ARRAY : arr.toArray(EMPTY_COMPONENT_ARRAY);
@@ -278,7 +279,7 @@ class Cache implements NHaystackConst
             BHEquip curImplicitEquip = implicitEquipStack.isEmpty() ?
                 null : implicitEquipStack.peek().equip;
 
-            processComponent(comp, sites, equips, curImplicitEquip);
+            processComponent(comp, curImplicitEquip);
         }
     }
 
@@ -300,22 +301,16 @@ class Cache implements NHaystackConst
     /**
       * processComponent
       */
-    private void processComponent(
-        BComponent comp,
-        Collection<BHSite> sitesArr,
-        Collection<BHEquip> equipsArr,
-        BHEquip curImplicitEquip)
+    private void processComponent(BComponent comp, BComponent curImplicitEquip)
     {
         HDict tags = BHDict.findTagAnnotation(comp);
+        if (tags == null) tags = HDict.EMPTY;
 
-        // point
         if (comp instanceof BControlPoint)
         {
+            // point
             BControlPoint point = (BControlPoint) comp;
             numPoints++;
-
-            // BControlPoints always have tags generated
-            if (tags == null) tags = HDict.EMPTY;
 
             if (tags.has("weeklySchedule") && tags.has("schedulable"))
                 scheduledPoints.add(point);
@@ -326,49 +321,55 @@ class Cache implements NHaystackConst
 
             handleEquip(point, tags, curImplicitEquip);
         }
-        // schedule
         else if (comp instanceof BWeeklySchedule)
         {
+            // schedule
             BWeeklySchedule sched = (BWeeklySchedule) comp;
             numPoints++;
 
-            // BAbstractSchedules always have tags generated
-            if (tags == null) tags = HDict.EMPTY;
-
             handleEquip(sched, tags, curImplicitEquip);
         }
-        // auto-tagged site and equip
         else if (comp instanceof BHTagged)
         {
+            // auto-tagged site and equip
             if (comp instanceof BHSite)
             {
-                sitesArr.add((BHSite) comp);
+                sites.add(comp);
                 siteNavs.put(
-                    Nav.makeSiteNavId(
-                        Nav.makeNavName(comp, tags)),
-                        (BHSite) comp);
+                    Nav.makeSiteNavId(Nav.makeNavName(comp, tags)),
+                    comp);
             }
             else if (comp instanceof BHEquip)
             {
-                equipsArr.add((BHEquip) comp);
-                processEquip((BHEquip) comp);
+                equips.add(comp);
+                processEquip(comp);
             }
+        }
+        else if(comp.tags().contains(ID_SITE))
+        {
+            sites.add(comp);
+            siteNavs.put(Nav.makeSiteNavId(Nav.makeNavName(comp, tags)), comp);
+        }
+        else if (comp.tags().contains(ID_EQUIP))
+        {
+            equips.add(comp);
+            processEquip(comp);
         }
     }
 
-    private void handleEquip(BComponent component, HDict tags, BHEquip curImplicitEquip)
+    private void handleEquip(BComponent component, HDict tags, BComponent curImplicitEquip)
     {
         // explicit equip
         Optional<Relation> optRelation = component.relations().get(ID_EQUIP_REF, Relations.OUT);
         if (tags.has(EQUIP_REF))
         {
             HRef ref = tags.getRef(EQUIP_REF);
-            BHEquip equip = (BHEquip) server.getTagManager().lookupComponent(ref);
+            BComponent equip = server.getTagManager().lookupComponent(ref);
             addPointToEquip(equip, component);
         }
         else if (optRelation.isPresent())
         {
-            BHEquip equip = (BHEquip)optRelation.get().getEndpoint();
+            BComponent equip = (BComponent)optRelation.get().getEndpoint();
             addPointToEquip(equip, component);
         }
         else
@@ -385,7 +386,7 @@ class Cache implements NHaystackConst
     /**
       * addPointToEquip
       */
-    private void addPointToEquip(BHEquip equip, BComponent point)
+    private void addPointToEquip(BComponent equip, BComponent point)
     {
         equipPoints.computeIfAbsent(equip, k -> new ArrayList<>()).add(point);
     }
@@ -393,7 +394,7 @@ class Cache implements NHaystackConst
     /**
       * addEquipToSite
       */
-    private void addEquipToSite(BHSite site, BHEquip equip)
+    private void addEquipToSite(BComponent site, BComponent equip)
     {
         siteEquips.computeIfAbsent(site, k -> new ArrayList<>()).add(equip);
     }
@@ -401,29 +402,40 @@ class Cache implements NHaystackConst
     /**
       * processEquip
       */
-    private void processEquip(BHEquip equip)
+    private void processEquip(BComponent equip)
     {
         HDict equipTags = BHDict.findTagAnnotation(equip);
-        BHSite site = null;
+        if (equipTags == null)
+        {
+            equipTags = HDict.EMPTY;
+        }
+
+        BComponent site = null;
         if (equipTags.has(SITE_REF))
         {
             HRef ref = equipTags.getRef(SITE_REF);
-            site = (BHSite)server.getTagManager().lookupComponent(ref);
+            site = server.getTagManager().lookupComponent(ref);
         }
         else  //check for niagara "hs:siteRef" relation to initialize site.
         {
             Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
             if (optRelation.isPresent())
             {
-                site = (BHSite)optRelation.get().getEndpoint();
+                site = (BComponent)optRelation.get().getEndpoint();
             }
         }
+
         if (site != null)
         {
             addEquipToSite(site, equip);
 
             // save the equip nav
             HDict siteTags = BHDict.findTagAnnotation(site);
+            if (siteTags == null)
+            {
+                siteTags = HDict.EMPTY;
+            }
+
             equipNavs.put(
                 Nav.makeEquipNavId(
                     Nav.makeNavName(site, siteTags),
@@ -437,10 +449,10 @@ class Cache implements NHaystackConst
       */
     private void rebuildComponentCache_secondPass()
     {
-        for (BHSite site : sites)
+        for (BComponent site : sites)
         {
             // make ref for site
-            HDict siteTags = site.getHaystack().getDict();
+            HDict siteTags = site instanceof BHSite ? ((BHSite)site).getHaystack().getDict() : HDict.EMPTY;
             String siteNav = Nav.makeNavName(site, siteTags);
             NHRef siteRef = TagManager.makeSepRef(new String[] { siteNav });
 
@@ -449,10 +461,10 @@ class Cache implements NHaystackConst
             compToSepRef.put(site, siteRef);
 
             // iterate through equips for site
-            for (BHEquip equip : siteEquips.getOrDefault(site, Collections.emptyList()))
+            for (BComponent equip : siteEquips.getOrDefault(site, Collections.emptyList()))
             {
                 // make ref for equip
-                HDict equipTags = equip.getHaystack().getDict();
+                HDict equipTags = equip instanceof BHEquip ? ((BHEquip)equip).getHaystack().getDict() : HDict.EMPTY;
                 String equipNav = Nav.makeNavName(equip, equipTags);
                 NHRef equipRef = TagManager.makeSepRef(new String[] { siteNav, equipNav });
 
@@ -536,8 +548,6 @@ class Cache implements NHaystackConst
     static final String NOT_INITIALIZED = 
         "NHAYSTACK CACHE NOT INITIALIZED";
 
-    private static final BHSite[] EMPTY_SITE_ARR = new BHSite[0];
-    private static final BHEquip[] EMPTY_EQUIP_ARR = new BHEquip[0];
     private static final BComponent[] EMPTY_COMPONENT_ARRAY = new BComponent[0];
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final BHistoryConfig[] EMPTY_HISTORY_CONFIG_ARRAY = new BHistoryConfig[0];
@@ -552,14 +562,14 @@ class Cache implements NHaystackConst
     private Map<RemotePoint, BControlPoint> remoteToPoint;
     private Map<String, Collection<BHistoryConfig>> navHistories;
 
-    private Collection<BHSite> sites = Collections.emptyList();
-    private Collection<BHEquip> equips = Collections.emptyList();
+    private Collection<BComponent> sites = Collections.emptyList();
+    private Collection<BComponent> equips = Collections.emptyList();
 
-    private Map<BComponent, BHEquip> implicitEquips;
-    private Map<String, BHSite> siteNavs;
-    private Map<String, BHEquip> equipNavs;
-    private Map<BHSite, Collection<BHEquip>> siteEquips;
-    private Map<BHEquip, Collection<BComponent>> equipPoints;
+    private Map<BComponent, BComponent> implicitEquips;
+    private Map<String, BComponent> siteNavs;
+    private Map<String, BComponent> equipNavs;
+    private Map<BComponent, Collection<BComponent>> siteEquips;
+    private Map<BComponent, Collection<BComponent>> equipPoints;
 
     private Map<NHRef, BComponent> sepRefToComp;
     private Map<BComponent, NHRef> compToSepRef;

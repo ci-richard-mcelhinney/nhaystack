@@ -12,6 +12,7 @@
 //                                    Convert Haystack Slots action, handling conversion
 //                                    retries
 //   31 Oct 2018  Andrew Saunders     Added initializeHaystackDictionary action
+//   21 Dec 2018  Andrew Saunders     Allowing plain components to be used as sites and equips
 //
 package nhaystack.server;
 
@@ -50,8 +51,6 @@ import javax.baja.util.Lexicon;
 import nhaystack.BHDict;
 import nhaystack.BHGrid;
 import nhaystack.BHRef;
-import nhaystack.site.BHEquip;
-import nhaystack.site.BHSite;
 import nhaystack.worker.BINHaystackWorkerParent;
 import nhaystack.worker.BNHaystackWorker;
 import nhaystack.worker.WorkerChore;
@@ -841,7 +840,7 @@ public class BNHaystackService
 
     public BHGrid doFetchSites()
     {
-        BHSite[] sites = server.getCache().getAllSites();
+        BComponent[] sites = server.getCache().getAllSites();
 
         HDict[] dicts = new HDict[sites.length];
         for (int i = 0; i < sites.length; i++)
@@ -852,7 +851,7 @@ public class BNHaystackService
 
     public BHGrid doFetchEquips()
     {
-        BHEquip[] equips = server.getCache().getAllEquips();
+        BComponent[] equips = server.getCache().getAllEquips();
 
         HDict[] dicts = new HDict[equips.length];
         for (int i = 0; i < equips.length; i++)

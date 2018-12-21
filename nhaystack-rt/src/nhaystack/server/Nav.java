@@ -3,8 +3,9 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   11 Apr 2013  Mike Jarmy     Creation
-//   10 May 2018  Eric Anderson  Added use of generics
+//   11 Apr 2013  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Added use of generics
+//   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
 //
 package nhaystack.server;
 
@@ -20,7 +21,6 @@ import javax.baja.sys.BajaRuntimeException;
 import javax.baja.sys.Context;
 import javax.baja.util.BFormat;
 import javax.baja.xml.XWriter;
-import nhaystack.site.BHSite;
 import nhaystack.util.SlotUtil;
 import nhaystack.util.TypeUtil;
 import org.projecthaystack.HDict;
@@ -99,7 +99,7 @@ public class Nav
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         XWriter out = new XWriter(bout);
 
-        BHSite[] sites = cache.getAllSites();
+        BComponent[] sites = cache.getAllSites();
         if (sites.length == 0)
         {
             out.w("<sepNav/>").nl();
@@ -107,7 +107,7 @@ public class Nav
         else
         {
             out.w("<sepNav>").nl();
-            for (BHSite site : sites)
+            for (BComponent site : sites)
             {
                 HDict siteTags = tagMgr.createComponentTags(site);
                 String siteName = siteTags.getStr("navName");
@@ -209,17 +209,7 @@ public class Nav
             BComponent root = (BComponent) 
                 BOrd.make("station:|slot:/").get(service, null);
 
-            if (!TypeUtil.canRead(root, cx)) 
-                throw new PermissionException("Cannot read " + navId);
-
-            BComponent[] kids = root.getChildComponents();
-            ArrayList<HDict> dicts = new ArrayList<>();
-            for (BComponent kid : kids)
-            {
-                if (TypeUtil.canRead(kid, cx))
-                    dicts.add(makeCompNavRec(kid));
-            }
-            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
+            return getHGrid(navId, cx, root);
         }
         // ComponentSpace component
         else if (navId.startsWith("slot:/"))
@@ -228,19 +218,24 @@ public class Nav
             BOrd ord = BOrd.make("station:|slot:/" + slotPath);
             BComponent comp = (BComponent) ord.get(service, null);
 
-            if (!TypeUtil.canRead(comp, cx)) 
-                throw new PermissionException("Cannot read " + navId);
-
-            BComponent[] kids = comp.getChildComponents();
-            ArrayList<HDict> dicts = new ArrayList<>();
-            for (BComponent kid : kids)
-            {
-                if (TypeUtil.canRead(kid, cx))
-                    dicts.add(makeCompNavRec(kid));
-            }
-            return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
+            return getHGrid(navId, cx, comp);
         }
         else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
+    }
+
+    private HGrid getHGrid(String navId, Context cx, BComponent root)
+    {
+        if (!TypeUtil.canRead(root, cx))
+            throw new PermissionException("Cannot read " + navId);
+
+        BComponent[] kids = root.getChildComponents();
+        ArrayList<HDict> dicts = new ArrayList<>();
+        for (BComponent kid : kids)
+        {
+            if (TypeUtil.canRead(kid, cx))
+                dicts.add(makeCompNavRec(kid));
+        }
+        return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
     }
 
     private HDict makeCompNavRec(BComponent comp)
@@ -330,8 +325,8 @@ public class Nav
             Context cx = ThreadContext.getContext(Thread.currentThread());
             ArrayList<HDict> dicts = new ArrayList<>();
 
-            BHSite[] sites = cache.getAllSites();
-            for (BHSite site : sites)
+            BComponent[] sites = cache.getAllSites();
+            for (BComponent site : sites)
             {
                 if (!TypeUtil.canRead(site, cx)) continue;
 

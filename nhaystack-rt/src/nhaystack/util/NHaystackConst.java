@@ -4,6 +4,7 @@
 //
 // History:
 //   24 Aug 2018  Andrew Saunders  Creation
+//   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
 //
 
 package nhaystack.util;
@@ -18,6 +19,7 @@ public interface NHaystackConst
 	String NAME_SPACE = "hs";
 
     String AREA            = "area";
+    String EQUIP           = "equip";
     String EQUIP_REF       = "equipRef";
     String GEO_ADDR        = "geoAddr";
     String GEO_CITY        = "geoCity";
@@ -28,10 +30,12 @@ public interface NHaystackConst
     String GEO_POSTAL_CODE = "geoPostalCode";
     String GEO_STATE       = "geoState";
     String GEO_STREET      = "geoStreet";
+    String SITE            = "site";
     String SITE_REF        = "siteRef";
     String TZ              = "tz";
 
     Id ID_AREA            = Id.newId(NAME_SPACE, AREA);
+    Id ID_EQUIP           = Id.newId(NAME_SPACE, EQUIP);
     Id ID_EQUIP_REF       = Id.newId(NAME_SPACE, EQUIP_REF);
     Id ID_GEO_ADDR        = Id.newId(NAME_SPACE, GEO_ADDR);
     Id ID_GEO_CITY        = Id.newId(NAME_SPACE, GEO_CITY);
@@ -42,6 +46,7 @@ public interface NHaystackConst
     Id ID_GEO_POSTAL_CODE = Id.newId(NAME_SPACE, GEO_POSTAL_CODE);
     Id ID_GEO_STATE       = Id.newId(NAME_SPACE, GEO_STATE);
     Id ID_GEO_STREET      = Id.newId(NAME_SPACE, GEO_STREET);
+    Id ID_SITE            = Id.newId(NAME_SPACE, SITE);
     Id ID_SITE_REF        = Id.newId(NAME_SPACE, SITE_REF);
     Id ID_TZ              = Id.newId(NAME_SPACE, TZ);
 

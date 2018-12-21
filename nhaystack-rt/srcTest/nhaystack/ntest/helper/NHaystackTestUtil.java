@@ -36,6 +36,7 @@ public final class NHaystackTestUtil
     public static final String NAV_ID_TAG_NAME = "navId";
 
     public static final Id SITE_REF_ID = Id.newId("hs:siteRef");
+    public static final Id EQUIP_REF_ID = Id.newId("hs:equipRef");
     public static final Id DISCHARGE_ID = Id.newId("hs:discharge");
     public static final Id SENSOR_ID = Id.newId("hs:sensor");
     public static final Id AIR_ID = Id.newId("hs:air");

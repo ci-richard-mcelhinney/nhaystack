@@ -3,8 +3,9 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   05 Jun 2014  Mike Jarmy     Creation
-//   10 May 2018  Eric Anderson  Added use of generics
+//   05 Jun 2014  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Added use of generics
+//   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
 //
 package nhaystack.server;
 
@@ -18,7 +19,6 @@ import java.util.TreeSet;
 import javax.baja.nre.util.TextUtil;
 import javax.baja.sys.BComponent;
 import nhaystack.BHDict;
-import nhaystack.site.BHEquip;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HDictBuilder;
 import org.projecthaystack.HGrid;
@@ -45,7 +45,7 @@ public class UniqueEquipTypes
         for (BComponent equip : equips)
         {
             HDict equipTags = server.getTagManager().createTags(equip);
-            Set<String> pointNames = findPointNames(server, (BHEquip)equip);
+            Set<String> pointNames = findPointNames(server, equip);
 
             String key = pointNames.toString();
             EquipType type = typeMap.computeIfAbsent(key, k -> new EquipType(pointNames));
@@ -141,7 +141,7 @@ public class UniqueEquipTypes
     /**
       * findPointNames
       */
-    private static Set<String> findPointNames(NHServer server, BHEquip equip)
+    private static Set<String> findPointNames(NHServer server, BComponent equip)
     {
         Set<String> set = new TreeSet<>();
         BComponent[] points = server.getCache().getEquipPoints(equip);

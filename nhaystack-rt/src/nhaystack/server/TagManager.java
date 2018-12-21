@@ -9,6 +9,7 @@
 //   26 Sep 2018  Andrew Saunders     Added shared constants and handling for geoCoord tag
 //   31 Oct 2018  Andrew Saunders     Removed special handling for curVal and writeVal tags-
 //                                    handled by new smart tag types BNCurValTag and BNWriteValTag
+//   21 Dec 2018  Andrew Saunders     Allowing plain components to be used as sites and equips
 //
 package nhaystack.server;
 
@@ -77,7 +78,6 @@ import nhaystack.NHRef;
 import nhaystack.util.NHaystackConst;
 import nhaystack.res.Resources;
 import nhaystack.res.Unit;
-import nhaystack.site.BHSite;
 import nhaystack.site.BHTagged;
 import nhaystack.util.SlotUtil;
 import org.projecthaystack.HBool;
@@ -916,7 +916,7 @@ public class TagManager implements NHaystackConst
                 Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
                 if (optRelation.isPresent())
                 {
-                    BHSite site = (BHSite)optRelation.get().getEndpoint();
+                    BComponent site = (BComponent) optRelation.get().getEndpoint();
                     siteRef = makeComponentRef(site).getHRef();
                 }
 
@@ -1022,7 +1022,7 @@ public class TagManager implements NHaystackConst
       */
     private static String makeDisName(BComponent comp, HDict tags)
     {
-        String format = tags.has("navNameFormat") ?
+        String format = tags != null && tags.has("navNameFormat") ?
             tags.getStr("navNameFormat") :
             "%displayName%";
         return BFormat.format(format, comp);
