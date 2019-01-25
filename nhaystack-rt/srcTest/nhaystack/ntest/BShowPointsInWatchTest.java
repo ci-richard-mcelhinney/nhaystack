@@ -23,7 +23,9 @@ import javax.baja.sys.BStation;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import javax.baja.util.BFolder;
+import javax.baja.web.*;
 
+import com.tridium.jetty.BJettyWebServer;
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
@@ -121,4 +123,20 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
         }
         return hRefs;
     }
+
+  @Override
+  protected BWebService makeWebService(int port) throws Exception
+  {
+    BWebService service = new BWebService();
+    service.setHttpsEnabled(false);
+    service.setHttpsOnly(false);
+    service.setHttpEnabled(true);
+    service.getHttpPort().setPublicServerPort(port);
+    service.getHttpsPort().setPublicServerPort(8443);
+
+    BWebServer server = new BJettyWebServer();
+    service.add("JettyWebServer", server);
+
+    return service;
+  }
 }
