@@ -38,8 +38,9 @@ The development of NHaystack has been funded by
 Further contributions have been made by:
 * Christian Tremblay, Servisys Inc.
 * Stuart Longland, VRT Systems
+* Bryant Holland, CBRE|ESI
 
-###Benefits
+### Benefits
 
 * The ability to include meta data tags as part of Niagara data structures 
 allows external applications to automatically interpret the meaning of data 
@@ -53,7 +54,7 @@ access to data, and presentation in third party applications.
 and server machines, allowing for third-parties to integrate easily with your 
 equipment and data.
 
-###Key Features
+### Key Features
 
 * Provides drop-in support for the Haystack REST API on a Niagara 4 system.
 * Unifies the Component and History namespaces
@@ -75,6 +76,43 @@ serving up all its ControlPoint objects and Histories as haystack
 [Haystack REST Api](http://project-haystack.org/doc/Rest). 
 Many of the tags that are defined as being associated with `points`, like 
 `kind`, `unit`, `tz`, `his`, `cur`, etc. are automatically generated for you.
+
+#### 1.1 The Cache
+The NHaystackService maintains an in-memory cache of all the Haystack records
+it finds in your Niagara Station.  When you first add the NHaystackService to
+your station it needs to be enabled.  This can be done from the Property Sheet
+of the NHaystackService.  When the service initialises it builds the in-memory
+cache of the Haystack records it finds.  
+
+This process also happens when the station is started or restarted.  If you 
+examine the output from the Application Director of your station you will see
+a number of messages logged there advising of the status of the cache building
+process.
+
+If at anytime whilst the station is running you make a change to any tags or 
+site/equipment entities then it you must make sure you execute a cache rebuild.
+This can be done by finding the NHaystackService in your station and
+right-clicking on the service.  From the context menu that appears select 
+_Actions->Rebuild Cache_.  If you do not do this then your changes will not
+appear in any queries to the NHaystackService from either internal or external
+clients.
+
+#### 1.2 The Haystack Servlet
+When using the NHaystack module in Niagara and configuring your station as a
+Haystack server you will most likely want to enable the servlet.  The 
+NHaystackService comes with a built-in, fully compliant implementation of the
+Project Haystack REST API specification.  This servlet enables external 
+Haystack clients to interact with your Niagara Station.
+
+To enable the built-in servlet that implements the Project Haystack REST API
+navigate to the Property Sheet of the NHaystackService in your station and you
+will find the property that enables the servlet.  Additionally there is an 
+opportunity to provide a custom name for the servlet.  By default the servlet
+name is _haystack_ and it is recommended that this default name remains unchanged
+as other clients will be expecting this servlet name as a defacto standard.
+
+It is recommended to enable the servlet immediately after installing the
+NHaystackService so that other clients are able to interact with your station.
 
 ### 2. How point recs are generated
 
@@ -228,7 +266,9 @@ status is not null. This means that if a point in N4 has the "null" status flag
 set, then it will be reported with a curStatus of "ok", but it will simply not
 have a curVal.
 
-### 3. Tagging via the "haystack" slot
+### 3. How to Tag in Niagara
+
+#### 3.1 Tagging via the "haystack" slot
 
 For many use cases of NHaystack, you will not need to do any explicit tagging
 on the station.  However, sometimes you want to actually add tags to the 
@@ -260,7 +300,11 @@ Whenever you alter a tag with the FieldEditor, you usually need to run
 `rebuildCache`. Its best to just get in the habit of running it any time you
 change a tag or alter the structure of a station.
 
-### 3.1 A better Workbench Interface
+#### 3.2 Tagging using the Niagara Interface
+
+#### 3.3 Refs and Relations
+
+#### 3.4 A better Workbench Interface
 The nHaystack Service View is really simple. There's no need to rebuild 
 everything but adding a few buttons add a lot of flexibility to the view. 
 The displayed text has also been modified so we can get rid of ~ codes and retrieve 
