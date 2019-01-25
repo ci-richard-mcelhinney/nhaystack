@@ -99,7 +99,7 @@ public class SimpleClientTest extends TestCore
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
-    Assert.assertEquals(r.getStr("productVersion"), "4.4.73.24");
+    Assert.assertEquals(r.getStr("productVersion"), "4.4.93.40");
     Assert.assertEquals(r.getStr("moduleVersion"), "2.1.2");
   }
 

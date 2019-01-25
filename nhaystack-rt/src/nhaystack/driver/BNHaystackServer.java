@@ -19,6 +19,9 @@ import javax.baja.security.*;
 import javax.baja.sys.*;
 import javax.baja.util.*;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 
@@ -547,12 +550,15 @@ public class BNHaystackServer
       */
     public synchronized HClient getHaystackClient() 
     {
+        //Security requirement for 4.6
+        BPassword parameter = BPassword.make(AccessController.doPrivileged((PrivilegedAction<String>) getCredentials().getPassword()::getValue));
+
         if (hclient == null)
         {
             hclient = HClient.open(
                 getHaystackUrl(),
                 getCredentials().getUsername(),
-                getCredentials().getPassword().getValue());
+                parameter.getValue());
         }
         return hclient;
     }
