@@ -28,27 +28,28 @@ repositories {
 dependencies {
   compile fileTree(dir: 'lib', include: ['*.jar'])
 
-  compile "Tridium:nre:4.0"
-  compile "Tridium:alarm-rt:4.0"
-  compile "Tridium:baja:4.0"
-  compile "Tridium:bql-rt:4.0"
-  compile "Tridium:control-rt:4.0"
-  compile "Tridium:driver-rt:4.0"
-  compile "Tridium:fox-rt:4.0"
+  compile "Tridium:nre:4.4.93.40"
+  compile "Tridium:alarm-rt:4.4.93.40"
+  compile "Tridium:baja:4.4.93.40"
+  compile "Tridium:bql-rt:4.4.93.40"
+  compile "Tridium:control-rt:4.4.93.40"
+  compile "Tridium:driver-rt:4.4.93.40"
+  compile "Tridium:fox-rt:4.4.93.40"
   compile "Tridium:haystack-rt:4.4.94.40.3"
-  compile "Tridium:history-rt:4.0"
-  compile "Tridium:net-rt:4.0"
-  compile "Tridium:niagaraDriver-rt:4.0"
-  compile "Tridium:schedule-rt:4.0"
-  compile "Tridium:tagdictionary-rt:4.0"
-  compile "Tridium:web-rt:4.0"
+  compile "Tridium:history-rt:4.4.93.40"
+  compile "Tridium:net-rt:4.4.93.40"
+  compile "Tridium:niagaraDriver-rt:4.4.93.40"
+  compile "Tridium:schedule-rt:4.4.93.40"
+  compile "Tridium:tagdictionary-rt:4.4.93.40"
+  compile "Tridium:web-rt:4.4.93.40"
 
-  niagaraModuleTestCompile "Tridium:test-se:4.0"
+  niagaraModuleTestCompile "Tridium:test-se:4.4.93.40"
   niagaraModuleTestCompile "Tridium:haystack-rt:4.4"
-  niagaraModuleTestCompile "Tridium:kitControl-rt:4.0.22"
+  niagaraModuleTestCompile "Tridium:kitControl-rt:4.4.93.40.22"
+  niagaraModuleTestCompile "Tridium:jetty-rt:4.4.93.40"
   
   testCompile 'org.testng:testng:6.10'
-  testCompile "Tridium:alarm-rt:4.0"
+  testCompile "Tridium:alarm-rt:4.4.93.40"
   testCompile fileTree(dir: 'lib', include: ['*.jar'])
 
   uberjar "javax.servlet:javax.servlet-api:3.0.1"
