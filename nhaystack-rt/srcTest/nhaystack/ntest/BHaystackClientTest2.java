@@ -8,6 +8,7 @@
 package nhaystack.ntest;
 
 import com.tridium.haystack.BHsTagDictionary;
+import com.tridium.jetty.BJettyWebServer;
 import com.tridium.testng.BStationTestBase;
 import com.tridium.testng.TestUtil;
 import nhaystack.server.BNHaystackService;
@@ -29,7 +30,7 @@ import javax.baja.tag.Tag;
 import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BFolder;
 import javax.baja.util.BServiceContainer;
-import javax.baja.web.BWebService;
+import javax.baja.web.*;
 import java.io.File;
 
 import static nhaystack.ntest.helper.NHaystackTestUtil.*;
@@ -223,6 +224,22 @@ public class BHaystackClientTest2 extends BStationTestBase
 ////////////////////////////////////////////////////////////////
 // Utils
 ////////////////////////////////////////////////////////////////
+
+    @Override
+    protected BWebService makeWebService(int port) throws Exception
+    {
+        BWebService service = new BWebService();
+        service.setHttpsEnabled(false);
+        service.setHttpsOnly(false);
+        service.setHttpEnabled(true);
+        service.getHttpPort().setPublicServerPort(port);
+        service.getHttpsPort().setPublicServerPort(8443);
+
+        BWebServer server = new BJettyWebServer();
+        service.add("JettyWebServer", server);
+
+        return service;
+    }
 
     HClient openClient() throws InterruptedException
     {

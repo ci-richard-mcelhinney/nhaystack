@@ -58,7 +58,7 @@ import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.units.BUnit;
 import javax.baja.util.BFolder;
 import javax.baja.util.BServiceContainer;
-import javax.baja.web.BWebService;
+import javax.baja.web.*;
 
 import junit.extensions.PA;
 import nhaystack.server.BNHaystackConvertHaystackSlotsJob;
@@ -90,6 +90,7 @@ import com.tridium.history.log.BLogHistoryService;
 import com.tridium.kitControl.util.BSineWave;
 import com.tridium.testng.BStationTestBase;
 import com.tridium.testng.TestUtil;
+import com.tridium.jetty.BJettyWebServer;
 
 @NiagaraType
 @SuppressWarnings("MagicNumber")
@@ -1115,18 +1116,21 @@ public class BHaystackClientTest extends BStationTestBase
         return HClient.open(baseURI, getSuperUsername(), getSuperUserPassword());
     }
 
-//    @Override
-//    protected BWebService makeWebService(int port) throws Exception
-//    {
-//        BWebService service = new BWebService();
-//        service.getHttpPort().setPublicServerPort(port);
-//        service.getHttpsPort().setPublicServerPort(443);
-//
-//        BWebServer server = new BJettyWebServer();
-//        service.add("JettyWebServer", server);
-//
-//        return service;
-//    }
+    @Override
+    protected BWebService makeWebService(int port) throws Exception
+    {
+        BWebService service = new BWebService();
+        service.setHttpsEnabled(false);
+        service.setHttpsOnly(false);
+        service.setHttpEnabled(true);
+        service.getHttpPort().setPublicServerPort(port);
+        service.getHttpsPort().setPublicServerPort(8443);
+
+        BWebServer server = new BJettyWebServer();
+        service.add("JettyWebServer", server);
+
+        return service;
+    }
 
     static HGrid makeIdGrid(HVal id)
     {
