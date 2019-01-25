@@ -1,8 +1,8 @@
-<link href="markdown.css" rel="stylesheet"/>
+
 
 # ![NHaystack](tag.png)Testing nhaystack for Niagara 4  
 
-##Introduction
+## Introduction
 The 'nhaystack' module for Niagara 4 comes ready with an extensive test suite.  
 The test suite configuration allows a developer to run automated tests against more 
 than 1 running Niagara station and exercise the Haystack REST API in different 
@@ -18,13 +18,13 @@ live Niagara Station.
 This document also describes how to run a small number of other unit tests using 
 the Niagara TestNG test harness.
 
-##Distribution
+## Distribution
 The test stations for the nhaystack module are distributed as Niagara Station
 templates.  This means that a developer who wishes to run the 'nhaystack' test
 suite must first create new stations on their local system using the distributed
 station templates.
 
-##Setup and execution
+## Setup and execution
 Step 1 in running the test suite is to clone/download the 'nhaystack' repository
 and build the relevant Niagara modules ensuring that both the runtime and workbench
 profile modules have been copied into the <niagara_home>\modules folder.
@@ -60,24 +60,24 @@ Niagara Workbench, in this way they will be started under the Platform Daemon an
 have full crypto and security functionality operational, thus enabling a more 
 realistic test scenario.
 
-##nhaystack_simple
+## nhaystack_simple
 This station simulates a scenario where there is only a single Jace talking to a system.
 In this case we imagine that a "Haystack Client" is querying the Jace for points and 
 history data.  So this station has a setup that mimics many different use cases for a 
 Jace using 'nhaystack'.
 
-###Port Allocation
+### Port Allocation
 Fox  => 1912<br>
 HTTP => 82<br>
 
-##nhaystack_sup
+## nhaystack_sup
 This is an example of a larger setup of a Niagara system.  In this case there is 2
 Jaces setup and a Web Supervisor.  THe Web Supervisor station is already configured
 with the subordinate Jaces in the Niagara Network.  The subordinate JACEs do not have
 any 'Haystack' tagging, they are just normal Niagara stations simulating the function
 of a JACE.  
 
-###Port Allocation
+### Port Allocation
 nhaystack_sup<br>
 Fox  => 1915<br>
 HTTP => 85<br>
@@ -90,7 +90,7 @@ nhaystack_j2<br>
 Fox  => 1917<br>
 HTTP => 87<br>
 
-##Niagara Test Harness
+## Niagara Test Harness
 There is currently a small number of unit tests that can be run using the Niagara 
 Test Harness.  The details of the test harness can be found in the developer 
 documentation in the Niagara installation, however it is quite simple to run the 
