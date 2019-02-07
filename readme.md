@@ -266,7 +266,7 @@ status is not null. This means that if a point in N4 has the "null" status flag
 set, then it will be reported with a curStatus of "ok", but it will simply not
 have a curVal.
 
-### 3. How to Tag in Niagara
+### 3. How to tag points in Niagara
 
 #### 3.1 Tagging via the "haystack" slot
 
@@ -301,8 +301,10 @@ Whenever you alter a tag with the FieldEditor, you usually need to run
 change a tag or alter the structure of a station.
 
 #### 3.2 Tagging using the Niagara Interface
+To do...
 
 #### 3.3 Refs and Relations
+To do...
 
 #### 3.4 A better Workbench Interface
 The nHaystack Service View is really simple. There's no need to rebuild 
