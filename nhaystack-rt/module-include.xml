@@ -8,6 +8,8 @@
     10 May 2018  Eric Anderson       Re-built using Niagara annotations, removed UI component
     26 Sep 2018  Andrew Saunders     Added Haystack slot conversion job
     31 Oct 2018  Andrew Saunders     Added NCurValTag and NWriteValTag
+    13 Mar 2019  Andrew Saunders     Added NIdTag
+    12 Apr 2019  Eric Anderson       Added NEquipRefRelation and NSiteRefRelation
 -->
 
 <types>
@@ -76,4 +78,7 @@
   <!--nhaystack.server.tags-->
   <type class="nhaystack.server.tags.BNCurValTag" name="NCurValTag"/>
   <type class="nhaystack.server.tags.BNWriteValTag" name="NWriteValTag"/>
+  <type class="nhaystack.server.tags.BNIdTag" name="NIdTag"/>
+  <type class="nhaystack.server.tags.BNEquipRefRelation" name="NEquipRefRelation"/>
+  <type class="nhaystack.server.tags.BNSiteRefRelation" name="NSiteRefRelation"/>
 </types>

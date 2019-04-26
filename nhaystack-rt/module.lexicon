@@ -11,6 +11,7 @@
 #
 
 hs$3aarea=hs:area
+hs$3aequip=hs:equip
 hs$3ageoAddr=hs:geoAddr
 hs$3ageoCity=hs:geoCity
 hs$3ageoCoord=hs:geoCoord

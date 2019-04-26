@@ -7,6 +7,7 @@
 //   09 May 2018  Eric Anderson    Added use of generics
 //   26 Sep 2018  Andrew Saunders  Added shared constants for siteRef and equipRef tag names
 //   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
+//   13 Mar 2019  Andrew Saunders  Added spy
 //
 package nhaystack.server;
 
@@ -26,6 +27,7 @@ import javax.baja.history.BHistoryId;
 import javax.baja.history.BIHistory;
 import javax.baja.naming.BOrd;
 import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.spy.SpyWriter;
 import javax.baja.sys.BAbsTime;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BRelTime;
@@ -37,14 +39,15 @@ import javax.baja.sys.SlotCursor;
 import javax.baja.sys.Sys;
 import javax.baja.tag.Relation;
 import javax.baja.tag.Relations;
+
 import nhaystack.BHDict;
 import nhaystack.NHRef;
 import nhaystack.collection.ComponentTreeIterator;
 import nhaystack.collection.HistoryDbIterator;
-import nhaystack.site.BHTagged;
-import nhaystack.util.NHaystackConst;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
+import nhaystack.site.BHTagged;
+import nhaystack.util.NHaystackConst;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HRef;
 
@@ -534,6 +537,63 @@ class Cache implements NHaystackConst
             }
         }
     }
+
+////////////////////////////////////////////////////////////////
+// spy
+////////////////////////////////////////////////////////////////
+
+    public void spy(SpyWriter out) throws Exception {
+        out.startProps();
+        out.trTitle("Cache SiteNavs", 2);
+        for (Map.Entry<String, BComponent> siteNav : siteNavs.entrySet())
+        {
+            out.prop(siteNav.getKey(), siteNav.getValue().getSlotPath());
+        }
+        out.endProps();
+
+        out.startProps();
+        out.trTitle("Cache EquipNavs", 2);
+        for (Map.Entry<String, BComponent> nav : equipNavs.entrySet())
+        {
+            out.prop(nav.getKey(), nav.getValue().getSlotPath());
+        }
+        out.endProps();
+
+        out.startProps();
+        out.trTitle("Cache ImplicitEquips", 2);
+        for (Map.Entry<BComponent, BComponent> nav : implicitEquips.entrySet())
+        {
+            out.prop(nav.getKey().getSlotPath(), nav.getValue().getSlotPath());
+        }
+        out.endProps();
+
+        out.startProps();
+        out.trTitle("Cache SiteEquips", 2);
+        for (Map.Entry<BComponent, Collection<BComponent>> nav : siteEquips.entrySet())
+        {
+            String site = nav.getKey().getSlotPath().toString();
+            for (BComponent component : nav.getValue())
+            {
+                out.prop(site, component.getSlotPath());
+                site = "";
+            }
+        }
+        out.endProps();
+
+        out.startProps();
+        out.trTitle("Cache EquipPoints", 2);
+        for (Map.Entry<BComponent, Collection<BComponent>> nav : equipPoints.entrySet())
+        {
+            String equip = nav.getKey().getSlotPath().toString();
+            for (BComponent component : nav.getValue())
+            {
+                out.prop(equip, component.getSlotPath());
+                equip = "";
+            }
+        }
+        out.endProps();
+    }
+
 
 ////////////////////////////////////////////////////////////////
 // access

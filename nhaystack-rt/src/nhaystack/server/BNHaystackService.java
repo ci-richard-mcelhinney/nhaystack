@@ -13,6 +13,7 @@
 //                                    retries
 //   31 Oct 2018  Andrew Saunders     Added initializeHaystackDictionary action
 //   21 Dec 2018  Andrew Saunders     Allowing plain components to be used as sites and equips
+//   13 Mar 2019  Andrew Saunders     Added spy on the nHaystack cache
 //
 package nhaystack.server;
 
@@ -28,6 +29,7 @@ import javax.baja.nre.annotations.NiagaraAction;
 import javax.baja.nre.annotations.NiagaraProperty;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.nre.util.TextUtil;
+import javax.baja.spy.SpyWriter;
 import javax.baja.sys.Action;
 import javax.baja.sys.BAbstractService;
 import javax.baja.sys.BBoolean;
@@ -1069,6 +1071,19 @@ public class BNHaystackService
     {
         // no op
     }
+
+////////////////////////////////////////////////////////////////
+// spy
+////////////////////////////////////////////////////////////////
+
+  @Override
+  public void spy(SpyWriter out) throws Exception
+  {
+      super.spy(out);
+
+      final Cache cache = getHaystackServer().getCache();
+      cache.spy(out);
+  }
 
 ////////////////////////////////////////////////////////////////
 // protected

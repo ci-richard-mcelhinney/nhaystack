@@ -10,6 +10,7 @@
 //   31 Oct 2018  Andrew Saunders     Removed special handling for curVal and writeVal tags-
 //                                    handled by new smart tag types BNCurValTag and BNWriteValTag
 //   21 Dec 2018  Andrew Saunders     Allowing plain components to be used as sites and equips
+//   12 Apr 2019  Eric Anderson       Converting String encoded id tag to an HRef value
 //
 package nhaystack.server;
 
@@ -306,13 +307,18 @@ public class TagManager implements NHaystackConst
                 }
                 else if (tagValueType == BString.TYPE)
                 {
+                    String value = ((BString)tagValue).getString();
                     if (tagName.equals("geoCoord"))
                     {
-                        hdb.add(tagName, HCoord.make(tagValue.toString()));
+                        hdb.add(tagName, HCoord.make(value));
+                    }
+                    else if (tagName.equals("id"))
+                    {
+                        hdb.add(tagName, HRef.make(value));
                     }
                     else
                     {
-                        hdb.add(tagName, HStr.make(((BString)tagValue).getString()));
+                        hdb.add(tagName, HStr.make(value));
                     }
                 }
                 else if (tagValueType == BTimeZone.TYPE)
