@@ -6,6 +6,7 @@
 //   06 Feb 2013  Mike Jarmy       Creation
 //   08 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides annotations
 //   26 Sep 2018  Andrew Saunders  Added shared constants
+//   12 Apr 2019  Eric Anderson    Making the equip tag a frozen slot so it is present immediately
 //
 
 package nhaystack.site;
@@ -14,6 +15,8 @@ import javax.baja.nre.annotations.NiagaraProperty;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BIcon;
+import javax.baja.sys.BMarker;
+import javax.baja.sys.Flags;
 import javax.baja.sys.Property;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
@@ -32,16 +35,23 @@ import org.projecthaystack.HStr;
  */
 @NiagaraType
 @NiagaraProperty(
-  name = "haystack",
-  type = "BHDict",
-  defaultValue = "BHDict.make(\"navNameFormat:\\\"%parent.displayName%\\\"\")",
-  override = true
+    name = "haystack",
+    type = "BHDict",
+    defaultValue = "BHDict.make(\"navNameFormat:\\\"%parent.displayName%\\\"\")",
+    override = true
 )
+@NiagaraProperty(
+    name = "hs$3aequip",
+    type = "BMarker",
+    flags = Flags.METADATA,
+    defaultValue = "BMarker.DEFAULT"
+)
+@SuppressWarnings("DollarSignInName")
 public class BHEquip extends BHTagged implements NHaystackConst
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.site.BHEquip(2564166230)1.0$ @*/
-/* Generated Sun Nov 19 22:45:42 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.site.BHEquip(730972791)1.0$ @*/
+/* Generated Mon Apr 08 14:44:12 EDT 2019 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "haystack"
@@ -53,6 +63,29 @@ public class BHEquip extends BHTagged implements NHaystackConst
    * @see #setHaystack
    */
   public static final Property haystack = newProperty(0, BHDict.make("navNameFormat:\"%parent.displayName%\""), null);
+
+////////////////////////////////////////////////////////////////
+// Property "hs$3aequip"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the {@code hs$3aequip} property.
+   * @see #getHs$3aequip
+   * @see #setHs$3aequip
+   */
+  public static final Property hs$3aequip = newProperty(Flags.METADATA, BMarker.DEFAULT, null);
+  
+  /**
+   * Get the {@code hs$3aequip} property.
+   * @see #hs$3aequip
+   */
+  public BMarker getHs$3aequip() { return (BMarker)get(hs$3aequip); }
+  
+  /**
+   * Set the {@code hs$3aequip} property.
+   * @see #hs$3aequip
+   */
+  public void setHs$3aequip(BMarker v) { set(hs$3aequip, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type

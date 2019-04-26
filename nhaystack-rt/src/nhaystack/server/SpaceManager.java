@@ -6,6 +6,7 @@
 //   04 Oct 2012  Mike Jarmy       Creation
 //   10 May 2018  Eric Anderson    Added missing @Overrides annotations, added use of generics
 //   26 Sep 2018  Andrew Saunders  Provided access to isVisibleComponent method from wb module
+//   13 Mar 2019  Andrew Saunders  Added plain components with site or equip tags to isVisibleComponent
 //
 package nhaystack.server;
 
@@ -28,10 +29,13 @@ import javax.baja.sys.Context;
 import javax.baja.sys.Property;
 import javax.baja.sys.SlotCursor;
 import javax.baja.sys.Sys;
+import javax.baja.tag.Tags;
+
 import nhaystack.BHDict;
 import nhaystack.collection.ComponentTreeIterator;
 import nhaystack.collection.HistoryDbIterator;
 import nhaystack.site.BHTagged;
+import nhaystack.util.NHaystackConst;
 import nhaystack.util.TypeUtil;
 import org.projecthaystack.HDict;
 
@@ -71,14 +75,23 @@ public class SpaceManager
         if (!TypeUtil.canRead(comp, cx)) 
             return false;
 
-        if (comp instanceof BHTagged) return true;
-        if (comp instanceof BControlPoint) return true;
-        if (comp instanceof BDevice) return true;
-        if (comp instanceof BWeeklySchedule) return true;
+        if (comp instanceof BHTagged)
+            return true;
+        if (comp instanceof BControlPoint)
+            return true;
+        if (comp instanceof BDevice)
+            return true;
+        if (comp instanceof BWeeklySchedule)
+            return true;
 
         // Return true for components that are annotated with a BHDict.
         BValue haystack = comp.get("haystack");
         if (haystack instanceof BHDict)
+            return true;
+
+        // Return true for components tagged with hs:site or hs:equip tags
+        Tags tags = comp.tags();
+        if (tags.contains(NHaystackConst.ID_SITE) || tags.contains(NHaystackConst.ID_EQUIP))
             return true;
 
         // nope

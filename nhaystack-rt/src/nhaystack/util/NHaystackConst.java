@@ -5,9 +5,13 @@
 // History:
 //   24 Aug 2018  Andrew Saunders  Creation
 //   21 Dec 2018  Andrew Saunders  Allowing plain components to be used as sites and equips
+//   13 Mar 2019  Andrew Saunders  Added point, point ID, and dictionary version constants
+//   12 Apr 2019  Eric Anderson    Added vav and ahu constants
 //
 
 package nhaystack.util;
+
+import com.tridium.haystack.BHsTagDictionary;
 
 import javax.baja.tag.Id;
 
@@ -16,8 +20,9 @@ import javax.baja.tag.Id;
  */
 public interface NHaystackConst
 {
-	String NAME_SPACE = "hs";
+    String NAME_SPACE = "hs";
 
+    String AHU             = "ahu";
     String AREA            = "area";
     String EQUIP           = "equip";
     String EQUIP_REF       = "equipRef";
@@ -30,10 +35,13 @@ public interface NHaystackConst
     String GEO_POSTAL_CODE = "geoPostalCode";
     String GEO_STATE       = "geoState";
     String GEO_STREET      = "geoStreet";
+    String POINT           = "point";
     String SITE            = "site";
     String SITE_REF        = "siteRef";
     String TZ              = "tz";
+    String VAV             = "vav";
 
+    Id ID_AHU             = Id.newId(NAME_SPACE, AHU);
     Id ID_AREA            = Id.newId(NAME_SPACE, AREA);
     Id ID_EQUIP           = Id.newId(NAME_SPACE, EQUIP);
     Id ID_EQUIP_REF       = Id.newId(NAME_SPACE, EQUIP_REF);
@@ -46,9 +54,11 @@ public interface NHaystackConst
     Id ID_GEO_POSTAL_CODE = Id.newId(NAME_SPACE, GEO_POSTAL_CODE);
     Id ID_GEO_STATE       = Id.newId(NAME_SPACE, GEO_STATE);
     Id ID_GEO_STREET      = Id.newId(NAME_SPACE, GEO_STREET);
+    Id ID_POINT           = Id.newId(NAME_SPACE, POINT);
     Id ID_SITE            = Id.newId(NAME_SPACE, SITE);
     Id ID_SITE_REF        = Id.newId(NAME_SPACE, SITE_REF);
     Id ID_TZ              = Id.newId(NAME_SPACE, TZ);
+    Id ID_VAV             = Id.newId(NAME_SPACE, VAV);
 
     String TN_AREA            = "hs$3aarea";
     String TN_EQUIP_REF       = "hs$3aequipRef";
@@ -63,4 +73,9 @@ public interface NHaystackConst
     String TN_GEO_STREET      = "hs$3ageoStreet";
     String TN_SITE_REF        = "hs$3asiteRef";
     String TN_TZ              = "hs$3atz";
+
+    String TAGS_VERSION = BHsTagDictionary.HAYSTACK_VERSION + " NH.2";
+    String IMPORT_SUFIX = " (import)";
+    String TAGS_VERSION_IMPORT = TAGS_VERSION + IMPORT_SUFIX;
+    String TAGS_CSV_FILE_VERSION = BHsTagDictionary.TAGS_CSV_FILE_VERSION;
 }
