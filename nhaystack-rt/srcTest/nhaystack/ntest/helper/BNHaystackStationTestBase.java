@@ -8,18 +8,29 @@
 
 package nhaystack.ntest.helper;
 
+import static nhaystack.ntest.helper.NHaystackTestUtil.purgeDirectory;
+import static nhaystack.util.NHaystackConst.TAGS_VERSION_IMPORT;
+import static org.testng.Assert.assertEquals;
+
+import java.io.File;
+import javax.baja.naming.BOrd;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BStation;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
+import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BServiceContainer;
+import javax.baja.web.BWebServer;
 import javax.baja.web.BWebService;
 import nhaystack.server.BNHaystackService;
 import nhaystack.server.NHServer;
 import org.projecthaystack.client.HClient;
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
+import com.tridium.haystack.BHsTagDictionary;
+import com.tridium.jetty.BJettyWebServer;
 import com.tridium.testng.BStationTestBase;
+import com.tridium.testng.TestUtil;
 
 @NiagaraType
 public abstract class BNHaystackStationTestBase extends BStationTestBase
@@ -43,24 +54,55 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
     protected static final String EXTENDED_OP_NAME = "extended";
     protected static final String FUNCTION_OP_ARG_NAME = "function";
 
+    protected final BHsTagDictionary haystackDict = new BHsTagDictionary();
     protected final BNHaystackService nhaystackService = new BNHaystackService();
     protected NHServer nhServer;
-    protected HClient hClient;
+    protected HClient client;
 
     @Override
     protected void configureTestStation(BStation station, String stationName, int webPort, int foxPort) throws Exception
     {
         super.configureTestStation(station, stationName, webPort, foxPort);
 
+        // Disable history warmup
+        System.setProperty("niagara.history.warmup", "false");
+
+        // Ensure that the history directory is purged so histories from other tests do not show up
+        // and fail tests in this class that are not expecting them (audit history, for example).
+        File protectedStationHome = Sys.getProtectedStationHome();
+        if (protectedStationHome.exists())
+        {
+            purgeDirectory(protectedStationHome);
+        }
+
         BServiceContainer services = station.getServices();
+
+        BTagDictionaryService tagDictionaryService = new BTagDictionaryService();
+        services.add("tagDictionaryService", tagDictionaryService);
+
+        // Set tagsImportFile
+        haystackDict.setTagsImportFile(BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv"));
+        tagDictionaryService.add("haystack", haystackDict);
 
         services.add("NHaystackService", nhaystackService);
         nhaystackService.setSchemaVersion(1);
+        nhaystackService.setShowLinkedHistories(true);
+    }
 
-        BWebService webService = getWebService();
-        webService.setHttpEnabled(true);
-        webService.setHttpsOnly(false);
-        webService.setHttpsEnabled(true);
+    @Override
+    protected BWebService makeWebService(int port) throws Exception
+    {
+        BWebService service = new BWebService();
+        service.setHttpsEnabled(false);
+        service.setHttpsOnly(false);
+        service.setHttpEnabled(true);
+        service.getHttpPort().setPublicServerPort(port);
+        service.getHttpsPort().setPublicServerPort(8443);
+
+        BWebServer server = new BJettyWebServer();
+        service.add("JettyWebServer", server);
+
+        return service;
     }
 
     @BeforeTest
@@ -70,24 +112,18 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
         super.setupStation();
 
         nhServer = nhaystackService.getHaystackServer();
-        hClient = openClient(false);
+        client = openClient(false);
+
+        TestUtil.waitFor(10, () -> !"1.0".equals(haystackDict.getVersion()), "Waiting for asynchronous import to finish");
+        assertEquals(haystackDict.getVersion(), TAGS_VERSION_IMPORT, "dictionary version after import");
     }
 
     protected HClient openClient(boolean useHttps) throws InterruptedException
     {
-        int count = 0;
         // wait up to 10 seconds for async operation to complete
         nhaystackService.doInitializeHaystack();
-        while (!nhaystackService.getInitialized() || nhaystackService.getSchemaVersion() < 1 && count < 10)
-        {
-            Thread.sleep(1000);
-            ++count;
-        }
-
-        if (nhaystackService.getSchemaVersion() < 1)
-        {
-            Assert.fail("Tag update not completed after nhaystackService started, aborting test.");
-        }
+        TestUtil.waitFor(10, () -> nhaystackService.getSchemaVersion() > 0,
+            "Tag update not completed after nhaystackService started, aborting test.");
 
         String baseURI = getBaseURI() + "haystack/";
         if (useHttps)
