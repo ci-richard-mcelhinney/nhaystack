@@ -8,10 +8,10 @@
 
 package nhaystack.ntest;
 
-import static nhaystack.ntest.helper.NHaystackTestUtil.SITE_REF_ID;
 import static nhaystack.ntest.helper.NHaystackTestUtil.addEquip;
 import static nhaystack.ntest.helper.NHaystackTestUtil.addFolder;
 import static nhaystack.ntest.helper.NHaystackTestUtil.addSite;
+import static nhaystack.util.NHaystackConst.ID_SITE_REF;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -19,13 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.baja.control.BBooleanWritable;
 import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.BRelation;
 import javax.baja.sys.BStation;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import javax.baja.util.BFolder;
-import javax.baja.web.*;
 
-import com.tridium.jetty.BJettyWebServer;
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
@@ -69,7 +68,7 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
 
         BFolder equip1Folder = addFolder("equip1", station);
         BHEquip equip = addEquip(equip1Folder);
-        equip.relations().add(SITE_REF_ID, site);
+        equip.relations().add(new BRelation(ID_SITE_REF, site));
 
         equip1Folder.add("BW1", bw1);
         equip1Folder.add("BW2", bw2);
@@ -77,7 +76,7 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
 
     public void testAbout()
     {
-        HDict r = hClient.about();
+        HDict r = client.about();
         assertEquals(r.getStr("haystackVersion"), "2.0");
     }
 
@@ -111,7 +110,7 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
         HDictBuilder req = new HDictBuilder()
             .add(FUNCTION_OP_ARG_NAME, HStr.make("showPointsInWatch"))
             .add("watchId", HRef.make(watch.id()));
-        return hClient.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(req.toDict()));
+        return client.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(req.toDict()));
     }
 
     private static List<HRef> collectHRefs(HGrid res)
@@ -123,20 +122,4 @@ public class BShowPointsInWatchTest extends BNHaystackStationTestBase
         }
         return hRefs;
     }
-
-  @Override
-  protected BWebService makeWebService(int port) throws Exception
-  {
-    BWebService service = new BWebService();
-    service.setHttpsEnabled(false);
-    service.setHttpsOnly(false);
-    service.setHttpEnabled(true);
-    service.getHttpPort().setPublicServerPort(port);
-    service.getHttpsPort().setPublicServerPort(8443);
-
-    BWebServer server = new BJettyWebServer();
-    service.add("JettyWebServer", server);
-
-    return service;
-  }
 }

@@ -11,27 +11,29 @@ package nhaystack.ntest;
 import static nhaystack.ntest.helper.NHaystackTestUtil.AIR_ID;
 import static nhaystack.ntest.helper.NHaystackTestUtil.CUR_VAL_TAG_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.DISCHARGE_ID;
-import static nhaystack.ntest.helper.NHaystackTestUtil.EQUIP_REF_TAG_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.EQUIP_SLOT_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.HAYSTACK_SLOT_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.NAV_ID_TAG_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.SENSOR_ID;
-import static nhaystack.ntest.helper.NHaystackTestUtil.SITE_REF_ID;
-import static nhaystack.ntest.helper.NHaystackTestUtil.SITE_REF_TAG_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.TEMP_ID;
 import static nhaystack.ntest.helper.NHaystackTestUtil.WRITE_LEVEL_TAG_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.WRITE_VAL_TAG_NAME;
-import static nhaystack.ntest.helper.NHaystackTestUtil.addChild;
-import static nhaystack.ntest.helper.NHaystackTestUtil.purgeDirectory;
+import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowDis;
+import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowIds;
+import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowNavIds;
+import static nhaystack.ntest.helper.NHaystackTestUtil.makeIdGrid;
+import static nhaystack.ntest.helper.NHaystackTestUtil.makeNavGrid;
+import static nhaystack.ntest.helper.NHaystackTestUtil.rowHasEquipRef;
+import static nhaystack.ntest.helper.NHaystackTestUtil.rowHasSiteRef;
+import static nhaystack.util.NHaystackConst.ID_SITE_REF;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.Collection;
 import java.util.Optional;
 import javax.baja.control.BBooleanWritable;
 import javax.baja.control.BEnumWritable;
@@ -45,6 +47,7 @@ import javax.baja.sys.BComplex;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BEnumRange;
 import javax.baja.sys.BFacets;
+import javax.baja.sys.BMarker;
 import javax.baja.sys.BRelation;
 import javax.baja.sys.BStation;
 import javax.baja.sys.BString;
@@ -54,19 +57,20 @@ import javax.baja.sys.Type;
 import javax.baja.tag.Entity;
 import javax.baja.tag.Id;
 import javax.baja.tag.Relation;
-import javax.baja.tagdictionary.BTagDictionaryService;
+import javax.baja.tag.Tags;
 import javax.baja.units.BUnit;
 import javax.baja.util.BFolder;
-import javax.baja.util.BServiceContainer;
-import javax.baja.web.*;
 
 import junit.extensions.PA;
+import nhaystack.ntest.helper.BNHaystackStationTestBase;
 import nhaystack.server.BNHaystackConvertHaystackSlotsJob;
 import nhaystack.server.BNHaystackRebuildCacheJob;
 import nhaystack.server.BNHaystackService;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
 import org.projecthaystack.HBool;
+import org.projecthaystack.HCol;
+import org.projecthaystack.HCoord;
 import org.projecthaystack.HDate;
 import org.projecthaystack.HDateTime;
 import org.projecthaystack.HDict;
@@ -78,23 +82,19 @@ import org.projecthaystack.HNum;
 import org.projecthaystack.HRef;
 import org.projecthaystack.HStr;
 import org.projecthaystack.HTimeZone;
-import org.projecthaystack.HUri;
 import org.projecthaystack.HVal;
 import org.projecthaystack.client.CallErrException;
-import org.projecthaystack.client.HClient;
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
-import com.tridium.haystack.BHsTagDictionary;
 import com.tridium.history.log.BLogHistoryService;
 import com.tridium.kitControl.util.BSineWave;
-import com.tridium.testng.BStationTestBase;
-import com.tridium.testng.TestUtil;
-import com.tridium.jetty.BJettyWebServer;
 
 @NiagaraType
+@Test(singleThreaded = true)
 @SuppressWarnings("MagicNumber")
-public class BHaystackClientTest extends BStationTestBase
+public class BHaystackClientTest extends BNHaystackStationTestBase
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.test.BReplaceHaystackSlotStationTest(2979906276)1.0$ @*/
@@ -115,35 +115,22 @@ public class BHaystackClientTest extends BStationTestBase
     {
         super.configureTestStation(station, stationName, webPort, foxPort);
 
-        // Ensure that the history directory is purged so histories from other tests do not show up
-        // and fail tests in this class that are not expecting them (audit history, for example).
-        File protectedStationHome = Sys.getProtectedStationHome();
-        if (protectedStationHome.exists())
-        {
-            purgeDirectory(protectedStationHome);
-        }
+        this.station = station;
+        station.getServices().add("LogHistoryService", new BLogHistoryService());
+    }
 
-        BServiceContainer services = station.getServices();
+    @BeforeTest
+    @Override
+    public void setupStation() throws Exception
+    {
+        super.setupStation();
 
-        services.add("LogHistoryService", new BLogHistoryService());
+        client = openClient(false);
+    }
 
-        services.add("tagDictionaryService", new BTagDictionaryService());
-        BTagDictionaryService service = (BTagDictionaryService)Sys.getService(BTagDictionaryService.TYPE);
-        service.add("haystack", new BHsTagDictionary());
-        haystackDict = (BHsTagDictionary)service.getSmartTagDictionary("hs").orElseThrow(() -> new Exception("No haystack dictionary"));
-
-        // Set tagsImportFile
-        haystackDict.setTagsImportFile(BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv"));
-
-        services.add("NHaystackService", haystackService);
-        haystackService.setSchemaVersion(1);
-        haystackService.setShowLinkedHistories(true);
-
-        BWebService webService = getWebService();
-        webService.setHttpEnabled(true);
-        webService.setHttpsOnly(false);
-        webService.setHttpsEnabled(true);
-
+    @BeforeMethod
+    public void beforeMethod()
+    {
         // build up nHaystack site - equipment - point structures.
         // * station root
         //   * Playground (Folder)
@@ -164,52 +151,95 @@ public class BHaystackClientTest extends BStationTestBase
         //         * equip (HEquip) (-- hs:siteRef --> SiteB)
         //   * testFolder (Folder)
         //   * testFolder2 (Folder)
-        //     * equip (HEquip)
+        //     * MottsForest (HSite)
+        //     * HeatPump
+        //       * equip
+        //     * Points
+        //       * hp1
+        //       * hp2
+        //       * hp3
 
-        BFolder siteFolder = addChild(SITE_FOLDER, new BFolder(), station);
-        station.add("testFolder", testFolder);
-        station.add("testFolder2", testFolder2);
-        testFolder2.add(EQUIP_SLOT_NAME, new BHEquip());
+        playgroundFolder = new BFolder();
+        replace("Playground", playgroundFolder);
 
-        siteA = addChild("SiteA", new BHSite(), siteFolder);
-        siteB = addChild(SITE_B, new BHSite(), siteFolder);
+        testFolder = new BFolder();
+        replace("testFolder", testFolder);
 
-        BFolder siteAEquipAFolder = addChild(EQUIP_A, new BFolder(), siteA);
-        BFolder siteBEquipAFolder = addChild(EQUIP_A, new BFolder(), siteB);
-        siteAEquipAFolder.add(EQUIP_SLOT_NAME, siteAequipA);
-        siteAequipA.relations().add(new BRelation(SITE_REF_ID, siteA, Relation.OUTBOUND));
-        BHEquip siteBEquipAEquip = addChild(EQUIP_SLOT_NAME, new BHEquip(), siteBEquipAFolder);
-        siteBEquipAEquip.relations().add(new BRelation(SITE_REF_ID, siteB, Relation.OUTBOUND));
+        testFolder2 = new BFolder();
+        replace("testFolder2", testFolder2);
 
-        siteAequipA.add("boolPoint", new BBooleanWritable());
+        // Playground
+        siteA = new BHSite();
+        siteB = new BHSite();
+        BFolder siteAEquipAFolder = new BFolder();
+        BFolder siteBEquipAFolder = new BFolder();
+        siteAequipA = new BHEquip();
+        BHEquip siteBEquipAEquip = new BHEquip();
+        BEnumWritable enumPoint = new BEnumWritable();
+        BSineWave sineWave1 = new BSineWave();
+        BNumericCovHistoryExt histExt = new BNumericCovHistoryExt();
 
-        BEnumWritable enumPoint = addChild("enumPoint", new BEnumWritable(), siteAequipA);
+        siteA.tags().set(Id.newId("hs", "geoCoord"), BString.make("C(1.11,2.22)"));
+        addSiteRefRelation(siteAequipA, siteA);
+        addSiteRefRelation(siteBEquipAEquip, siteB);
+
         // initialize enum point facets
         String[] enumTags = Arrays.stream(STR_ARRAY).map(HStr::toString).toArray(String[]::new);
         enumPoint.setFacets(BFacets.makeEnum(BEnumRange.make(enumTags)));
 
-        siteAequipA.add("strPoint", new BStringWritable());
-
-        siteAEquipAFolder.add("point1", new BNumericWritable());
-
-        BSineWave sineWave1 = addChild("sineWave1", new BSineWave(),siteAEquipAFolder);
         sineWave1.setFacets(BFacets.makeNumeric(BUnit.getUnit("second"), 3, -50, 50));
-        BNumericCovHistoryExt histExt = addChild("NumericCov", new BNumericCovHistoryExt(), sineWave1);
         histExt.setEnabled(true);
 
+        playgroundFolder.add("SiteA", siteA);
+        playgroundFolder.add(SITE_B, siteB);
+
+        siteA.add(EQUIP_A, siteAEquipAFolder);
+
+        siteB.add(EQUIP_A, siteBEquipAFolder);
+
+        siteAEquipAFolder.add(EQUIP_SLOT_NAME, siteAequipA);
+        siteAEquipAFolder.add("point1", new BNumericWritable());
+        siteAEquipAFolder.add("sineWave1", sineWave1);
         siteAEquipAFolder.add("sineWave2", new BSineWave());
+
+        siteBEquipAFolder.add(EQUIP_SLOT_NAME, siteBEquipAEquip);
+
+        siteAequipA.add("boolPoint", new BBooleanWritable());
+        siteAequipA.add("enumPoint", enumPoint);
+        siteAequipA.add("strPoint", new BStringWritable());
         siteAequipA.add("sineWave3", new BSineWave());
         siteAequipA.add("sineWave4", new BSineWave());
+
+        sineWave1.add("NumericCov", histExt);
+
+        // testFolder2
+        heatPumpFolder = new BFolder();
+        BFolder points = new BFolder();
+        BHSite mottsForest = new BHSite();
+        heatPumpEquip = new BHEquip();
+
+        addSiteRefRelation(heatPumpEquip, mottsForest);
+
+        testFolder2.add("MottsForest", mottsForest);
+        testFolder2.add("HeatPump", heatPumpFolder);
+        testFolder2.add("Points", points);
+
+        heatPumpFolder.add(EQUIP_SLOT_NAME, heatPumpEquip);
+
+        points.add("hp1", new BNumericPoint());
+        points.add("hp2", new BNumericPoint());
+        points.add("hp3", new BNumericPoint());
+
+        rebuildCache();
     }
 
-    @BeforeTest(alwaysRun = true, description = "Setup and start test station")
-    @Override
-    public void setupStation() throws Exception
+    private void replace(String name, BComponent component)
     {
-        super.setupStation();
-
-        TestUtil.waitFor(10, () -> "3.0.2.1 (import)".equals(haystackDict.getVersion()), "Waiting for asynchronous import to finish");
-        assertEquals(haystackDict.getVersion(), "3.0.2.1 (import)", "dictionary version after import");
+        if (station.get(name) != null)
+        {
+            station.remove(name);
+        }
+        station.add(name, component);
     }
 
     private static boolean isSlotConversionInProgress(BNHaystackService haystackService)
@@ -217,15 +247,14 @@ public class BHaystackClientTest extends BStationTestBase
         return (boolean)PA.getValue(haystackService, "slotConversionInProgress");
     }
 
-    @Test(priority = 1)  // must be first test to run
     public void testConversionInitLockout() throws InterruptedException
     {
-        assertFalse(isSlotConversionInProgress(haystackService));
-        final BOrd bOrd = haystackService.convertHaystackSlots();
-        final BNHaystackConvertHaystackSlotsJob job = (BNHaystackConvertHaystackSlotsJob) bOrd.resolve(haystackService).get();
+        assertFalse(isSlotConversionInProgress(nhaystackService));
+        final BOrd bOrd = nhaystackService.convertHaystackSlots();
+        final BNHaystackConvertHaystackSlotsJob job = (BNHaystackConvertHaystackSlotsJob) bOrd.resolve(nhaystackService).get();
         // spin until convert job is in process
         long startTicks = Clock.ticks();
-        while(!isSlotConversionInProgress(haystackService))
+        while(!isSlotConversionInProgress(nhaystackService))
         {
             Thread.yield();
             if (Clock.ticks() - startTicks > 5000)
@@ -233,135 +262,131 @@ public class BHaystackClientTest extends BStationTestBase
                 break;
             }
         }
-        try  // now try to initialize haystack while job is in process should throw an exception.
+
+        // now try to initialize haystack while job is in process should throw an exception.
+        try
         {
-            haystackService.doInitializeHaystack();
+            nhaystackService.doInitializeHaystack();
             Assert.fail("Expected RuntimeException but didn't get one.");
 
         }
-        catch (RuntimeException e)
+        catch (RuntimeException ignore)
         {
-            assertTrue(true, "Expected RuntimeException " + e);
         }
+
         startTicks = Clock.ticks();
-        while(job.isAlive())
+        while (job.isAlive())
         {
             Thread.yield();
-            if( Clock.ticks() - startTicks > 5000)
+            if (Clock.ticks() - startTicks > 5000)
             {
                 break;
             }
         }
-        Thread.sleep(3000L); // provide some time for the convert job's initializeHaystack to complete.
+
+        // provide some time for the convert job's initializeHaystack to complete.
+        Thread.sleep(3000L);
     }
 
-    @Test(priority = 10)
     public void testAbout() throws InterruptedException
     {
-        client = client == null ? openClient() : client;
         HDict r = client.about();
         assertEquals(r.getStr("haystackVersion"), "2.0");
     }
 
-    @Test(priority = 20)
-    public void verifyOps() throws InterruptedException
+    public void testOps() throws InterruptedException
     {
-        client = client == null ? openClient() : client;
+        HGrid grid = client.ops();
 
-        HGrid g = client.ops();
+        gridContainsColumns(grid, "name", "summary");
 
-        // verify required columns
-        assertNotNull(g.col("name"));
-        assertNotNull(g.col("summary"));
-
-        // verify required ops
-        verifyGridContains(g, "name", HStr.make("about"));
-        verifyGridContains(g, "name", HStr.make("ops"));
-        verifyGridContains(g, "name", HStr.make("formats"));
-        verifyGridContains(g, "name", HStr.make("read"));
-        verifyGridContains(g, "name", HStr.make("nav"));
-        verifyGridContains(g, "name", HStr.make("watchSub"));
-        verifyGridContains(g, "name", HStr.make("watchUnsub"));
-        verifyGridContains(g, "name", HStr.make("watchPoll"));
-        verifyGridContains(g, "name", HStr.make("pointWrite"));
-        verifyGridContains(g, "name", HStr.make("hisRead"));
-        verifyGridContains(g, "name", HStr.make("hisWrite"));
-        verifyGridContains(g, "name", HStr.make("invokeAction"));
+        Collection<HStr> actual = gatherColumn(grid, "name");
+        verifyColumnContains(actual,
+            "about",
+            "ops",
+            "formats",
+            "read",
+            "nav",
+            "watchSub",
+            "watchUnsub",
+            "watchPoll",
+            "pointWrite",
+            "hisRead",
+            "hisWrite",
+            "invokeAction",
+            "extendedRead", // TODO non-standard
+            EXTENDED_OP_NAME, // non-standard
+            "alarmAck");    // TODO non-standard
     }
 
-//////////////////////////////////////////////////////////////////////////
-// Formats
-//////////////////////////////////////////////////////////////////////////
-
-    @Test(priority = 30)
-    public void verifyFormats() throws InterruptedException
+    public void testFormats() throws InterruptedException
     {
-        client = client == null ? openClient() : client;
-        
-        HGrid g = client.formats();
+        HGrid grid = client.formats();
 
-        // assertTrue required columns
-        assertNotNull(g.col("mime"));
-        assertNotNull(g.col("read"));
-        assertNotNull(g.col("write"));
+        gridContainsColumns(grid, "mime", "read", "write");
 
-        // assertTrue required ops
-        verifyGridContains(g, "mime", HStr.make("text/plain"));
-        verifyGridContains(g, "mime", HStr.make("text/zinc"));
+        Collection<HStr> actual = gatherColumn(grid, "mime");
+        verifyColumnContains(actual,
+            "text/zinc",
+            "application/json",
+            "text/csv",
+            "text/plain");
     }
 
-//////////////////////////////////////////////////////////////////////////
-// Reads
-//////////////////////////////////////////////////////////////////////////
-
-    @Test(priority = 40)
-    public void verifyRead() throws InterruptedException
+    public void testReadAll() throws InterruptedException
     {
-        client = client == null ? openClient() : client;
-        
         HGrid grid = client.readAll("id");
 
-        assertEquals(grid.numRows(), 15);
-        assertEquals(grid.row(0).id(), HRef.make("S.SiteA"));
-        assertEquals(grid.row(1).id(), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(2).id(), HRef.make("S.SiteA.EquipA.boolPoint"));
-        assertEquals(grid.row(3).id(), HRef.make("S.SiteA.EquipA.enumPoint"));
-        assertEquals(grid.row(4).id(), HRef.make("S.SiteA.EquipA.strPoint"));
-        assertEquals(grid.row(5).id(), HRef.make("S.SiteA.EquipA.sineWave3"));
-        assertEquals(grid.row(6).id(), HRef.make("S.SiteA.EquipA.sineWave4"));
-        assertEquals(grid.row(7).id(), HRef.make("S.SiteA.EquipA.point1"));
-        assertEquals(grid.row(8).id(), HRef.make("S.SiteA.EquipA.sineWave1"));
-        assertEquals(grid.row(9).id(), HRef.make("S.SiteA.EquipA.sineWave2"));
-        assertEquals(grid.row(10).id(), HRef.make("S.SiteB"));
-        assertEquals(grid.row(11).id(), HRef.make("S.SiteB.EquipA"));
-        assertEquals(grid.row(12).id(), HRef.make("C.testFolder2.equip"));
-        assertEquals(grid.row(13).id(), HRef.make("H.test.LogHistory"));
-        assertEquals(grid.row(14).id(), HRef.make("H.test.sineWave1"));
+        assertRowIds(grid,
+            "S.SiteA",
+            "S.SiteA.EquipA",
+            "S.SiteA.EquipA.boolPoint",
+            "S.SiteA.EquipA.enumPoint",
+            "S.SiteA.EquipA.strPoint",
+            "S.SiteA.EquipA.sineWave3",
+            "S.SiteA.EquipA.sineWave4",
+            "S.SiteA.EquipA.point1",
+            "S.SiteA.EquipA.sineWave1",
+            "S.SiteA.EquipA.sineWave2",
+            "S.SiteB",
+            "S.SiteB.EquipA",
+            "S.MottsForest",
+            "S.MottsForest.HeatPump",
+            "C.testFolder2.Points.hp1",
+            "C.testFolder2.Points.hp2",
+            "C.testFolder2.Points.hp3",
+            "H.test.LogHistory",
+            "H.test.sineWave1");
 
-        assertEquals(grid.row(1).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(2).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(3).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(4).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(5).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(6).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(7).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(8).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(9).get(SITE_REF_TAG_NAME), HRef.make("S.SiteA"));
-        assertEquals(grid.row(11).get(SITE_REF_TAG_NAME), HRef.make("S.SiteB"));
-        assertEquals(grid.row(14).get("axPointRef"), HRef.make("S.SiteA.EquipA.sineWave1"));
+        rowHasSiteRef(grid.row(1), "S.SiteA");
+        rowHasSiteRef(grid.row(2), "S.SiteA");
+        rowHasSiteRef(grid.row(3), "S.SiteA");
+        rowHasSiteRef(grid.row(4), "S.SiteA");
+        rowHasSiteRef(grid.row(5), "S.SiteA");
+        rowHasSiteRef(grid.row(6), "S.SiteA");
+        rowHasSiteRef(grid.row(7), "S.SiteA");
+        rowHasSiteRef(grid.row(8), "S.SiteA");
+        rowHasSiteRef(grid.row(9), "S.SiteA");
+        rowHasSiteRef(grid.row(11), "S.SiteB");
+        rowHasSiteRef(grid.row(13), "S.MottsForest");
 
-        assertEquals(grid.row(2).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(3).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(4).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(5).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(6).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(7).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(8).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
-        assertEquals(grid.row(9).get(EQUIP_REF_TAG_NAME), HRef.make("S.SiteA.EquipA"));
+        assertEquals(grid.row(18).get("axPointRef"), HRef
+            .make("S.SiteA.EquipA.sineWave1"));
 
-        //////////////////////////////////////////
+        rowHasEquipRef(grid.row(2), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(3), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(4), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(5), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(6), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(7), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(8), "S.SiteA.EquipA");
+        rowHasEquipRef(grid.row(9), "S.SiteA.EquipA");
+    }
 
+    public void testReadById() throws InterruptedException
+    {
         HDict dict = client.readById(HRef.make("C.Playground.SiteA.EquipA.sineWave1"));
+
         assertEquals(dict.get("axType"), HStr.make("kitControl:SineWave"));
         assertEquals(dict.get("kind"), HStr.make("Number"));
         assertTrue(dict.has("his"));
@@ -377,178 +402,77 @@ public class BHaystackClientTest extends BStationTestBase
         double curVal = dict.getDouble(CUR_VAL_TAG_NAME);
         assertEquals(dict.get("curStatus"), HStr.make("ok"));
         assertTrue(curVal >= 0.0 && curVal <= 100.0);
-//
-//    Assert.assertEquals(dict.get("dis"), HStr.make("Foo_SineWave1"));
-//    Assert.assertEquals(dict.get("navName"), HStr.make("Foo_SineWave1"));
-//    Assert.assertEquals(dict.get("navNameFormat"), HStr.make("%parent.displayName%_%displayName%"));
-//
-//        //////////////////////////////////////////
-//
-//        dict = client.readById(HRef.make("C.Foo.Sine-Wave2~2fabc"));
-//        Assert.assertEquals(dict.get("axType"), HStr.make("kitControl:SineWave"));
-//        assertTrue(dict.missing("foo"));
-//        assertTrue(dict.missing("bar"));
-//        Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
-//        assertTrue(dict.has("his"));
-//        Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
-//        assertTrue(dict.has("hisInterpolate"));
-//        Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Foo/Sine$20Wave2$2fabc"));
-//        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
-//        assertTrue(dict.has("point"));
-//        assertTrue(dict.has("tz"));
-//        assertTrue(dict.has("cur"));
-//        curVal = dict.getDouble(CUR_VAL_TAG_NAME);
-//        assertTrue(curVal >= 0.0 && curVal <= 100.0);
-//
-//        Assert.assertEquals(dict.get("dis"), HStr.make("Sine-Wave2~2fabc"));
-//        Assert.assertEquals(dict.get("navName"), HStr.make("Sine-Wave2~2fabc"));
-//        assertTrue(dict.missing("navNameFormat"));
-//
-//        //////////////////////////////////////////
-//
-//        dict = client.readById(HRef.make("S.Richmond.AHU2.NumericWritable"));
-//
-//        //////////////////////////////////////////
-
-//    dict = client.readById(HRef.make("H.nhaystack1.AuditHistory"));
-//    Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//    assertTrue(dict.missing("kind"));
-//    assertTrue(dict.has("his"));
-//    assertTrue(dict.missing("cur"));
-//    assertTrue(dict.missing("curStatus"));
-//    assertTrue(dict.missing(CUR_VAL_TAG_NAME));
-//    Assert.assertEquals(dict.get("tz"), localTz());
-//    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack1/AuditHistory"));
-//    assertTrue(dict.missing("hisInterpolate"));
-//    assertTrue(dict.missing("unit"));
-
-//        dict = client.readById(HRef.make("H.nhaystack_simple.LogHistory"));
-//        Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//        assertTrue(dict.missing("kind"));
-//        assertTrue(dict.has("his"));
-//        assertTrue(dict.missing("cur"));
-//        assertTrue(dict.missing("curStatus"));
-//        assertTrue(dict.missing(CUR_VAL_TAG_NAME));
-//        Assert.assertEquals(dict.get("tz"), localTz());
-//        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
-//        assertTrue(dict.missing("hisInterpolate"));
-//        assertTrue(dict.missing("unit"));
-//
-//        //        dict = client.readById(HRef.make("H.nhaystack_simple.SineWave3"));
-//        //        Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
-//        //        Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
-//        //        assertTrue(dict.has("his"));
-//        //        assertTrue(dict.missing("cur"));
-//        //        assertTrue(dict.missing("curStatus"));
-//        //        assertTrue(dict.missing(CUR_VAL_TAG_NAME));
-//        //        Assert.assertEquals(dict.get("tz"), localTz());
-//        //        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
-//        //        assertTrue(dict.missing("hisInterpolate"));
-//        //        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
-//
-//        try { client.readById(HRef.make("c.Mg~~")); } catch(Exception e) { assertTrueException(e); }
     }
 
-//////////////////////////////////////////////////////////////////////////
-// Nav
-//////////////////////////////////////////////////////////////////////////
-
-    @Test(priority = 50)
-    public void verifyNav() throws Exception
+    public void testNav() throws Exception
     {
-        client = client == null ? openClient() : client;
+        HGrid grid = client.call("read", makeIdGrid("sep:/SiteA"));
+        assertRowIds(grid, "S.SiteA");
 
-        HGrid grid = client.call("read", makeIdGrid(HUri.make("sep:/SiteA")));
-        assertEquals(grid.numRows(), 1);
-        assertEquals(grid.row(0).id(), HRef.make("S.SiteA"));
+        grid = client.call("read", makeIdGrid("sep:/SiteA/EquipA"));
+        assertRowIds(grid, "S.SiteA.EquipA");
 
-        grid = client.call("read", makeIdGrid(HUri.make("sep:/SiteA/EquipA")));
-        assertEquals(grid.numRows(), 1);
-        assertEquals(grid.row(0).id(), HRef.make("S.SiteA.EquipA"));
-
-        HGrid n = makeNavGrid(HStr.make("sep:/SiteA/EquipA"));
-        grid = client.call("nav", n);
-        assertEquals(grid.numRows(), 8);
-        assertEquals(grid.row(0).id(), HRef.make("S.SiteA.EquipA.boolPoint"));
-        assertEquals(grid.row(1).id(), HRef.make("S.SiteA.EquipA.enumPoint"));
-        assertEquals(grid.row(2).id(), HRef.make("S.SiteA.EquipA.strPoint"));
-        assertEquals(grid.row(3).id(), HRef.make("S.SiteA.EquipA.sineWave3"));
-        assertEquals(grid.row(4).id(), HRef.make("S.SiteA.EquipA.sineWave4"));
-        assertEquals(grid.row(5).id(), HRef.make("S.SiteA.EquipA.point1"));
-        assertEquals(grid.row(6).id(), HRef.make("S.SiteA.EquipA.sineWave1"));
-        assertEquals(grid.row(7).id(), HRef.make("S.SiteA.EquipA.sineWave2"));
+        grid = client.call("nav", makeNavGrid("sep:/SiteA/EquipA"));
+        assertRowIds(grid,
+            "S.SiteA.EquipA.boolPoint",
+            "S.SiteA.EquipA.enumPoint",
+            "S.SiteA.EquipA.strPoint",
+            "S.SiteA.EquipA.sineWave3",
+            "S.SiteA.EquipA.sineWave4",
+            "S.SiteA.EquipA.point1",
+            "S.SiteA.EquipA.sineWave1",
+            "S.SiteA.EquipA.sineWave2");
 
         grid = client.call("nav", HGrid.EMPTY);
-        assertEquals(grid.numRows(), 3);
-        assertEquals(grid.row(0).get(NAV_ID_TAG_NAME), HStr.make("slot:/"));
-        assertEquals(grid.row(0).get("dis"), HStr.make("ComponentSpace"));
-        assertEquals(grid.row(1).get(NAV_ID_TAG_NAME), HStr.make("his:/"));
-        assertEquals(grid.row(1).get("dis"), HStr.make("HistorySpace"));
-        assertEquals(grid.row(2).get(NAV_ID_TAG_NAME), HStr.make("sep:/"));
-        assertEquals(grid.row(2).get("dis"), HStr.make("Site"));
+        assertRowNavIds(grid, "slot:/", "his:/", "sep:/");
+        assertRowDis(grid, "ComponentSpace", "HistorySpace", "Site");
 
-        n = makeNavGrid(HStr.make("his:/"));
-        grid = client.call("nav", n);
-        assertEquals(grid.numRows(), 1);
-        assertEquals(grid.row(0).get(NAV_ID_TAG_NAME), HStr.make("his:/test"));
+        grid = client.call("nav", makeNavGrid("his:/"));
+        assertRowNavIds(grid, "his:/test");
 
-        n = makeNavGrid(HStr.make("his:/test"));
-        grid = client.call("nav", n);
+        grid = client.call("nav", makeNavGrid("his:/test"));
         assertEquals(grid.numRows(), 2);
 
-        n = makeNavGrid(HStr.make("slot:/"));
-        grid = client.call("nav", n);
+        grid = client.call("nav", makeNavGrid("slot:/"));
         assertEquals(grid.numRows(), 6);
         assertEquals(grid.row(0).get(NAV_ID_TAG_NAME), HStr.make("slot:/Services"));
         assertEquals(grid.row(1).get(NAV_ID_TAG_NAME), HStr.make("slot:/Drivers"));
         assertTrue(grid.row(2).missing(NAV_ID_TAG_NAME));
         assertEquals(grid.row(3).get(NAV_ID_TAG_NAME), HStr.make("slot:/Playground"));
 
-        grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
-        assertEquals(grid.numRows(), 2);
-        assertEquals(grid.row(0).get(NAV_ID_TAG_NAME), HStr.make("sep:/SiteA"));
-        assertEquals(grid.row(0).get("dis"), HStr.make("SiteA"));
-        assertEquals(grid.row(1).get(NAV_ID_TAG_NAME), HStr.make("sep:/SiteB"));
-        assertEquals(grid.row(1).get("dis"), HStr.make(SITE_B));
+        grid = client.call("nav", makeNavGrid("sep:/"));
+        assertRowNavIds(grid, "sep:/SiteA", "sep:/SiteB", "sep:/MottsForest");
+        assertRowDis(grid, "SiteA", SITE_B, "MottsForest");
 
-        grid = client.call("nav", makeNavGrid(HStr.make("sep:/SiteA")));
-        assertEquals(grid.numRows(), 1);
-        assertEquals(grid.row(0).get(NAV_ID_TAG_NAME), HStr.make("sep:/SiteA/EquipA"));
-        assertEquals(grid.row(0).get("dis"), HStr.make(EQUIP_A));
+        grid = client.call("nav", makeNavGrid("sep:/SiteA"));
+        assertRowNavIds(grid, "sep:/SiteA/EquipA");
+        assertRowDis(grid, EQUIP_A);
 
-        grid = client.call("nav", makeNavGrid(HStr.make("sep:/SiteA/EquipA")));
+        grid = client.call("nav", makeNavGrid("sep:/SiteA/EquipA"));
         assertEquals(grid.numRows(), 8);
         assertTrue(grid.row(0).missing(NAV_ID_TAG_NAME));
         assertTrue(grid.row(1).missing(NAV_ID_TAG_NAME));
         assertTrue(grid.row(2).missing(NAV_ID_TAG_NAME));
         assertTrue(grid.row(3).missing(NAV_ID_TAG_NAME));
         assertTrue(grid.row(4).missing(NAV_ID_TAG_NAME));
-        assertEquals(grid.row(0).get("dis"), HStr.make("SiteA EquipA boolPoint"));
-        assertEquals(grid.row(1).get("dis"), HStr.make("SiteA EquipA enumPoint"));
-        assertEquals(grid.row(2).get("dis"), HStr.make("SiteA EquipA strPoint"));
-        assertEquals(grid.row(3).get("dis"), HStr.make("SiteA EquipA sineWave3"));
-        assertEquals(grid.row(4).get("dis"), HStr.make("SiteA EquipA sineWave4"));
-        assertEquals(grid.row(5).get("dis"), HStr.make("SiteA EquipA point1"));
-        assertEquals(grid.row(6).get("dis"), HStr.make("SiteA EquipA sineWave1"));
-        assertEquals(grid.row(7).get("dis"), HStr.make("SiteA EquipA sineWave2"));
+        assertRowDis(grid,
+            "SiteA EquipA boolPoint",
+            "SiteA EquipA enumPoint",
+            "SiteA EquipA strPoint",
+            "SiteA EquipA sineWave3",
+            "SiteA EquipA sineWave4",
+            "SiteA EquipA point1",
+            "SiteA EquipA sineWave1",
+            "SiteA EquipA sineWave2");
 
-        grid = client.call("nav", makeNavGrid(HStr.make("sep:/SiteB/EquipA")));
+        grid = client.call("nav", makeNavGrid("sep:/SiteB/EquipA"));
         assertEquals(grid.numRows(), 0);
     }
 
-////////////////////////////////////////////////////////////////////////////
-//// His Reads
-////////////////////////////////////////////////////////////////////////////
-
-    @Test(priority = 60)
-    public void verifyHisRead() throws InterruptedException
+    public void testHisRead() throws InterruptedException
     {
-        client = client == null ? openClient() : client;
-
         HGrid grid = client.readAll("his");
         assertEquals(grid.numRows(), 3);
-
-        ///////////////////////////////////////////////
 
         HDict dict = client.read("axSlotPath==\"slot:/Playground/SiteA/EquipA/sineWave1\"");
         HGrid his = client.hisRead(dict.id(), "today");
@@ -584,32 +508,25 @@ public class BHaystackClientTest extends BStationTestBase
         client.hisRead(HRef.make("S.SiteA.EquipA.sineWave1"), "today");
     }
 
-////////////////////////////////////////////////////////////////////////////
-//// Point Write
-////////////////////////////////////////////////////////////////////////////
-
-    @Test(priority = 70)
-    public void verifyPointWrite() throws InterruptedException
+    public void testPointWrite() throws InterruptedException
     {
-        client = client == null ? openClient() : client;
-        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.point1"), NUM_ARRAY, HNum.make(0) );
-        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.boolPoint"), BOOL_ARRAY, HBool.FALSE );
-        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.strPoint"), STR_ARRAY, HStr.make("") );
-        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.enumPoint"), STR_ARRAY, HStr.make("a17") );
+        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.point1"), NUM_ARRAY, HNum.make(0));
+        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.boolPoint"), BOOL_ARRAY, HBool.FALSE);
+        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.strPoint"), STR_ARRAY, HStr.make(""));
+        doVerifyPointWrite(HRef.make("S.SiteA.EquipA.enumPoint"), STR_ARRAY, HStr.make("a17"));
     }
 
     private void doVerifyPointWrite(HRef id, HVal[] arrayVals, HVal endDefaultVal) throws InterruptedException
     {
         // set the default value
         HDictBuilder hd = new HDictBuilder();
+
         // first verify that curVal is not present
         HDict hDict = client.readById(id);
-        assertFalse(hDict.has(CUR_VAL_TAG_NAME) /*, "curVal missing test, curVal = " + hDict.get(CUR_VAL_TAG_NAME)*/);
-//        assertEquals(hDict.get(WRITE_LEVEL_TAG_NAME), HNum.make(17));
-//        assertFalse(hDict.has(WRITE_LEVEL_TAG_NAME));
-//        assertFalse(hDict.has(WRITE_VAL_TAG_NAME));
+        assertFalse(hDict.has(CUR_VAL_TAG_NAME));
 
         hd.add("arg", arrayVals[16]);
+
         // first set the point's default value to false.
         client.invokeAction(id, "set", hd.toDict());
 
@@ -618,13 +535,13 @@ public class BHaystackClientTest extends BStationTestBase
         // verify that a null who throws an exception
         try
         {
-            wrArray = client.pointWrite(id, 1, who,  arrayVals[16], null);
+            wrArray = client.pointWrite(id, 1, who, arrayVals[16], null);
         }
-        catch(CallErrException une)
+        catch (CallErrException une)
         {
             assertTrue(true, "pointWrite CallErrException: " + une);
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Assert.fail("pointWrite exception: " + e);
         }
@@ -635,6 +552,7 @@ public class BHaystackClientTest extends BStationTestBase
         {
             wrArray = client.pointWrite(id, i, who, arrayVals[i-1], null);
         }
+
         // very value at each level
         assertEquals(wrArray.numRows(), 17);
         for (int i = 0; i < 17; i++)
@@ -674,102 +592,97 @@ public class BHaystackClientTest extends BStationTestBase
         assertEquals(hDict.get(CUR_VAL_TAG_NAME), endDefaultVal);
     }
 
+    public void testInvokeAction() throws InterruptedException
+    {
+        HRef id = HRef.make("S.SiteA.EquipA.point1");
+
+        HDictBuilder hd = new HDictBuilder();
+
+        // first set the point's default value to 0.
+        hd.add("arg", HNum.make(0));
+        client.invokeAction(id, "set", hd.toDict());
+        Thread.sleep(100);
+
+        // now set emergency level to 999
+        hd.add("arg", HNum.make(999));
+        client.invokeAction(id, "emergencyOverride", hd.toDict());
+        Thread.sleep(100);
+
+        HDict hDict = client.readById(id);
+        assertEquals(hDict.get(CUR_VAL_TAG_NAME), HNum.make(999), "Check curVAl");
+        assertEquals(hDict.get(WRITE_LEVEL_TAG_NAME), HNum.make(1), "Check writeLevel");
+        assertEquals(hDict.get(WRITE_VAL_TAG_NAME), HNum.make(999), "Check writeVal HNum");
+
+        client.invokeAction(id, "emergencyAuto", HDict.EMPTY);
+        Thread.sleep(100);
+
+        hDict = client.readById(id);
+        assertEquals(hDict.get(CUR_VAL_TAG_NAME), HNum.make(0));
+        assertEquals(hDict.get(WRITE_LEVEL_TAG_NAME), HNum.make(17));
+        assertEquals(hDict.get(WRITE_VAL_TAG_NAME), HNum.make(0), "Check writeVal HNum");
+    }
+
+    @Test(dependsOnMethods = "testReadAll")
+    public void testGeoCoord() throws Exception
+    {
+        HDict hDict = client.readById(HRef.make("S.SiteA"));
+        final HVal geoCoord = hDict.get("geoCoord");
+        assertTrue(geoCoord instanceof HCoord, "geoCoord instance of HCoord");
+        assertEquals(geoCoord.toString(), "C(1.11,2.22)");
+    }
+
 ////////////////////////////////////////////////////////////////////////////
 //// Extended ops
 ////////////////////////////////////////////////////////////////////////////
 
     /*
     * These are the write function extended Ops
-    *   addHaystackSlots   : doAddRemoveHaystackSlot()
-    *   addEquips          : doVerifyAddEquips()
-    *   applyBatchTags     : doVerifyApplyBatchTags()
-    *   copyEquipTags      : doVerifyCopyEquipTags()
+    *   addHaystackSlots   : testAddRemoveHaystackSlot
+    *   addEquips          : testAddEquips
+    *   applyBatchTags     : testApplyBatchTags
+    *   copyEquipTags      : testCopyEquipTags
     *   delete             : no test as it just deletes the haystack slot
-    *   deleteHaystackSlot : doAddRemoveHaystackSlot()
+    *   deleteHaystackSlot : testAddRemoveHaystackSlot
     *   searchAndReplace   : no test as it only renames components
-    *   mapPointsToEquip   :
+    *   mapPointsToEquip   : testMapPointsToEquip
     *   makeDynamicWritable: no test, not sure what it actually does.  Looks for dynamic action and
     *                      : adds haystack slot with writable tag.
-    *   applyGridTags      : doVerifyApplyGridTags()
+    *   applyGridTags      : testApplyGridTags
     */
 
-    @Test(priority = 100)
-    public void verifyExtendedOps() throws InterruptedException
-    {
-        client = client == null ? openClient() : client;
-        
-        BComponent target = siteAequipA.get("boolPoint").asComponent();
-        target.lease();
-        doVerifyAddRemoveHaystackSlot(HStr.make("[S.SiteA.EquipA.boolPoint]"), target);
-        doVerifyAddEquips(HStr.make("[C.testFolder]"), testFolder);
-        doVerifyApplyBatchTags(HStr.make("[C.testFolder.equip]"), addedEquip);
-        doVerifyCopyEquipTags(HStr.make("C.testFolder"), addedEquip);
-        doVerifyApplyGridTags();
-        doVerifyMapPointsToEquip();
-        doVerifyDelete();
-    }
-
-    private void doVerifyDelete()
+    // TODO
+    private void testDelete()
     {
     }
 
-    private void doVerifyMapPointsToEquip()
+    public void testMapPointsToEquip()
     {
-        //setup
-        testFolder2.add("MottsForest", new BHSite());
-        testFolder2.add("HeatPump", new BHEquip());
-        testFolder2.add("somePoints", new BFolder());
-        BFolder spf = (BFolder)testFolder2.get("somePoints");
-        spf.add("hp1", new BNumericPoint());
-        spf.add("hp2", new BNumericPoint());
-        spf.add("hp3", new BNumericPoint());
-
-        // rebuild cache.
-        BNHaystackRebuildCacheJob rebuildCacheJob = new BNHaystackRebuildCacheJob(haystackService);
-        try
-        {
-            rebuildCacheJob.run(null);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        //build request
+        // build request
         HDictBuilder hd = new HDictBuilder();
         hd.add(FUNCTION_OP_ARG_NAME, HStr.make("mapPointsToEquip"));
         hd.add("siteNavName", HStr.make("MottsForest"));
         hd.add("equipNavName", HStr.make("HeatPump"));
-        String sb = "[C.testFolder2.somePoints.hp1,C.testFolder2.somePoints.hp2,C.testFolder2.somePoints.hp3]";
+        String sb = "[C.testFolder2.Points.hp1,C.testFolder2.Points.hp2,C.testFolder2.Points.hp3]";
         hd.add("ids", HStr.make(sb));
-        HGrid arguments = HGridBuilder.dictToGrid(hd.toDict());
 
         // send request to map points to equip
-        client.call(EXTENDED_OP_NAME, arguments);
-        // rebuild cache.
-        try
-        {
-            rebuildCacheJob.run(null);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        client.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(hd.toDict()));
+        rebuildCache();
 
-        testFolder2.lease();
-        HGrid siteGrid = client.call("read", makeIdGrid(HUri.make("sep:/MottsForest")));
-        HGrid equipGrid = client.call("read", makeIdGrid(HUri.make("sep:/MottsForest/HeatPump")));
-        HGrid n = makeNavGrid(HStr.make("sep:/MottsForest/HeatPump"));
-        HGrid pointGrid = client.call("nav", n);
-        assertEquals(siteGrid.numRows(), 1);
-        assertEquals(equipGrid.numRows(), 1);
-        assertEquals(pointGrid.numRows(), 3);
-        assertEquals(pointGrid.row(0).id(), HRef.make("S.MottsForest.HeatPump.hp1"));
-        assertEquals(pointGrid.row(1).id(), HRef.make("S.MottsForest.HeatPump.hp2"));
-        assertEquals(pointGrid.row(2).id(), HRef.make("S.MottsForest.HeatPump.hp3"));
+        HGrid grid = client.call("read", makeIdGrid("sep:/MottsForest"));
+        assertRowIds(grid, "S.MottsForest");
+
+        grid = client.call("read", makeIdGrid("sep:/MottsForest/HeatPump"));
+        assertRowIds(grid, "S.MottsForest.HeatPump");
+
+        grid = client.call("nav", makeNavGrid("sep:/MottsForest/HeatPump"));
+        assertRowIds(grid,
+            "S.MottsForest.HeatPump.hp1",
+            "S.MottsForest.HeatPump.hp2",
+            "S.MottsForest.HeatPump.hp3");
     }
 
-    private void doVerifyApplyGridTags()
+    public void testApplyGridTags()
     {
         // create a test target.
         testFolder2.add("testComp", new BComponent());
@@ -802,74 +715,85 @@ public class BHaystackClientTest extends BStationTestBase
         assertTrue(testComp.tags().contains(SENSOR_ID));
     }
 
-    private void doVerifyCopyEquipTags(HStr id, BComponent target)
+    public void testCopyEquipTags()
     {
+        HStr id = HStr.make("C.testFolder");
+        BHEquip equip = new BHEquip();
+        Tags equipTags = equip.tags();
+        equipTags.set(DISCHARGE_ID, BMarker.MARKER);
+        equipTags.set(AIR_ID, BMarker.MARKER);
+        equipTags.set(TEMP_ID, BMarker.MARKER);
+        equipTags.set(SENSOR_ID, BMarker.MARKER);
+        testFolder.add("equip", equip);
+
+        Tags toEquipTags = heatPumpEquip.tags();
+        assertFalse(toEquipTags.contains(DISCHARGE_ID));
+        assertFalse(toEquipTags.contains(AIR_ID));
+        assertFalse(toEquipTags.contains(TEMP_ID));
+        assertFalse(toEquipTags.contains(SENSOR_ID));
+
         HDictBuilder hd = new HDictBuilder();
         hd.add(FUNCTION_OP_ARG_NAME, HStr.make("copyEquipTags"));
         hd.add("ids", id);
         hd.add("fromEquip", HStr.make("C.testFolder.equip"));
-        hd.add("toEquips", HStr.make("[C.testFolder2.equip]"));
+        hd.add("toEquips", HStr.make("[C.testFolder2.HeatPump]"));
         hd.add(TARGET_FILTER_OP_ARG_NAME, HStr.make("id"));
-        HGrid arguments = HGridBuilder.dictToGrid(hd.toDict());
-        client.call(EXTENDED_OP_NAME, arguments);
+        client.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(hd.toDict()));
 
         // now assertTrue that it is now there.
-        target.lease();
-        assertTrue(target.tags().contains(DISCHARGE_ID));
-        assertTrue(target.tags().contains(AIR_ID));
-        assertTrue(target.tags().contains(TEMP_ID));
-        assertTrue(target.tags().contains(SENSOR_ID));
-
-        BComponent toEquip = testFolder2.get(EQUIP_SLOT_NAME).asComponent();
-        assertTrue(toEquip.tags().contains(DISCHARGE_ID));
-        assertTrue(toEquip.tags().contains(AIR_ID));
-        assertTrue(toEquip.tags().contains(TEMP_ID));
-        assertTrue(toEquip.tags().contains(SENSOR_ID));
+        toEquipTags = heatPumpEquip.tags();
+        assertTrue(toEquipTags.contains(DISCHARGE_ID));
+        assertTrue(toEquipTags.contains(AIR_ID));
+        assertTrue(toEquipTags.contains(TEMP_ID));
+        assertTrue(toEquipTags.contains(SENSOR_ID));
 
         //now remove equip from testFolder2 and copyEquipTags again.
         //it should add the BHEquip object again and copy the tags.
-        testFolder2.remove(EQUIP_SLOT_NAME);
-        Assert.assertNull(testFolder2.get(EQUIP_SLOT_NAME));
+        heatPumpFolder.remove(heatPumpEquip);
+
         hd.add(FUNCTION_OP_ARG_NAME, HStr.make("copyEquipTags"));
         hd.add("ids", id);
         hd.add("fromEquip", HStr.make("C.testFolder.equip"));
-        hd.add("toEquips", HStr.make("[C.testFolder2]"));
+        hd.add("toEquips", HStr.make("[C.testFolder2.HeatPump]"));
         hd.add(TARGET_FILTER_OP_ARG_NAME, HStr.make("id"));
-        arguments = HGridBuilder.dictToGrid(hd.toDict());
-        client.call(EXTENDED_OP_NAME, arguments);
+        client.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(hd.toDict()));
 
         // now assertTrue that it is now there.
-        toEquip = testFolder2.get(EQUIP_SLOT_NAME).asComponent();
-        toEquip.lease();
-        assertTrue(toEquip.tags().contains(DISCHARGE_ID));
-        assertTrue(toEquip.tags().contains(AIR_ID));
-        assertTrue(toEquip.tags().contains(TEMP_ID));
-        assertTrue(toEquip.tags().contains(SENSOR_ID));
+        BComponent toEquip = heatPumpFolder.get(EQUIP_SLOT_NAME).asComponent();
+        toEquipTags = toEquip.tags();
+        assertTrue(toEquipTags.contains(DISCHARGE_ID));
+        assertTrue(toEquipTags.contains(AIR_ID));
+        assertTrue(toEquipTags.contains(TEMP_ID));
+        assertTrue(toEquipTags.contains(SENSOR_ID));
     }
 
-    private void doVerifyApplyBatchTags(HStr id, BComponent target)
+    public void testApplyBatchTags()
     {
+        HStr id = HStr.make("[C.testFolder.equip]");
+        BHEquip equip = new BHEquip();
+        testFolder.add("equip", equip);
+
         HDictBuilder hd = new HDictBuilder();
         hd.add(FUNCTION_OP_ARG_NAME, HStr.make("applyBatchTags"));
         hd.add("ids", id);
         hd.add("tags", HStr.make("{discharge air temp sensor}"));
         hd.add(TARGET_FILTER_OP_ARG_NAME, HStr.make(""));
         HGrid arguments = HGridBuilder.dictToGrid(hd.toDict());
-        // make sure the equip slot is not present
-//        Assert.assertTrue(target.get(EQUIP_SLOT_NAME)==null);
-        // now through the client call add the equip component
         client.call(EXTENDED_OP_NAME, arguments);
         
         // now assertTrue that it is now there.
-        target.lease();
-        assertTrue(target.tags().contains(DISCHARGE_ID));
-        assertTrue(target.tags().contains(AIR_ID));
-        assertTrue(target.tags().contains(TEMP_ID));
-        assertTrue(target.tags().contains(SENSOR_ID));
+        equip.lease();
+        assertTrue(equip.tags().contains(DISCHARGE_ID));
+        assertTrue(equip.tags().contains(AIR_ID));
+        assertTrue(equip.tags().contains(TEMP_ID));
+        assertTrue(equip.tags().contains(SENSOR_ID));
     }
 
-    private void doVerifyAddEquips(HStr id, BComponent target)
+    public void testAddEquips()
     {
+        HStr id = HStr.make("[C.testFolder]");
+        BComponent target = testFolder;
+
         HDict dict = new HDictBuilder()
             .add(FUNCTION_OP_ARG_NAME, HStr.make("addEquips"))
             .add("ids", id)
@@ -885,7 +809,7 @@ public class BHaystackClientTest extends BStationTestBase
         client.call(EXTENDED_OP_NAME, arguments);
         
         // now assertTrue that it is now there.
-        addedEquip = target.get(EQUIP_SLOT_NAME).asComponent();
+        BComponent addedEquip = target.get(EQUIP_SLOT_NAME).asComponent();
         assertNotNull(addedEquip);
         
         // assertTrue siteRef exist.
@@ -897,109 +821,36 @@ public class BHaystackClientTest extends BStationTestBase
         assertEquals(((BComplex)endpoint).getName(), SITE_B);
     }
 
-    private void doVerifyAddRemoveHaystackSlot(HStr id, BComponent target) throws InterruptedException
+    public void testAddRemoveHaystackSlot() throws InterruptedException
     {
+        HStr id = HStr.make("[S.SiteA.EquipA.boolPoint]");
+
+        // make sure the haystack slot is not present
+        BComponent target = siteAequipA.get("boolPoint").asComponent();
+        target.lease();
+        Assert.assertNull(target.get(HAYSTACK_SLOT_NAME));
+
+        // now through the client call add the haystack slot
         HDictBuilder hd = new HDictBuilder();
         hd.add(FUNCTION_OP_ARG_NAME, HStr.make("addHaystackSlots"));
         hd.add("ids", id);
         hd.add(TARGET_FILTER_OP_ARG_NAME, HStr.make(""));
-        HGrid arguments = HGridBuilder.dictToGrid(hd.toDict());
-        // make sure the haystack slot is not present
-        Assert.assertNull(target.get(HAYSTACK_SLOT_NAME));
-        // now through the client call add the haystack slot
-        client.call(EXTENDED_OP_NAME, arguments);
+        client.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(hd.toDict()));
         
-        // now assertTrue that it is now there.
+        // check that the haystack slot is there now
         assertNotNull(target.get(HAYSTACK_SLOT_NAME));
 
         // now remove it through the client call
         hd.add(FUNCTION_OP_ARG_NAME, HStr.make("deleteHaystackSlot"));
         hd.add("ids", id);
         hd.add(TARGET_FILTER_OP_ARG_NAME, HStr.make(""));
-        arguments = HGridBuilder.dictToGrid(hd.toDict());
-        client.call(EXTENDED_OP_NAME, arguments);
+        client.call(EXTENDED_OP_NAME, HGridBuilder.dictToGrid(hd.toDict()));
+
+        // check that the haystack slot has been removed
         target.lease();
         Assert.assertNull(target.get(HAYSTACK_SLOT_NAME));
-
-        Thread.sleep(100);
     }
 
-////////////////////////////////////////////////////////////////////////////
-//// Invoke Action
-////////////////////////////////////////////////////////////////////////////
-
-    @Test(priority = 80)
-    public void verifyInvokeAction() throws InterruptedException
-    {
-        client = client == null ? openClient() : client;
-        doVerifyInvokeAction(HRef.make("S.SiteA.EquipA.point1"));
-    }
-
-    private void doVerifyInvokeAction(HRef id) throws InterruptedException
-    {
-        HDictBuilder hd = new HDictBuilder();
-        hd.add("arg", HNum.make(0));
-        
-        // first set the point's default value to 0.
-        client.invokeAction(id, "set", hd.toDict());
-        Thread.sleep(100);
-        
-        // now set emergency level to 999
-        hd.add("arg", HNum.make(999));
-        client.invokeAction(id, "emergencyOverride", hd.toDict());
-        Thread.sleep(100);
-
-        HDict hDict = client.readById(id);
-        final Iterator iterator = hDict.iterator();
-        while (iterator.hasNext())
-        {
-            final Entry entry = (Entry)iterator.next();
-        }
-        assertEquals(hDict.get(CUR_VAL_TAG_NAME), HNum.make(999), "Check curVAl");
-        assertEquals(hDict.get(WRITE_LEVEL_TAG_NAME), HNum.make(1), "Check writeLevel");
-        HVal wrValue = hDict.get(WRITE_VAL_TAG_NAME);
-        if (wrValue instanceof HNum)
-        {
-            assertEquals(wrValue, HNum.make(999), "Check writeVal HNum");
-        }
-        else if(wrValue instanceof HStr)
-        {
-            assertEquals(wrValue, HStr.make("999.00"), "Check writeVal HStr");
-        }
-
-        client.invokeAction(id, "emergencyAuto", HDict.EMPTY);
-        Thread.sleep(100);
-        
-        hDict = client.readById(id);
-        assertTrue(hDict.has(CUR_VAL_TAG_NAME));
-        assertEquals(hDict.get(CUR_VAL_TAG_NAME), HNum.make(0));
-//        assertFalse(hDict.has(WRITE_LEVEL_TAG_NAME), "Should not have " + WRITE_LEVEL_TAG_NAME);
-        assertEquals(hDict.get(WRITE_LEVEL_TAG_NAME), HNum.make(17));
-        wrValue = hDict.get(WRITE_VAL_TAG_NAME);
-        if(wrValue instanceof HNum)
-        {
-            assertEquals(wrValue, HNum.make(0), "Check writeVal HNum");
-        }
-        else if(wrValue instanceof HStr)
-        {
-            assertEquals(wrValue, HStr.make("0.00"), "Check writeVal HStr");
-        }
-
-    }
-
-////////////////////////////////////////////////////////////////////////////
-//// GeoCoord test
-////////////////////////////////////////////////////////////////////////////
-    @Test(priority = 85)
-    public void verifyGeoCoord() throws Exception
-    {
-        client = client == null ? openClient() : client;
-        siteA.tags().set(Id.newId("hs", "geoCoord"), BString.make("C(1.11,2.22)"));
-        HDict hDict = client.readById(HRef.make("S.SiteA"));
-        final HVal geoCoord = hDict.get("geoCoord");
-        assertEquals(geoCoord.toString(), "C(1.11,2.22)");
-
-    }
 ////////////////////////////////////////////////////////////////////////////
 //// Watches
 ////////////////////////////////////////////////////////////////////////////
@@ -1086,80 +937,6 @@ public class BHaystackClientTest extends BStationTestBase
 // Utils
 ////////////////////////////////////////////////////////////////
 
-    HClient openClient() throws InterruptedException
-    {
-        return openClient(false);
-    }
-
-    HClient openClient(boolean useHttps) throws InterruptedException
-    {
-        int count = 0;
-        // wait up to 10 seconds for async operation to complete
-        haystackService.doInitializeHaystack();
-        while (!haystackService.getInitialized() || haystackService.getSchemaVersion() < 1 && count < 10)
-        {
-            Thread.sleep(1000);
-            ++count;
-        }
-
-        if (haystackService.getSchemaVersion() < 1)
-        {
-            Assert.fail("Tag update not completed after nhaystackService started, aborting test.");
-        }
-
-        String baseURI = getBaseURI() + "haystack/";
-        if (useHttps)
-        {
-            baseURI = SECURE_URI;
-        }
-        
-        return HClient.open(baseURI, getSuperUsername(), getSuperUserPassword());
-    }
-
-    @Override
-    protected BWebService makeWebService(int port) throws Exception
-    {
-        BWebService service = new BWebService();
-        service.setHttpsEnabled(false);
-        service.setHttpsOnly(false);
-        service.setHttpEnabled(true);
-        service.getHttpPort().setPublicServerPort(port);
-        service.getHttpsPort().setPublicServerPort(8443);
-
-        BWebServer server = new BJettyWebServer();
-        service.add("JettyWebServer", server);
-
-        return service;
-    }
-
-    static HGrid makeIdGrid(HVal id)
-    {
-        HDictBuilder hd = new HDictBuilder();
-        hd.add("id", id);
-        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
-    }
-
-    static HGrid makeNavGrid(HStr navId)
-    {
-        HDictBuilder hd = new HDictBuilder();
-        hd.add(NAV_ID_TAG_NAME, navId);
-        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
-    }
-
-    void verifyGridContains(HGrid g, String col, HVal val)
-    {
-        boolean found = false;
-        for (int i=0; i<g.numRows(); ++i)
-        {
-            HVal x = g.row(i).get(col, false);
-            if (x != null && x.equals(val)) { found = true; break; }
-        }
-        if (!found)
-        {
-            Assert.fail();
-        }
-    }
-
     HDateTime ts(HDict r)
     {
         return (HDateTime)r.get("ts");
@@ -1170,15 +947,57 @@ public class BHaystackClientTest extends BStationTestBase
         return HStr.make(HTimeZone.DEFAULT.name);
     }
 
+    private static void addSiteRefRelation(BComponent source, BComponent site)
+    {
+        source.relations().add(new BRelation(ID_SITE_REF, site));
+    }
+
+    private void rebuildCache()
+    {
+        try
+        {
+            new BNHaystackRebuildCacheJob(nhaystackService).run(null);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Collection<HStr> gatherColumn(HGrid grid, String columnName)
+    {
+        int numRows = grid.numRows();
+        Collection<HStr> actual = new ArrayList<>(numRows);
+        HCol nameCol = grid.col(columnName);
+        for (int i = 0; i < numRows; ++i)
+        {
+            actual.add((HStr) grid.row(i).get(nameCol, true));
+        }
+        return actual;
+    }
+
+    private static void verifyColumnContains(Collection<HStr> actual, String... values)
+    {
+        Collection<HStr> expected = new ArrayList<>(values.length);
+        for (String value : values)
+        {
+            expected.add(HStr.make(value));
+        }
+        assertEquals(actual, expected, "Actual: " + actual);
+    }
+
+    private static void gridContainsColumns(HGrid grid, String... columnNames)
+    {
+        for (String columnName : columnNames)
+        {
+            assertNotNull(grid.col(columnName));
+        }
+    }
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
-    HClient client;
-
-    private static final String SECURE_URI = "https://localhost/haystack/";
-
-    private static final String SITE_FOLDER = "Playground";
     private static final String SITE_B = "SiteB";
     private static final String EQUIP_A = "EquipA";
     
@@ -1186,14 +1005,16 @@ public class BHaystackClientTest extends BStationTestBase
     private static final String FUNCTION_OP_ARG_NAME = "function";
     private static final String TARGET_FILTER_OP_ARG_NAME = "targetFilter";
     
-    private final BNHaystackService haystackService = new BNHaystackService();
-    private BHSite siteA = null;
-    private BHSite siteB = null;
-    private final BHEquip siteAequipA = new BHEquip();
-    private final BComponent testFolder = new BFolder();
-    private final BComponent testFolder2 = new BFolder();
-    private BComponent addedEquip;
-    private BHsTagDictionary haystackDict;
+    private BHSite siteA;
+    private BHSite siteB;
+    private BHEquip siteAequipA;
+    private BFolder playgroundFolder;
+
+    private BComponent testFolder;
+
+    private BComponent testFolder2;
+    private BFolder heatPumpFolder;
+    private BHEquip heatPumpEquip;
 
     // used for Numeric point testing
     private static final HNum[] NUM_ARRAY =

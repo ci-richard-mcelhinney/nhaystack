@@ -7,33 +7,44 @@
 //
 package nhaystack.ntest;
 
+import static nhaystack.util.NHaystackConst.ID_EQUIP;
+import static nhaystack.util.NHaystackConst.ID_SITE;
+import static nhaystack.util.NHaystackConst.ID_SITE_REF;
+import static nhaystack.util.NHaystackConst.TAGS_CSV_FILE_VERSION;
+import static nhaystack.util.NHaystackConst.TAGS_VERSION_IMPORT;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import com.tridium.haystack.BHsTagDictionary;
-import com.tridium.testng.BStationTestBase;
-import com.tridium.testng.TestUtil;
-import nhaystack.server.tags.BNCurValTag;
-import nhaystack.server.tags.BNWriteValTag;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-
+import java.util.Optional;
 import javax.baja.control.BNumericWritable;
 import javax.baja.data.BIDataValue;
 import javax.baja.naming.BOrd;
 import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.schedule.BBooleanSchedule;
 import javax.baja.status.BStatus;
 import javax.baja.status.BStatusNumeric;
+import javax.baja.sys.BComponent;
 import javax.baja.sys.BDouble;
+import javax.baja.sys.BMarker;
+import javax.baja.sys.BString;
 import javax.baja.sys.Context;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import javax.baja.tag.Id;
+import javax.baja.tag.Relation;
 import javax.baja.tag.TagInfo;
 import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BFolder;
-import java.util.Optional;
+
+import nhaystack.server.tags.BNCurValTag;
+import nhaystack.server.tags.BNWriteValTag;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+import com.tridium.haystack.BHsTagDictionary;
+import com.tridium.sys.tag.ComponentRelations;
+import com.tridium.testng.BStationTestBase;
+import com.tridium.testng.TestUtil;
 
 @Test
 @NiagaraType
@@ -72,7 +83,7 @@ public class BHaystackImportOverlayTest extends BStationTestBase
 
         BTagDictionaryService service = (BTagDictionaryService)Sys.getService(BTagDictionaryService.TYPE);
         haystackDict = (BHsTagDictionary)service.getSmartTagDictionary("hs").orElseThrow(() -> new Exception("No haystack dictionary"));
-        TestUtil.waitFor(10, () -> "3.0.2".equals(haystackDict.getVersion()), "Waiting for import to finish");
+        TestUtil.waitFor(10, () -> !"1.0".equals(haystackDict.getVersion()), "Waiting for import to finish");
     }
 
     public void testImport() throws Exception
@@ -80,14 +91,14 @@ public class BHaystackImportOverlayTest extends BStationTestBase
         // Before
         assertEquals(haystackDict.getNamespace(), "hs", "imported namespace");
         assertTrue(haystackDict.getFrozen(), "imported is frozen");
-        assertEquals(haystackDict.getVersion(), "3.0.2", "dictionary version before import");
+        assertEquals(haystackDict.getVersion(), TAGS_CSV_FILE_VERSION, "dictionary version before import");
 
         // Set ImportTagsFile & ImportEquipFile
         haystackDict.setTagsImportFile(BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv"));
         haystackDict.doImportDictionary(Context.NULL);
-        TestUtil.waitFor(10, () -> "3.0.2.1 (import)".equals(haystackDict.getVersion()), "Waiting for import to finish");
+        TestUtil.waitFor(10, () -> TAGS_VERSION_IMPORT.equals(haystackDict.getVersion()), "Waiting for OVERLAY import to finish");
 
-        assertEquals(haystackDict.getVersion(), "3.0.2.1 (import)", "dictionary version after import");
+        assertEquals(haystackDict.getVersion(), TAGS_VERSION_IMPORT, "dictionary version after import");
         assertTagsModified(haystackDict);
 
         BFolder folder = new BFolder();
@@ -96,6 +107,39 @@ public class BHaystackImportOverlayTest extends BStationTestBase
         station.add("folder", folder);
         assertCurValTag(wp);
         assertWriteValTag(wp);
+
+        // test overridden hs:id tag
+        BFolder site = new BFolder();
+        BFolder equip = new BFolder();
+        BNumericWritable point = new BNumericWritable();
+        station.add("site", site);
+        assertNoIdTag(site);
+        site.tags().set(ID_SITE, BMarker.MARKER);
+        assertIdValue(site, "S.site");
+        station.add("equip", equip);
+        assertNoIdTag(equip);
+        equip.tags().set(ID_EQUIP, BMarker.MARKER);
+        assertIdValue(equip, "C.equip");
+        equip.add("point", point);
+        assertIdValue(point, "C.equip.point");
+        new ComponentRelations(equip).add(ID_SITE_REF, site, Relation.OUTBOUND);
+        assertIdValue(equip, "S.site.equip");
+        assertIdValue(point, "S.site.equip.point");
+        BBooleanSchedule schedule = new BBooleanSchedule();
+        equip.add("schedule", schedule);
+        assertIdValue(schedule, "C.equip.schedule");
+    }
+
+    private static void assertNoIdTag(BComponent comp)
+    {
+        assertFalse(comp.tags().contains(ID_ID), comp.getSlotPath() + " should NOT have a hs:id tag");
+    }
+
+    private static void assertIdValue(BComponent comp, String expected)
+    {
+        final Optional<BIDataValue> valueOpt = comp.tags().get(ID_ID);
+        assertTrue(valueOpt.isPresent(), "assertIdValue " + comp.getSlotPath() + " should have a hs:id tag");
+        assertEquals(valueOpt.get(), BString.make(expected), "assertIdValue " + comp.getSlotPath() );
     }
 
     private static void assertTagsModified(BHsTagDictionary dict)
@@ -135,6 +179,7 @@ public class BHaystackImportOverlayTest extends BStationTestBase
 
     private static final Id ID_CUR_VAL = Id.newId("hs:curVal");
     private static final Id ID_WRITE_VAL = Id.newId("hs:writeVal");
+    private static final Id ID_ID = Id.newId("hs:id");
 
     private BHsTagDictionary haystackDict;
 }
