@@ -9,6 +9,8 @@
 
 package nhaystack.driver;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -22,6 +24,7 @@ import javax.baja.net.BInternetAddress;
 import javax.baja.nre.annotations.NiagaraAction;
 import javax.baja.nre.annotations.NiagaraProperty;
 import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.security.BPassword;
 import javax.baja.security.BUsernameAndPassword;
 import javax.baja.sys.Action;
 import javax.baja.sys.BComponent;
@@ -623,10 +626,12 @@ public class BNHaystackServer
     {
         if (hclient == null)
         {
+            BPassword password = getCredentials().getPassword();
+            String passwordValue = AccessController.doPrivileged((PrivilegedAction<String>) password::getValue);
             hclient = HClient.open(
                 getHaystackUrl(),
                 getCredentials().getUsername(),
-                getCredentials().getPassword().getValue());
+                passwordValue);
         }
         return hclient;
     }
