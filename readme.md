@@ -39,6 +39,8 @@ Further contributions have been made by:
 * Christian Tremblay, Servisys Inc.
 * Stuart Longland, VRT Systems
 * Bryant Holland, CBRE|ESI
+* Eric Anderson, Tridium
+* Andy Saunders, Tridium
 
 ### Benefits
 
@@ -62,6 +64,35 @@ equipment and data.
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
 * Provides a standard Niagara 4 driver so that remote Haystack servers can be 
 modelled inside of N4.
+
+### Usage
+The nhaystack distribution archive comes with 2 modules and a patched
+'haystack-rt.jar' file for a number of different version of Niagara 4:
+* nhaystack-rt.jar
+* nhaystack-wb.jar
+
+First of all, drop both of these jar files into your '<niagara_home>\modules' 
+folder and restart your workbench.  
+
+Next, select the patched version of the 'haystack-rt.jar' file that 
+corresponds to the version of Niagara 4 you are using.  The new version of 
+'nhaystack' is not supported before version 4.4.93.40.  If you are using a 
+later version and a patched 'haystack-rt.jar' file is not available then 
+most likely this means that the version you are using already has the 
+appropriate modifications to that module.
+
+
+If the Niagara 4 installation is a Web Supervisor then all you need to 
+do is restart any running stations on the platform, connect to the stations 
+and drop the NHaystackService into the running station.
+
+For use on a "Jace" style platform the minimum installation required is
+for the 'nhaystack-rt.jar' file to be installed.  Only install 'nhaystack-wb.jar'
+if you intend to access the Java based built-in workbench through a web browser.
+To install the modules on a "Jace" type of platform, use the standard
+Niagara Workbench tools.  As indicated above, a patched version of the 
+'haystack-rt.jar' file is required.  This must also be installed on the 
+target platform.
 
 ### 1. Using NHaystack as a server
 
@@ -301,10 +332,10 @@ Whenever you alter a tag with the FieldEditor, you usually need to run
 change a tag or alter the structure of a station.
 
 #### 3.2 Tagging using the Niagara Interface
-To do...
+To do...community contributions accepted!
 
 #### 3.3 Refs and Relations
-To do...
+To do...community contributions accepted!
 
 #### 3.4 A better Workbench Interface
 The nHaystack Service View is really simple. There's no need to rebuild 
