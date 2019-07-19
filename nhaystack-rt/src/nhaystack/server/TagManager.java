@@ -11,14 +11,18 @@
 //                                    handled by new smart tag types BNCurValTag and BNWriteValTag
 //   21 Dec 2018  Andrew Saunders     Allowing plain components to be used as sites and equips
 //   12 Apr 2019  Eric Anderson       Converting String encoded id tag to an HRef value
+//   19 Jul 2019  Eric Anderson       Exporting tags and relations from multiple namespaces based
+//                                    on prioritizedNamespaces property
 //
 package nhaystack.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.baja.control.BBooleanPoint;
 import javax.baja.control.BControlPoint;
@@ -74,12 +78,13 @@ import javax.baja.timezone.BTimeZone;
 import javax.baja.units.BUnit;
 import javax.baja.units.BUnitConversion;
 import javax.baja.util.BFormat;
+
 import nhaystack.BHDict;
 import nhaystack.NHRef;
-import nhaystack.util.NHaystackConst;
 import nhaystack.res.Resources;
 import nhaystack.res.Unit;
 import nhaystack.site.BHTagged;
+import nhaystack.util.NHaystackConst;
 import nhaystack.util.SlotUtil;
 import org.projecthaystack.HBool;
 import org.projecthaystack.HCoord;
@@ -272,77 +277,83 @@ public class TagManager implements NHaystackConst
      */
     public HDict generateComponentTags(BComponent comp)
     {
+        List<String> namespaces = service.getPrioritizedNamespaceList();
+        Collection<Tag> tags = comp.tags().getAll();
         HDictBuilder hdb = new HDictBuilder();
-        for (Tag tag : comp.tags())
-        {
-            if (tag.getId().getDictionary().equals("hs"))
-            {
-                String tagName = tag.getId().getName();
-                BIDataValue tagValue = tag.getValue();
-                Type tagValueType = tagValue.getType();
 
-                if (tagValueType == BMarker.TYPE)
+        for (int i = namespaces.size() - 1; i >= 0; --i)
+        {
+            for (Tag tag : tags)
+            {
+                if (tag.getId().getDictionary().equals(namespaces.get(i)))
                 {
-                    hdb.add(tagName, HMarker.VAL);
-                }
-                else if (tagValueType == BLong.TYPE)
-                {
-                    hdb.add(tagName, HNum.make(((BLong)tagValue).getLong()));
-                }
-                else if (tagValueType == BDouble.TYPE)
-                {
-                    hdb.add(tagName, HNum.make(((BDouble)tagValue).getDouble()));
-                }
-                else if (tagValueType == BFloat.TYPE)
-                {
-                    hdb.add(tagName, HNum.make(((BFloat)tagValue).getFloat()));
-                }
-                else if (tagValueType == BInteger.TYPE)
-                {
-                    hdb.add(tagName, HNum.make(((BInteger)tagValue).getInt()));
-                }
-                else if (tagValueType == BBoolean.TYPE)
-                {
-                    hdb.add(tagName, HBool.make(((BBoolean)tagValue).getBoolean()));
-                }
-                else if (tagValueType == BString.TYPE)
-                {
-                    String value = ((BString)tagValue).getString();
-                    if (tagName.equals("geoCoord"))
+                    String tagName = tag.getId().getName();
+                    BIDataValue tagValue = tag.getValue();
+                    Type tagValueType = tagValue.getType();
+
+                    if (tagValueType == BMarker.TYPE)
                     {
-                        hdb.add(tagName, HCoord.make(value));
+                        hdb.add(tagName, HMarker.VAL);
                     }
-                    else if (tagName.equals("id"))
+                    else if (tagValueType == BLong.TYPE)
                     {
-                        hdb.add(tagName, HRef.make(value));
+                        hdb.add(tagName, HNum.make(((BLong) tagValue).getLong()));
+                    }
+                    else if (tagValueType == BDouble.TYPE)
+                    {
+                        hdb.add(tagName, HNum.make(((BDouble) tagValue).getDouble()));
+                    }
+                    else if (tagValueType == BFloat.TYPE)
+                    {
+                        hdb.add(tagName, HNum.make(((BFloat) tagValue).getFloat()));
+                    }
+                    else if (tagValueType == BInteger.TYPE)
+                    {
+                        hdb.add(tagName, HNum.make(((BInteger) tagValue).getInt()));
+                    }
+                    else if (tagValueType == BBoolean.TYPE)
+                    {
+                        hdb.add(tagName, HBool.make(((BBoolean) tagValue).getBoolean()));
+                    }
+                    else if (tagValueType == BString.TYPE)
+                    {
+                        String value = ((BString) tagValue).getString();
+                        if (tagName.equals("geoCoord"))
+                        {
+                            hdb.add(tagName, HCoord.make(value));
+                        }
+                        else if (tagName.equals("id"))
+                        {
+                            hdb.add(tagName, HRef.make(value));
+                        }
+                        else
+                        {
+                            hdb.add(tagName, HStr.make(value));
+                        }
+                    }
+                    else if (tagValueType == BTimeZone.TYPE)
+                    {
+                        hdb.add(tagName, HStr.make(((BTimeZone) tagValue).getId()));
+                    }
+                    else if (tagValueType == BOrd.TYPE && tagName.equals("id"))
+                    {
+                        hdb.add(tagName, makeComponentRef(comp).getHRef());
+                    }
+                    else if (tagValueType == BUnit.TYPE)
+                    {
+                        if (tagName.equals("unit") && !((BUnit) tagValue).isNull())
+                        {
+                            hdb.add(tagName, ((BUnit) tagValue).getSymbol());
+                        }
+                    }
+                    else if (tagValueType == BDynamicEnum.TYPE)
+                    {
+                        hdb.add(tagName, HStr.make(((BDynamicEnum) tagValue).getTag()));
                     }
                     else
                     {
-                        hdb.add(tagName, HStr.make(value));
+                        LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue + ':' + tagValueType);
                     }
-                }
-                else if (tagValueType == BTimeZone.TYPE)
-                {
-                    hdb.add(tagName, HStr.make(((BTimeZone)tagValue).getId()));
-                }
-                else if (tagValueType == BOrd.TYPE && tagName.equals("id"))
-                {
-                    hdb.add(tagName, makeComponentRef(comp).getHRef());
-                }
-                else if (tagValueType == BUnit.TYPE)
-                {
-                    if (tagName.equals("unit") && !((BUnit)tagValue).isNull())
-                    {
-                        hdb.add(tagName, ((BUnit)tagValue).getSymbol());
-                    }
-                }
-                else if (tagValueType == BDynamicEnum.TYPE)
-                {
-                    hdb.add(tagName, HStr.make(((BDynamicEnum)tagValue).getTag()));
-                }
-                else
-                {
-                    LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue + ":" + tagValueType);
                 }
             }
         }
@@ -353,22 +364,32 @@ public class TagManager implements NHaystackConst
     /**
      * Generate a HDict HRef tags representation of the given component haystack relations
      */
-    public static HDict convertRelationsToRefTags(TagManager tagMgr, BComponent comp)
+    public HDict convertRelationsToRefTags(BComponent comp)
     {
+        List<String> namespaces = service.getPrioritizedNamespaceList();
+        Collection<Relation> relations = comp.relations().getAll();
         HDictBuilder hdb = new HDictBuilder();
-        for (Relation relation : comp.relations())
-        {
-            if (relation.getId().getDictionary().equals("hs"))
-            {
-                BComponent relationEndpoint = (BComponent) relation.getEndpoint();
-                LOG.fine(() -> "process relation: " + relation.getId() +
-                    (relation.isOutbound() ? " out " : " in ") + relationEndpoint.getSlotPath());
 
-                if (relation.isOutbound())
+        for (int i = namespaces.size() - 1; i >= 0; --i)
+        {
+            for (Relation relation : relations)
+            {
+                if (relation.getId().getDictionary().equals(namespaces.get(i)))
                 {
-                    String relName = relation.getId().getName();
-                    HRef hRef = tagMgr.makeComponentRef(relationEndpoint).getHRef();
-                    hdb.add(relName, hRef);
+                    BComponent relationEndpoint = (BComponent) relation.getEndpoint();
+                    if (LOG.isLoggable(Level.FINE))
+                    {
+                        LOG.fine("process relation: " + relation.getId() +
+                            (relation.isOutbound() ? " out " : " in ") +
+                            relationEndpoint.getSlotPath());
+                    }
+
+                    if (relation.isOutbound())
+                    {
+                        String relName = relation.getId().getName();
+                        HRef hRef = makeComponentRef(relationEndpoint).getHRef();
+                        hdb.add(relName, hRef);
+                    }
                 }
             }
         }
@@ -440,7 +461,7 @@ public class TagManager implements NHaystackConst
     {
         HDictBuilder hdb = new HDictBuilder();
         hdb.add(generateComponentTags(comp));
-        hdb.add(convertRelationsToRefTags(this, comp));
+        hdb.add(convertRelationsToRefTags(comp));
         if (comp instanceof BHTagged)
         {
             hdb.add(((BHTagged) comp).generateTags(server));
@@ -898,7 +919,7 @@ public class TagManager implements NHaystackConst
             if (equip != null)
             {
                 // this will convert an existing siteRef relation to a siteRef tag in thie HDict equipTags
-                final HDict equipTags = convertRelationsToRefTags(this, equip);
+                final HDict equipTags = convertRelationsToRefTags(equip);
                 // try to look up siteRef too
                 if (equipTags.has(SITE_REF))
                 {

@@ -5,6 +5,7 @@
 // History:
 //   05 Dec 2017  Rowyn Brunner    Creation
 //   31 Oct 2018  Andrew Saunders  Added Haystack tag dictionary import asserts
+//   19 Jul 2019  Eric Anderson    Moved rebuildCache method to super class
 //
 package nhaystack.ntest;
 
@@ -950,18 +951,6 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
     private static void addSiteRefRelation(BComponent source, BComponent site)
     {
         source.relations().add(new BRelation(ID_SITE_REF, site));
-    }
-
-    private void rebuildCache()
-    {
-        try
-        {
-            new BNHaystackRebuildCacheJob(nhaystackService).run(null);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 
     private static Collection<HStr> gatherColumn(HGrid grid, String columnName)

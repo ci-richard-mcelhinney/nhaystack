@@ -14,11 +14,15 @@
 //   31 Oct 2018  Andrew Saunders     Added initializeHaystackDictionary action
 //   21 Dec 2018  Andrew Saunders     Allowing plain components to be used as sites and equips
 //   13 Mar 2019  Andrew Saunders     Added spy on the nHaystack cache
+//   19 Jul 2019  Eric Anderson       Added prioritizedNamespaces property
 //
 package nhaystack.server;
 
 import static nhaystack.server.BNHaystackConvertHaystackSlotsJob.RETRY_UPGRADE_ON_RESTART;
+import static nhaystack.util.NHaystackConst.NAME_SPACE;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,11 +49,13 @@ import javax.baja.sys.Flags;
 import javax.baja.sys.Property;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
+import javax.baja.tag.TagDictionaryService;
 import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BServiceContainer;
 import javax.baja.util.IFuture;
 import javax.baja.util.Invocation;
 import javax.baja.util.Lexicon;
+
 import nhaystack.BHDict;
 import nhaystack.BHGrid;
 import nhaystack.BHRef;
@@ -111,6 +117,17 @@ import com.tridium.haystack.BHsTagDictionary;
     type = "BRelTime",
     defaultValue = "BRelTime.DEFAULT"
 )
+/**
+ * Comma separated list of exported namespaces in priority order. If the tag
+ * names are identical, the value of the tag with a namespace earlier in the
+ * list will be used.  If this property is empty, tags in the "hs" namespace
+ * will be exported.
+ */
+@NiagaraProperty(
+    name = "prioritizedNamespaces",
+    type = "String",
+    defaultValue = "hs"
+)
 @NiagaraProperty(
     name = "foxLeaseInterval",
     type = "BRelTime",
@@ -123,7 +140,6 @@ import com.tridium.haystack.BHsTagDictionary;
     defaultValue = "false",
     flags = Flags.HIDDEN
 )
-
 @NiagaraProperty(
     name = "schemaVersion",
     type = "int",
@@ -248,8 +264,8 @@ public class BNHaystackService
     implements BINHaystackWorkerParent
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.BNHaystackService(1110017872)1.0$ @*/
-/* Generated Tue Oct 30 19:51:59 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.server.BNHaystackService(909873756)1.0$ @*/
+/* Generated Fri Jul 12 16:34:06 EDT 2019 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "showLinkedHistories"
@@ -437,6 +453,41 @@ public class BNHaystackService
    * @see #initializationDelayTime
    */
   public void setInitializationDelayTime(BRelTime v) { set(initializationDelayTime, v, null); }
+
+////////////////////////////////////////////////////////////////
+// Property "prioritizedNamespaces"
+////////////////////////////////////////////////////////////////
+  
+  /**
+   * Slot for the {@code prioritizedNamespaces} property.
+   * Comma, semi-colon, or space separated list of exported namespaces in priority
+   * order. If the tag names are identical, the value of the tag with a namespace
+   * earlier in the list will be used.  If this property is empty, tags in the
+   * "hs" namespace will be exported.
+   * @see #getPrioritizedNamespaces
+   * @see #setPrioritizedNamespaces
+   */
+  public static final Property prioritizedNamespaces = newProperty(0, "hs", null);
+  
+  /**
+   * Get the {@code prioritizedNamespaces} property.
+   * Comma, semi-colon, or space separated list of exported namespaces in priority
+   * order. If the tag names are identical, the value of the tag with a namespace
+   * earlier in the list will be used.  If this property is empty, tags in the
+   * "hs" namespace will be exported.
+   * @see #prioritizedNamespaces
+   */
+  public String getPrioritizedNamespaces() { return getString(prioritizedNamespaces); }
+  
+  /**
+   * Set the {@code prioritizedNamespaces} property.
+   * Comma, semi-colon, or space separated list of exported namespaces in priority
+   * order. If the tag names are identical, the value of the tag with a namespace
+   * earlier in the list will be used.  If this property is empty, tags in the
+   * "hs" namespace will be exported.
+   * @see #prioritizedNamespaces
+   */
+  public void setPrioritizedNamespaces(String v) { setString(prioritizedNamespaces, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "foxLeaseInterval"
@@ -730,7 +781,7 @@ public class BNHaystackService
   /**
    * Slot for the {@code initializeHaystackDictionary} action.
    * Initialize the HsTagDictionary tagsImportFile property with the res/tagsMerge.csv file BOrd.
-   * this file is used to override the standard hasystack tag definitions.
+   * This file is used to override the standard haystack tag definitions.
    * @see #initializeHaystackDictionary()
    */
   public static final Action initializeHaystackDictionary = newAction(Flags.OPERATOR | Flags.ASYNC, null);
@@ -738,7 +789,7 @@ public class BNHaystackService
   /**
    * Invoke the {@code initializeHaystackDictionary} action.
    * Initialize the HsTagDictionary tagsImportFile property with the res/tagsMerge.csv file BOrd.
-   * this file is used to override the standard hasystack tag definitions.
+   * This file is used to override the standard haystack tag definitions.
    * @see #initializeHaystackDictionary
    */
   public void initializeHaystackDictionary() { invoke(initializeHaystackDictionary, null, null); }
@@ -1060,6 +1111,41 @@ public class BNHaystackService
             initBlockedBySlotConversion = false;
             return result;
         }
+    }
+
+    public List<String> getPrioritizedNamespaceList()
+    {
+        String[] namespaces = getPrioritizedNamespaces().split(",");
+
+        TagDictionaryService tagDictionaryService = getTagDictionaryService();
+
+        List<String> namespaceList = new ArrayList<>(namespaces.length);
+        for (String namespace : namespaces)
+        {
+            String trimmed = namespace.trim();
+            if (!trimmed.isEmpty())
+            {
+                if (tagDictionaryService != null)
+                {
+                    if (!tagDictionaryService.getTagDictionary(trimmed).isPresent())
+                    {
+                        LOG.fine("NHaystackService PrioritizedNamespaces property contains namespace " +
+                            trimmed + " that does not correspond to a dictionary in the tag dictionary service. " +
+                            "This may result in tags not being exported to Haystack clients.");
+                    }
+                }
+                namespaceList.add(trimmed);
+            }
+        }
+
+        if (namespaceList.isEmpty())
+        {
+            LOG.fine("NHaystackService PrioritizedNamespaces property contains only whitespace and/or commas. " +
+                "Defaulting to use the 'hs' namespace.");
+            namespaceList.add(NAME_SPACE);
+        }
+
+        return namespaceList;
     }
 
 ////////////////////////////////////////////////////////////////

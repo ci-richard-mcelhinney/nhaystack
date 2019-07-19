@@ -10,8 +10,6 @@
 
 package nhaystack.ui;
 
-import static nhaystack.server.HaystackSlotUtil.refactorHaystackSlot;
-
 import java.util.ArrayList;
 import java.util.List;
 import javax.baja.gx.BImage;
@@ -37,6 +35,7 @@ import javax.baja.ui.pane.BEdgePane;
 import javax.baja.util.BServiceContainer;
 import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import javax.baja.workbench.view.BWbComponentView;
+
 import nhaystack.BHDict;
 import nhaystack.server.BNHaystackService;
 import nhaystack.server.HaystackSlotUtil;
@@ -112,7 +111,7 @@ public class BHDictFE extends BWbFieldEditor
             }
             catch(Exception ignore) {}
         }
-        HDict hDict = HaystackSlotUtil.refactorHaystackSlot(comp, tags.getDict());
+        HDict hDict = HaystackSlotUtil.refactorHaystackSlot(comp, tags.getDict(), service);
         tags = BHDict.make(hDict);
         return tags;
     }
@@ -149,7 +148,7 @@ public class BHDictFE extends BWbFieldEditor
             textField.relayout();
             setModified();
         }
-        else if(slotsToRemove.size() > 0) //this will catch the last direct tag removed.
+        else if (!slotsToRemove.isEmpty()) //this will catch the last direct tag removed.
         {
             setModified();
         }

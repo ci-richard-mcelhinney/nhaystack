@@ -7,6 +7,7 @@
 //   10 May 2018  Eric Anderson    Migrated to slot annotations, added missing @Overrides annotations,
 //                                 added use of generics
 //   26 Sep 2018  Andrew Saunders  Managing interaction with Niagara Haystack tags
+//   19 Jul 2019  Eric Anderson    Keeping implied tags out of the optional section
 //
 
 package nhaystack.ui;
@@ -47,6 +48,7 @@ import nhaystack.util.TypeUtil;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HDictBuilder;
 import org.projecthaystack.HVal;
+import com.tridium.sys.tag.ComponentTags;
 import com.tridium.tagdictionary.BNiagaraTagDictionary;
 
 @NiagaraType
@@ -130,47 +132,27 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
         }
 
         //////////////////////
-        // optional
-
-        Map<String, HVal> optionalTags = asTagMap(all);
-        optionalTags.keySet().removeAll(allPossibleAuto);
-        optionalTags.keySet().removeAll(defaultEssentials.keySet());
-
-        // points need 'equipRef' and 'schedulable' to show up in essentials.
-        if (all.has("point"))
-        {
-            if (optionalTags.containsKey(EQUIP_REF))
-                essentialTags.put(EQUIP_REF, optionalTags.remove(EQUIP_REF));
-            else
-                essentialTags.put(EQUIP_REF, BHRef.DEFAULT.getRef());
-
-//            if (optionalTags.containsKey("schedulable"))
-//                essentialTags.put("schedulable", optionalTags.remove("schedulable"));
-//            else
-//                essentialTags.put("schedulable", HNum.make(BHSchedulable.DEFAULT.getPriority()));
-        }
-
-        //////////////////////
         // autoGen
 
         Map<String, HVal> autoGenTags = asTagMap(all);
         autoGenTags.keySet().retainAll(allPossibleAuto);
-
-        // move 'equip' to optional if its not really a BHEquip
-        if (autoGenTags.containsKey("equip") && !(comp instanceof BHEquip))
-            optionalTags.put("equip", autoGenTags.remove("equip"));
 
         // Add tags implied by smart tag dictionaries
         if (tdService != null)
         {
             // Get the set of implied tags for this component
             final ImpliedTags impTags = new ImpliedTags(tdService, comp);
+            final ComponentTags directTags = new ComponentTags(comp);
 
             for (Tag impTag : impTags)
             {
                 // Skip implied tags without the "hs" namespace (may be implied
                 // by Niagara tag dictionary, for example)
                 if (!impTag.getId().getDictionary().equals("hs"))
+                    continue;
+
+                // Skip implied tags that are also direct tags
+                if (directTags.contains(impTag.getId()))
                     continue;
 
                 String tagName = impTag.getId().getName();
@@ -189,8 +171,7 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
                 {
                     HVal hVal = TypeUtil.fromBajaDataValue(tagValue);
                     if (hVal != null &&
-                        !essentialTags.containsKey(tagName) &&
-                        !optionalTags.containsKey(tagName))
+                        !essentialTags.containsKey(tagName))
                     {
                         autoGenTags.put(tagName, hVal);
                     }
@@ -200,6 +181,32 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
                     System.out.println(e);
                 }
             }
+        }
+
+        //////////////////////
+        // optional
+
+        Map<String, HVal> optionalTags = asTagMap(all);
+        optionalTags.keySet().removeAll(allPossibleAuto);
+        optionalTags.keySet().removeAll(defaultEssentials.keySet());
+        optionalTags.keySet().removeAll(autoGenTags.keySet());
+
+        // move 'equip' to optional if its not really a BHEquip
+        if (autoGenTags.containsKey("equip") && !(comp instanceof BHEquip))
+            optionalTags.put("equip", autoGenTags.remove("equip"));
+
+        // points need 'equipRef' and 'schedulable' to show up in essentials.
+        if (all.has("point"))
+        {
+            if (optionalTags.containsKey(EQUIP_REF))
+                essentialTags.put(EQUIP_REF, optionalTags.remove(EQUIP_REF));
+            else
+                essentialTags.put(EQUIP_REF, BHRef.DEFAULT.getRef());
+
+//            if (optionalTags.containsKey("schedulable"))
+//                essentialTags.put("schedulable", optionalTags.remove("schedulable"));
+//            else
+//                essentialTags.put("schedulable", HNum.make(BHSchedulable.DEFAULT.getPriority()));
         }
 
         //////////////////////

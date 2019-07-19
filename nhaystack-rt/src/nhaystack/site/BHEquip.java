@@ -116,8 +116,9 @@ public class BHEquip extends BHTagged implements NHaystackConst
     public HDict generateTags(NHServer server)
     {
         HDictBuilder hdb = new HDictBuilder();
-        hdb.add(server.getTagManager().generateComponentTags(this));
-        hdb.add(TagManager.convertRelationsToRefTags(server.getTagManager(), this));
+        TagManager tagManager = server.getTagManager();
+        hdb.add(tagManager.generateComponentTags(this));
+        hdb.add(tagManager.convertRelationsToRefTags(this));
 
         // add annotated
         HDict tags = getHaystack().getDict();
