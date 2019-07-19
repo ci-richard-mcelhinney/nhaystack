@@ -1,17 +1,20 @@
 <types>
   <!--nhaystack.ntest-->
+  <type class="nhaystack.ntest.BEquipRefRelationTest" name="EquipRefRelationTest"/>
   <type class="nhaystack.ntest.BHaystackClientTest" name="HaystackClientTest"/>
   <type class="nhaystack.ntest.BHaystackClientTest2" name="HaystackClientTest2"/>
+  <type class="nhaystack.ntest.BHaystackImportOverlayTest" name="HaystackImportOverlayTest"/>
+  <type class="nhaystack.ntest.BHEquipTest" name="HEquipTest"/>
   <type class="nhaystack.ntest.BMigrateHaystackTagsTest" name="MigrateHaystackTagsTest"/>
+  <type class="nhaystack.ntest.BMultiNamespaceRelationsTest" name="MultiNamespaceRelationsTest"/>
+  <type class="nhaystack.ntest.BMultiNamespaceTagsTest" name="MultiNamespaceTagsTest"/>
+  <type class="nhaystack.ntest.BNHaystackServicePrioritizedNamespacesTest" name="NHaystackServicePrioritizedNamespacesTest"/>
+  <type class="nhaystack.ntest.BNIdTagTest" name="NIdTagTest"/>
   <type class="nhaystack.ntest.BReplaceHaystackSlotStationTest" name="ReplaceHaystackSlotStationTest"/>
   <type class="nhaystack.ntest.BShowPointsInWatchTest" name="ShowPointsInWatchTest"/>
+  <type class="nhaystack.ntest.BSiteRefRelationTest" name="SiteRefRelationTest"/>
   <type class="nhaystack.ntest.BSlotUtilTest" name="SlotUtilTest"/>
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
-  <type class="nhaystack.ntest.BHaystackImportOverlayTest" name="HaystackImportOverlayTest"/>
-  <type class="nhaystack.ntest.BNIdTagTest" name="NIdTagTest"/>
-  <type class="nhaystack.ntest.BEquipRefRelationTest" name="EquipRefRelationTest"/>
-  <type class="nhaystack.ntest.BHEquipTest" name="HEquipTest"/>
-  <type class="nhaystack.ntest.BSiteRefRelationTest" name="SiteRefRelationTest"/>
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
 </types>

@@ -3,11 +3,14 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//     05 Dec 2017 Rowyn Brunner Creation
+//     05 Dec 2017  Rowyn Brunner  Creation
+//     19 Jul 2019  Eric Anderson  Adjusted tests for adhoc tag support and no whitelist
 //
 
 package nhaystack.ntest;
 
+import static nhaystack.ntest.helper.TagTestUtil.assertDictEntry;
+import static nhaystack.ntest.helper.TagTestUtil.assertTag;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertNull;
@@ -80,14 +83,14 @@ public class BReplaceHaystackSlotStationTest
             .add("waterCooled", "yes it did")
             .add("pump", HMarker.VAL)
             .toDict();
-        whitelistOnlyComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
+        noBlacklistComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
 
         dict = new HDictBuilder()
             .add("weeklySchedule", HNum.make(12))
             .add("navNameFormat", HNum.make(17, "ms"))
             .add("schedulable", HStr.make("very bad"))
             .toDict();
-        blacklistOnlyComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
+        allBlacklistComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
 
         dict = new HDictBuilder()
             .add("zone", HStr.make("calzone"))
@@ -95,7 +98,7 @@ public class BReplaceHaystackSlotStationTest
             .add("weeklySchedule", HBool.make(true))
             .add("schedulable", HNum.make(13, "yr"))
             .toDict();
-        blackAndWhitelistComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
+        someBlacklistComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
 
         dict = new HDictBuilder()
             .add("weather", HList.make(EMPTY_HVAL_ARRAY))
@@ -103,7 +106,7 @@ public class BReplaceHaystackSlotStationTest
             .add("solar", HStr.make("yessir"))
             .add("irradiance", HMarker.VAL)
             .toDict();
-        whitelistNonBIDataValueComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
+        someNonBIDataValueComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
 
         dict = new HDictBuilder()
             .add("weeklySchedule", HList.make(EMPTY_HVAL_ARRAY))
@@ -120,6 +123,25 @@ public class BReplaceHaystackSlotStationTest
             .add("faceBypass", HMarker.VAL)
             .toDict();
         allCombinationsComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
+
+        dict = new HDictBuilder()
+            .add("zone", HNum.make(12))
+            .add("water", HBool.make(false))
+            .add("adHoc1", HNum.make(12, "ms"))
+            .add("adHoc2", "yes it did")
+            .add("pump", HMarker.VAL)
+            .toDict();
+        someAdHocComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
+
+        dict = new HDictBuilder()
+            .add("zone", HNum.make(12))
+            .add("water", HBool.make(false))
+            .add("adHoc1", HNum.make(12, "ms"))
+            .add("adHoc2", "yes it did")
+            .add("weeklySchedule", HBool.make(true))
+            .add("schedulable", HNum.make(13, "yr"))
+            .toDict();
+        someAdHocBlacklistComponent.add(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(dict));
 
         dict = new HDictBuilder()
             .add("geoLat", HNum.make(1.11))
@@ -158,12 +180,14 @@ public class BReplaceHaystackSlotStationTest
         geoLonTagComponent.tags().set(Id.newId("hs", "geoLon"), BDouble.make(4.44));
 
         folder.add("NoHaystackSlot", noSlotComponent);
-        folder.add("WhitelistOnly", whitelistOnlyComponent);
-        folder.add("BlacklistOnly", blacklistOnlyComponent);
-        folder.add("WhiteAndBlackList", blackAndWhitelistComponent);
-        folder.add("WhitelistNonBIDataValue", whitelistNonBIDataValueComponent);
+        folder.add("NoBlacklist", noBlacklistComponent);
+        folder.add("AllBlacklist", allBlacklistComponent);
+        folder.add("SomeBlacklist", someBlacklistComponent);
+        folder.add("SomeNonBIDataValue", someNonBIDataValueComponent);
         folder.add("BlacklistNonBIDataValue", blacklistNonBIDataValueComponent);
         folder.add("AllCombinations", allCombinationsComponent);
+        folder.add("SomeAdHoc", someAdHocComponent);
+        folder.add("SomeAdHocBlacklist", someAdHocBlacklistComponent);
         folder.add("geoLatGeoLon", geoLatGeoLonComponent);
         folder.add("geoLat", geoLatComponent);
         folder.add("geoLon", geoLonComponent);
@@ -199,106 +223,129 @@ public class BReplaceHaystackSlotStationTest
         assertEquals(tags.getAll().size(), 0, "Size of component tags");
         assertNull(noSlotComponent.get(BHDict.HAYSTACK_IDENTIFIER));
 
-        tags = whitelistOnlyComponent.tags();
+        tags = noBlacklistComponent.tags();
         assertEquals(tags.getAll().size(), 5, "Size of component tags");
-        assertNotNull(whitelistOnlyComponent.get(BHDict.HAYSTACK_IDENTIFIER));
-        TagTestUtil.assertTag(tags, "zone", BDouble.make(12));
-        TagTestUtil.assertTag(tags, "water", BBoolean.make(false));
-        TagTestUtil.assertTag(tags, "visibility", BRelTime.make(12));
-        TagTestUtil.assertTag(tags, "waterCooled", BString.make("yes it did"));
-        TagTestUtil.assertTag(tags, "pump", BMarker.MARKER);
+        assertNotNull(noBlacklistComponent.get(BHDict.HAYSTACK_IDENTIFIER));
+        assertTag(tags, "zone", BDouble.make(12));
+        assertTag(tags, "water", BBoolean.make(false));
+        assertTag(tags, "visibility", BRelTime.make(12));
+        assertTag(tags, "waterCooled", BString.make("yes it did"));
+        assertTag(tags, "pump", BMarker.MARKER);
 
-        tags = blacklistOnlyComponent.tags();
-        compDict = TagTestUtil.getCompDict(blacklistOnlyComponent);
+        tags = allBlacklistComponent.tags();
+        compDict = TagTestUtil.getCompDict(allBlacklistComponent);
         assertEquals(tags.getAll().size(), 0, "Size of component tags");
         assertEquals(compDict.size(), 3, "Size of haystack slot dict");
-        TagTestUtil.assertDictEntry(compDict, "weeklySchedule", HNum.make(12));
-        TagTestUtil.assertDictEntry(compDict, "navNameFormat", HNum.make(17, "ms"));
-        TagTestUtil.assertDictEntry(compDict, "schedulable", HStr.make("very bad"));
+        assertDictEntry(compDict, "weeklySchedule", HNum.make(12));
+        assertDictEntry(compDict, "navNameFormat", HNum.make(17, "ms"));
+        assertDictEntry(compDict, "schedulable", HStr.make("very bad"));
 
-        tags = blackAndWhitelistComponent.tags();
-        compDict = TagTestUtil.getCompDict(blackAndWhitelistComponent);
+        tags = someBlacklistComponent.tags();
+        compDict = TagTestUtil.getCompDict(someBlacklistComponent);
         assertEquals(tags.getAll().size(), 2, "Size of component tags");
         assertEquals(compDict.size(), 2, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "zone", BString.make("calzone"));
-        TagTestUtil.assertTag(tags, "water", BDouble.make(59));
-        TagTestUtil.assertDictEntry(compDict, "weeklySchedule", HBool.make(true));
-        TagTestUtil.assertDictEntry(compDict, "schedulable", HNum.make(13, "yr"));
+        assertTag(tags, "zone", BString.make("calzone"));
+        assertTag(tags, "water", BDouble.make(59));
+        assertDictEntry(compDict, "weeklySchedule", HBool.make(true));
+        assertDictEntry(compDict, "schedulable", HNum.make(13, "yr"));
 
-        tags = whitelistNonBIDataValueComponent.tags();
-        compDict = TagTestUtil.getCompDict(whitelistNonBIDataValueComponent);
+        tags = someNonBIDataValueComponent.tags();
+        compDict = TagTestUtil.getCompDict(someNonBIDataValueComponent);
         assertEquals(tags.getAll().size(), 2, "Size of component tags");
         assertEquals(compDict.size(), 2, "Size of haystack slot dict");
-        TagTestUtil.assertDictEntry(compDict, "weather", HList.make(EMPTY_HVAL_ARRAY));
-        TagTestUtil.assertDictEntry(compDict, "screw", HDate.make(2017, 2, 14));
-        TagTestUtil.assertTag(tags, "solar", BString.make("yessir"));
-        TagTestUtil.assertTag(tags, "irradiance", BMarker.MARKER);
+        assertDictEntry(compDict, "weather", HList.make(EMPTY_HVAL_ARRAY));
+        assertDictEntry(compDict, "screw", HDate.make(2017, 2, 14));
+        assertTag(tags, "solar", BString.make("yessir"));
+        assertTag(tags, "irradiance", BMarker.MARKER);
 
         tags = blacklistNonBIDataValueComponent.tags();
         compDict = TagTestUtil.getCompDict(blacklistNonBIDataValueComponent);
         assertEquals(tags.getAll().size(), 0, "Size of component tags");
         assertEquals(compDict.size(), 3, "Size of haystack slot dict");
-        TagTestUtil.assertDictEntry(compDict, "weeklySchedule", HList.make(EMPTY_HVAL_ARRAY));
-        TagTestUtil.assertDictEntry(compDict, "schedulable", HDate.make(2012, 12, 12));
-        TagTestUtil.assertDictEntry(compDict, "navNameFormat", HBool.make(true));
+        assertDictEntry(compDict, "weeklySchedule", HList.make(EMPTY_HVAL_ARRAY));
+        assertDictEntry(compDict, "schedulable", HDate.make(2012, 12, 12));
+        assertDictEntry(compDict, "navNameFormat", HBool.make(true));
 
         tags = allCombinationsComponent.tags();
         compDict = TagTestUtil.getCompDict(allCombinationsComponent);
         assertEquals(tags.getAll().size(), 2, "Size of component tags");
         assertEquals(compDict.size(), 3, "Size of haystack slot dict");
-        TagTestUtil.assertDictEntry(compDict, "weeklySchedule", HNum.make(8));
-        TagTestUtil.assertDictEntry(compDict, "schedulable", HList.make(EMPTY_HVAL_ARRAY));
-        TagTestUtil.assertTag(tags, "weather", BBoolean.make(false));
-        TagTestUtil.assertDictEntry(compDict, "heatExchanger", HDate.make(2017, 8, 22));
-        TagTestUtil.assertTag(tags, "faceBypass", BMarker.MARKER);
+        assertDictEntry(compDict, "weeklySchedule", HNum.make(8));
+        assertDictEntry(compDict, "schedulable", HList.make(EMPTY_HVAL_ARRAY));
+        assertTag(tags, "weather", BBoolean.make(false));
+        assertDictEntry(compDict, "heatExchanger", HDate.make(2017, 8, 22));
+        assertTag(tags, "faceBypass", BMarker.MARKER);
+
+        tags = someAdHocComponent.tags();
+        compDict = TagTestUtil.getCompDict(someAdHocComponent);
+        assertEquals(tags.getAll().size(), 5, "Size of component tags");
+        assertEquals(compDict.size(), 0, "Size of haystack slot dict");
+        assertTag(tags, "zone", BDouble.make(12));
+        assertTag(tags, "water", BBoolean.make(false));
+        assertTag(tags, "adHoc1", BRelTime.make(12));
+        assertTag(tags, "adHoc2", BString.make("yes it did"));
+        assertTag(tags, "pump", BMarker.MARKER);
+
+        tags = someAdHocBlacklistComponent.tags();
+        compDict = TagTestUtil.getCompDict(someAdHocBlacklistComponent);
+        assertEquals(tags.getAll().size(), 4, "Size of component tags");
+        assertEquals(compDict.size(), 2, "Size of haystack slot dict");
+        assertTag(tags, "zone", BDouble.make(12));
+        assertTag(tags, "water", BBoolean.make(false));
+        assertTag(tags, "adHoc1", BRelTime.make(12));
+        assertTag(tags, "adHoc2", BString.make("yes it did"));
+        assertDictEntry(compDict, "weeklySchedule", HBool.make(true));
+        assertDictEntry(compDict, "schedulable", HNum.make(13, "yr"));
 
         tags = geoLatGeoLonComponent.tags();
         compDict = TagTestUtil.getCompDict(geoLatGeoLonComponent);
         assertEquals(tags.getAll().size(), 1, "Size of component tags");
         assertEquals(compDict.size(), 0, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "geoCoord", BString.make("C(1.11,2.22)"));
+        assertTag(tags, "geoCoord", BString.make("C(1.11,2.22)"));
 
         tags = geoLatComponent.tags();
         compDict = TagTestUtil.getCompDict(geoLatComponent);
         assertEquals(tags.getAll().size(), 1, "Size of component tags");
         assertEquals(compDict.size(), 0, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "geoCoord", BString.make("C(1.11,0.0)"));
+        assertTag(tags, "geoCoord", BString.make("C(1.11,0.0)"));
 
         tags = geoLonComponent.tags();
         compDict = TagTestUtil.getCompDict(geoLonComponent);
         assertEquals(tags.getAll().size(), 1, "Size of component tags");
         assertEquals(compDict.size(), 0, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "geoCoord", BString.make("C(0.0,2.22)"));
+        assertTag(tags, "geoCoord", BString.make("C(0.0,2.22)"));
 
         tags = geoLatGeoLonTagsComponent.tags();
         compDict = TagTestUtil.getCompDict(geoLatGeoLonTagsComponent);
         assertEquals(tags.getAll().size(), 1, "Size of component tags");
         assertEquals(compDict.size(), 0, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "geoCoord", BString.make("C(3.33,4.44)"));
+        assertTag(tags, "geoCoord", BString.make("C(3.33,4.44)"));
 
         tags = geoLatTagComponent.tags();
         compDict = TagTestUtil.getCompDict(geoLatTagComponent);
         assertEquals(tags.getAll().size(), 1, "Size of component tags");
         assertEquals(compDict.size(), 0, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "geoCoord", BString.make("C(3.33,0.0)"));
+        assertTag(tags, "geoCoord", BString.make("C(3.33,0.0)"));
 
         tags = geoLonTagComponent.tags();
         compDict = TagTestUtil.getCompDict(geoLonTagComponent);
         assertEquals(tags.getAll().size(), 1, "Size of component tags");
         assertEquals(compDict.size(), 0, "Size of haystack slot dict");
-        TagTestUtil.assertTag(tags, "geoCoord", BString.make("C(0.0,4.44)"));
+        assertTag(tags, "geoCoord", BString.make("C(0.0,4.44)"));
     }
 
     public static final HVal[] EMPTY_HVAL_ARRAY = new HVal[0];
 
     private BNHaystackService haystackService;
     BComponent noSlotComponent = new BComponent();
-    BComponent whitelistOnlyComponent = new BComponent();
-    BComponent blacklistOnlyComponent = new BComponent();
-    BComponent blackAndWhitelistComponent = new BComponent();
-    BComponent whitelistNonBIDataValueComponent = new BComponent();
+    BComponent noBlacklistComponent = new BComponent();
+    BComponent allBlacklistComponent = new BComponent();
+    BComponent someBlacklistComponent = new BComponent();
+    BComponent someNonBIDataValueComponent = new BComponent();
     BComponent blacklistNonBIDataValueComponent = new BComponent();
     BComponent allCombinationsComponent = new BComponent();
+    BComponent someAdHocComponent = new BComponent();
+    BComponent someAdHocBlacklistComponent = new BComponent();
     BComponent geoLatGeoLonComponent = new BComponent();
     BComponent geoLatComponent = new BComponent();
     BComponent geoLonComponent = new BComponent();

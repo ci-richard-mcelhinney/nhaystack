@@ -8,6 +8,9 @@
 //                                 converting geoLat and geoLon tags to a geoCoord tag,
 //                                 added shared constants, logging messages to job when
 //                                 appropriate
+//   19 Jul 2019  Eric Anderson    Ad hoc tags transferred to Niagara tags; support for
+//                                 multiple, prioritized namespaces when migrating the
+//                                 Haystack slot
 //
 package nhaystack.server;
 
@@ -33,11 +36,14 @@ import javax.baja.sys.BNumber;
 import javax.baja.sys.BRelation;
 import javax.baja.sys.BSimple;
 import javax.baja.sys.BString;
-import javax.baja.tag.Entity;
+import javax.baja.sys.Sys;
 import javax.baja.tag.Id;
+import javax.baja.tag.Relation;
+import javax.baja.tag.Relations;
 import javax.baja.tag.Tag;
 import javax.baja.tag.Tags;
 import javax.baja.util.Lexicon;
+
 import nhaystack.BHDict;
 import nhaystack.util.NHaystackConst;
 import nhaystack.util.TypeUtil;
@@ -48,6 +54,7 @@ import org.projecthaystack.HNum;
 import org.projecthaystack.HRef;
 import org.projecthaystack.HVal;
 import com.tridium.sys.tag.ComponentRelations;
+import com.tridium.sys.tag.ComponentTags;
 
 public final class HaystackSlotUtil
     implements NHaystackConst
@@ -74,7 +81,7 @@ public final class HaystackSlotUtil
             {
                 return;
             }
-            migrateHaystackTags(component, dict, job);
+            migrateHaystackTags(component, dict, job, findNHaystackService());
         }
         catch (Exception e)
         {
@@ -90,19 +97,34 @@ public final class HaystackSlotUtil
         }
     }
 
-    private static void migrateHaystackTags(BComponent component, HDict dict, BNHaystackConvertHaystackSlotsJob job)
+    private static BNHaystackService findNHaystackService()
     {
-        HDict newDictValue = refactorHaystackSlot(component, dict, job);
+        return Sys.isStation() ?
+            (BNHaystackService) Sys.findService(BNHaystackService.TYPE).orElse(null) :
+            null;
+    }
+
+    private static void migrateHaystackTags(
+        BComponent component,
+        HDict dict,
+        BNHaystackConvertHaystackSlotsJob job,
+        BNHaystackService nhaystackService)
+    {
+        HDict newDictValue = refactorHaystackSlot(component, dict, job, nhaystackService);
         component.set(BHDict.HAYSTACK_IDENTIFIER, BHDict.make(newDictValue));
     }
 
     // this method is also called from BHDictFE when editing a BHDict slot.
-    public static HDict refactorHaystackSlot(BComponent component, HDict dict)
+    public static HDict refactorHaystackSlot(BComponent component, HDict dict, BNHaystackService service)
     {
-        return refactorHaystackSlot(component, dict, null);
+        return refactorHaystackSlot(component, dict, null, service);
     }
 
-    private static HDict refactorHaystackSlot(BComponent component, HDict dict, BNHaystackConvertHaystackSlotsJob job)
+    private static HDict refactorHaystackSlot(
+        BComponent component,
+        HDict dict,
+        BNHaystackConvertHaystackSlotsJob job,
+        BNHaystackService nhaystackService)
     {
         if (job != null)
         {
@@ -111,13 +133,8 @@ public final class HaystackSlotUtil
         }
 
         HDictBuilder newValueBuilder = new HDictBuilder();
-        ComponentRelations componentRelations = new ComponentRelations(component);
-
-        // Existing relations with the same href id but pointing to the wrong endpoint.
-        List<BRelation> toRemove = new ArrayList<>();
 
         Set<String> blacklist = getBlacklist();
-        Set<String> whitelist = getWhitelist();
         Set<String> tagGroupList = getTagGroupList();
 
         // migrate niagara geoLat & geoLon tags to a geoCoord tag
@@ -143,7 +160,7 @@ public final class HaystackSlotUtil
                 coord = geoLatLonToGeoCoord(dict);
                 if (coord != null)
                 {
-                    setAddTag(GEO_COORD, BString.make(coord.toString()), component);
+                    setAddTag(GEO_COORD, BString.make(coord.toString()), component, null);
                     if (job != null)
                     {
                         job.log().message(LEX.getText("haystack.slot.conv.geoLatLon", new Object[] { component.getSlotPath(), coord.toString() }));
@@ -175,32 +192,15 @@ public final class HaystackSlotUtil
                 // tagGroupId tags should be ignored
                 continue;
             }
-            else if (!whitelist.contains(tagName))
-            {
-                String logMsg = LEX.getText("haystack.slot.conv.notInList", new Object[]  { component.getSlotPath(), tagName } );
-                if (job != null)
-                {
-                    job.log().message(logMsg);
-                    job.incWarningCount();
-                }
-                else
-                {
-                    LOG.warning(logMsg);
-                }
-
-                newValueBuilder.add(tagName, tag.getValue());
-            }
             else
             {
-                // whitelisted items
+                // Everything else
                 try
                 {
                     if (tag.getValue() instanceof HRef)
                     {
                         // convert HRef to haystack relation in niagara
-                        Id relationId = Id.newId(NAME_SPACE, tagName);
                         HRef href = (HRef)tag.getValue();
-
                         BOrd refedOrd = TagManager.hrefToOrd(href);
                         if (refedOrd.isNull())
                         {
@@ -213,38 +213,7 @@ public final class HaystackSlotUtil
                         }
 
                         BComponent refedComp = refedOrd.get(component).asComponent();
-                        boolean exists = false;
-                        toRemove.clear();
-                        for (BRelation relation : component.getComponentRelations())
-                        {
-                            if (!relation.getId().equals(relationId))
-                            {
-                                continue;
-                            }
-                                
-                            Entity endpoint = relation.getEndpoint();
-                            if (endpoint.equals(refedComp))
-                            {
-                                exists = true;
-                            }
-                            else
-                            {
-                                toRemove.add(relation);
-                            }
-                        }
-
-                        for (BRelation relation : toRemove)
-                        {
-                            componentRelations.remove(relation);
-                        }
-
-                        if (!exists)
-                        {
-                            // Relation needs to be added with an endpoint ord because, if called
-                            // from workbench, the component is only a proxy component and will not
-                            // be marshaled back correctly.
-                            componentRelations.add(new BRelation(relationId, refedComp.getSlotPathOrd()));
-                        }
+                        replaceAddRelation(tagName, refedComp, component, nhaystackService);
                     }
                     else
                     {
@@ -259,7 +228,7 @@ public final class HaystackSlotUtil
                         BSimple simple = TypeUtil.toBajaSimple(tag.getValue());
                         if (simple instanceof BIDataValue)
                         {
-                            setAddTag(tagName, (BIDataValue)simple, component);
+                            setAddTag(tagName, (BIDataValue)simple, component, nhaystackService);
                         }
                         else
                         {
@@ -311,14 +280,111 @@ public final class HaystackSlotUtil
         return rtnValue;
     }
 
-    private static void setAddTag(String tagName, BIDataValue value, BComponent component )
+    private static void setAddTag(
+        String tagName,
+        BIDataValue value,
+        BComponent component,
+        BNHaystackService nhaystackService)
     {
-        Id tagId = Id.newId(NAME_SPACE, tagName);
-        Tags tags = component.tags();
-        Optional<BIDataValue> existingValue = tags.get(tagId);
-        if (!existingValue.isPresent() || !existingValue.get().equals(value))
+        Tags tags = new ComponentTags(component);
+
+        if (nhaystackService == null)
         {
-            component.tags().set(tagId, value);
+            setAddTag(Id.newId(NAME_SPACE, tagName), value, tags);
+            return;
+        }
+
+        if (!Sys.isStation())
+        {
+            nhaystackService.lease();
+        }
+        List<String> namespaces = nhaystackService.getPrioritizedNamespaceList();
+        for (String namespace : namespaces)
+        {
+            Id id = Id.newId(namespace, tagName);
+            if (tags.contains(id))
+            {
+                setAddTag(id, value, tags);
+                return;
+            }
+        }
+
+        // Not in any namespace
+        setAddTag(Id.newId(namespaces.get(0), tagName), value, tags);
+    }
+
+    private static void setAddTag(Id id, BIDataValue value, Tags tags)
+    {
+        Optional<BIDataValue> existing = tags.get(id);
+        if (!existing.isPresent() || !existing.get().equals(value))
+        {
+            tags.set(id, value);
+        }
+    }
+
+    private static void replaceAddRelation(
+        String tagName,
+        BComponent endpoint,
+        BComponent component,
+        BNHaystackService nhaystackService)
+    {
+        if (nhaystackService == null)
+        {
+            replaceAddRelation(Id.newId(NAME_SPACE, tagName), endpoint, component);
+            return;
+        }
+
+        if (!Sys.isStation())
+        {
+            nhaystackService.lease();
+        }
+        List<String> namespaces = nhaystackService.getPrioritizedNamespaceList();
+        for (String namespace : namespaces)
+        {
+            Id id = Id.newId(namespace, tagName);
+            if (new ComponentRelations(component).get(id).isPresent())
+            {
+                replaceAddRelation(id, endpoint, component);
+                return;
+            }
+        }
+
+        // Not in any namespace
+        replaceAddRelation(Id.newId(namespaces.get(0), tagName), endpoint, component);
+    }
+
+    private static void replaceAddRelation(Id id, BComponent endpoint, BComponent component)
+    {
+        Relations relations = new ComponentRelations(component);
+        List<BRelation> toRemove = new ArrayList<>();
+
+        boolean exists = false;
+        for (BRelation relation : component.getComponentRelations())
+        {
+            if (relation.getId().equals(id))
+            {
+                if (relation.isOutbound() && relation.getEndpoint().equals(endpoint))
+                {
+                    exists = true;
+                }
+                else
+                {
+                    toRemove.add(relation);
+                }
+            }
+        }
+
+        for (Relation relation : toRemove)
+        {
+            relations.remove(relation);
+        }
+
+        if (!exists)
+        {
+            // Relation needs to be added with an endpoint ord because, if
+            // called from workbench, the component is only a proxy component
+            // and will not be marshaled back correctly.
+            relations.add(new BRelation(id, endpoint.getSlotPathOrd()));
         }
     }
 
@@ -326,26 +392,28 @@ public final class HaystackSlotUtil
     // a HCoord.
     private static HCoord geoLatLonToGeoCoord(HDict dict)
     {
-        HCoord coord = null;
         try
         {
             final HVal lat = dict.get(GEO_LAT, false);
             final HVal lon = dict.get(GEO_LON, false);
             if (lat != null && lon != null)
             {
-                coord = HCoord.make(((HNum)lat).val, ((HNum)lon).val);
+                return HCoord.make(((HNum)lat).val, ((HNum)lon).val);
             }
             else if (lat != null && lon == null)
             {
-                coord = HCoord.make(((HNum)lat).val, 0.0);
+                return HCoord.make(((HNum)lat).val, 0.0);
             }
             else if (lat == null && lon != null)
             {
-                coord = HCoord.make(0.0, ((HNum)lon).val);
+                return HCoord.make(0.0, ((HNum)lon).val);
             }
         }
-        catch (Exception ignore) {}
-        return coord;
+        catch (Exception ignore)
+        {
+        }
+
+        return null;
     }
 
     // migrate geoLon & geoLat niagara tags to a geoCoord tag.
@@ -398,11 +466,6 @@ public final class HaystackSlotUtil
         return false;
     }
 
-    private static Set<String> getWhitelist()
-    {
-        return ListHolder.whitelist;
-    }
-
     private static Set<String> getBlacklist()
     {
         return ListHolder.blacklist;
@@ -415,18 +478,15 @@ public final class HaystackSlotUtil
 
     private static final class ListHolder
     {
-        public static final Set<String> whitelist;
         public static final Set<String> blacklist;
         public static final Set<String> tagGroupList;
 
         static
         {
-            Set<String> tempWhitelist = Collections.emptySet();
             Set<String> tempBlacklist = Collections.emptySet();
             Set<String> tempTagGroupList = Collections.emptySet();
             try
             {
-                tempWhitelist = getTagListFromFile("whitelist.txt");
                 tempBlacklist = getTagListFromFile("blacklist.txt");
                 tempTagGroupList = getTagListFromFile("tagGroups.txt");
             }
@@ -434,7 +494,6 @@ public final class HaystackSlotUtil
             {
             }
 
-            whitelist = Collections.unmodifiableSet(tempWhitelist);
             blacklist = Collections.unmodifiableSet(tempBlacklist);
             tagGroupList = Collections.unmodifiableSet(tempTagGroupList);
         }
@@ -453,20 +512,20 @@ public final class HaystackSlotUtil
                 throw new Exception("Missing tag list file " + fileName);
             }
 
-            Set<String> tagNames = new HashSet<>();
             try
             {
+                Set<String> tagNames = new HashSet<>();
                 Scanner scanner = new Scanner(listFile.getInputStream());
                 while (scanner.hasNext())
                 {
                     tagNames.add(scanner.next());
                 }
+                return tagNames;
             }
             catch (Exception e)
             {
                 throw new Exception("Error loading tag list file " + fileName, e);
             }
-            return tagNames;
         }
     }
 }

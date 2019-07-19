@@ -4,6 +4,7 @@
 //
 // History:
 //   16 May 2018  Eric Anderson  Creation
+//   19 Jul 2018  Eric Anderson  Moved rebuildCache method for reuse in other tests
 //
 
 package nhaystack.ntest.helper;
@@ -22,6 +23,8 @@ import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BServiceContainer;
 import javax.baja.web.BWebServer;
 import javax.baja.web.BWebService;
+
+import nhaystack.server.BNHaystackRebuildCacheJob;
 import nhaystack.server.BNHaystackService;
 import nhaystack.server.NHServer;
 import org.projecthaystack.client.HClient;
@@ -54,8 +57,8 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
     protected static final String EXTENDED_OP_NAME = "extended";
     protected static final String FUNCTION_OP_ARG_NAME = "function";
 
-    protected final BHsTagDictionary haystackDict = new BHsTagDictionary();
-    protected final BNHaystackService nhaystackService = new BNHaystackService();
+    protected BHsTagDictionary haystackDict;
+    protected BNHaystackService nhaystackService;
     protected NHServer nhServer;
     protected HClient client;
 
@@ -81,12 +84,14 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
         services.add("tagDictionaryService", tagDictionaryService);
 
         // Set tagsImportFile
+        haystackDict = new BHsTagDictionary();
         haystackDict.setTagsImportFile(BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv"));
         tagDictionaryService.add("haystack", haystackDict);
 
-        services.add("NHaystackService", nhaystackService);
+        nhaystackService = new BNHaystackService();
         nhaystackService.setSchemaVersion(1);
         nhaystackService.setShowLinkedHistories(true);
+        services.add("NHaystackService", nhaystackService);
     }
 
     @Override
@@ -116,6 +121,18 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
 
         TestUtil.waitFor(10, () -> !"1.0".equals(haystackDict.getVersion()), "Waiting for asynchronous import to finish");
         assertEquals(haystackDict.getVersion(), TAGS_VERSION_IMPORT, "dictionary version after import");
+    }
+
+    protected void rebuildCache()
+    {
+        try
+        {
+            new BNHaystackRebuildCacheJob(nhaystackService).run(null);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     protected HClient openClient(boolean useHttps) throws InterruptedException
