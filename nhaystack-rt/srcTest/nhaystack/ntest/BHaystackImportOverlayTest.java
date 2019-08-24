@@ -7,9 +7,12 @@
 //
 package nhaystack.ntest;
 
-import static nhaystack.util.NHaystackConst.ID_EQUIP;
-import static nhaystack.util.NHaystackConst.ID_SITE;
-import static nhaystack.util.NHaystackConst.ID_SITE_REF;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addChild;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipTag;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addFolder;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addSiteRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addSiteTag;
 import static nhaystack.util.NHaystackConst.TAGS_CSV_FILE_VERSION;
 import static nhaystack.util.NHaystackConst.TAGS_VERSION_IMPORT;
 import static org.testng.Assert.assertEquals;
@@ -26,13 +29,11 @@ import javax.baja.status.BStatus;
 import javax.baja.status.BStatusNumeric;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BDouble;
-import javax.baja.sys.BMarker;
 import javax.baja.sys.BString;
 import javax.baja.sys.Context;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import javax.baja.tag.Id;
-import javax.baja.tag.Relation;
 import javax.baja.tag.TagInfo;
 import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BFolder;
@@ -42,7 +43,6 @@ import nhaystack.server.tags.BNWriteValTag;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import com.tridium.haystack.BHsTagDictionary;
-import com.tridium.sys.tag.ComponentRelations;
 import com.tridium.testng.BStationTestBase;
 import com.tridium.testng.TestUtil;
 
@@ -83,6 +83,7 @@ public class BHaystackImportOverlayTest extends BStationTestBase
 
         BTagDictionaryService service = (BTagDictionaryService)Sys.getService(BTagDictionaryService.TYPE);
         haystackDict = (BHsTagDictionary)service.getSmartTagDictionary("hs").orElseThrow(() -> new Exception("No haystack dictionary"));
+        haystackDict.doImportDictionary(Context.NULL);
         TestUtil.waitFor(10, () -> !"1.0".equals(haystackDict.getVersion()), "Waiting for import to finish");
     }
 
@@ -101,32 +102,35 @@ public class BHaystackImportOverlayTest extends BStationTestBase
         assertEquals(haystackDict.getVersion(), TAGS_VERSION_IMPORT, "dictionary version after import");
         assertTagsModified(haystackDict);
 
-        BFolder folder = new BFolder();
-        BNumericWritable wp = new BNumericWritable();
-        folder.add("wp", wp);
-        station.add("folder", folder);
+        BFolder folder = addFolder("folder", station);
+        BNumericWritable wp = addChild("wp", new BNumericWritable(), folder);
         assertCurValTag(wp);
         assertWriteValTag(wp);
 
         // test overridden hs:id tag
-        BFolder site = new BFolder();
-        BFolder equip = new BFolder();
-        BNumericWritable point = new BNumericWritable();
-        station.add("site", site);
+        BFolder site = addFolder("site", station);
         assertNoIdTag(site);
-        site.tags().set(ID_SITE, BMarker.MARKER);
+
+        addSiteTag(site);
         assertIdValue(site, "S.site");
-        station.add("equip", equip);
+
+        BFolder equip = addFolder("equip", station);
         assertNoIdTag(equip);
-        equip.tags().set(ID_EQUIP, BMarker.MARKER);
+
+        addEquipTag(equip);
         assertIdValue(equip, "C.equip");
-        equip.add("point", point);
+
+        BNumericWritable point = addChild("point", new BNumericWritable(), equip);
         assertIdValue(point, "C.equip.point");
-        new ComponentRelations(equip).add(ID_SITE_REF, site, Relation.OUTBOUND);
+
+        addSiteRefRelation(equip, site);
         assertIdValue(equip, "S.site.equip");
+        assertIdValue(point, "C.equip.point");
+
+        addEquipRefRelation(point, equip);
         assertIdValue(point, "S.site.equip.point");
-        BBooleanSchedule schedule = new BBooleanSchedule();
-        equip.add("schedule", schedule);
+
+        BBooleanSchedule schedule = addChild("schedule", new BBooleanSchedule(), equip);
         assertIdValue(schedule, "C.equip.schedule");
     }
 

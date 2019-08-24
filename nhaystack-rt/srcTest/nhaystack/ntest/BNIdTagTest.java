@@ -33,6 +33,7 @@ import javax.baja.util.BFolder;
 
 import nhaystack.BHDict;
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
+import nhaystack.ntest.helper.BTestProxyExt;
 import nhaystack.server.tags.BNIdTag;
 import nhaystack.site.BHEquip;
 import org.testng.annotations.BeforeTest;
@@ -105,6 +106,11 @@ public class BNIdTagTest extends BNHaystackStationTestBase
         visibleNoSiteFolder.add("equipNoSite", equipNoSite);
         equipNoSite.add("pointImpliedEquipNoSite", pointImpliedEquipNoSite);
 
+        pointNoEquipNoSite.setProxyExt(new BTestProxyExt());
+        pointDirectEquipNoSite.setProxyExt(new BTestProxyExt());
+        pointImpliedEquipNoSite.setProxyExt(new BTestProxyExt());
+        pointNoEquipSite.setProxyExt(new BTestProxyExt());
+
         station.add("site", site);
 
         pointDirectEquipNoSite.relations().add(new BRelation(ID_EQUIP_REF, equipNoSite));
@@ -121,6 +127,9 @@ public class BNIdTagTest extends BNHaystackStationTestBase
         visibleWithSiteFolder.add("pointDirectEquipWithSite", pointDirectEquipWithSite);
         visibleWithSiteFolder.add("equipWithSite", equipWithSite);
         equipWithSite.add("pointImpliedEquipWithSite", pointImpliedEquipWithSite);
+
+        pointDirectEquipWithSite.setProxyExt(new BTestProxyExt());
+        pointImpliedEquipWithSite.setProxyExt(new BTestProxyExt());
 
         equipWithSite.tags().set(ID_EQUIP, BMarker.MARKER);
         equipWithSite.relations().add(new BRelation(ID_SITE_REF, site));

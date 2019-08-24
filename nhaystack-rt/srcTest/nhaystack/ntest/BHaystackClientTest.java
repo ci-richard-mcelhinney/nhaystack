@@ -19,6 +19,9 @@ import static nhaystack.ntest.helper.NHaystackTestUtil.SENSOR_ID;
 import static nhaystack.ntest.helper.NHaystackTestUtil.TEMP_ID;
 import static nhaystack.ntest.helper.NHaystackTestUtil.WRITE_LEVEL_TAG_NAME;
 import static nhaystack.ntest.helper.NHaystackTestUtil.WRITE_VAL_TAG_NAME;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addChild;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addFolder;
 import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowDis;
 import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowIds;
 import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowNavIds;
@@ -65,7 +68,6 @@ import javax.baja.util.BFolder;
 import junit.extensions.PA;
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
 import nhaystack.server.BNHaystackConvertHaystackSlotsJob;
-import nhaystack.server.BNHaystackRebuildCacheJob;
 import nhaystack.server.BNHaystackService;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
@@ -170,66 +172,56 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
         replace("testFolder2", testFolder2);
 
         // Playground
-        siteA = new BHSite();
-        siteB = new BHSite();
-        BFolder siteAEquipAFolder = new BFolder();
-        BFolder siteBEquipAFolder = new BFolder();
-        siteAequipA = new BHEquip();
-        BHEquip siteBEquipAEquip = new BHEquip();
-        BEnumWritable enumPoint = new BEnumWritable();
-        BSineWave sineWave1 = new BSineWave();
-        BNumericCovHistoryExt histExt = new BNumericCovHistoryExt();
-
+        siteA = addChild("SiteA", new BHSite(), playgroundFolder);
         siteA.tags().set(Id.newId("hs", "geoCoord"), BString.make("C(1.11,2.22)"));
+        siteB = addChild(SITE_B, new BHSite(), playgroundFolder);
+
+        BFolder siteAEquipAFolder = addFolder(EQUIP_A, siteA);
+        BFolder siteBEquipAFolder = addFolder(EQUIP_A, siteB);
+
+        siteAequipA = addChild(EQUIP_SLOT_NAME, new BHEquip(), siteAEquipAFolder);
         addSiteRefRelation(siteAequipA, siteA);
+        siteAequipApoint1 = addChild("point1", new BNumericWritable(), siteAEquipAFolder);
+        addEquipRefRelation(siteAequipApoint1, siteAequipA);
+        BSineWave sineWave1 = addChild("sineWave1", new BSineWave(), siteAEquipAFolder);
+        addEquipRefRelation(sineWave1, siteAequipA);
+        BSineWave sineWave2 = addChild("sineWave2", new BSineWave(), siteAEquipAFolder);
+        addEquipRefRelation(sineWave2, siteAequipA);
+
+        BHEquip siteBEquipAEquip = addChild(EQUIP_SLOT_NAME, new BHEquip(), siteBEquipAFolder);
         addSiteRefRelation(siteBEquipAEquip, siteB);
+
+        sineWave1.setFacets(BFacets.makeNumeric(BUnit.getUnit("second"), 3, -50, 50));
+        BNumericCovHistoryExt histExt = addChild("NumericCov", new BNumericCovHistoryExt(), sineWave1);
+        histExt.setEnabled(true);
+
+        BBooleanWritable boolPoint = addChild("boolPoint", new BBooleanWritable(), siteAequipA);
+        addEquipRefRelation(boolPoint, siteAequipA);
+        BEnumWritable enumPoint = addChild("enumPoint", new BEnumWritable(), siteAequipA);
+        addEquipRefRelation(enumPoint, siteAequipA);
+        BStringWritable strPoint = addChild("strPoint", new BStringWritable(), siteAequipA);
+        addEquipRefRelation(strPoint, siteAequipA);
+        BSineWave sineWave3 = addChild("sineWave3", new BSineWave(), siteAequipA);
+        addEquipRefRelation(sineWave3, siteAequipA);
+        BSineWave sineWave4 = addChild("sineWave4", new BSineWave(), siteAequipA);
+        addEquipRefRelation(sineWave4, siteAequipA);
 
         // initialize enum point facets
         String[] enumTags = Arrays.stream(STR_ARRAY).map(HStr::toString).toArray(String[]::new);
         enumPoint.setFacets(BFacets.makeEnum(BEnumRange.make(enumTags)));
 
-        sineWave1.setFacets(BFacets.makeNumeric(BUnit.getUnit("second"), 3, -50, 50));
-        histExt.setEnabled(true);
-
-        playgroundFolder.add("SiteA", siteA);
-        playgroundFolder.add(SITE_B, siteB);
-
-        siteA.add(EQUIP_A, siteAEquipAFolder);
-
-        siteB.add(EQUIP_A, siteBEquipAFolder);
-
-        siteAEquipAFolder.add(EQUIP_SLOT_NAME, siteAequipA);
-        siteAEquipAFolder.add("point1", new BNumericWritable());
-        siteAEquipAFolder.add("sineWave1", sineWave1);
-        siteAEquipAFolder.add("sineWave2", new BSineWave());
-
-        siteBEquipAFolder.add(EQUIP_SLOT_NAME, siteBEquipAEquip);
-
-        siteAequipA.add("boolPoint", new BBooleanWritable());
-        siteAequipA.add("enumPoint", enumPoint);
-        siteAequipA.add("strPoint", new BStringWritable());
-        siteAequipA.add("sineWave3", new BSineWave());
-        siteAequipA.add("sineWave4", new BSineWave());
-
-        sineWave1.add("NumericCov", histExt);
-
         // testFolder2
-        heatPumpFolder = new BFolder();
-        BFolder points = new BFolder();
-        BHSite mottsForest = new BHSite();
-        heatPumpEquip = new BHEquip();
+        BHSite mottsForest = addChild("MottsForest", new BHSite(), testFolder2);
+        heatPumpFolder = addFolder("HeatPump", testFolder2);
+        BFolder points = addFolder("Points", testFolder2);
+
+        heatPumpEquip = addChild(EQUIP_SLOT_NAME, new BHEquip(), heatPumpFolder);
+
+        addChild("hp1", new BNumericPoint(), points);
+        addChild("hp2", new BNumericPoint(), points);
+        addChild("hp3", new BNumericPoint(), points);
 
         addSiteRefRelation(heatPumpEquip, mottsForest);
-
-        testFolder2.add("MottsForest", mottsForest);
-        testFolder2.add("HeatPump", heatPumpFolder);
-        testFolder2.add("Points", points);
-
-        heatPumpFolder.add(EQUIP_SLOT_NAME, heatPumpEquip);
-
-        points.add("hp1", new BNumericPoint());
-        points.add("hp2", new BNumericPoint());
-        points.add("hp3", new BNumericPoint());
 
         rebuildCache();
     }
@@ -610,7 +602,7 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
         Thread.sleep(100);
 
         HDict hDict = client.readById(id);
-        assertEquals(hDict.get(CUR_VAL_TAG_NAME), HNum.make(999), "Check curVAl");
+        assertEquals(hDict.get(CUR_VAL_TAG_NAME), HNum.make(999), "Check curVal");
         assertEquals(hDict.get(WRITE_LEVEL_TAG_NAME), HNum.make(1), "Check writeLevel");
         assertEquals(hDict.get(WRITE_VAL_TAG_NAME), HNum.make(999), "Check writeVal HNum");
 
@@ -997,6 +989,7 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
     private BHSite siteA;
     private BHSite siteB;
     private BHEquip siteAequipA;
+    private BNumericPoint siteAequipApoint1;
     private BFolder playgroundFolder;
 
     private BComponent testFolder;

@@ -52,16 +52,6 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
 
 /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
-    private static final String SECURE_URI = "https://localhost/haystack/";
-
-    protected static final String EXTENDED_OP_NAME = "extended";
-    protected static final String FUNCTION_OP_ARG_NAME = "function";
-
-    protected BHsTagDictionary haystackDict;
-    protected BNHaystackService nhaystackService;
-    protected NHServer nhServer;
-    protected HClient client;
-
     @Override
     protected void configureTestStation(BStation station, String stationName, int webPort, int foxPort) throws Exception
     {
@@ -150,4 +140,14 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
 
         return HClient.open(baseURI, getSuperUsername(), getSuperUserPassword());
     }
+
+    private static final String SECURE_URI = "https://localhost/haystack/";
+
+    protected static final String EXTENDED_OP_NAME = "extended";
+    protected static final String FUNCTION_OP_ARG_NAME = "function";
+
+    protected BHsTagDictionary haystackDict;
+    protected BNHaystackService nhaystackService;
+    protected NHServer nhServer;
+    protected HClient client;
 }
