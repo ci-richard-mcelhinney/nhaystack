@@ -7,28 +7,26 @@
 //
 package nhaystack.ntest;
 
+import static nhaystack.ntest.helper.NHaystackTestUtil.addBooleanTestProxyPoint;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipTag;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addFolder;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addNumericTestProxyPoint;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addSiteRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addSiteTag;
 import static nhaystack.ntest.helper.NHaystackTestUtil.assertRowIds;
 import static nhaystack.ntest.helper.NHaystackTestUtil.makeIdGrid;
 import static nhaystack.ntest.helper.NHaystackTestUtil.makeNavGrid;
 import static nhaystack.ntest.helper.NHaystackTestUtil.rowHasEquipRef;
 import static nhaystack.ntest.helper.NHaystackTestUtil.rowHasSiteRef;
-import static nhaystack.util.NHaystackConst.ID_EQUIP;
-import static nhaystack.util.NHaystackConst.ID_EQUIP_REF;
-import static nhaystack.util.NHaystackConst.ID_SITE;
-import static nhaystack.util.NHaystackConst.ID_SITE_REF;
 
 import javax.baja.control.BBooleanPoint;
-import javax.baja.control.BBooleanWritable;
 import javax.baja.control.BNumericPoint;
-import javax.baja.control.BNumericWritable;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BComponent;
-import javax.baja.sys.BMarker;
-import javax.baja.sys.BRelation;
 import javax.baja.sys.BStation;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
-import javax.baja.tag.Relation;
 import javax.baja.util.BFolder;
 
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
@@ -82,36 +80,37 @@ public class BHaystackClientTest2 extends BNHaystackStationTestBase
         //   * playBoolPoint2 (hs:equipRef->equipFolder2)
         //   * playNumPoint1 (hs:equipRef->equipFolder1)
         //   * playNumPoint2 (hs:equipRef->equipFolder2)
-        BFolder playground = new BFolder();
-        station.add("Playground", playground);
+        BFolder playground = addFolder("Playground", station);
 
-        playground.add("siteFolder1", siteFolder1);
-        playground.add("siteFolder2", siteFolder2);
-        siteFolder1.tags().set(ID_SITE, BMarker.MARKER);
-        siteFolder2.tags().set(ID_SITE, BMarker.MARKER);
+        siteFolder1 = addFolder("siteFolder1", playground);
+        siteFolder2 = addFolder("siteFolder2", playground);
 
-        siteFolder1.add("equipFolder1", equipFolder1);
-        siteFolder2.add("equipFolder2", equipFolder2);
-        equipFolder1.tags().set(ID_EQUIP, BMarker.MARKER);
-        equipFolder2.tags().set(ID_EQUIP, BMarker.MARKER);
+        addSiteTag(siteFolder1);
+        addSiteTag(siteFolder2);
 
-        equipFolder1.relations().add(new BRelation(ID_SITE_REF, siteFolder1, Relation.OUTBOUND));
-        equipFolder2.relations().add(new BRelation(ID_SITE_REF, siteFolder2, Relation.OUTBOUND));
+        equipFolder1 = addFolder("equipFolder1", siteFolder1);
+        equipFolder2 = addFolder("equipFolder2", siteFolder2);
 
-        equipFolder1.add("boolPoint1", new BBooleanWritable());
-        equipFolder1.add("numericPoint1", new BNumericWritable());
-        equipFolder2.add("boolPoint2", new BBooleanWritable());
-        equipFolder2.add("numericPoint2", new BNumericWritable());
+        addEquipTag(equipFolder1);
+        addEquipTag(equipFolder2);
 
-        playground.add("playBoolPoint1", playBoolPoint1);
-        playground.add("playBoolPoint2", playBoolPoint2);
-        playground.add("playNumPoint1", playNumPoint1);
-        playground.add("playNumPoint2", playNumPoint2);
+        addSiteRefRelation(equipFolder1, siteFolder1);
+        addSiteRefRelation(equipFolder2, siteFolder2);
 
-        playBoolPoint1.relations().add(new BRelation(ID_EQUIP_REF, equipFolder1, Relation.OUTBOUND));
-        playNumPoint1.relations().add(new BRelation(ID_EQUIP_REF, equipFolder1, Relation.OUTBOUND));
-        playBoolPoint2.relations().add(new BRelation(ID_EQUIP_REF, equipFolder2, Relation.OUTBOUND));
-        playNumPoint2.relations().add(new BRelation(ID_EQUIP_REF, equipFolder2, Relation.OUTBOUND));
+        addBooleanTestProxyPoint("boolPoint1", equipFolder1);
+        addNumericTestProxyPoint("numericPoint1", equipFolder1);
+        addBooleanTestProxyPoint("boolPoint2", equipFolder2);
+        addNumericTestProxyPoint("numericPoint2", equipFolder2);
+
+        playBoolPoint1 = addBooleanTestProxyPoint("playBoolPoint1", playground);
+        playBoolPoint2 = addBooleanTestProxyPoint("playBoolPoint2", playground);
+        playNumPoint1 = addNumericTestProxyPoint("playNumPoint1", playground);
+        playNumPoint2 = addNumericTestProxyPoint("playNumPoint2", playground);
+
+        addEquipRefRelation(playBoolPoint1, equipFolder1);
+        addEquipRefRelation(playNumPoint1, equipFolder1);
+        addEquipRefRelation(playBoolPoint2, equipFolder2);
+        addEquipRefRelation(playNumPoint2, equipFolder2);
     }
 
     @BeforeTest
@@ -207,12 +206,12 @@ public class BHaystackClientTest2 extends BNHaystackStationTestBase
             "S.siteFolder2.equipFolder2.playNumPoint2");
     }
     
-    private final BComponent siteFolder1 = new BFolder();
-    private final BComponent siteFolder2 = new BFolder();
-    private final BComponent equipFolder1 = new BFolder();
-    private final BComponent equipFolder2 = new BFolder();
-    private final BBooleanPoint playBoolPoint1 = new BBooleanPoint();
-    private final BBooleanPoint playBoolPoint2 = new BBooleanPoint();
-    private final BNumericPoint playNumPoint1 = new BNumericPoint();
-    private final BNumericPoint playNumPoint2 = new BNumericPoint();
+    private BComponent siteFolder1 = new BFolder();
+    private BComponent siteFolder2 = new BFolder();
+    private BComponent equipFolder1 = new BFolder();
+    private BComponent equipFolder2 = new BFolder();
+    private BBooleanPoint playBoolPoint1 = new BBooleanPoint();
+    private BBooleanPoint playBoolPoint2 = new BBooleanPoint();
+    private BNumericPoint playNumPoint1 = new BNumericPoint();
+    private BNumericPoint playNumPoint2 = new BNumericPoint();
 }

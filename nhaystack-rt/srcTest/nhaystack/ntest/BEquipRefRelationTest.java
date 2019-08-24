@@ -7,32 +7,35 @@
 //
 package nhaystack.ntest;
 
-import static nhaystack.util.NHaystackConst.ID_AHU;
-import static nhaystack.util.NHaystackConst.ID_EQUIP;
-import static nhaystack.util.NHaystackConst.ID_EQUIP_REF;
-import static nhaystack.util.NHaystackConst.ID_SITE;
-import static nhaystack.util.NHaystackConst.ID_SITE_REF;
-import static nhaystack.util.NHaystackConst.ID_VAV;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addAhuTag;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addChild;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addEquipTag;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addFolder;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addNumericPoint;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addNumericTestProxyPoint;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addSiteRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addSiteTag;
+import static nhaystack.ntest.helper.NHaystackTestUtil.addVavTag;
+import static nhaystack.ntest.helper.NHaystackTestUtil.hasEquipRefs;
+import static nhaystack.ntest.helper.NHaystackTestUtil.hasNoEquipRefs;
+import static nhaystack.ntest.helper.NHaystackTestUtil.hasNoSiteRefs;
+import static nhaystack.ntest.helper.NHaystackTestUtil.hasSiteRefs;
+import static nhaystack.ntest.helper.NHaystackTestUtil.removeEquipRefRelation;
+import static nhaystack.ntest.helper.NHaystackTestUtil.removeEquipTag;
 
-import java.util.Collection;
-import javax.baja.control.BControlPoint;
 import javax.baja.control.BNumericPoint;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BComponent;
-import javax.baja.sys.BMarker;
-import javax.baja.sys.BRelation;
 import javax.baja.sys.BStation;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
-import javax.baja.tag.Id;
-import javax.baja.tag.Relation;
 import javax.baja.util.BFolder;
 
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 @Test(singleThreaded = true)
@@ -63,899 +66,900 @@ public class BEquipRefRelationTest extends BNHaystackStationTestBase
         //   * directEquipFolder
         //   * impliedEquip1
         //     * impliedEquip1Point
-        //       * impliedEquip2
-        //         * impliedEquip2Point
-        //           * impliedEquip3
-        //             * impliedEquip3Point
-        //               * impliedEquip4
-        //                 * impliedEquip4Point
-        //                   * impliedEquip5
-        //                     * impliedEquip5Point
-        directEquip.tags().set(ID_EQUIP, BMarker.MARKER);
-        station.add("directEquipFolder", directEquip);
-        station.add("impliedEquip1", impliedEquip1);
-        impliedEquip1.add("impliedEquip1Point", impliedEquip1Point);
-        impliedEquip1.add("impliedEquip2", impliedEquip2);
-        impliedEquip2.add("impliedEquip2Point", impliedEquip2Point);
-        impliedEquip2.add("impliedEquip3", impliedEquip3);
-        impliedEquip3.add("impliedEquip3Point", impliedEquip3Point);
-        impliedEquip3.add("impliedEquip4", impliedEquip4);
-        impliedEquip4.add("impliedEquip4Point", impliedEquip4Point);
-        impliedEquip4.add("impliedEquip5", impliedEquip5);
-        impliedEquip5.add("impliedEquip5Point", impliedEquip5Point);
+        //     * impliedEquip2
+        //       * impliedEquip2Point
+        //       * impliedEquip3
+        //         * impliedEquip3Point
+        //         * impliedEquip4
+        //           * impliedEquip4Point
+        //           * impliedEquip5
+        //             * impliedEquip5Point
+        directEquip = addFolder("directEquipFolder", station);
+        addEquipTag(directEquip);
+        impliedEquip1 = addFolder("impliedEquip1", station);
+
+        impliedEquip1Point = addNumericTestProxyPoint("impliedEquip1Point", impliedEquip1);
+        impliedEquip2 = addFolder("impliedEquip2", impliedEquip1);
+
+        impliedEquip2Point = addNumericTestProxyPoint("impliedEquip2Point", impliedEquip2);
+        impliedEquip3 = addFolder("impliedEquip3", impliedEquip2);
+
+        impliedEquip3Point = addNumericTestProxyPoint("impliedEquip3Point", impliedEquip3);
+        impliedEquip4 = addFolder("impliedEquip4", impliedEquip3);
+
+        impliedEquip4Point = addNumericTestProxyPoint("impliedEquip4Point", impliedEquip4);
+        impliedEquip5 = addFolder("impliedEquip5", impliedEquip4);
+
+        impliedEquip5Point = addNumericTestProxyPoint("impliedEquip5Point", impliedEquip5);
+    }
+
+    @BeforeMethod
+    public void beforeMethod()
+    {
+        BStation station = stationHandler.getStation();
+        if (testFolder != null)
+        {
+            station.remove(testFolder);
+        }
+
+        testFolder = addFolder("Test", station);
     }
 
     public void ahuVavPointTest() throws Exception
     {
-        BStation station = stationHandler.getStation();
-        BComponent site1 = new BComponent();
-        station.add("site1", site1);
-        BComponent site2 = new BComponent();
-        station.add("site2", site2);
-        BFolder ahuFolder = new BFolder();
-        station.add("ahuFolder", ahuFolder);
+        // build the following component tree
+        // site1 (site)
+        // site2 (site)
+        // ahuFolder (equip & siteRef -> site1)
+        //    vav (equip & siteRef -> site1)
+        //      vavPoint1
+        //      vavPoint2
+        //      // No implied equipRef relation to this point with a NullProxyExt
+        //      vavNullPoint1
+        //      // Has an implied siteRef relation to ahuFolder's site (site1)
+        //      // because of the direct equipRef relation
+        //      vavNullPoint2 (equipRef -> vav)
+        //      // Direct siteRef relation prevents an implied one to site1
+        //      vavNullPoint3 (equipRef -> vav, siteRef -> site2)
+        //      vavSite2Point (siteRef -> site2)
+        //      ahuPointSub3 (equipRef -> ahuFolder)
+        //    ahuPoints
+        //      ahuPointSub1
+        //      ahuPointSub2
+        //      // No implied equipRef relation to this point with a NullProxyExt
+        //      ahuNullPointSub1
+        //      // Has an implied siteRef relation to ahuFolder's site (site1)
+        //      // because of the direct equipRef relation
+        //      ahuNullPointSub2 (equipRef -> ahuFolder)
+        //    ahuPoint1
+        //    ahuPoint2
+        // should result in the following equipRef relations.
+        //    ahuPoint1-------->ahuFolder
+        //    ahuPoint2-------->ahuFolder
+        //    ahuSubPoint1----->ahuFolder
+        //    ahuSubPoint2----->ahuFolder
+        //    ahuSubPoint3----->ahuFolder
+        //    ahuNullPointSub2->ahuFolder
+        //    vavPoint1----->vav
+        //    vavPoint2----->vav
+        //    vavSite2Point->vav
+        //    vavNullPoint2->vav
+        //    vavNullPoint3->vav
+        // should result in the following siteRef relations
+        //    ahuFolder-------->site1
+        //    ahuPoint1-------->site1
+        //    ahuPoint2-------->site1
+        //    ahuPointSub1----->site1
+        //    ahuPointSub2----->site1
+        //    ahuPointSub3----->site1
+        //    ahuNullPointSub2->site1
+        //    vav----------->site1
+        //    vavPoint1----->site1
+        //    vavPoint2----->site1
+        //    vavNullPoint2->site1
+        //    vavNullPoint3->site2
+        //    vavSite2Point->site2
+        BComponent site1 = addChild("site1", new BComponent(), testFolder);
+        addSiteTag(site1);
+        BComponent site2 = addChild("site2", new BComponent(), testFolder);
+        addSiteTag(site2);
 
-        try
-        {
-            // build the following component tree
-            // site1 (site)
-            // site2 (site)
-            // ahuFolder (equip & siteRef -> site1)
-            //    vav (equip & siteRef -> site1)
-            //      vavPoint1
-            //      vavPoint2
-            //      vavSite2Point (siteRef -> site2)
-            //      ahuPointSub3 (equipRef -> ahuFolder)
-            //    ahuSubPoints
-            //      ahuSubPoint1
-            //      ahuSubPoint2
-            //    ahuPoint1
-            //    ahuPoint2
-            // should result in the following hs:equipRef relations.
-            //    ahuPoint1----->ahuFolder
-            //    ahuPoint2----->ahuFolder
-            //    ahuSubPoint1-->ahuFolder
-            //    ahuSubPoint2-->ahuFolder
-            //    ahuSubPoint3-->ahuFolder
-            //    vavPoint1----->vav
-            //    vavPoint2----->vav
-            //    vavSite2Point->vav
-            // should result in the following hs:siteRef relations
-            //    ahuFolder----->site1
-            //    ahuPoint1----->site1
-            //    ahuPoint2----->site1
-            //    ahuPointSub1-->site1
-            //    ahuPointSub2-->site1
-            //    ahuPointSub3-->site1
-            //    vav----------->site1
-            //    vavPoint1----->site1
-            //    vavPoint2----->site1
-            //    vavSite2Point->site2
-            BFolder vav = new BFolder();
-            BNumericPoint vavPoint1 = new BNumericPoint();
-            BNumericPoint vavPoint2 = new BNumericPoint();
-            BFolder ahuPoints = new BFolder();
-            BNumericPoint ahuPointSub1 = new BNumericPoint();
-            BNumericPoint ahuPointSub2 = new BNumericPoint();
-            BNumericPoint ahuPointSub3 = new BNumericPoint();
-            BNumericPoint vavSite2Point = new BNumericPoint();
-            BNumericPoint ahuPoint1 = new BNumericPoint();
-            BNumericPoint ahuPoint2 = new BNumericPoint();
+        BFolder ahuFolder = addFolder("ahuFolder", testFolder);
+        addEquipTag(ahuFolder);
+        addAhuTag(ahuFolder);
 
-            addSiteTag(site1);
-            addSiteTag(site2);
-            addEquipTag(ahuFolder);
-            ahuFolder.tags().set(ID_AHU, BMarker.MARKER);
-            addEquipTag(vav);
-            vav.tags().set(ID_VAV, BMarker.MARKER);
+        BFolder vav = addFolder("vav", ahuFolder);
+        addEquipTag(vav);
+        addVavTag(vav);
+        BFolder ahuPoints = addFolder("ahuPoints", ahuFolder);
+        BNumericPoint ahuPoint1 = addNumericTestProxyPoint("ahuPoint1", ahuFolder);
+        BNumericPoint ahuPoint2 = addNumericTestProxyPoint("ahuPoint2", ahuFolder);
 
-            addSiteRefRelation(ahuFolder, site1);
-            addSiteRefRelation(vav, site1);
-            addSiteRefRelation(vavSite2Point, site2);
+        BNumericPoint vavPoint1 = addNumericTestProxyPoint("vavPoint1", vav);
+        BNumericPoint vavPoint2 = addNumericTestProxyPoint("vavPoint2", vav);
+        BNumericPoint vavNullPoint1 = addNumericPoint("vavNullPoint1", vav);
+        BNumericPoint vavNullPoint2 = addNumericPoint("vavNullPoint2", vav);
+        BNumericPoint vavNullPoint3 = addNumericPoint("vavNullPoint3", vav);
+        BNumericPoint vavSite2Point = addNumericTestProxyPoint("vavSite2Point", vav);
+        BNumericPoint ahuPointSub3 = addNumericTestProxyPoint("ahuPointSub3", vav);
 
-            // Because of the direct relation, there should not be an implied equipRef relation to vav
-            addEquipRefRelation(ahuPointSub3, ahuFolder);
+        BNumericPoint ahuPointSub1 = addNumericTestProxyPoint("ahuPointSub1", ahuPoints);
+        BNumericPoint ahuPointSub2 = addNumericTestProxyPoint("ahuPointSub2", ahuPoints);
+        BNumericPoint ahuNullPointSub1 = addNumericPoint("ahuNullPointSub1", ahuPoints);
+        BNumericPoint ahuNullPointSub2 = addNumericPoint("ahuNullPointSub2", ahuPoints);
 
-            // build tree
-            ahuFolder.add("vav", vav);
-            ahuFolder.add("ahuPoints", ahuPoints);
-            ahuFolder.add("ahuPoint1", ahuPoint1);
-            ahuFolder.add("ahuPoint2", ahuPoint2);
-            vav.add("vavPoint1", vavPoint1);
-            vav.add("vavPoint2", vavPoint2);
-            vav.add("vavSite2Point", vavSite2Point);
-            vav.add("ahuPointSub3", ahuPointSub3);
-            ahuPoints.add("ahuPointSub1", ahuPointSub1);
-            ahuPoints.add("ahuPointSub2", ahuPointSub2);
+        addSiteRefRelation(ahuFolder, site1);
+        addSiteRefRelation(vav, site1);
+        addSiteRefRelation(vavNullPoint3, site2);
+        addSiteRefRelation(vavSite2Point, site2);
 
-            hasEquipRefs(ahuFolder,
-                ahuPoint1,
-                ahuPoint2,
-                ahuPointSub1,
-                ahuPointSub2,
-                ahuPointSub3);
-            hasEquipRefs(vav,
-                vavPoint1,
-                vavPoint2,
-                vavSite2Point);
-            hasSiteRefs(site1,
-                ahuFolder,
-                ahuPoint1,
-                ahuPoint2,
-                ahuPointSub1,
-                ahuPointSub2,
-                ahuPointSub3,
-                vav,
-                vavPoint1,
-                vavPoint2);
-            hasSiteRefs(site2,
-                vavSite2Point);
-        }
-        finally
-        {
-            station.remove(site1);
-            station.remove(site2);
-            station.remove(ahuFolder);
-        }
+        addEquipRefRelation(vavNullPoint2, vav);
+        addEquipRefRelation(vavNullPoint3, vav);
+        addEquipRefRelation(ahuNullPointSub2, ahuFolder);
+
+        // Because of the direct relation, there should not be an implied equipRef relation to vav
+        addEquipRefRelation(ahuPointSub3, ahuFolder);
+
+        hasEquipRefs(ahuFolder,
+            ahuPoint1,
+            ahuPoint2,
+            ahuPointSub1,
+            ahuPointSub2,
+            ahuPointSub3,
+            ahuNullPointSub2);
+        hasEquipRefs(vav,
+            vavPoint1,
+            vavPoint2,
+            vavNullPoint2,
+            vavNullPoint3,
+            vavSite2Point);
+        hasNoEquipRefs(
+            vavNullPoint1,
+            ahuNullPointSub1);
+        hasSiteRefs(site1,
+            ahuFolder,
+            ahuPoint1,
+            ahuPoint2,
+            ahuPointSub1,
+            ahuPointSub2,
+            ahuPointSub3,
+            ahuNullPointSub2,
+            vav,
+            vavPoint1,
+            vavPoint2,
+            vavNullPoint2);
+        hasSiteRefs(site2,
+            vavNullPoint3,
+            vavSite2Point);
+        hasNoSiteRefs(
+            vavNullPoint1,
+            ahuNullPointSub1);
     }
 
     public void haystackEquipTest()
     {
-        BStation station = stationHandler.getStation();
-        BFolder haystackSites = new BFolder();
-        station.add("haystackSites", haystackSites);
-        BFolder haystackEquips = new BFolder();
-        station.add("haystackEquips", haystackEquips);
+        // * station
+        //   * haystackSites
+        //     * haystackSite1 [BHSite]
+        //     * haystackSite2 [BHSite]
+        //   * haystackEquips
+        //     * equip1 [BFolder]
+        //       * equip [BHEquip] (siteRef->haystackSite1)
+        //       * equip1Point1
+        //       * equip1Point2 (siteRef->site2)
+        //       // No implied equipRef relation to this point with a NullProxyExt
+        //       * equip1NullPoint1
+        //       // Has an implied siteRef relation to equip1's site (haystackSite1)
+        //       // because of the direct equipRef relation
+        //       * equip1NullPoint2 (equipRef->equip1)
+        //       // Direct siteRef relation prevents an implied one to haystackSite1
+        //       * equip1NullPoint3 (equipRef->equip1, siteRef->haystackSite2)
+        //       * equip2Point5 (equipRef->equip2)
+        //       * equip2Point6 (equipRef->equip2, siteRef->haystackSite1)
+        //       // Has an implied siteRef relation to equip2's site (haystackSite2)
+        //       // because of the direct equipRef relation
+        //       * equip2NullPoint1 (equipRef->equip2)
+        //       // Direct siteRef relation prevents an implied one to haystackSite2
+        //       * equip2NullPoint2 (equipRef->equip2, siteRef->haystackSite1)
+        //       * subPoints1
+        //         * equip1Point3
+        //         * equip1Point4 (siteRef->site2)
+        //         // Similar tests except one folder below the BHEquip
+        //         * equip1NullPoint4
+        //         * equip1NullPoint5 (equipRef->equip1)
+        //         * equip1NullPoint6 (equipRef->equip1, siteRef->haystackSite2)
+        //         * equip2Point7 (equipRef->equip2)
+        //         * equip2Point8 (equipRef->equip2, siteRef->haystackSite1)
+        //         * equip2 [BFolder]
+        //           * equip [BHEquip] (siteRef->haystackSite2)
+        //           * equip2Point1
+        //           * equip2Point2 (siteRef->haystackSite1)
+        //           * equip1Point5 (equipRef->equip1)
+        //           * equip1Point6 (equipRef->equip1, siteRef->haystackSite2)
+        //           * subPoints2
+        //             * equip2Point3
+        //             * equip2Point4 (siteRef->haystackSite1)
+        //             * equip1Point7 (equipRef->equip1)
+        //             * equip1Point8 (equipRef->equip1, siteRef->haystackSite2)
+        BFolder haystackSites = addFolder("haystackSites", testFolder);
+        BFolder haystackEquips = addFolder("haystackEquips", testFolder);
 
-        try
-        {
-            // * station
-            //   * haystackSites
-            //     * haystackSite1 [BHSite]
-            //     * haystackSite2 [BHSite]
-            //   * haystackEquips
-            //     * equip1 [BFolder]
-            //       * equip [BHEquip] (siteRef->haystackSite1)
-            //       * equip1Point1
-            //       * equip1Point2 (siteRef->site2)
-            //       * equip2Point5 (equipRef->equip2)
-            //       * equip2Point6 (equipRef->equip2, siteRef->haystackSite1)
-            //       * subPoints1
-            //         * equip1Point3
-            //         * equip1Point4 (siteRef->site2)
-            //         * equip2Point7 (equipRef->equip2)
-            //         * equip2Point8 (equipRef->equip2, siteRef->haystackSite1)
-            //         * equip2 [BFolder]
-            //           * equip [BHEquip] (siteRef->haystackSite2)
-            //           * equip2Point1
-            //           * equip2Point2 (siteRef->haystackSite1)
-            //           * equip1Point5 (equipRef->equip1)
-            //           * equip1Point6 (equipRef->equip1, siteRef->haystackSite2)
-            //           * subPoints2
-            //             * equip2Point3
-            //             * equip2Point4 (siteRef->haystackSite1)
-            //             * equip1Point7 (equipRef->equip1)
-            //             * equip1Point8 (equipRef->equip1, siteRef->haystackSite2)
-            BHSite haystackSite1 = new BHSite();
-            BHSite haystackSite2 = new BHSite();
-            BHEquip equip1 = new BHEquip();
-            BFolder equip1Folder = new BFolder();
-            BFolder subPoints1 = new BFolder();
-            BFolder equip2Folder = new BFolder();
-            BFolder subPoints2 = new BFolder();
-            BNumericPoint equip1Point1 = new BNumericPoint();
-            BNumericPoint equip1Point2 = new BNumericPoint();
-            BNumericPoint equip1Point3 = new BNumericPoint();
-            BNumericPoint equip1Point4 = new BNumericPoint();
-            BNumericPoint equip1Point5 = new BNumericPoint();
-            BNumericPoint equip1Point6 = new BNumericPoint();
-            BNumericPoint equip1Point7 = new BNumericPoint();
-            BNumericPoint equip1Point8 = new BNumericPoint();
-            BHEquip equip2 = new BHEquip();
-            BNumericPoint equip2Point1 = new BNumericPoint();
-            BNumericPoint equip2Point2 = new BNumericPoint();
-            BNumericPoint equip2Point3 = new BNumericPoint();
-            BNumericPoint equip2Point4 = new BNumericPoint();
-            BNumericPoint equip2Point5 = new BNumericPoint();
-            BNumericPoint equip2Point6 = new BNumericPoint();
-            BNumericPoint equip2Point7 = new BNumericPoint();
-            BNumericPoint equip2Point8 = new BNumericPoint();
+        BHSite haystackSite1 = addChild("haystackSite1", new BHSite(), haystackSites);
+        BHSite haystackSite2 = addChild("haystackSite2", new BHSite(), haystackSites);
 
-            haystackSites.add("haystackSite1", haystackSite1);
-            haystackSites.add("haystackSite2", haystackSite2);
+        BFolder equip1Folder = addFolder("equip1Folder", haystackEquips);
 
-            haystackEquips.add("equipFolder", equip1Folder);
+        BHEquip equip1 = addChild("equip", new BHEquip(), equip1Folder);
+        BNumericPoint equip1Point1 = addNumericTestProxyPoint("equip1Point1", equip1Folder);
+        BNumericPoint equip1Point2 = addNumericTestProxyPoint("equip1Point2", equip1Folder);
+        BNumericPoint equip1NullPoint1 = addNumericPoint("equip1NullPoint1", equip1Folder);
+        BNumericPoint equip1NullPoint2 = addNumericPoint("equip1NullPoint2", equip1Folder);
+        BNumericPoint equip1NullPoint3 = addNumericPoint("equip1NullPoint3", equip1Folder);
+        BNumericPoint equip2Point5 = addNumericTestProxyPoint("equip2Point5", equip1Folder);
+        BNumericPoint equip2Point6 = addNumericTestProxyPoint("equip2Point6", equip1Folder);
+        BNumericPoint equip2NullPoint1 = addNumericPoint("equip2NullPoint1", equip1Folder);
+        BNumericPoint equip2NullPoint2 = addNumericPoint("equip2NullPoint2", equip1Folder);
+        BFolder subPoints1 = addFolder("subPoints1", equip1Folder);
 
-            equip1Folder.add("equip", equip1);
-            equip1Folder.add("equip1Point1", equip1Point1);
-            equip1Folder.add("equip1Point2", equip1Point2);
-            equip1Folder.add("equip2Point5", equip2Point5);
-            equip1Folder.add("equip2Point6", equip2Point6);
-            equip1Folder.add("subPoints1", subPoints1);
+        BNumericPoint equip1Point3 = addNumericTestProxyPoint("equip1Point3", subPoints1);
+        BNumericPoint equip1Point4 = addNumericTestProxyPoint("equip1Point4", subPoints1);
+        BNumericPoint equip1NullPoint4 = addNumericPoint("equip1NullPoint4", subPoints1);
+        BNumericPoint equip1NullPoint5 = addNumericPoint("equip1NullPoint5", subPoints1);
+        BNumericPoint equip1NullPoint6 = addNumericPoint("equip1NullPoint6", subPoints1);
+        BNumericPoint equip2Point7 = addNumericTestProxyPoint("equip2Point7", subPoints1);
+        BNumericPoint equip2Point8 = addNumericTestProxyPoint("equip2Point8", subPoints1);
+        BFolder equip2Folder = addFolder("equip2", subPoints1);
 
-            subPoints1.add("equip1Point3", equip1Point3);
-            subPoints1.add("equip1Point4", equip1Point4);
-            subPoints1.add("equip2Point7", equip2Point7);
-            subPoints1.add("equip2Point8", equip2Point8);
-            subPoints1.add("equip2", equip2Folder);
+        BHEquip equip2 = addChild("equip", new BHEquip(), equip2Folder);
+        BNumericPoint equip2Point1 = addNumericTestProxyPoint("equip2Point1", equip2Folder);
+        BNumericPoint equip2Point2 = addNumericTestProxyPoint("equip2Point2", equip2Folder);
+        BNumericPoint equip1Point5 = addNumericTestProxyPoint("equip1Point5", equip2Folder);
+        BNumericPoint equip1Point6 = addNumericTestProxyPoint("equip1Point6", equip2Folder);
+        BFolder subPoints2 = addFolder("subPoints2", equip2Folder);
 
-            equip2Folder.add("equip", equip2);
-            equip2Folder.add("equip2Point1", equip2Point1);
-            equip2Folder.add("equip2Point2", equip2Point2);
-            equip2Folder.add("equip1Point5", equip1Point5);
-            equip2Folder.add("equip1Point6", equip1Point6);
-            equip2Folder.add("subPoints2", subPoints2);
+        BNumericPoint equip2Point3 = addNumericTestProxyPoint("equip2Point3", subPoints2);
+        BNumericPoint equip2Point4 = addNumericTestProxyPoint("equip2Point4", subPoints2);
+        BNumericPoint equip1Point7 = addNumericTestProxyPoint("equip1Point7", subPoints2);
+        BNumericPoint equip1Point8 = addNumericTestProxyPoint("equip1Point8", subPoints2);
 
-            subPoints2.add("equip2Point3", equip2Point3);
-            subPoints2.add("equip2Point4", equip2Point4);
-            subPoints2.add("equip1Point7", equip1Point7);
-            subPoints2.add("equip1Point8", equip1Point8);
+        addSiteRefRelation(equip1, haystackSite1);
+        addSiteRefRelation(equip2Point2, haystackSite1);
+        addSiteRefRelation(equip2Point4, haystackSite1);
+        addSiteRefRelation(equip2Point6, haystackSite1);
+        addSiteRefRelation(equip2Point8, haystackSite1);
+        addSiteRefRelation(equip2NullPoint2, haystackSite1);
 
-            addSiteRefRelation(equip1, haystackSite1);
-            addSiteRefRelation(equip1Point2, haystackSite2);
-            addSiteRefRelation(equip2Point6, haystackSite1);
-            addSiteRefRelation(equip1Point4, haystackSite2);
-            addSiteRefRelation(equip2Point8, haystackSite1);
-            addSiteRefRelation(equip2, haystackSite2);
-            addSiteRefRelation(equip2Point2, haystackSite1);
-            addSiteRefRelation(equip1Point6, haystackSite2);
-            addSiteRefRelation(equip2Point4, haystackSite1);
-            addSiteRefRelation(equip1Point8, haystackSite2);
+        addSiteRefRelation(equip2, haystackSite2);
+        addSiteRefRelation(equip1Point2, haystackSite2);
+        addSiteRefRelation(equip1Point4, haystackSite2);
+        addSiteRefRelation(equip1Point6, haystackSite2);
+        addSiteRefRelation(equip1Point8, haystackSite2);
+        addSiteRefRelation(equip1NullPoint3, haystackSite2);
+        addSiteRefRelation(equip1NullPoint6, haystackSite2);
 
-            addEquipRefRelation(equip2Point5, equip2);
-            addEquipRefRelation(equip2Point6, equip2);
-            addEquipRefRelation(equip2Point7, equip2);
-            addEquipRefRelation(equip2Point8, equip2);
-            addEquipRefRelation(equip1Point5, equip1);
-            addEquipRefRelation(equip1Point6, equip1);
-            addEquipRefRelation(equip1Point7, equip1);
-            addEquipRefRelation(equip1Point8, equip1);
+        addEquipRefRelation(equip1Point5, equip1);
+        addEquipRefRelation(equip1Point6, equip1);
+        addEquipRefRelation(equip1Point7, equip1);
+        addEquipRefRelation(equip1Point8, equip1);
+        addEquipRefRelation(equip1NullPoint2, equip1);
+        addEquipRefRelation(equip1NullPoint3, equip1);
+        addEquipRefRelation(equip1NullPoint5, equip1);
+        addEquipRefRelation(equip1NullPoint6, equip1);
 
-            hasEquipRefs(equip1,
-                equip1Point1,
-                equip1Point2,
-                equip1Point3,
-                equip1Point4,
-                equip1Point5,
-                equip1Point6,
-                equip1Point7,
-                equip1Point8);
-            hasEquipRefs(equip2,
-                equip2Point1,
-                equip2Point2,
-                equip2Point3,
-                equip2Point4,
-                equip2Point5,
-                equip2Point6,
-                equip2Point7,
-                equip2Point8);
-            hasSiteRefs(haystackSite1,
-                equip1,
-                equip1Point1,
-                equip1Point3,
-                equip1Point5,
-                equip1Point7,
-                equip2Point2,
-                equip2Point4,
-                equip2Point6,
-                equip2Point8);
-            hasSiteRefs(haystackSite2,
-                equip2,
-                equip2Point1,
-                equip2Point3,
-                equip2Point5,
-                equip2Point7,
-                equip1Point2,
-                equip1Point4,
-                equip1Point6,
-                equip1Point8);
-        }
-        finally
-        {
-            station.remove(haystackSites);
-            station.remove(haystackEquips);
-        }
+        addEquipRefRelation(equip2Point5, equip2);
+        addEquipRefRelation(equip2Point6, equip2);
+        addEquipRefRelation(equip2Point7, equip2);
+        addEquipRefRelation(equip2Point8, equip2);
+        addEquipRefRelation(equip2NullPoint1, equip2);
+        addEquipRefRelation(equip2NullPoint2, equip2);
+
+        hasEquipRefs(equip1,
+            equip1Point1,
+            equip1Point2,
+            equip1Point3,
+            equip1Point4,
+            equip1Point5,
+            equip1Point6,
+            equip1Point7,
+            equip1Point8,
+            equip1NullPoint2,
+            equip1NullPoint3,
+            equip1NullPoint5,
+            equip1NullPoint6);
+        hasEquipRefs(equip2,
+            equip2Point1,
+            equip2Point2,
+            equip2Point3,
+            equip2Point4,
+            equip2Point5,
+            equip2Point6,
+            equip2Point7,
+            equip2Point8,
+            equip2NullPoint1,
+            equip2NullPoint2);
+        hasNoEquipRefs(
+            equip1NullPoint1,
+            equip1NullPoint4);
+        hasSiteRefs(haystackSite1,
+            equip1,
+            equip1Point1,
+            equip1Point3,
+            equip1Point5,
+            equip1Point7,
+            equip2Point2,
+            equip2Point4,
+            equip2Point6,
+            equip2Point8,
+            equip1NullPoint2,
+            equip1NullPoint5,
+            equip2NullPoint2);
+        hasSiteRefs(haystackSite2,
+            equip2,
+            equip2Point1,
+            equip2Point3,
+            equip2Point5,
+            equip2Point7,
+            equip1Point2,
+            equip1Point4,
+            equip1Point6,
+            equip1Point8,
+            equip1NullPoint3,
+            equip1NullPoint6,
+            equip2NullPoint1);
+        hasNoEquipRefs(
+            equip1NullPoint1,
+            equip1NullPoint4);
     }
 
     public void equipRefAddedToBHEquipNamedEquip()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // Even though "a" comes before "equip" alphabetically, the name
+        // "equip" is given priority
 
-        try
-        {
-            // Even though "a" comes before "equip" alphabetically, the name
-            // "equip" is given priority
+        // * station
+        //   * test
+        //     * equip1 [BHEquip]
+        //     * equip [BHEquip]
+        //     * point1
+        //     * point2
+        //     // No implied equipRef relation to this point with a NullProxyExt
+        //     * nullPoint1
+        //     * subPoints
+        //       * point3
+        //       * point4
+        //       // No implied equipRef relation to this point with a NullProxyExt
+        //       * nullPoint2
+        BHEquip equip1 = addChild("equip1", new BHEquip(), testFolder);
+        BHEquip equip = addChild("equip", new BHEquip(), testFolder);
+        BNumericPoint point1 = addNumericTestProxyPoint("point1", testFolder);
+        BNumericPoint point2 = addNumericTestProxyPoint("point2", testFolder);
+        BNumericPoint nullPoint1 = addNumericPoint("nullPoint1", testFolder);
+        BFolder subPoints = addFolder("subPoints", testFolder);
 
-            // * station
-            //   * test
-            //     * equip1 [BHEquip]
-            //     * equip [BHEquip]
-            //     * point1
-            //     * point2
-            //     * subPoints
-            //       * point3
-            //       * point4
-            BHEquip equip1 = new BHEquip();
-            BHEquip equip = new BHEquip();
-            BFolder subPoints = new BFolder();
-            BNumericPoint point1 = new BNumericPoint();
-            BNumericPoint point2 = new BNumericPoint();
-            BNumericPoint point3 = new BNumericPoint();
-            BNumericPoint point4 = new BNumericPoint();
+        BNumericPoint point3 = addNumericTestProxyPoint("point3", subPoints);
+        BNumericPoint point4 = addNumericTestProxyPoint("point4", subPoints);
+        BNumericPoint nullPoint2 = addNumericPoint("nullPoint2", testFolder);
 
-            testFolder.add("equip1", equip1);
-            testFolder.add("equip", equip);
-            testFolder.add("point1", point1);
-            testFolder.add("point2", point2);
-            testFolder.add("subPoints", subPoints);
-
-            subPoints.add("point3", point3);
-            subPoints.add("point4", point4);
-
-            hasEquipRefs(equip,
-                point1,
-                point2,
-                point3,
-                point4);
-            hasNoEquipRefs(equip1);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        hasEquipRefs(equip,
+            point1,
+            point2,
+            point3,
+            point4);
+        hasNoEquipRefs(
+            equip1,
+            nullPoint1,
+            nullPoint2);
     }
 
     public void equipRefAddedToBHEquipNamedA()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // "a" is given priority over "b" because neither is named "equip"
+        // and "a" comes before "b" alphabetically
 
-        try
-        {
-            // "a" is given priority over "b" because neither is named "equip"
-            // and "a" comes before "b" alphabetically
+        // * station
+        //   * test
+        //     * equip2
+        //     * equip1
+        //     * point1
+        //     * point2
+        //     // No implied equipRef relation to this point with a NullProxyExt
+        //     * nullPoint1
+        //     * subPoints
+        //       * point3
+        //       * point4
+        //       // No implied equipRef relation to this point with a NullProxyExt
+        //       * nullPoint2
+        BHEquip equip2 = addChild("equip2", new BHEquip(), testFolder);
+        BHEquip equip1 = addChild("equip1", new BHEquip(), testFolder);
+        BNumericPoint point1 = addNumericTestProxyPoint("point1", testFolder);
+        BNumericPoint point2 = addNumericTestProxyPoint("point2", testFolder);
+        BNumericPoint nullPoint1 = addNumericPoint("nullPoint1", testFolder);
+        BFolder subPoints = addFolder("subPoints", testFolder);
 
-            // * station
-            //   * test
-            //     * equip2
-            //     * equip1
-            //     * point1
-            //     * point2
-            //     * subPoints
-            //       * point3
-            //       * point4
-            BHEquip equip1 = new BHEquip();
-            BHEquip equip2 = new BHEquip();
-            BNumericPoint point1 = new BNumericPoint();
-            BNumericPoint point2 = new BNumericPoint();
-            BNumericPoint point3 = new BNumericPoint();
-            BNumericPoint point4 = new BNumericPoint();
+        BNumericPoint point3 = addNumericTestProxyPoint("point3", subPoints);
+        BNumericPoint point4 = addNumericTestProxyPoint("point4", subPoints);
+        BNumericPoint nullPoint2 = addNumericPoint("nullPoint2", subPoints);
 
-            testFolder.add("equip2", equip2);
-            testFolder.add("equip1", equip1);
-            testFolder.add("point1", point1);
-            testFolder.add("point2", point2);
-
-            BFolder subPoints = new BFolder();
-            testFolder.add("subPoints", subPoints);
-            subPoints.add("point3", point3);
-            subPoints.add("point4", point4);
-
-            hasEquipRefs(equip2,
-                point1,
-                point2,
-                point3,
-                point4);
-            hasNoEquipRefs(equip1);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        hasEquipRefs(equip2,
+            point1,
+            point2,
+            point3,
+            point4);
+        hasNoEquipRefs(
+            equip1,
+            nullPoint1,
+            nullPoint2);
     }
 
     public void equipRefAddedToPointsUnderMultipleBranchesOfEquipTaggedFolder()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // * station
+        //   * test
+        //     * equip
+        //       * point1
+        //       * point2
+        //       // No implied equipRef relation to this point with a NullProxyExt
+        //       * nullPoint1
+        //       * nullPoint2 (equipRef->equip)
+        //       * subPoints1
+        //         * point3
+        //         * point4
+        //         // No implied equipRef relation to this point with a NullProxyExt
+        //         * nullPoint3
+        //         * nullPoint4 (equipRef->equip)
+        //         * subPoints2
+        //           * point5
+        //           * point6
+        //           // No implied equipRef relation to this point with a NullProxyExt
+        //           * nullPoint5
+        //           * nullPoint6 (equipRef->equip)
+        //         * subPoints3
+        //           * point7
+        //           * point8
+        //       * subPoints4
+        //         * point9
+        //         * point10
+        //         * subPoints5
+        //           * point11
+        //           * point12
+        //         * subPoints6
+        //           * point13
+        //           * point14
+        BFolder equip = addFolder("subPoints", testFolder);
+        addEquipTag(equip);
 
-        try
-        {
-            // * station
-            //   * test
-            //     * equip
-            //       * point1
-            //       * point2
-            //       * subPoints1
-            //         * point3
-            //         * point4
-            //         * subPoints2
-            //           * point5
-            //           * point6
-            //         * subPoints3
-            //           * point7
-            //           * point8
-            //       * subPoints4
-            //         * point9
-            //         * point10
-            //         * subPoints5
-            //           * point11
-            //           * point12
-            //         * subPoints6
-            //           * point13
-            //           * point14
-            BFolder equip = new BFolder();
-            BFolder subPoints1 = new BFolder();
-            BFolder subPoints2 = new BFolder();
-            BFolder subPoints3 = new BFolder();
-            BFolder subPoints4 = new BFolder();
-            BFolder subPoints5 = new BFolder();
-            BFolder subPoints6 = new BFolder();
-            BNumericPoint point1 = new BNumericPoint();
-            BNumericPoint point2 = new BNumericPoint();
-            BNumericPoint point3 = new BNumericPoint();
-            BNumericPoint point4 = new BNumericPoint();
-            BNumericPoint point5 = new BNumericPoint();
-            BNumericPoint point6 = new BNumericPoint();
-            BNumericPoint point7 = new BNumericPoint();
-            BNumericPoint point8 = new BNumericPoint();
-            BNumericPoint point9 = new BNumericPoint();
-            BNumericPoint point10 = new BNumericPoint();
-            BNumericPoint point11 = new BNumericPoint();
-            BNumericPoint point12 = new BNumericPoint();
-            BNumericPoint point13 = new BNumericPoint();
-            BNumericPoint point14 = new BNumericPoint();
+        BNumericPoint point1 = addNumericTestProxyPoint("point1", equip);
+        BNumericPoint point2 = addNumericTestProxyPoint("point2", equip);
+        BNumericPoint nullPoint1 = addNumericPoint("nullPoint1", equip);
+        BNumericPoint nullPoint2 = addNumericPoint("nullPoint2", equip);
+        BFolder subPoints1 = addFolder("subPoints1", equip);
+        BFolder subPoints4 = addFolder("subPoints4", equip);
 
-            testFolder.add("equip", equip);
+        BNumericPoint point3 = addNumericTestProxyPoint("point3", subPoints1);
+        BNumericPoint point4 = addNumericTestProxyPoint("point4", subPoints1);
+        BNumericPoint nullPoint3 = addNumericPoint("nullPoint3", subPoints1);
+        BNumericPoint nullPoint4 = addNumericPoint("nullPoint4", subPoints1);
+        BFolder subPoints2 = addFolder("subPoints2", subPoints1);
+        BFolder subPoints3 = addFolder("subPoints3", subPoints1);
 
-            equip.add("point1", point1);
-            equip.add("point2", point2);
-            equip.add("subPoints1", subPoints1);
-            equip.add("subPoints4", subPoints4);
+        BNumericPoint point5 = addNumericTestProxyPoint("point5", subPoints2);
+        BNumericPoint point6 = addNumericTestProxyPoint("point6", subPoints2);
+        BNumericPoint nullPoint5 = addNumericPoint("nullPoint5", subPoints2);
+        BNumericPoint nullPoint6 = addNumericPoint("nullPoint6", subPoints2);
 
-            subPoints1.add("point3", point3);
-            subPoints1.add("point4", point4);
-            subPoints1.add("subPoints2", subPoints2);
-            subPoints1.add("subPoints3", subPoints3);
+        BNumericPoint point7 = addNumericTestProxyPoint("point7", subPoints3);
+        BNumericPoint point8 = addNumericTestProxyPoint("point8", subPoints3);
 
-            subPoints2.add("point5", point5);
-            subPoints2.add("point6", point6);
+        BNumericPoint point9 = addNumericTestProxyPoint("point9", subPoints4);
+        BNumericPoint point10 = addNumericTestProxyPoint("point10", subPoints4);
+        BFolder subPoints5 = addFolder("subPoints5", subPoints4);
+        BFolder subPoints6 = addFolder("subPoints6", subPoints4);
 
-            subPoints3.add("point7", point7);
-            subPoints3.add("point8", point8);
+        BNumericPoint point11 = addNumericTestProxyPoint("point11", subPoints5);
+        BNumericPoint point12 = addNumericTestProxyPoint("point12", subPoints5);
 
-            subPoints4.add("point9", point9);
-            subPoints4.add("point10", point10);
-            subPoints4.add("subPoints5", subPoints5);
-            subPoints4.add("subPoints6", subPoints6);
+        BNumericPoint point13 = addNumericTestProxyPoint("point13", subPoints6);
+        BNumericPoint point14 = addNumericTestProxyPoint("point14", subPoints6);
 
-            subPoints5.add("point11", point11);
-            subPoints5.add("point12", point12);
+        addEquipRefRelation(nullPoint2, equip);
+        addEquipRefRelation(nullPoint4, equip);
+        addEquipRefRelation(nullPoint6, equip);
 
-            subPoints6.add("point13", point13);
-            subPoints6.add("point14", point14);
-
-            addEquipTag(equip);
-
-            hasEquipRefs(equip,
-                point1,
-                point2,
-                point3,
-                point4,
-                point5,
-                point6,
-                point7,
-                point8,
-                point9,
-                point10,
-                point11,
-                point12,
-                point13,
-                point14);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        hasEquipRefs(equip,
+            point1,
+            point2,
+            point3,
+            point4,
+            point5,
+            point6,
+            point7,
+            point8,
+            point9,
+            point10,
+            point11,
+            point12,
+            point13,
+            point14,
+            nullPoint2,
+            nullPoint4,
+            nullPoint6);
+        hasNoEquipRefs(
+            nullPoint1,
+            nullPoint3,
+            nullPoint5);
     }
 
     public void equipRefAddedToPointsUnderMultipleBranchesOfBHEquip()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // * station
+        //   * test
+        //     * equip
+        //     * point1
+        //     * point2
+        //     // No implied equipRef relation to this point with a NullProxyExt
+        //     * nullPoint1
+        //     * nullPoint2 (equipRef->equip)
+        //     * subPoints1
+        //       * point3
+        //       * point4
+        //       // No implied equipRef relation to this point with a NullProxyExt
+        //       * nullPoint3
+        //       * nullPoint4 (equipRef->equip)
+        //       * subPoints2
+        //         * point5
+        //         * point6
+        //         // No implied equipRef relation to this point with a NullProxyExt
+        //         * nullPoint5
+        //         * nullPoint6 (equipRef->equip)
+        //       * subPoints3
+        //         * point7
+        //         * point8
+        //     * subPoints4
+        //       * point9
+        //       * point10
+        //       * subPoints5
+        //         * point11
+        //         * point12
+        //       * subPoints6
+        //         * point13
+        //         * point14
+        BHEquip equip = addChild("equip", new BHEquip(), testFolder);
+        BNumericPoint point1 = addNumericTestProxyPoint("point1", testFolder);
+        BNumericPoint point2 = addNumericTestProxyPoint("point2", testFolder);
+        BNumericPoint nullPoint1 = addNumericPoint("nullPoint1", testFolder);
+        BNumericPoint nullPoint2 = addNumericPoint("nullPoint2", testFolder);
+        BFolder subPoints1 = addFolder("subPoints1", testFolder);
+        BFolder subPoints4 = addFolder("subPoints4", testFolder);
 
-        try
-        {
-            // * station
-            //   * test
-            //     * equip
-            //     * point1
-            //     * point2
-            //     * subPoints1
-            //       * point3
-            //       * point4
-            //       * subPoints2
-            //         * point5
-            //         * point6
-            //       * subPoints3
-            //         * point7
-            //         * point8
-            //     * subPoints4
-            //       * point9
-            //       * point10
-            //       * subPoints5
-            //         * point11
-            //         * point12
-            //       * subPoints6
-            //         * point13
-            //         * point14
-            BHEquip equip = new BHEquip();
-            BFolder subPoints1 = new BFolder();
-            BFolder subPoints2 = new BFolder();
-            BFolder subPoints3 = new BFolder();
-            BFolder subPoints4 = new BFolder();
-            BFolder subPoints5 = new BFolder();
-            BFolder subPoints6 = new BFolder();
-            BNumericPoint point1 = new BNumericPoint();
-            BNumericPoint point2 = new BNumericPoint();
-            BNumericPoint point3 = new BNumericPoint();
-            BNumericPoint point4 = new BNumericPoint();
-            BNumericPoint point5 = new BNumericPoint();
-            BNumericPoint point6 = new BNumericPoint();
-            BNumericPoint point7 = new BNumericPoint();
-            BNumericPoint point8 = new BNumericPoint();
-            BNumericPoint point9 = new BNumericPoint();
-            BNumericPoint point10 = new BNumericPoint();
-            BNumericPoint point11 = new BNumericPoint();
-            BNumericPoint point12 = new BNumericPoint();
-            BNumericPoint point13 = new BNumericPoint();
-            BNumericPoint point14 = new BNumericPoint();
+        BNumericPoint point3 = addNumericTestProxyPoint("point3", subPoints1);
+        BNumericPoint point4 = addNumericTestProxyPoint("point4", subPoints1);
+        BNumericPoint nullPoint3 = addNumericPoint("nullPoint3", subPoints1);
+        BNumericPoint nullPoint4 = addNumericPoint("nullPoint4", subPoints1);
+        BFolder subPoints2 = addFolder("subPoints2", subPoints1);
+        BFolder subPoints3 = addFolder("subPoints3", subPoints1);
 
-            testFolder.add("equip", equip);
-            testFolder.add("point1", point1);
-            testFolder.add("point2", point2);
-            testFolder.add("subPoints1", subPoints1);
-            testFolder.add("subPoints4", subPoints4);
+        BNumericPoint point5 = addNumericTestProxyPoint("point5", subPoints2);
+        BNumericPoint point6 = addNumericTestProxyPoint("point6", subPoints2);
+        BNumericPoint nullPoint5 = addNumericPoint("nullPoint5", subPoints2);
+        BNumericPoint nullPoint6 = addNumericPoint("nullPoint6", subPoints2);
 
-            subPoints1.add("point3", point3);
-            subPoints1.add("point4", point4);
-            subPoints1.add("subPoints2", subPoints2);
-            subPoints1.add("subPoints3", subPoints3);
+        BNumericPoint point7 = addNumericTestProxyPoint("point7", subPoints3);
+        BNumericPoint point8 = addNumericTestProxyPoint("point8", subPoints3);
 
-            subPoints2.add("point5", point5);
-            subPoints2.add("point6", point6);
+        BNumericPoint point9 = addNumericTestProxyPoint("point9", subPoints4);
+        BNumericPoint point10 = addNumericTestProxyPoint("point10", subPoints4);
+        BFolder subPoints5 = addFolder("subPoints5", subPoints4);
+        BFolder subPoints6 = addFolder("subPoints6", subPoints4);
 
-            subPoints3.add("point7", point7);
-            subPoints3.add("point8", point8);
+        BNumericPoint point11 = addNumericTestProxyPoint("point11", subPoints5);
+        BNumericPoint point12 = addNumericTestProxyPoint("point12", subPoints5);
 
-            subPoints4.add("point9", point9);
-            subPoints4.add("point10", point10);
-            subPoints4.add("subPoints5", subPoints5);
-            subPoints4.add("subPoints6", subPoints6);
+        BNumericPoint point13 = addNumericTestProxyPoint("point13", subPoints6);
+        BNumericPoint point14 = addNumericTestProxyPoint("point14", subPoints6);
 
-            subPoints5.add("point11", point11);
-            subPoints5.add("point12", point12);
+        addEquipRefRelation(nullPoint2, equip);
+        addEquipRefRelation(nullPoint4, equip);
+        addEquipRefRelation(nullPoint6, equip);
 
-            subPoints6.add("point13", point13);
-            subPoints6.add("point14", point14);
-
-            hasEquipRefs(equip,
-                point1,
-                point2,
-                point3,
-                point4,
-                point5,
-                point6,
-                point7,
-                point8,
-                point9,
-                point10,
-                point11,
-                point12,
-                point13,
-                point14);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        hasEquipRefs(equip,
+            point1,
+            point2,
+            point3,
+            point4,
+            point5,
+            point6,
+            point7,
+            point8,
+            point9,
+            point10,
+            point11,
+            point12,
+            point13,
+            point14,
+            nullPoint2,
+            nullPoint4,
+            nullPoint6);
+        hasNoEquipRefs(
+            nullPoint1,
+            nullPoint3,
+            nullPoint5);
     }
 
     public void combinationEquipTaggedComponentsAndBHEquip1()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // * station
+        //   * test
+        //     * equipFolder1
+        //       * equip
+        //       * point1
+        //       * point2
+        //       * subPoints1
+        //         * point3
+        //         * point4
+        //         * equipFolder2
+        //           * point5
+        //           * point6
+        //           * subPoints2
+        //             * point7
+        //             * point8
+        BFolder equipFolder1 = addFolder("equipFolder1", testFolder);
+        addEquipTag(equipFolder1);
 
-        try
-        {
-            // * station
-            //   * test
-            //     * equipFolder1
-            //       * equip
-            //       * point1
-            //       * point2
-            //       * subPoints1
-            //         * point3
-            //         * point4
-            //         * equipFolder2
-            //           * point5
-            //           * point6
-            //           * subPoints2
-            //             * point7
-            //             * point8
-            BFolder equipFolder1 = new BFolder();
-            BFolder equipFolder2 = new BFolder();
-            BFolder subPoints1 = new BFolder();
-            BFolder subPoints2 = new BFolder();
-            BHEquip equip = new BHEquip();
-            BNumericPoint point1 = new BNumericPoint();
-            BNumericPoint point2 = new BNumericPoint();
-            BNumericPoint point3 = new BNumericPoint();
-            BNumericPoint point4 = new BNumericPoint();
-            BNumericPoint point5 = new BNumericPoint();
-            BNumericPoint point6 = new BNumericPoint();
-            BNumericPoint point7 = new BNumericPoint();
-            BNumericPoint point8 = new BNumericPoint();
+        BHEquip equip = addChild("equip", new BHEquip(), equipFolder1);
+        BNumericPoint point1 = addNumericTestProxyPoint("point1", equipFolder1);
+        BNumericPoint point2 = addNumericTestProxyPoint("point2", equipFolder1);
+        BFolder subPoints1 = addFolder("subPoints1", equipFolder1);
 
-            testFolder.add("equipFolder1", equipFolder1);
+        BNumericPoint point3 = addNumericTestProxyPoint("point3", subPoints1);
+        BNumericPoint point4 = addNumericTestProxyPoint("point4", subPoints1);
+        BFolder equipFolder2 = addFolder("equipFolder2", subPoints1);
+        addEquipTag(equipFolder2);
 
-            equipFolder1.add("equip", equip);
-            equipFolder1.add("point1", point1);
-            equipFolder1.add("point2", point2);
-            equipFolder1.add("subPoints1", subPoints1);
+        BNumericPoint point5 = addNumericTestProxyPoint("point5", equipFolder2);
+        BNumericPoint point6 = addNumericTestProxyPoint("point6", equipFolder2);
+        BFolder subPoints2 = addFolder("subPoints2", equipFolder2);
 
-            subPoints1.add("point3", point3);
-            subPoints1.add("point4", point4);
-            subPoints1.add("equipFolder2", equipFolder2);
+        BNumericPoint point7 = addNumericTestProxyPoint("point7", subPoints2);
+        BNumericPoint point8 = addNumericTestProxyPoint("point8", subPoints2);
 
-            equipFolder2.add("point5", point5);
-            equipFolder2.add("point6", point6);
-            equipFolder2.add("subPoints2", subPoints2);
-
-            subPoints2.add("point7", point7);
-            subPoints2.add("point8", point8);
-
-            addEquipTag(equipFolder1);
-            addEquipTag(equipFolder2);
-
-            hasEquipRefs(equip,
-                point1,
-                point2,
-                point3,
-                point4);
-            hasEquipRefs(equipFolder2,
-                point5,
-                point6,
-                point7,
-                point8);
-            hasNoEquipRefs(equipFolder1);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        hasEquipRefs(equip,
+            point1,
+            point2,
+            point3,
+            point4);
+        hasEquipRefs(equipFolder2,
+            point5,
+            point6,
+            point7,
+            point8);
+        hasNoEquipRefs(equipFolder1);
     }
 
     public void combinationEquipTaggedComponentsAndBHEquip2()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // * station
+        //   * test
+        //     * equipFolder1
+        //       * point1
+        //       * point2
+        //       * subPoints1
+        //         * point3
+        //         * point4
+        //         * equipFolder2
+        //           * equip
+        //           * point5
+        //           * point6
+        //           * subPoints2
+        //             * point7
+        //             * point8
+        BFolder equipFolder1 = addFolder("equipFolder1", testFolder);
+        addEquipTag(equipFolder1);
 
-        try
-        {
-            // * station
-            //   * test
-            //     * equipFolder1
-            //       * point1
-            //       * point2
-            //       * subPoints1
-            //         * point3
-            //         * point4
-            //         * equipFolder2
-            //           * equip
-            //           * point5
-            //           * point6
-            //           * subPoints2
-            //             * point7
-            //             * point8
-            BFolder equipFolder1 = new BFolder();
-            BFolder equipFolder2 = new BFolder();
-            BFolder subPoints1 = new BFolder();
-            BFolder subPoints2 = new BFolder();
-            BHEquip equip = new BHEquip();
-            BNumericPoint point1 = new BNumericPoint();
-            BNumericPoint point2 = new BNumericPoint();
-            BNumericPoint point3 = new BNumericPoint();
-            BNumericPoint point4 = new BNumericPoint();
-            BNumericPoint point5 = new BNumericPoint();
-            BNumericPoint point6 = new BNumericPoint();
-            BNumericPoint point7 = new BNumericPoint();
-            BNumericPoint point8 = new BNumericPoint();
+        BNumericPoint point1 = addNumericTestProxyPoint("point1", equipFolder1);
+        BNumericPoint point2 = addNumericTestProxyPoint("point2", equipFolder1);
+        BFolder subPoints1 = addFolder("subPoints1", equipFolder1);
 
-            testFolder.add("equipFolder1", equipFolder1);
+        BNumericPoint point3 = addNumericTestProxyPoint("point3", subPoints1);
+        BNumericPoint point4 = addNumericTestProxyPoint("point4", subPoints1);
+        BFolder equipFolder2 = addFolder("equipFolder2", subPoints1);
+        addEquipTag(equipFolder2);
 
-            equipFolder1.add("point1", point1);
-            equipFolder1.add("point2", point2);
-            equipFolder1.add("subPoints1", subPoints1);
+        BHEquip equip = addChild("equip", new BHEquip(), equipFolder2);
+        BNumericPoint point5 = addNumericTestProxyPoint("point5", equipFolder2);
+        BNumericPoint point6 = addNumericTestProxyPoint("point6", equipFolder2);
+        BFolder subPoints2 = addFolder("subPoints2", equipFolder2);
 
-            subPoints1.add("point3", point3);
-            subPoints1.add("point4", point4);
-            subPoints1.add("equipFolder2", equipFolder2);
+        BNumericPoint point7 = addNumericTestProxyPoint("point7", subPoints2);
+        BNumericPoint point8 = addNumericTestProxyPoint("point8", subPoints2);
 
-            equipFolder2.add("equip", equip);
-            equipFolder2.add("point5", point5);
-            equipFolder2.add("point6", point6);
-            equipFolder2.add("subPoints2", subPoints2);
-
-            subPoints2.add("point7", point7);
-            subPoints2.add("point8", point8);
-
-            addEquipTag(equipFolder1);
-            addEquipTag(equipFolder2);
-
-            hasEquipRefs(equipFolder1,
-                point1,
-                point2,
-                point3,
-                point4);
-            hasEquipRefs(equip,
-                point5,
-                point6,
-                point7,
-                point8);
-            hasNoEquipRefs(equipFolder2);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        hasEquipRefs(equipFolder1,
+            point1,
+            point2,
+            point3,
+            point4);
+        hasEquipRefs(equip,
+            point5,
+            point6,
+            point7,
+            point8);
+        hasNoEquipRefs(equipFolder2);
     }
 
     public void addedToDescendantsOfBHEquip()
     {
-        BStation station = stationHandler.getStation();
-        BFolder testFolder = new BFolder();
-        station.add("test", testFolder);
+        // * station
+        //   * test
+        //     * equipFolder1
+        //       * equip1Point1
+        //       * equip1Point2
+        //       // No implied equipRef relation to this point with a NullProxyExt
+        //       * equip1NullPoint1
+        //       * equip1NullPoint2 (equipRef->equip1)
+        //       * equip [BHEquip]
+        //         * equip1Point3
+        //         * equip1Point4
+        //         // No implied equipRef relation to this point with a NullProxyExt
+        //         * equip1NullPoint3
+        //         * equip1NullPoint4 (equipRef->equip1)
+        //         * subPoints2
+        //           * equip1Point5
+        //           * equip1Point6
+        //           // No implied equipRef relation to this point with a NullProxyExt
+        //           * equip1NullPoint5
+        //           * equip1NullPoint6 (equipRef->equip1)
+        //           * equipFolder2
+        //             * equip [BHEquip]
+        //             * equip2Point1
+        //             * equip2Point2
+        //             // No implied equipRef relation to this point with a NullProxyExt
+        //             * equip2NullPoint1
+        //             * equip2NullPoint2 (equipRef->equip2)
+        //           * equipFolder3 [hs:equip]
+        //             * equip3Point1
+        //             * equip3Point2
+        //             // No implied equipRef relation to this point with a NullProxyExt
+        //             * equip3NullPoint1
+        //             * equip3NullPoint2 (equipRef->equipFolder3)
+        //           * subPoints3
+        //             * equip1Point7
+        //             * equip1Point8
+        //             // No implied equipRef relation to this point with a NullProxyExt
+        //             * equip1NullPoint7
+        //             * equip1NullPoint8 (equipRef->equip1)
+        //       * subPoints1
+        //         * equip1Point9
+        //         * equip1Point10
+        //         // No implied equipRef relation to this point with a NullProxyExt
+        //         * equip1NullPoint9
+        //         * equip1NullPoint10 (equipRef->equip1)
+        //       * equipFolder4
+        //         * equip [BHEquip]
+        //         * equip4Point1
+        //         * equip4Point2
+        //         // No implied equipRef relation to this point with a NullProxyExt
+        //         * equip4NullPoint1
+        //         * equip4NullPoint2 (equipRef->equip4)
+        //       * equipFolder5 [hs:equip]
+        //         * equip5Point1
+        //         * equip5Point2
+        //         // No implied equipRef relation to this point with a NullProxyExt
+        //         * equip5NullPoint1
+        //         * equip5NullPoint2 (equipRef->equipFolder5)
+        BFolder equipFolder1 = addFolder("equipFolder1", testFolder);
 
-        try
-        {
-            // * station
-            //   * test
-            //     * equipFolder1
-            //       * equip1Point1
-            //       * equip1Point2
-            //       * equip [BHEquip]
-            //         * equip1Point3
-            //         * equip1Point4
-            //         * subPoints2
-            //           * equip1Point5
-            //           * equip1Point6
-            //           * equipFolder2
-            //             * equip [BHEquip]
-            //             * equip2Point1
-            //             * equip2Point2
-            //           * equipFolder3 [hs:equip]
-            //             * equip3Point1
-            //             * equip3Point2
-            //           * subPoints3
-            //             * equip1Point7
-            //             * equip1Point8
-            //       * subPoints1
-            //         * equip1Point9
-            //         * equip1Point10
-            //       * equipFolder4
-            //         * equip [BHEquip]
-            //         * equip4Point1
-            //         * equip4Point2
-            //       * equipFolder5 [hs:equip]
-            //         * equip5Point1
-            //         * equip5Point2
-            BFolder equipFolder1 = new BFolder();
-            BFolder equipFolder2 = new BFolder();
-            BFolder equipFolder3 = new BFolder();
-            BFolder equipFolder4 = new BFolder();
-            BFolder equipFolder5 = new BFolder();
-            BFolder subPoints1 = new BFolder();
-            BFolder subPoints2 = new BFolder();
-            BFolder subPoints3 = new BFolder();
-            BHEquip equip1 = new BHEquip();
-            BHEquip equip2 = new BHEquip();
-            BHEquip equip4 = new BHEquip();
-            BNumericPoint equip1Point1 = new BNumericPoint();
-            BNumericPoint equip1Point2 = new BNumericPoint();
-            BNumericPoint equip1Point3 = new BNumericPoint();
-            BNumericPoint equip1Point4 = new BNumericPoint();
-            BNumericPoint equip1Point5 = new BNumericPoint();
-            BNumericPoint equip1Point6 = new BNumericPoint();
-            BNumericPoint equip1Point7 = new BNumericPoint();
-            BNumericPoint equip1Point8 = new BNumericPoint();
-            BNumericPoint equip1Point9 = new BNumericPoint();
-            BNumericPoint equip1Point10 = new BNumericPoint();
-            BNumericPoint equip2Point1 = new BNumericPoint();
-            BNumericPoint equip2Point2 = new BNumericPoint();
-            BNumericPoint equip3Point1 = new BNumericPoint();
-            BNumericPoint equip3Point2 = new BNumericPoint();
-            BNumericPoint equip4Point1 = new BNumericPoint();
-            BNumericPoint equip4Point2 = new BNumericPoint();
-            BNumericPoint equip5Point1 = new BNumericPoint();
-            BNumericPoint equip5Point2 = new BNumericPoint();
+        BNumericPoint equip1Point1 = addNumericTestProxyPoint("equip1Point1", equipFolder1);
+        BNumericPoint equip1Point2 = addNumericTestProxyPoint("equip1Point2", equipFolder1);
+        BNumericPoint equip1NullPoint1 = addNumericPoint("equip1NullPoint1", equipFolder1);
+        BNumericPoint equip1NullPoint2 = addNumericPoint("equip1NullPoint2", equipFolder1);
+        BHEquip equip1 = addChild("equip", new BHEquip(), equipFolder1);
+        BFolder subPoints1 = addFolder("subPoints1", equipFolder1);
+        BFolder equipFolder4 = addFolder("equipFolder4", equipFolder1);
+        BFolder equipFolder5 = addFolder("equipFolder5", equipFolder1);
+        addEquipTag(equipFolder5);
 
-            testFolder.add("equipFolder1", equipFolder1);
+        BNumericPoint equip1Point9 = addNumericTestProxyPoint("equip1Point9", subPoints1);
+        BNumericPoint equip1Point10 = addNumericTestProxyPoint("equip1Point10", subPoints1);
+        BNumericPoint equip1NullPoint9 = addNumericPoint("equip1NullPoint9", subPoints1);
+        BNumericPoint equip1NullPoint10 = addNumericPoint("equip1NullPoint10", subPoints1);
 
-            equipFolder1.add("equip1Point1", equip1Point1);
-            equipFolder1.add("equip1Point2", equip1Point2);
-            equipFolder1.add("equip", equip1);
-            equipFolder1.add("subPoints1", subPoints1);
-            equipFolder1.add("equipFolder4", equipFolder4);
-            equipFolder1.add("equipFolder5", equipFolder5);
+        BHEquip equip4 = addChild("equip", new BHEquip(), equipFolder4);
+        BNumericPoint equip4Point1 = addNumericTestProxyPoint("equip4Point1", equipFolder4);
+        BNumericPoint equip4Point2 = addNumericTestProxyPoint("equip4Point2", equipFolder4);
+        BNumericPoint equip4NullPoint1 = addNumericPoint("equip4NullPoint1", equipFolder4);
+        BNumericPoint equip4NullPoint2 = addNumericPoint("equip4NullPoint2", equipFolder4);
 
-            equipFolder2.add("equip", equip2);
-            equipFolder2.add("equip2Point1", equip2Point1);
-            equipFolder2.add("equip2Point2", equip2Point2);
+        BNumericPoint equip5Point1 = addNumericTestProxyPoint("equip5Point1", equipFolder5);
+        BNumericPoint equip5Point2 = addNumericTestProxyPoint("equip5Point2", equipFolder5);
+        BNumericPoint equip5NullPoint1 = addNumericPoint("equip5NullPoint1", equipFolder5);
+        BNumericPoint equip5NullPoint2 = addNumericPoint("equip5NullPoint2", equipFolder5);
 
-            addEquipTag(equipFolder3);
-            equipFolder3.add("equip3Point1", equip3Point1);
-            equipFolder3.add("equip3Point2", equip3Point2);
+        BNumericPoint equip1Point3 = addNumericTestProxyPoint("equip1Point3", equip1);
+        BNumericPoint equip1Point4 = addNumericTestProxyPoint("equip1Point4", equip1);
+        BNumericPoint equip1NullPoint3 = addNumericPoint("equip1NullPoint3", equip1);
+        BNumericPoint equip1NullPoint4 = addNumericPoint("equip1NullPoint4", equip1);
+        BFolder subPoints2 = addFolder("subPoints2", equip1);
 
-            equipFolder4.add("equip", equip4);
-            equipFolder4.add("equip4Point1", equip4Point1);
-            equipFolder4.add("equip4Point2", equip4Point2);
+        BNumericPoint equip1Point5 = addNumericTestProxyPoint("equip1Point5", subPoints2);
+        BNumericPoint equip1Point6 = addNumericTestProxyPoint("equip1Point6", subPoints2);
+        BNumericPoint equip1NullPoint5 = addNumericPoint("equip1NullPoint5", subPoints2);
+        BNumericPoint equip1NullPoint6 = addNumericPoint("equip1NullPoint6", subPoints2);
+        BFolder equipFolder2 = addFolder("equipFolder2", subPoints2);
+        BFolder equipFolder3 = addFolder("equipFolder3", subPoints2);
+        addEquipTag(equipFolder3);
+        BFolder subPoints3 = addFolder("subPoints3", subPoints2);
 
-            addEquipTag(equipFolder5);
-            equipFolder5.add("equip5Point1", equip5Point1);
-            equipFolder5.add("equip5Point2", equip5Point2);
+        BHEquip equip2 = addChild("equip", new BHEquip(), equipFolder2);
+        BNumericPoint equip2Point1 = addNumericTestProxyPoint("equip2Point1", equipFolder2);
+        BNumericPoint equip2Point2 = addNumericTestProxyPoint("equip2Point2", equipFolder2);
+        BNumericPoint equip2NullPoint1 = addNumericPoint("equip2NullPoint1", equipFolder2);
+        BNumericPoint equip2NullPoint2 = addNumericPoint("equip2NullPoint2", equipFolder2);
 
-            equip1.add("equip1Point3", equip1Point3);
-            equip1.add("equip1Point4", equip1Point4);
-            equip1.add("subPoints2", subPoints2);
+        BNumericPoint equip3Point1 = addNumericTestProxyPoint("equip3Point1", equipFolder3);
+        BNumericPoint equip3Point2 = addNumericTestProxyPoint("equip3Point2", equipFolder3);
+        BNumericPoint equip3NullPoint1 = addNumericPoint("equip3NullPoint1", equipFolder3);
+        BNumericPoint equip3NullPoint2 = addNumericPoint("equip3NullPoint2", equipFolder3);
 
-            subPoints1.add("equip1Point9", equip1Point9);
-            subPoints1.add("equip1Point10", equip1Point10);
+        BNumericPoint equip1Point7 = addNumericTestProxyPoint("equip1Point7", subPoints3);
+        BNumericPoint equip1Point8 = addNumericTestProxyPoint("equip1Point8", subPoints3);
+        BNumericPoint equip1NullPoint7 = addNumericPoint("equip1NullPoint7", subPoints3);
+        BNumericPoint equip1NullPoint8 = addNumericPoint("equip1NullPoint8", subPoints3);
 
-            subPoints2.add("equip1Point5", equip1Point5);
-            subPoints2.add("equip1Point6", equip1Point6);
-            subPoints2.add("equipFolder2", equipFolder2);
-            subPoints2.add("equipFolder3", equipFolder3);
-            subPoints2.add("subPoints3", subPoints3);
+        addEquipRefRelation(equip1NullPoint2, equip1);
+        addEquipRefRelation(equip1NullPoint4, equip1);
+        addEquipRefRelation(equip1NullPoint6, equip1);
+        addEquipRefRelation(equip1NullPoint8, equip1);
+        addEquipRefRelation(equip1NullPoint10, equip1);
 
-            subPoints3.add("equip1Point7", equip1Point7);
-            subPoints3.add("equip1Point8", equip1Point8);
+        addEquipRefRelation(equip2NullPoint2, equip2);
 
-            hasEquipRefs(equip1,
-                equip1Point1,
-                equip1Point2,
-                equip1Point3,
-                equip1Point4,
-                equip1Point5,
-                equip1Point6,
-                equip1Point7,
-                equip1Point8,
-                equip1Point9,
-                equip1Point10);
-            hasEquipRefs(equip2,
-                equip2Point1,
-                equip2Point2);
-            hasEquipRefs(equipFolder3,
-                equip3Point1,
-                equip3Point2);
-            hasEquipRefs(equip4,
-                equip4Point1,
-                equip4Point2);
-            hasEquipRefs(equipFolder5,
-                equip5Point1,
-                equip5Point2);
-        }
-        finally
-        {
-            station.remove(testFolder);
-        }
+        addEquipRefRelation(equip3NullPoint2, equipFolder3);
+
+        addEquipRefRelation(equip4NullPoint2, equip4);
+
+        addEquipRefRelation(equip5NullPoint2, equipFolder5);
+
+        hasEquipRefs(equip1,
+            equip1Point1,
+            equip1Point2,
+            equip1Point3,
+            equip1Point4,
+            equip1Point5,
+            equip1Point6,
+            equip1Point7,
+            equip1Point8,
+            equip1Point9,
+            equip1Point10,
+            equip1NullPoint2,
+            equip1NullPoint4,
+            equip1NullPoint6,
+            equip1NullPoint8,
+            equip1NullPoint10);
+        hasEquipRefs(equip2,
+            equip2Point1,
+            equip2Point2,
+            equip2NullPoint2);
+        hasEquipRefs(equipFolder3,
+            equip3Point1,
+            equip3Point2,
+            equip3NullPoint2);
+        hasEquipRefs(equip4,
+            equip4Point1,
+            equip4Point2,
+            equip4NullPoint2);
+        hasEquipRefs(equipFolder5,
+            equip5Point1,
+            equip5Point2,
+            equip5NullPoint2);
+        hasNoEquipRefs(
+            equip1NullPoint1,
+            equip1NullPoint3,
+            equip1NullPoint5,
+            equip1NullPoint7,
+            equip1NullPoint9,
+            equip2NullPoint1,
+            equip3NullPoint1,
+            equip4NullPoint1,
+            equip5NullPoint1);
     }
 
     public void impliedEquipRef1Test()
@@ -1099,118 +1103,17 @@ public class BEquipRefRelationTest extends BNHaystackStationTestBase
         }
     }
 
-    private static void hasNoEquipRefs(BComponent... components)
-    {
-        for (BComponent component : components)
-        {
-            assertTrue(component.relations().getAll(ID_EQUIP_REF).isEmpty(),
-              "Component " + component.getSlotPath() + " incorrectly has equipRef relation");
-        }
-    }
+    private BComponent directEquip;
+    private BFolder impliedEquip1;
+    private BFolder impliedEquip2;
+    private BFolder impliedEquip3;
+    private BFolder impliedEquip4;
+    private BFolder impliedEquip5;
+    private BNumericPoint impliedEquip1Point;
+    private BNumericPoint impliedEquip2Point;
+    private BNumericPoint impliedEquip3Point;
+    private BNumericPoint impliedEquip4Point;
+    private BNumericPoint impliedEquip5Point;
 
-    private static void hasEquipRefs(BComponent equip, BControlPoint... points)
-    {
-        hasRefsOut(ID_EQUIP_REF, equip, points);
-        hasRefsIn(ID_EQUIP_REF, equip, points);
-    }
-
-    private static void hasSiteRefs(BComponent site, BComponent... sources)
-    {
-        hasRefsOut(ID_SITE_REF, site, sources);
-        hasRefsIn(ID_SITE_REF, site, sources);
-    }
-
-    private static void hasRefsOut(Id id, BComponent target, BComponent... sources)
-    {
-        for (BComponent source : sources)
-        {
-            Collection<Relation> relations = source.relations().getAll(id);
-            assertEquals(relations.size(), 1,
-                "Number of relations from source " + source.getSlotPath());
-            Relation relation = relations.iterator().next();
-            assertTrue(relation.isOutbound(),
-                "Relation is not outbound on source " + source.getSlotPath());
-            assertEquals(relation.getEndpoint(), target,
-                "Endpoint is " + ((BComponent) relation.getEndpoint()).getSlotPath() +
-                " instead of " + target.getSlotPath() +
-                " on source " + source.getSlotPath());
-        }
-    }
-
-    private static void hasRefsIn(Id id, BComponent target, BComponent... sources)
-    {
-        Collection<Relation> relations = target.relations().getAll(id);
-        assertEquals(relations.size(), sources.length,
-            "Number of relations to target " + target.getSlotPath());
-        allRelationsAreInbound(target, relations);
-
-        for (BComponent source : sources)
-        {
-            boolean foundSource = false;
-            for (Relation relation : relations)
-            {
-                if (relation.getEndpoint().equals(source))
-                {
-                    foundSource = true;
-                    break;
-                }
-            }
-
-            assertTrue(foundSource,
-                "No relation from source " + source.getSlotPath() +
-                " to target " + target.getSlotPath());
-        }
-    }
-
-    private static void allRelationsAreInbound(BComponent target, Collection<Relation> relations)
-    {
-        for (Relation relation : relations)
-        {
-            assertTrue(relation.isInbound(),
-                "Relation is not inbound from " + target.getSlotPath() +
-                " to endpoint " + ((BComponent) relation.getEndpoint()).getSlotPath());
-        }
-    }
-
-    private static void addEquipTag(BComponent component)
-    {
-        component.tags().set(ID_EQUIP, BMarker.MARKER);
-    }
-
-    private static void addSiteTag(BComponent component)
-    {
-        component.tags().set(ID_SITE, BMarker.MARKER);
-    }
-
-    private static void removeEquipTag(BComponent component)
-    {
-        component.tags().remove(ID_EQUIP, BMarker.MARKER);
-    }
-
-    private static void addEquipRefRelation(BControlPoint point, BComponent equip)
-    {
-        point.relations().add(new BRelation(ID_EQUIP_REF, equip));
-    }
-
-    private static void removeEquipRefRelation(BControlPoint point, BComponent equip)
-    {
-        point.relations().remove(ID_EQUIP_REF, equip);
-    }
-
-    private static void addSiteRefRelation(BComponent source, BComponent site)
-    {
-        source.relations().add(new BRelation(ID_SITE_REF, site));
-    }
-
-    private final BComponent directEquip = new BComponent();
-    private final BFolder impliedEquip1 = new BFolder();
-    private final BFolder impliedEquip2 = new BFolder();
-    private final BFolder impliedEquip3 = new BFolder();
-    private final BFolder impliedEquip4 = new BFolder();
-    private final BFolder impliedEquip5 = new BFolder();
-    private final BNumericPoint impliedEquip1Point = new BNumericPoint();
-    private final BNumericPoint impliedEquip2Point = new BNumericPoint();
-    private final BNumericPoint impliedEquip3Point = new BNumericPoint();
-    private final BNumericPoint impliedEquip4Point = new BNumericPoint();
-    private final BNumericPoint impliedEquip5Point = new BNumericPoint();
+    private BFolder testFolder;
 }

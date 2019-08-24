@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.baja.control.BControlPoint;
+import javax.baja.control.ext.BNullProxyExt;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BComplex;
 import javax.baja.sys.BComponent;
@@ -122,6 +123,11 @@ public class BNEquipRefRelation extends BRelationInfo
 
     private static BComponent getImpliedEquip(BControlPoint point)
     {
+        if (hasNullProxyExt(point))
+        {
+            return null;
+        }
+
         BComplex parent = point.getParent();
         while (parent != null)
         {
@@ -140,6 +146,11 @@ public class BNEquipRefRelation extends BRelationInfo
         }
 
         return null;
+    }
+
+    private static boolean hasNullProxyExt(BControlPoint point)
+    {
+        return point.getProxyExt() instanceof BNullProxyExt;
     }
 
     static BComponent getEquip(BControlPoint point)
@@ -162,6 +173,7 @@ public class BNEquipRefRelation extends BRelationInfo
         {
             BComponent child = (BComponent) children.get();
             if (child instanceof BControlPoint &&
+                !hasNullProxyExt((BControlPoint) child) &&
                 !hasDirectRelation(child, getRelationId()))
             {
                 relations.add(new BasicRelation(getRelationId(), child, Relation.INBOUND));

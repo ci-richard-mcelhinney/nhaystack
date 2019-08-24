@@ -9,16 +9,31 @@
 package nhaystack.ntest.helper;
 
 import static nhaystack.util.NHaystackConst.EQUIP_REF;
+import static nhaystack.util.NHaystackConst.ID_AHU;
+import static nhaystack.util.NHaystackConst.ID_EQUIP;
+import static nhaystack.util.NHaystackConst.ID_EQUIP_REF;
+import static nhaystack.util.NHaystackConst.ID_SITE;
+import static nhaystack.util.NHaystackConst.ID_SITE_REF;
+import static nhaystack.util.NHaystackConst.ID_VAV;
 import static nhaystack.util.NHaystackConst.SITE_REF;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
+import javax.baja.control.BBooleanPoint;
+import javax.baja.control.BControlPoint;
+import javax.baja.control.BNumericPoint;
 import javax.baja.sys.BComponent;
+import javax.baja.sys.BMarker;
+import javax.baja.sys.BRelation;
 import javax.baja.sys.BValue;
 import javax.baja.tag.Id;
+import javax.baja.tag.Relation;
 import javax.baja.util.BFolder;
+
 import nhaystack.site.BHEquip;
 import nhaystack.site.BHSite;
 import org.projecthaystack.HDict;
@@ -69,6 +84,25 @@ public final class NHaystackTestUtil
     public static BHEquip addEquip(BComponent parent)
     {
         return addChild("equip", new BHEquip(), parent);
+    }
+
+    public static BNumericPoint addNumericPoint(String name, BComponent parent)
+    {
+        return addChild(name, new BNumericPoint(), parent);
+    }
+
+    public static BNumericPoint addNumericTestProxyPoint(String name, BComponent parent)
+    {
+        BNumericPoint point = addChild(name, new BNumericPoint(), parent);
+        point.setProxyExt(new BTestProxyExt());
+        return point;
+    }
+
+    public static BBooleanPoint addBooleanTestProxyPoint(String name, BComponent parent)
+    {
+        BBooleanPoint point = addChild(name, new BBooleanPoint(), parent);
+        point.setProxyExt(new BTestProxyExt());
+        return point;
     }
 
     public static HGrid makeIdGrid(String id)
@@ -134,5 +168,126 @@ public final class NHaystackTestUtil
     public static void rowHasEquipRef(HRow row, String expected)
     {
         assertEquals(row.get(EQUIP_REF), HRef.make(expected));
+    }
+
+    public static void addEquipTag(BComponent component)
+    {
+        component.tags().set(ID_EQUIP, BMarker.MARKER);
+    }
+
+    public static void removeEquipTag(BComponent component)
+    {
+        component.tags().remove(ID_EQUIP, BMarker.MARKER);
+    }
+
+    public static void addSiteTag(BComponent component)
+    {
+        component.tags().set(ID_SITE, BMarker.MARKER);
+    }
+
+    public static void addAhuTag(BComponent component)
+    {
+        component.tags().set(ID_AHU, BMarker.MARKER);
+    }
+
+    public static void addVavTag(BComponent component)
+    {
+        component.tags().set(ID_VAV, BMarker.MARKER);
+    }
+
+    public static void addEquipRefRelation(BControlPoint point, BComponent equip)
+    {
+        point.relations().add(new BRelation(ID_EQUIP_REF, equip));
+    }
+
+    public static void removeEquipRefRelation(BControlPoint point, BComponent equip)
+    {
+        point.relations().remove(ID_EQUIP_REF, equip);
+    }
+
+    public static void addSiteRefRelation(BComponent source, BComponent site)
+    {
+        source.relations().add(new BRelation(ID_SITE_REF, site));
+    }
+
+    public static void hasNoEquipRefs(BComponent... components)
+    {
+        for (BComponent component : components)
+        {
+            assertTrue(component.relations().getAll(ID_EQUIP_REF).isEmpty(),
+                "Component " + component.getSlotPath() + " incorrectly has equipRef relation");
+        }
+    }
+
+    public static void hasNoSiteRefs(BComponent... components)
+    {
+        for (BComponent component : components)
+        {
+            assertTrue(component.relations().getAll(ID_SITE_REF).isEmpty(),
+                "Component " + component.getSlotPath() + " incorrectly has siteRef relation");
+        }
+    }
+
+    public static void hasEquipRefs(BComponent equip, BControlPoint... points)
+    {
+        hasRefsOut(ID_EQUIP_REF, equip, points);
+        hasRefsIn(ID_EQUIP_REF, equip, points);
+    }
+
+    public static void hasSiteRefs(BComponent site, BComponent... sources)
+    {
+        hasRefsOut(ID_SITE_REF, site, sources);
+        hasRefsIn(ID_SITE_REF, site, sources);
+    }
+
+    public static void hasRefsOut(Id id, BComponent target, BComponent... sources)
+    {
+        for (BComponent source : sources)
+        {
+            Collection<Relation> relations = source.relations().getAll(id);
+            assertEquals(relations.size(), 1,
+                "Number of relations from source " + source.getSlotPath());
+            Relation relation = relations.iterator().next();
+            assertTrue(relation.isOutbound(),
+                "Relation is not outbound on source " + source.getSlotPath());
+            assertEquals(relation.getEndpoint(), target,
+                "Endpoint is " + ((BComponent) relation.getEndpoint()).getSlotPath() +
+                    " instead of " + target.getSlotPath() +
+                    " on source " + source.getSlotPath());
+        }
+    }
+
+    public static void hasRefsIn(Id id, BComponent target, BComponent... sources)
+    {
+        Collection<Relation> relations = target.relations().getAll(id);
+        assertEquals(relations.size(), sources.length,
+            "Number of relations to target " + target.getSlotPath());
+        allRelationsAreInbound(target, relations);
+
+        for (BComponent source : sources)
+        {
+            boolean foundSource = false;
+            for (Relation relation : relations)
+            {
+                if (relation.getEndpoint().equals(source))
+                {
+                    foundSource = true;
+                    break;
+                }
+            }
+
+            assertTrue(foundSource, "No relation from source " + source.getSlotPath() +
+                " to target " + target.getSlotPath());
+        }
+    }
+
+    public static void allRelationsAreInbound(BComponent target, Collection<Relation> relations)
+    {
+        for (Relation relation : relations)
+        {
+            assertTrue(relation.isInbound(),
+                "Relation is not inbound from " + target.getSlotPath() +
+                " to endpoint " + ((BComponent) relation.getEndpoint()).getSlotPath());
+        }
     }
 }

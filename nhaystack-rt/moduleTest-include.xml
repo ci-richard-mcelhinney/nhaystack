@@ -17,4 +17,5 @@
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
+  <type class="nhaystack.ntest.helper.BTestProxyExt" name="TestProxyExt"/>
 </types>
