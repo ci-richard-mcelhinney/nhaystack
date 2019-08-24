@@ -100,6 +100,7 @@ import org.projecthaystack.HTimeZone;
 import org.projecthaystack.HVal;
 import org.projecthaystack.io.HZincWriter;
 import org.projecthaystack.util.Base64;
+import com.tridium.nre.diagnostics.DiagnosticUtil;
 
 /**
   * TagManager does various task associated with generating tags
@@ -129,26 +130,34 @@ public class TagManager implements NHaystackConst
       */
     public HDict convertAnnotatedRefTags(HDict annotatedTags)
     {
-        HDictBuilder hdb = new HDictBuilder();
-
-        Iterator<Map.Entry<String, HVal>> it = annotatedTags.iterator();
-        while (it.hasNext())
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            Map.Entry<String, HVal> entry = it.next();
-            String name = entry.getKey();
-            HVal val = entry.getValue();
+            HDictBuilder hdb = new HDictBuilder();
 
-            if (val instanceof HRef)
+            Iterator<Map.Entry<String, HVal>> it = annotatedTags.iterator();
+            while (it.hasNext())
             {
-                HRef ref = convertAnnotatedRefTag((HRef) val);
-                if (ref != null)
-                    hdb.add(name, ref);
-            }
-            else
-                hdb.add(name, val);
-        }
+                Map.Entry<String, HVal> entry = it.next();
+                String name = entry.getKey();
+                HVal val = entry.getValue();
 
-        return hdb.toDict();
+                if (val instanceof HRef)
+                {
+                    HRef ref = convertAnnotatedRefTag((HRef) val);
+                    if (ref != null)
+                        hdb.add(name, ref);
+                }
+                else
+                    hdb.add(name, val);
+            }
+
+            return hdb.toDict();
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#convertAnnotatedRefTags");
+        }
     }
 
     /**
@@ -217,20 +226,28 @@ public class TagManager implements NHaystackConst
       */
     public NHRef makeComponentRef(BComponent comp)
     {
-        // history space
-        if (comp instanceof BHistoryConfig)
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            BHistoryConfig cfg = (BHistoryConfig) comp;
-            return makeHistoryRef(cfg);
-        }
-        // component space
-        else
-        {
-            // sepRefs are cached so we don't have to make them on the fly
-            NHRef sepRef = cache.lookupSepRefByComponent(comp);
-            if (sepRef != null) return sepRef;
+            // history space
+            if (comp instanceof BHistoryConfig)
+            {
+                BHistoryConfig cfg = (BHistoryConfig) comp;
+                return makeHistoryRef(cfg);
+            }
+            // component space
+            else
+            {
+                // sepRefs are cached so we don't have to make them on the fly
+                NHRef sepRef = cache.lookupSepRefByComponent(comp);
+                if (sepRef != null) return sepRef;
 
-            return makeSlotPathRef(comp);
+                return makeSlotPathRef(comp);
+            }
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#makeComponentRef");
         }
     }
 
@@ -277,88 +294,107 @@ public class TagManager implements NHaystackConst
      */
     public HDict generateComponentTags(BComponent comp)
     {
-        List<String> namespaces = service.getPrioritizedNamespaceList();
-        Collection<Tag> tags = comp.tags().getAll();
-        HDictBuilder hdb = new HDictBuilder();
-
-        for (int i = namespaces.size() - 1; i >= 0; --i)
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            for (Tag tag : tags)
-            {
-                if (tag.getId().getDictionary().equals(namespaces.get(i)))
-                {
-                    String tagName = tag.getId().getName();
-                    BIDataValue tagValue = tag.getValue();
-                    Type tagValueType = tagValue.getType();
+            List<String> namespaces = service.getPrioritizedNamespaceList();
 
-                    if (tagValueType == BMarker.TYPE)
+            long getAllTagsStart = DiagnosticUtil.nanoTime();
+            Collection<Tag> tags;
+            try
+            {
+                tags = comp.tags().getAll();
+            }
+            finally
+            {
+                DiagnosticUtil.complete(getAllTagsStart, "TagManager#generateComponentTags - comp.tags().getAll()");
+            }
+
+            HDictBuilder hdb = new HDictBuilder();
+
+            for (int i = namespaces.size() - 1; i >= 0; --i)
+            {
+                for (Tag tag : tags)
+                {
+                    if (tag.getId().getDictionary().equals(namespaces.get(i)))
                     {
-                        hdb.add(tagName, HMarker.VAL);
-                    }
-                    else if (tagValueType == BLong.TYPE)
-                    {
-                        hdb.add(tagName, HNum.make(((BLong) tagValue).getLong()));
-                    }
-                    else if (tagValueType == BDouble.TYPE)
-                    {
-                        hdb.add(tagName, HNum.make(((BDouble) tagValue).getDouble()));
-                    }
-                    else if (tagValueType == BFloat.TYPE)
-                    {
-                        hdb.add(tagName, HNum.make(((BFloat) tagValue).getFloat()));
-                    }
-                    else if (tagValueType == BInteger.TYPE)
-                    {
-                        hdb.add(tagName, HNum.make(((BInteger) tagValue).getInt()));
-                    }
-                    else if (tagValueType == BBoolean.TYPE)
-                    {
-                        hdb.add(tagName, HBool.make(((BBoolean) tagValue).getBoolean()));
-                    }
-                    else if (tagValueType == BString.TYPE)
-                    {
-                        String value = ((BString) tagValue).getString();
-                        if (tagName.equals("geoCoord"))
+                        String tagName = tag.getId().getName();
+                        BIDataValue tagValue = tag.getValue();
+                        Type tagValueType = tagValue.getType();
+
+                        if (tagValueType == BMarker.TYPE)
                         {
-                            hdb.add(tagName, HCoord.make(value));
+                            hdb.add(tagName, HMarker.VAL);
                         }
-                        else if (tagName.equals("id"))
+                        else if (tagValueType == BLong.TYPE)
                         {
-                            hdb.add(tagName, HRef.make(value));
+                            hdb.add(tagName, HNum.make(((BLong) tagValue).getLong()));
+                        }
+                        else if (tagValueType == BDouble.TYPE)
+                        {
+                            hdb.add(tagName, HNum.make(((BDouble) tagValue).getDouble()));
+                        }
+                        else if (tagValueType == BFloat.TYPE)
+                        {
+                            hdb.add(tagName, HNum.make(((BFloat) tagValue).getFloat()));
+                        }
+                        else if (tagValueType == BInteger.TYPE)
+                        {
+                            hdb.add(tagName, HNum.make(((BInteger) tagValue).getInt()));
+                        }
+                        else if (tagValueType == BBoolean.TYPE)
+                        {
+                            hdb.add(tagName, HBool.make(((BBoolean) tagValue).getBoolean()));
+                        }
+                        else if (tagValueType == BString.TYPE)
+                        {
+                            String value = ((BString) tagValue).getString();
+                            if (tagName.equals("geoCoord"))
+                            {
+                                hdb.add(tagName, HCoord.make(value));
+                            }
+                            else if (tagName.equals("id"))
+                            {
+                                hdb.add(tagName, HRef.make(value));
+                            }
+                            else
+                            {
+                                hdb.add(tagName, HStr.make(value));
+                            }
+                        }
+                        else if (tagValueType == BTimeZone.TYPE)
+                        {
+                            hdb.add(tagName, HStr.make(((BTimeZone) tagValue).getId()));
+                        }
+                        else if (tagValueType == BOrd.TYPE && tagName.equals("id"))
+                        {
+                            hdb.add(tagName, makeComponentRef(comp).getHRef());
+                        }
+                        else if (tagValueType == BUnit.TYPE)
+                        {
+                            if (tagName.equals("unit") && !((BUnit) tagValue).isNull())
+                            {
+                                hdb.add(tagName, ((BUnit) tagValue).getSymbol());
+                            }
+                        }
+                        else if (tagValueType == BDynamicEnum.TYPE)
+                        {
+                            hdb.add(tagName, HStr.make(((BDynamicEnum) tagValue).getTag()));
                         }
                         else
                         {
-                            hdb.add(tagName, HStr.make(value));
+                            LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue + ':' + tagValueType);
                         }
-                    }
-                    else if (tagValueType == BTimeZone.TYPE)
-                    {
-                        hdb.add(tagName, HStr.make(((BTimeZone) tagValue).getId()));
-                    }
-                    else if (tagValueType == BOrd.TYPE && tagName.equals("id"))
-                    {
-                        hdb.add(tagName, makeComponentRef(comp).getHRef());
-                    }
-                    else if (tagValueType == BUnit.TYPE)
-                    {
-                        if (tagName.equals("unit") && !((BUnit) tagValue).isNull())
-                        {
-                            hdb.add(tagName, ((BUnit) tagValue).getSymbol());
-                        }
-                    }
-                    else if (tagValueType == BDynamicEnum.TYPE)
-                    {
-                        hdb.add(tagName, HStr.make(((BDynamicEnum) tagValue).getTag()));
-                    }
-                    else
-                    {
-                        LOG.warning("Niagara tag not handled: " + tagName + ':' + tagValue + ':' + tagValueType);
                     }
                 }
             }
-        }
 
-        return hdb.toDict();
+            return hdb.toDict();
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#generateComponentTags");
+        }
     }
 
     /**
@@ -366,35 +402,54 @@ public class TagManager implements NHaystackConst
      */
     public HDict convertRelationsToRefTags(BComponent comp)
     {
-        List<String> namespaces = service.getPrioritizedNamespaceList();
-        Collection<Relation> relations = comp.relations().getAll();
-        HDictBuilder hdb = new HDictBuilder();
-
-        for (int i = namespaces.size() - 1; i >= 0; --i)
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            for (Relation relation : relations)
-            {
-                if (relation.getId().getDictionary().equals(namespaces.get(i)))
-                {
-                    BComponent relationEndpoint = (BComponent) relation.getEndpoint();
-                    if (LOG.isLoggable(Level.FINE))
-                    {
-                        LOG.fine("process relation: " + relation.getId() +
-                            (relation.isOutbound() ? " out " : " in ") +
-                            relationEndpoint.getSlotPath());
-                    }
+            List<String> namespaces = service.getPrioritizedNamespaceList();
 
-                    if (relation.isOutbound())
+            long getAllRelationsStart = DiagnosticUtil.nanoTime();
+            Collection<Relation> relations;
+            try
+            {
+                relations = comp.relations().getAll();
+            }
+            finally
+            {
+                DiagnosticUtil.complete(getAllRelationsStart, "TagManager#convertRelationsToRefTags - comp.relations().getAll()");
+            }
+
+            HDictBuilder hdb = new HDictBuilder();
+
+            for (int i = namespaces.size() - 1; i >= 0; --i)
+            {
+                for (Relation relation : relations)
+                {
+                    if (relation.getId().getDictionary().equals(namespaces.get(i)))
                     {
-                        String relName = relation.getId().getName();
-                        HRef hRef = makeComponentRef(relationEndpoint).getHRef();
-                        hdb.add(relName, hRef);
+                        BComponent relationEndpoint = (BComponent) relation.getEndpoint();
+                        if (LOG.isLoggable(Level.FINE))
+                        {
+                            LOG.fine("process relation: " + relation.getId() +
+                                (relation.isOutbound() ? " out " : " in ") +
+                                relationEndpoint.getSlotPath());
+                        }
+
+                        if (relation.isOutbound())
+                        {
+                            String relName = relation.getId().getName();
+                            HRef hRef = makeComponentRef(relationEndpoint).getHRef();
+                            hdb.add(relName, hRef);
+                        }
                     }
                 }
             }
-        }
 
-        return hdb.toDict();
+            return hdb.toDict();
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#convertRelationsToRefTags");
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -459,68 +514,75 @@ public class TagManager implements NHaystackConst
       */
     HDict createComponentTags(BComponent comp)
     {
-        HDictBuilder hdb = new HDictBuilder();
-        hdb.add(generateComponentTags(comp));
-        hdb.add(convertRelationsToRefTags(comp));
-        if (comp instanceof BHTagged)
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            hdb.add(((BHTagged) comp).generateTags(server));
-        }
-        else
-        {
-            // add existing tags
-            HDict tags = BHDict.findTagAnnotation(comp);
-            if (tags == null) 
-                tags = HDict.EMPTY;
+            HDictBuilder hdb = new HDictBuilder();
+            hdb.add(generateComponentTags(comp));
+            hdb.add(convertRelationsToRefTags(comp));
+            if (comp instanceof BHTagged)
+            {
+                hdb.add(((BHTagged) comp).generateTags(server));
+            }
             else
-                hdb.add("axAnnotated");
-
-            hdb.add(convertAnnotatedRefTags(tags));
-
-            // navName
-            String navName = Nav.makeNavName(comp, tags);
-            hdb.add("navName", navName);
-
-            // add misc other tags
-            hdb.add("axType", comp.getType().toString());
-            if (comp.getSlotPath() != null)
-                hdb.add("axSlotPath", comp.getSlotPath().toString());
-
-            // points get special treatment
-            if (comp instanceof BControlPoint)
-                createPointTags((BControlPoint) comp, hdb, tags);
-
-            // schedules get special treatment as 'points'
-            else if (comp instanceof BWeeklySchedule)
-                createScheduleTags((BWeeklySchedule) comp, hdb, tags);
-
-            // dis
-            String dis = createDis(comp, tags, hdb);
-            // if the dis tag wasn't converted from niagara tags, add it the nhaystack way.
-            if (!hdb.has("dis"))
             {
-                hdb.add("dis", dis);
+                // add existing tags
+                HDict tags = BHDict.findTagAnnotation(comp);
+                if (tags == null)
+                    tags = HDict.EMPTY;
+                else
+                    hdb.add("axAnnotated");
+
+                hdb.add(convertAnnotatedRefTags(tags));
+
+                // navName
+                String navName = Nav.makeNavName(comp, tags);
+                hdb.add("navName", navName);
+
+                // add misc other tags
+                hdb.add("axType", comp.getType().toString());
+                if (comp.getSlotPath() != null)
+                    hdb.add("axSlotPath", comp.getSlotPath().toString());
+
+                // points get special treatment
+                if (comp instanceof BControlPoint)
+                    createPointTags((BControlPoint) comp, hdb, tags);
+                // schedules get special treatment as 'points'
+                else if (comp instanceof BWeeklySchedule)
+                    createScheduleTags((BWeeklySchedule) comp, hdb, tags);
+
+                // dis
+                String dis = createDis(comp, tags, hdb);
+                // if the dis tag wasn't converted from niagara tags, add it the nhaystack way.
+                if (!hdb.has("dis"))
+                {
+                    hdb.add("dis", dis);
+                }
+
+                // add id if it doesn't exist
+                if (!hdb.has("id"))
+                {
+                    HRef id = makeComponentRef(comp).getHRef();
+                    hdb.add("id", HRef.make(id.val, dis));
+                }
+
+                // add device if it doesn't exist
+                if (comp instanceof BDevice && !hdb.has("device"))
+                {
+                    hdb.add("device", comp.getType().getModule().getModuleName());
+                }
             }
 
-            // add id if it doesn't exist
-            if (!hdb.has("id"))
-            {
-                HRef id = makeComponentRef(comp).getHRef();
-                hdb.add("id", HRef.make(id.val, dis));
-            }
+            // add custom tags
+            hdb.add(server.createCustomTags(comp));
 
-            // add device if it doesn't exist
-            if (comp instanceof BDevice && !hdb.has("device"))
-            {
-                hdb.add("device", comp.getType().getModule().getModuleName());
-            }
+            // done
+            return hdb.toDict();
         }
-
-        // add custom tags
-        hdb.add(server.createCustomTags(comp));
-
-        // done
-        return hdb.toDict();
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#createComponentTags");
+        }
     }
 
     /**
@@ -555,74 +617,82 @@ public class TagManager implements NHaystackConst
       */
     HDict createHistoryTags(BHistoryConfig cfg)
     {
-        HDictBuilder hdb = new HDictBuilder();
-
-        // add existing tags
-        HDict tags = BHDict.findTagAnnotation(cfg);
-        if (tags == null) 
-            tags = HDict.EMPTY;
-        hdb.add(tags);
-
-        // add dis
-        String dis = cfg.getId().toString();
-        if (dis.startsWith("/")) dis = dis.substring(1);
-        dis = TextUtil.replace(dis, "/", "_");
-        hdb.add("dis", dis);
-        hdb.add("navName", dis);
-
-        // add id
-        HRef ref = makeComponentRef(cfg).getHRef();
-        hdb.add("id", HRef.make(ref.val, dis));
-
-        // add misc other tags
-        hdb.add("axType", cfg.getType().toString());
-        hdb.add("axHistoryId", cfg.getId().toString());
-
-        hdb.add("point");
-        hdb.add("his");
-
-        // time zone
-        if (!tags.has("tz"))
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
-            if (tz != null) hdb.add("tz", tz.name);
-        }
+            HDictBuilder hdb = new HDictBuilder();
 
-        // point kind tags
-        Type recType = cfg.getRecordType().getResolvedType();
-        if (recType.is(BTrendRecord.TYPE))
-        {
-            int pointKind = getTrendRecordKind(recType);
-            BFacets facets = (BFacets) cfg.get("valueFacets");
-            addPointKindTags(pointKind, facets, tags, hdb);
-        }
-        // if its not a BTrendRecord, just say that the kind is Str
-        else
-        {
-            if (!tags.has("kind")) hdb.add("kind", "Str");
-        }
+            // add existing tags
+            HDict tags = BHDict.findTagAnnotation(cfg);
+            if (tags == null)
+                tags = HDict.EMPTY;
+            hdb.add(tags);
 
-        // check if this history has a point
-        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
-        if (point != null)
-        {
-            // add point ref
-            hdb.add("axPointRef", makeComponentRef(point).getHRef());
+            // add dis
+            String dis = cfg.getId().toString();
+            if (dis.startsWith("/")) dis = dis.substring(1);
+            dis = TextUtil.replace(dis, "/", "_");
+            hdb.add("dis", dis);
+            hdb.add("navName", dis);
 
-            // hisInterpolate 
-            if (!tags.has("hisInterpolate"))
+            // add id
+            HRef ref = makeComponentRef(cfg).getHRef();
+            hdb.add("id", HRef.make(ref.val, dis));
+
+            // add misc other tags
+            hdb.add("axType", cfg.getType().toString());
+            hdb.add("axHistoryId", cfg.getId().toString());
+
+            hdb.add("point");
+            hdb.add("his");
+
+            // time zone
+            if (!tags.has("tz"))
             {
-                BHistoryExt historyExt = spaceMgr.lookupHistoryExt(point);
-                if (historyExt instanceof BCovHistoryExt)
-                    hdb.add("hisInterpolate", "cov");
+                HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
+                if (tz != null) hdb.add("tz", tz.name);
             }
+
+            // point kind tags
+            Type recType = cfg.getRecordType().getResolvedType();
+            if (recType.is(BTrendRecord.TYPE))
+            {
+                int pointKind = getTrendRecordKind(recType);
+                BFacets facets = (BFacets) cfg.get("valueFacets");
+                addPointKindTags(pointKind, facets, tags, hdb);
+            }
+            // if its not a BTrendRecord, just say that the kind is Str
+            else
+            {
+                if (!tags.has("kind")) hdb.add("kind", "Str");
+            }
+
+            // check if this history has a point
+            BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
+            if (point != null)
+            {
+                // add point ref
+                hdb.add("axPointRef", makeComponentRef(point).getHRef());
+
+                // hisInterpolate
+                if (!tags.has("hisInterpolate"))
+                {
+                    BHistoryExt historyExt = spaceMgr.lookupHistoryExt(point);
+                    if (historyExt instanceof BCovHistoryExt)
+                        hdb.add("hisInterpolate", "cov");
+                }
+            }
+
+            // add custom tags
+            hdb.add(server.createCustomTags(cfg));
+
+            // done
+            return hdb.toDict();
         }
-
-        // add custom tags
-        hdb.add(server.createCustomTags(cfg));
-
-        // done
-        return hdb.toDict();
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#convertAnnotatedRefTags");
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -777,71 +847,79 @@ public class TagManager implements NHaystackConst
         HDictBuilder hdb,
         HDict tags)
     {
-        // ensure there is a point marker tag
-        hdb.add("point");
-
-        // check if this point has a history
-        BHistoryConfig cfg = spaceMgr.lookupHistoryFromPoint(point);
-        if (cfg != null)
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
         {
-            hdb.add("his");
+            // ensure there is a point marker tag
+            hdb.add("point");
 
-            if (service.getShowLinkedHistories())
-                hdb.add("axHistoryRef", makeComponentRef(cfg).getHRef());
-
-            // tz
-            if (!tags.has("tz"))
+            // check if this point has a history
+            BHistoryConfig cfg = spaceMgr.lookupHistoryFromPoint(point);
+            if (cfg != null)
             {
-                HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
-                if (tz != null) hdb.add("tz", tz.name);
+                hdb.add("his");
+
+                if (service.getShowLinkedHistories())
+                    hdb.add("axHistoryRef", makeComponentRef(cfg).getHRef());
+
+                // tz
+                if (!tags.has("tz"))
+                {
+                    HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
+                    if (tz != null) hdb.add("tz", tz.name);
+                }
+
+                // hisInterpolate
+                if (!tags.has("hisInterpolate"))
+                {
+                    BHistoryExt historyExt = spaceMgr.lookupHistoryExt(point);
+                    if (historyExt instanceof BCovHistoryExt)
+                        hdb.add("hisInterpolate", "cov");
+                }
             }
 
-            // hisInterpolate 
-            if (!tags.has("hisInterpolate"))
-            {
-                BHistoryExt historyExt = spaceMgr.lookupHistoryExt(point);
-                if (historyExt instanceof BCovHistoryExt)
-                    hdb.add("hisInterpolate", "cov");
-            }
-        }
+            // cur, writable
+            hdb.add("cur");
+            if (point.isWritablePoint())
+                hdb.add("writable");
 
-        // cur, writable
-        hdb.add("cur");
-        if (point.isWritablePoint())
-            hdb.add("writable");
+            // point kind tags
+            int pointKind = getControlPointKind(point);
+            BFacets facets = (BFacets) point.get("facets");
+            addPointKindTags(pointKind, facets, tags, hdb);
 
-        // point kind tags
-        int pointKind = getControlPointKind(point);
-        BFacets facets = (BFacets) point.get("facets");
-        addPointKindTags(pointKind, facets, tags, hdb);
+            // curVal
+            HVal curVal = makeCurVal(point, pointKind, facets, point.getStatusValue(), tags);
+            if (curVal != null) hdb.add("curVal", curVal);
 
-        // curVal
-        HVal curVal = makeCurVal(point, pointKind, facets, point.getStatusValue(), tags);
-        if (curVal != null) hdb.add("curVal", curVal);
+            // curStatus
+            HStr curStatus = makeCurStatus(point.getStatus());
+            if (curStatus != null) hdb.add("curStatus", curStatus);
+            hdb.add("axStatus", axStatus(point.getStatus()));
 
-        // curStatus
-        HStr curStatus = makeCurStatus(point.getStatus());
-        if (curStatus != null) hdb.add("curStatus", curStatus);
-        hdb.add("axStatus", axStatus(point.getStatus()));
-
-        // minVal, maxVal, precision
-        BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
-        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
-        BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
-        if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
-        if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
-        if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
+            // minVal, maxVal, precision
+            BNumber minVal = getNumberFacet(facets, BFacets.MIN);
+            BNumber maxVal = getNumberFacet(facets, BFacets.MAX);
+            BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
+            if (minVal != null) hdb.add("minVal", HNum.make(minVal.getInt()));
+            if (maxVal != null) hdb.add("maxVal", HNum.make(maxVal.getInt()));
+            if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
 
         // actions tag
-        if (point.isWritablePoint() || tags.has("writable"))
-        {
-            HGrid actionsGrid = createPointActions(point, pointKind);
-            if (actionsGrid != null)
-                hdb.add("actions", HStr.make(HZincWriter.gridToString(actionsGrid)));
-        }
+            if (point.isWritablePoint() || tags.has("writable"))
+            {
+                HGrid actionsGrid = createPointActions(point, pointKind);
+                if (actionsGrid != null)
+                    hdb.add("actions", HStr.make(HZincWriter.gridToString(actionsGrid)));
+            }
 
-        // siteRef, equipRef
-        addSiteEquipTags(point, hdb, tags);
+            // siteRef, equipRef
+            addSiteEquipTags(point, hdb, tags);
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#createPointTags");
+        }
     }
 
     private static String axStatus(BStatus status)
@@ -870,39 +948,47 @@ public class TagManager implements NHaystackConst
         HDictBuilder hdb,
         HDict tags)
     {
-        BValue val = point.get("out");
-        if (!(val instanceof BStatusValue)) return;
-        BStatusValue out = (BStatusValue) val;
-        
-        hdb.add("point");
-        hdb.add("cur");
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
+        {
+            BValue val = point.get("out");
+            if (!(val instanceof BStatusValue)) return;
+            BStatusValue out = (BStatusValue) val;
 
-        // schedules are writable
-        hdb.add("writable");
+            hdb.add("point");
+            hdb.add("cur");
 
-        // point kind tags
-        int pointKind = getControlPointKind(point);
-        BFacets facets = (BFacets) point.get("facets");
-        addPointKindTags(pointKind, facets, tags, hdb);
+            // schedules are writable
+            hdb.add("writable");
 
-        // curVal
-        HVal curVal = makeCurVal(point, pointKind, facets, point.getStatusValue(), tags);
-        if (curVal != null) hdb.add("curVal", curVal);
+            // point kind tags
+            int pointKind = getControlPointKind(point);
+            BFacets facets = (BFacets) point.get("facets");
+            addPointKindTags(pointKind, facets, tags, hdb);
 
-        // curStatus
-        HStr curStatus = makeCurStatus(out.getStatus());
-        if (curStatus != null) hdb.add("curStatus", curStatus);
+            // curVal
+            HVal curVal = makeCurVal(point, pointKind, facets, point.getStatusValue(), tags);
+            if (curVal != null) hdb.add("curVal", curVal);
 
-        // minVal, maxVal, precision
-        BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
-        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
-        BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
-        if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
-        if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
-        if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
+            // curStatus
+            HStr curStatus = makeCurStatus(out.getStatus());
+            if (curStatus != null) hdb.add("curStatus", curStatus);
 
-        // siteRef, equipRef
-        addSiteEquipTags(point, hdb, tags);
+            // minVal, maxVal, precision
+            BNumber minVal = getNumberFacet(facets, BFacets.MIN);
+            BNumber maxVal = getNumberFacet(facets, BFacets.MAX);
+            BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
+            if (minVal != null) hdb.add("minVal", HNum.make(minVal.getInt()));
+            if (maxVal != null) hdb.add("maxVal", HNum.make(maxVal.getInt()));
+            if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
+
+            // siteRef, equipRef
+            addSiteEquipTags(point, hdb, tags);
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "TagManager#createScheduleTags");
+        }
     }
 
     private void addSiteEquipTags(
