@@ -67,19 +67,26 @@ class RemotePoint
             LOG.warning("Cannot find pointId for " + point.getSlotPath());
             return null;
         }
-        String slotPath = proxyExt.get("pointId").toString();
+        String slotPathStr = proxyExt.get("pointId").toString();
 
         // get rid of unneeded "station:" ordQuery
-        if (slotPath.startsWith("station:|"))   
-            slotPath = slotPath.substring("station:|".length());
+        if (slotPathStr.startsWith("station:|"))
+            slotPathStr = slotPathStr.substring("station:|".length());
 
         // make sure its a valid slot path
-        if (!slotPath.startsWith("slot:")) return null;
+        if (!slotPathStr.startsWith("slot:")) return null;
 
         // Find the ancestor NiagaraStation
         BDevice device = findParentDevice(point);
         if (device == null) return null;
         if (!isRemoteDevice(device)) return null;
+
+        SlotPath slotPath = makeSlotPath(slotPathStr);
+        if (slotPath == null)
+        {
+            LOG.warning("Could not create SlotPath for remote point for point " + point.getSlotPath());
+            return null;
+        }
 
         // We are sure the point is proxied.  
         return new RemotePoint(device.getName(), slotPath);
@@ -106,36 +113,57 @@ class RemotePoint
         // proxy point (if there is one)
         BOrd[] ords = cfg.getSource().toArray();
         if (ords.length == 0) return null; // misconfigured history
-        String slotPath = ords[0].toString();
+        String slotPathStr = ords[0].toString();
 
         // get rid of unneeded "station:" ordQuery
-        if (slotPath.startsWith("station:|"))   
-            slotPath = slotPath.substring("station:|".length());
+        if (slotPathStr.startsWith("station:|"))
+            slotPathStr = slotPathStr.substring("station:|".length());
 
         // if its not actually a SlotPath (e.g. imported AuditHistory), then return null
-        if (!slotPath.startsWith("slot:"))
+        if (!slotPathStr.startsWith("slot:"))
             return null;
 
         // The slotPath will be of the form "slot:/Path/To/Point/HistoryExt".
         // This doesn't *quite* match the "pointId" slot on the 
         // proxy point since it goes all the way to 
         // the History Ext.  So we'll get rid of that last slot.
-        int last = slotPath.lastIndexOf("/");
-        slotPath = slotPath.substring(0, last);
+        int last = slotPathStr.lastIndexOf("/");
+        slotPathStr = slotPathStr.substring(0, last);
+
+        SlotPath slotPath = makeSlotPath(slotPathStr);
+        if (slotPath == null)
+        {
+            LOG.warning("Could not create SlotPath for remote point for history config " + cfg.getSlotPath());
+            return null;
+        }
 
         // done
         return new RemotePoint(cfg.getId().getDeviceName(), slotPath);
     }
 
-    private RemotePoint(String stationName, String slotPathStr)
+    private static SlotPath makeSlotPath(String slotPathStr)
     {
         if (!slotPathStr.startsWith("slot:"))
-            throw new IllegalStateException(
-                "Unexpected slot path value: '" + slotPathStr + "'");
+        {
+            LOG.warning("Unexpected slot path value: '" + slotPathStr + '\'');
+            return null;
+        }
 
+        try
+        {
+            return new SlotPath("slot", slotPathStr.substring("slot:".length()));
+        }
+        catch (Exception e)
+        {
+            LOG.log(Level.WARNING, "Error encountered creating SlotPath for " + slotPathStr, e);
+            return null;
+        }
+    }
+
+    private RemotePoint(String stationName, SlotPath slotPath)
+    {
         this.stationName = stationName;
-        this.slotPath = new SlotPath("slot", slotPathStr.substring("slot:".length()));
-
+        this.slotPath = slotPath;
         this.hashCode =
             31*31*stationName.hashCode() + 
             31*slotPath.getScheme().hashCode() +
