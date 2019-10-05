@@ -99,8 +99,8 @@ public class SimpleClientTest extends TestCore
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
-    Assert.assertEquals(r.getStr("productVersion"), "4.4.73.24");
-    Assert.assertEquals(r.getStr("moduleVersion"), "2.1.2");
+    Assert.assertEquals(r.getStr("productVersion"), "4.4.93.40");
+    Assert.assertEquals(r.getStr("moduleVersion"), "3.0.1.999");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,7 +139,6 @@ public class SimpleClientTest extends TestCore
   @Test(enabled = true)
   public void verifyFormats() throws Exception
   {
-//    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
     HGrid g = client.formats();
 
     // verify required columns
@@ -446,7 +445,7 @@ public class SimpleClientTest extends TestCore
   public void verifyHisRead() throws Exception
   {
     HGrid grid = client.readAll("his");
-    Assert.assertEquals(grid.numRows(), 5);
+    Assert.assertEquals(grid.numRows(), 8);
 
     ///////////////////////////////////////////////
 
