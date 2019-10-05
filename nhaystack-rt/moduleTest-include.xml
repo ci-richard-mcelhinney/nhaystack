@@ -18,4 +18,6 @@
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
   <type class="nhaystack.ntest.helper.BTestProxyExt" name="TestProxyExt"/>
+  <!--nhaystack.server-->
+  <type class="nhaystack.server.BPointIOTest" name="PointIOTest"/>
 </types>
