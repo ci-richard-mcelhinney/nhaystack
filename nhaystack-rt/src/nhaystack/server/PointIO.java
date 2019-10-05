@@ -489,20 +489,7 @@ public class PointIO
         }
         else if (point instanceof BBooleanWritable)
         {
-            BBooleanWritable bw = (BBooleanWritable) point;
-            BStatusBoolean sb = (BStatusBoolean) bw.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                sb.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                HBool bool = (HBool) val;
-                sb.setValue(bool.val);
-                sb.setStatus(BStatus.ok);
-            }
-            bw.set("in" + level, sb);
+            writeBW(point, plevel, val);
         }
         else if (point instanceof BEnumWritable)
         {
@@ -613,6 +600,48 @@ public class PointIO
             nw.set("in" + l.getOrdinal(), sn);
         }
 
+    }
+
+    /**
+     * Handle the actual write to a boolean writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to writ to, including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeBW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BBooleanWritable bw = (BBooleanWritable) p;
+        BStatusBoolean sb = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            sb = (BStatusBoolean) bw.getFallback().newCopy();
+        }
+        else
+        {
+            sb = (BStatusBoolean) bw.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            sb.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            HBool bool = (HBool) val;
+            sb.setValue(bool.val);
+            sb.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            bw.setFallback(sb);
+        }
+        else
+        {
+            bw.set("in" + l.getOrdinal(), sb);
+        }
     }
 
 
