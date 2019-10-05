@@ -27,7 +27,7 @@ public class TestCore
     protected final String SIMPLE_USER = "admin";
 
     /** Password of user for nhaystack_simple station */
-    protected final String SIMPLE_PASS = "Vk3ldb237847";
+    protected final String SIMPLE_PASS = "Nhaystack1";
 
 
     /** URI to the nhaystack_sup station */
@@ -37,7 +37,7 @@ public class TestCore
     protected final String SUPERVISOR_USER = "admin";
 
     /** Password of user for nhaystack_sup station */
-    protected final String SUPERVISOR_PASS = "ChangeMe123";
+    protected final String SUPERVISOR_PASS = "Nhaystack1";
 
 
     /** Username that is not valid on either station */
