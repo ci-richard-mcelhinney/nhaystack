@@ -53,7 +53,7 @@ import org.projecthaystack.HVal;
 /**
   * PointIO handles onPointWriteArray() and onPointWrite()
   */
-class PointIO
+public class PointIO
 {
     PointIO(
         BNHaystackService service,
@@ -475,24 +475,17 @@ class PointIO
         BControlPoint point, /*BFacets facets,*/
         int level, HVal val, String who)
     {
-        BPriorityLevel plevel = BPriorityLevel.make(level);
+        BPriorityLevel plevel = matchLevel(level);
+
+        if (plevel == BPriorityLevel.none)
+        {
+            LOG.severe("invalid priority level received " + level + " for " + point.getSlotPath().toDisplayString());
+            return;
+        }
 
         if (point instanceof BNumericWritable)
         {
-            BNumericWritable nw = (BNumericWritable) point;
-            BStatusNumeric sn = (BStatusNumeric) nw.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                sn.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                HNum num = (HNum) val;
-                sn.setValue(num.val);
-                sn.setStatus(BStatus.ok);
-            }
-            nw.set("in" + level, sn);
+            writeNW(point, plevel, val);
         }
         else if (point instanceof BBooleanWritable)
         {
@@ -554,12 +547,83 @@ class PointIO
         }
     }
 
+    /**
+     * Find the appropriate Niagara BControlPoint level in a priority
+     * array based on an integer between 1 - 17.  In Niagara, level 17
+     * is the fallback slot however Haystack doesn't recognise the
+     * enumeration so it needs to be translated.
+     *
+     * @param level valid value is from 1 - 17
+     * @return the corresponding priority level or none
+     */
+    public static BPriorityLevel matchLevel(int level)
+    {
+        BPriorityLevel plevel = BPriorityLevel.make(BPriorityLevel.NONE);
+
+        if (level == FALLBACK_LEVEL)
+        {
+            plevel = BPriorityLevel.make(BPriorityLevel.FALLBACK);
+        }
+        else if (level >= 1 && level <= 16)
+        {
+            plevel = BPriorityLevel.make(level);
+        }
+
+        return plevel;
+    }
+
+    /**
+     * Handle the actual write to a numeric writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to, including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeNW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BNumericWritable nw = (BNumericWritable) p;
+        BStatusNumeric sn = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            sn = (BStatusNumeric) nw.getFallback().newCopy();
+        }
+        else
+        {
+            sn = (BStatusNumeric) nw.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            sn.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            HNum num = (HNum) val;
+            sn.setValue(num.val);
+            sn.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            nw.setFallback(sn);
+        }
+        else
+        {
+            nw.set("in" + l.getOrdinal(), sn);
+        }
+
+    }
+
+
 ////////////////////////////////////////////////////////////////
 // attribs 
 ////////////////////////////////////////////////////////////////
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
     private static final String LAST_WRITE = "haystackLastWrite";
+
+    private static final int FALLBACK_LEVEL = 17;
 
     private final BNHaystackService service;
     private final Cache cache;
