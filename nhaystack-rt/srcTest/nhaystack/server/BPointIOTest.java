@@ -8,14 +8,17 @@
 
 package nhaystack.server;
 
+import org.projecthaystack.HBool;
 import org.projecthaystack.HNum;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import javax.baja.control.BBooleanWritable;
 import javax.baja.control.BNumericWritable;
 import javax.baja.control.enums.BPriorityLevel;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.status.BStatus;
+import javax.baja.sys.BBoolean;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import javax.baja.test.BTestNg;
@@ -66,4 +69,41 @@ public class BPointIOTest extends BTestNg
         Assert.assertEquals(tp.getFallback().getStatus(), BStatus.ok);
         Assert.assertEquals(tp.getFallback().getValue(), 100d);
     }
+
+    @Test
+    public void testWriteBW()
+    {
+       BBooleanWritable tp = new BBooleanWritable();
+
+       PointIO.writeBW(tp, BPriorityLevel.level_10, null);
+       Assert.assertEquals(tp.getIn10().getStatus(), BStatus.nullStatus);
+
+       PointIO.writeBW(tp, BPriorityLevel.level_10, HBool.make(true));
+       Assert.assertEquals(tp.getIn10().getStatus(), BStatus.ok);
+       Assert.assertTrue(tp.getIn10().getValue());
+
+       PointIO.writeBW(tp, BPriorityLevel.level_10, null);
+       Assert.assertEquals(tp.getIn10().getStatus(), BStatus.nullStatus);
+
+       PointIO.writeBW(tp, BPriorityLevel.level_16, HBool.make(true));
+       Assert.assertEquals(tp.getIn16().getStatus(), BStatus.ok);
+       Assert.assertTrue(tp.getIn16().getValue());
+
+       PointIO.writeBW(tp, BPriorityLevel.level_16, null);
+       Assert.assertEquals(tp.getIn16().getStatus(), BStatus.nullStatus);
+
+       PointIO.writeBW(tp, BPriorityLevel.fallback, HBool.make(true));
+       Assert.assertEquals(tp.getFallback().getStatus(), BStatus.ok);
+       Assert.assertTrue(tp.getFallback().getValue());
+    }
+
+    @Test
+    public void testWriteEW()
+    {
+
+    }
+
+
+
+
 }
