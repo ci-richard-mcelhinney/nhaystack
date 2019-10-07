@@ -14,10 +14,12 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import javax.baja.control.BBooleanWritable;
+import javax.baja.control.BControlPoint;
 import javax.baja.control.BNumericWritable;
 import javax.baja.control.enums.BPriorityLevel;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.status.BStatus;
+import javax.baja.status.BStatusNumeric;
 import javax.baja.sys.BBoolean;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
@@ -54,6 +56,7 @@ public class BPointIOTest extends BTestNg
         PointIO.writeNW(tp, BPriorityLevel.level_10, HNum.make(100d));
         Assert.assertEquals(tp.getIn10().getStatus(), BStatus.ok);
         Assert.assertEquals(tp.getIn10().getValue(), 100d);
+        verifyNWPointArrayStatus(tp, BPriorityLevel.level_10, BStatus.nullStatus);
 
         PointIO.writeNW(tp, BPriorityLevel.level_10, null);
         Assert.assertEquals(tp.getIn10().getStatus(), BStatus.nullStatus);
@@ -103,6 +106,30 @@ public class BPointIOTest extends BTestNg
 
     }
 
+    /**
+     * Verify that all levels in the priority array, except a specified one to skip, have
+     * the specified status
+     *
+     * @param nw the control point to check
+     * @param skip the priority array level to skip
+     * @param st the status to check for
+     */
+    private void verifyNWPointArrayStatus(BNumericWritable nw, BPriorityLevel skip, BStatus st)
+    {
+        BPriorityLevel curLevel;
+        BStatusNumeric sn;
+
+        for (int i = 1; i < 17; i++)
+        {
+            curLevel = BPriorityLevel.make(i);
+            if (curLevel == skip)
+            {
+                continue;
+            }
+            sn = nw.getLevel(curLevel);
+            Assert.assertEquals(sn.getStatus(), st);
+        }
+    }
 
 
 
