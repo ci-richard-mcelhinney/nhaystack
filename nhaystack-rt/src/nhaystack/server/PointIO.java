@@ -493,23 +493,7 @@ public class PointIO
         }
         else if (point instanceof BEnumWritable)
         {
-            BEnumWritable ew = (BEnumWritable) point;
-            BStatusEnum se = (BStatusEnum) ew.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                se.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                String str = SlotUtil.toNiagara(((HStr) val).val);
-                BFacets facets = point.getFacets();
-                BEnumRange range = (BEnumRange) facets.get(BFacets.RANGE);
-                BEnum enm = range.get(str);
-                se.setValue(enm);
-                se.setStatus(BStatus.ok);
-            }
-            ew.set("in" + level, se);
+            writeEW(point, plevel, val);
         }
         else if (point instanceof BStringWritable)
         {
@@ -640,7 +624,40 @@ public class PointIO
      */
     public static void writeEW(BControlPoint p, BPriorityLevel l, HVal val)
     {
+        BEnumWritable ew = (BEnumWritable) p;
+        BStatusEnum se = null;
 
+        if (l == BPriorityLevel.fallback)
+        {
+            se = (BStatusEnum) ew.getFallback().newCopy();
+        }
+        else
+        {
+            se = (BStatusEnum) ew.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            se.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            String str = SlotUtil.toNiagara(((HStr) val).val);
+            BFacets facets = ew.getFacets();
+            BEnumRange range = (BEnumRange) facets.get(BFacets.RANGE);
+            BEnum enm = range.get(str);
+            se.setValue(enm);
+            se.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            ew.setFallback(se);
+        }
+        else
+        {
+            ew.set("in" + l.getOrdinal(), se);
+        }
     }
 
     /**

@@ -16,6 +16,7 @@ import org.testng.annotations.Test;
 
 import javax.baja.control.*;
 import javax.baja.control.enums.BPriorityLevel;
+import javax.baja.driver.util.BPollFrequency;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.status.*;
 import javax.baja.sys.*;
@@ -104,12 +105,29 @@ public class BPointIOTest extends BTestNg
     @Test
     public void testWriteEW()
     {
-//        BEnumWritable tp = new BEnumWritable();
-//
-//        PointIO.writeEW(tp, BPriorityLevel.level_10, null);
-//        Assert.assertEquals(tp.getIn10().getStatus(), BStatus.nullStatus);
-//
-//        PointIO.writeEW(tp, BPriorityLevel.level_10, H);
+        BEnumWritable tp = new BEnumWritable();
+        tp.setFacets(BFacets.makeEnum(BEnumRange.make(BPollFrequency.TYPE)));
+
+        PointIO.writeEW(tp, BPriorityLevel.level_10, null);
+        Assert.assertEquals(tp.getIn10().getStatus(), BStatus.nullStatus);
+
+        PointIO.writeEW(tp, BPriorityLevel.level_10, HStr.make("fast"));
+        Assert.assertEquals(tp.getIn10().getStatus(), BStatus.ok);
+        verifyPointArrayStatus(tp, BPriorityLevel.level_10, BStatus.nullStatus);
+
+        PointIO.writeEW(tp, BPriorityLevel.level_10, null);
+        Assert.assertEquals(tp.getIn10().getStatus(), BStatus.nullStatus);
+
+        PointIO.writeEW(tp, BPriorityLevel.level_16, HStr.make("fast"));
+        Assert.assertEquals(tp.getIn16().getStatus(), BStatus.ok);
+        verifyPointArrayStatus(tp, BPriorityLevel.level_16, BStatus.nullStatus);
+
+        PointIO.writeEW(tp, BPriorityLevel.level_16, null);
+        Assert.assertEquals(tp.getIn16().getStatus(), BStatus.nullStatus);
+
+        PointIO.writeEW(tp, BPriorityLevel.fallback, HStr.make("fast"));
+        Assert.assertEquals(tp.getFallback().getStatus(), BStatus.ok);
+        verifyPointArrayStatus(tp, BPriorityLevel.fallback, BStatus.nullStatus);
     }
 
     @Test
