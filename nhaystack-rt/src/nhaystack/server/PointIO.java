@@ -513,20 +513,7 @@ public class PointIO
         }
         else if (point instanceof BStringWritable)
         {
-            BStringWritable sw = (BStringWritable) point;
-            BStatusString s = (BStatusString) sw.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                s.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                HStr str = (HStr) val;
-                s.setValue(str.val);
-                s.setStatus(BStatus.ok);
-            }
-            sw.set("in" + level, s);
+            writeSW(point, plevel, val);
         }
         else 
         {
@@ -606,7 +593,7 @@ public class PointIO
      * Handle the actual write to a boolean writable point
      *
      * @param p the control point being written to
-     * @param l the priority level to writ to, including the fallback level
+     * @param l the priority level to write to, including the fallback level
      * @param val the value to write, including null
      */
     public static void writeBW(BControlPoint p, BPriorityLevel l, HVal val)
@@ -644,6 +631,59 @@ public class PointIO
         }
     }
 
+    /**
+     * Handle the actual write to an enum writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to, including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeEW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+
+    }
+
+    /**
+     * Handle the actual write to a string writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeSW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BStringWritable sw = (BStringWritable) p;
+        BStatusString ss = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            ss = (BStatusString) sw.getFallback().newCopy();
+        }
+        else
+        {
+            ss = (BStatusString) sw.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            ss.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            HStr str = (HStr) val;
+            ss.setValue(str.val);
+            ss.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            sw.setFallback(ss);
+        }
+        else
+        {
+            sw.set("in" + l.getOrdinal(), ss);
+        }
+    }
 
 ////////////////////////////////////////////////////////////////
 // attribs 
