@@ -103,7 +103,7 @@ public class TagManager
             BOrd ord = BOrd.make("station:|" + 
                 (nh.getSpace().equals(NHRef.COMP) ? 
                     "slot:" + SlotUtil.toNiagara(nh.getPath()) : 
-                    Base64.URI.decodeUTF8(nh.getPath())));
+                    org.projecthaystack.util.Base64.URI.decodeUTF8(nh.getPath())));
 
             BComponent comp = (BComponent) ord.get(service, null);
             if (comp == null) return null;
@@ -120,7 +120,7 @@ public class TagManager
             BHistoryId hid = BHistoryId.make(
                 nh.getSpace().equals(NHRef.HIS) ? 
                     "/" + SlotUtil.toNiagara(nh.getPath()) :
-                    Base64.URI.decodeUTF8(nh.getPath()));
+                    org.projecthaystack.util.Base64.URI.decodeUTF8(nh.getPath()));
 
             BIHistory history = service.getHistoryDb().getHistory(hid);
             if (history == null) return null;
