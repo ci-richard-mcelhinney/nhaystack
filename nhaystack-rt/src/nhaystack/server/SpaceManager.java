@@ -38,6 +38,7 @@ import nhaystack.site.BHTagged;
 import nhaystack.util.NHaystackConst;
 import nhaystack.util.TypeUtil;
 import org.projecthaystack.HDict;
+import com.tridium.nre.diagnostics.DiagnosticUtil;
 
 /**
   * SpaceManager does various tasks associated with the ComponentSpace and
@@ -70,32 +71,40 @@ public class SpaceManager
       */
     public static boolean isVisibleComponent(BComponent comp)
     {
-        // check permissions on this Thread's saved context
-        Context cx = ThreadContext.getContext(Thread.currentThread());
-        if (!TypeUtil.canRead(comp, cx)) 
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
+        try
+        {
+            // check permissions on this Thread's saved context
+            Context cx = ThreadContext.getContext(Thread.currentThread());
+            if (!TypeUtil.canRead(comp, cx))
+                return false;
+
+            if (comp instanceof BHTagged)
+                return true;
+            if (comp instanceof BControlPoint)
+                return true;
+            if (comp instanceof BDevice)
+                return true;
+            if (comp instanceof BWeeklySchedule)
+                return true;
+
+            // Return true for components that are annotated with a BHDict.
+            BValue haystack = comp.get("haystack");
+            if (haystack instanceof BHDict)
+                return true;
+
+            // Return true for components tagged with hs:site or hs:equip tags
+            Tags tags = comp.tags();
+            if (tags.contains(NHaystackConst.ID_SITE) || tags.contains(NHaystackConst.ID_EQUIP))
+                return true;
+
+            // nope
             return false;
-
-        if (comp instanceof BHTagged)
-            return true;
-        if (comp instanceof BControlPoint)
-            return true;
-        if (comp instanceof BDevice)
-            return true;
-        if (comp instanceof BWeeklySchedule)
-            return true;
-
-        // Return true for components that are annotated with a BHDict.
-        BValue haystack = comp.get("haystack");
-        if (haystack instanceof BHDict)
-            return true;
-
-        // Return true for components tagged with hs:site or hs:equip tags
-        Tags tags = comp.tags();
-        if (tags.contains(NHaystackConst.ID_SITE) || tags.contains(NHaystackConst.ID_EQUIP))
-            return true;
-
-        // nope
-        return false;
+        }
+        finally
+        {
+            DiagnosticUtil.complete(start, "SpaceManager#isVisibleComponent");
+        }
     }
 
     /**
@@ -220,16 +229,24 @@ public class SpaceManager
 
         private void findNext()
         {
-            nextDict = null;
-            while (iterator.hasNext())
+            long start = DiagnosticUtil.startIfLoggable("nhaystack");
+            try
             {
-                BComponent comp = iterator.next();
-
-                if (isVisibleComponent(comp))
+                nextDict = null;
+                while (iterator.hasNext())
                 {
-                    nextDict = server.getTagManager().createComponentTags(comp);
-                    break;
+                    BComponent comp = iterator.next();
+
+                    if (isVisibleComponent(comp))
+                    {
+                        nextDict = server.getTagManager().createComponentTags(comp);
+                        break;
+                    }
                 }
+            }
+            finally
+            {
+                DiagnosticUtil.complete(start, "SpaceManager.CIterator#findNext");
             }
         }
 
@@ -296,37 +313,45 @@ public class SpaceManager
       */
     boolean isVisibleHistory(BHistoryConfig cfg)
     {
-        // check permissions on this Thread's saved context
-        Context cx = ThreadContext.getContext(Thread.currentThread());
-        if (!TypeUtil.canRead(cfg, cx)) 
-            return false;
-
-        // make sure the history name is valid. This is a workaround for a bug
-        // in third-party software.
+        long start = DiagnosticUtil.startIfLoggable("nhaystack");
         try
         {
-            TagManager.makeHistoryRef(cfg);
-        }
-        catch (Exception e)
-        {
-            LOG.severe("Invalid history name: " + cfg.getId());
+            // check permissions on this Thread's saved context
+            Context cx = ThreadContext.getContext(Thread.currentThread());
+            if (!TypeUtil.canRead(cfg, cx))
+                return false;
+
+            // make sure the history name is valid. This is a workaround for a bug
+            // in third-party software.
+            try
+            {
+                TagManager.makeHistoryRef(cfg);
+            }
+            catch (Exception e)
+            {
+                LOG.severe("Invalid history name: " + cfg.getId());
+                return false;
+            }
+
+            // annotated
+            HDict dict = BHDict.findTagAnnotation(cfg);
+            if (dict != null && !dict.isEmpty())
+                return true;
+
+            // show linked
+            if (service.getShowLinkedHistories())
+                return true;
+
+            // make sure the history is not linked
+            if (lookupPointFromHistory(cfg) == null)
+                return true;
+
             return false;
         }
-
-        // annotated 
-        HDict dict = BHDict.findTagAnnotation(cfg);
-        if (dict != null && !dict.isEmpty())
-            return true;
-
-        // show linked
-        if (service.getShowLinkedHistories())
-            return true;
-
-        // make sure the history is not linked
-        if (lookupPointFromHistory(cfg) == null)
-            return true;
-
-        return false;
+        finally
+        {
+            DiagnosticUtil.complete(start, "SpaceManager#isVisibleHistory");
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -378,16 +403,24 @@ public class SpaceManager
 
         private void findNext()
         {
-            nextDict = null;
-            while (iterator.hasNext())
+            long start = DiagnosticUtil.startIfLoggable("nhaystack");
+            try
             {
-                BHistoryConfig cfg = iterator.next();
-
-                if (isVisibleHistory(cfg))
+                nextDict = null;
+                while (iterator.hasNext())
                 {
-                    nextDict = server.getTagManager().createHistoryTags(cfg);
-                    break;
+                    BHistoryConfig cfg = iterator.next();
+
+                    if (isVisibleHistory(cfg))
+                    {
+                        nextDict = server.getTagManager().createHistoryTags(cfg);
+                        break;
+                    }
                 }
+            }
+            finally
+            {
+                DiagnosticUtil.complete(start, "SpaceManager.HIterator#findNext");
             }
         }
 

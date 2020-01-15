@@ -29,7 +29,7 @@ public class SupervisorClientTest extends TestCore
     {
       try
       {
-        this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+        this.client = HClient.open(URI, SUPERVISOR_USER, SUPERVISOR_PASS);
       }
       catch(Exception e)
       {
@@ -45,13 +45,13 @@ public class SupervisorClientTest extends TestCore
   @Test(enabled = true)
   void verifySupRead()
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    this.client = HClient.open(URI, SUPERVISOR_USER, SUPERVISOR_PASS);
     HGrid grid = client.readAll("point");
 
-//    for (int i = 0; i < grid.numRows(); i++)
-//      System.out.println(i + ", " + grid.row(i).get("id"));
+    for (int i = 0; i < grid.numRows(); i++)
+      System.out.println(i + ", " + grid.row(i).get("id"));
 
-    Assert.assertEquals(grid.numRows(), 11);
+    Assert.assertEquals(grid.numRows(), 10);
     Assert.assertEquals(grid.row(0).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.Sensor1"));
     Assert.assertEquals(grid.row(1).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.SineWave1"));
     Assert.assertEquals(grid.row(2).get("id"), HRef.make("S.Blacksburg.nhaystack_j1.SineWave2"));
@@ -60,9 +60,9 @@ public class SupervisorClientTest extends TestCore
     Assert.assertEquals(grid.row(5).get("id"), HRef.make("S.Blacksburg.Transmogrifier.SineWave1"));
     Assert.assertEquals(grid.row(6).get("id"), HRef.make("H.nhaystack_j1.AuditHistory"));
     Assert.assertEquals(grid.row(7).get("id"), HRef.make("H.nhaystack_j1.LogHistory"));
-    Assert.assertEquals(grid.row(8).get("id"), HRef.make("H.nhaystack_j2.SineWave2"));
-    Assert.assertEquals(grid.row(9).get("id"), HRef.make("H.nhaystack_sup.AuditHistory"));
-    Assert.assertEquals(grid.row(10).get("id"), HRef.make("H.nhaystack_sup.LogHistory"));
+//    Assert.assertEquals(grid.row(8).get("id"), HRef.make("H.nhaystack_j2.SineWave2"));
+    Assert.assertEquals(grid.row(8).get("id"), HRef.make("H.nhaystack_sup.AuditHistory"));
+    Assert.assertEquals(grid.row(9).get("id"), HRef.make("H.nhaystack_sup.LogHistory"));
 
 //        verifyEq(grid.row(3).get("id"), HRef.make("H.nhaystack_jace1.AuditHistory"));
 //        verifyEq(grid.row(4).get("id"), HRef.make("H.nhaystack_jace1.LogHistory"));
@@ -253,9 +253,9 @@ public class SupervisorClientTest extends TestCore
   @Test(enabled = true)
   void verifySupHisRead()
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    this.client = HClient.open(URI, SUPERVISOR_USER, SUPERVISOR_PASS);
     HGrid grid = client.readAll("his");
-    Assert.assertEquals(grid.numRows(), 6);
+    Assert.assertEquals(grid.numRows(), 5);
 
     HDict dict = client.read("axSlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2\"");
     HGrid his = client.hisRead(dict.id(), "today");
@@ -286,7 +286,7 @@ public class SupervisorClientTest extends TestCore
   @Test(enabled = true)
   void verifySupWatches() throws Exception
   {
-    this.client = HClient.open(URI, "admin", "Vk3ldb237847");
+    this.client = HClient.open(URI, SUPERVISOR_USER, SUPERVISOR_PASS);
 
     // create new watch
     HWatch w = client.watchOpen("NHaystack Supervisor Test", HNum.make(120, "s"));
