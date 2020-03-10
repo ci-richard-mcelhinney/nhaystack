@@ -9,6 +9,6 @@
 // Change niagara_home and niagara_user_home as needed to point to the
 // correct path to your desired Niagara install and its associated
 // user home
-gradle.ext.niagara_dev_home = System.getenv('niagara_dev_home')
-gradle.ext.niagara_home = System.getenv('niagara_home')
-gradle.ext.niagara_user_home = System.getenv('niagara_user_home')
+//gradle.ext.niagara_dev_home = 
+//gradle.ext.niagara_home = 
+//gradle.ext.niagara_user_home = 
