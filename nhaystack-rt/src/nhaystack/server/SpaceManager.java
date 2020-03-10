@@ -26,7 +26,6 @@ import nhaystack.*;
 import nhaystack.collection.*;
 import nhaystack.site.*;
 import nhaystack.util.*;
-import com.tridium.nre.diagnostics.DiagnosticUtil;
 
 /**
   * SpaceManager does various tasks associated with the ComponentSpace and
@@ -59,25 +58,23 @@ class SpaceManager
       */
     boolean isVisibleComponent(BComponent comp)
     {
-        return DiagnosticUtil.diagnose("SpaceManager#isVisibleComponent", "SpaceManager", () -> {
-            // check permissions on this Thread's saved context
-            Context cx = ThreadContext.getContext(Thread.currentThread());
-            if (!TypeUtil.canRead(comp, cx))
-                return false;
-
-            if (comp instanceof BHTagged) return true;
-            if (comp instanceof BControlPoint) return true;
-            if (comp instanceof BDevice) return true;
-            if (comp instanceof BWeeklySchedule) return true;
-
-            // Return true for components that are annotated with a BHDict.
-            BValue haystack = comp.get("haystack");
-            if ((haystack != null) && (haystack instanceof BHDict))
-                return true;
-
-            // nope
+        // check permissions on this Thread's saved context
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        if (!TypeUtil.canRead(comp, cx)) 
             return false;
-        });
+
+        if (comp instanceof BHTagged) return true;
+        if (comp instanceof BControlPoint) return true;
+        if (comp instanceof BDevice) return true;
+        if (comp instanceof BWeeklySchedule) return true;
+
+        // Return true for components that are annotated with a BHDict.
+        BValue haystack = comp.get("haystack");
+        if ((haystack != null) && (haystack instanceof BHDict))
+            return true;
+
+        // nope
+        return false;
     }
 
     /**
@@ -201,19 +198,17 @@ class SpaceManager
 
         private void findNext()
         {
-            DiagnosticUtil.diagnose("SpaceManager.CIterator#findNext", "SpaceManager", () -> {
-                nextDict = null;
-                while (iterator.hasNext())
-                {
-                    BComponent comp = (BComponent)iterator.next();
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BComponent comp = (BComponent) iterator.next();
 
-                    if (isVisibleComponent(comp))
-                    {
-                        nextDict = server.getTagManager().createComponentTags(comp);
-                        break;
-                    }
+                if (isVisibleComponent(comp))
+                {
+                    nextDict = server.getTagManager().createComponentTags(comp);
+                    break;
                 }
-            });
+            }
         }
 
         private final ComponentTreeIterator iterator;
@@ -279,39 +274,37 @@ class SpaceManager
       */
     boolean isVisibleHistory(BHistoryConfig cfg)
     {
-        return DiagnosticUtil.diagnose("SpaceManager#isVisibleHistory", "SpaceManager", () -> {
-            // check permissions on this Thread's saved context
-            Context cx = ThreadContext.getContext(Thread.currentThread());
-            if (!TypeUtil.canRead(cfg, cx))
-                return false;
-
-            // make sure the history name is valid. This is a workaround for a bug
-            // in third-party software.
-            try
-            {
-                TagManager.makeHistoryRef(cfg);
-            }
-            catch (Exception e)
-            {
-                LOG.severe("Invalid history name: " + cfg.getId());
-                return false;
-            }
-
-            // annotated
-            HDict dict = BHDict.findTagAnnotation(cfg);
-            if (dict != null && !dict.isEmpty())
-                return true;
-
-            // show linked
-            if (service.getShowLinkedHistories())
-                return true;
-
-            // make sure the history is not linked
-            if (lookupPointFromHistory(cfg) == null)
-                return true;
-
+        // check permissions on this Thread's saved context
+        Context cx = ThreadContext.getContext(Thread.currentThread());
+        if (!TypeUtil.canRead(cfg, cx)) 
             return false;
-        });
+
+        // make sure the history name is valid. This is a workaround for a bug
+        // in third-party software.
+        try
+        {
+            TagManager.makeHistoryRef(cfg);
+        }
+        catch (Exception e)
+        {
+            LOG.severe("Invalid history name: " + cfg.getId());
+            return false;
+        }
+
+        // annotated 
+        HDict dict = BHDict.findTagAnnotation(cfg);
+        if (dict != null && !dict.isEmpty())
+            return true;
+
+        // show linked
+        if (service.getShowLinkedHistories())
+            return true;
+
+        // make sure the history is not linked
+        if (lookupPointFromHistory(cfg) == null)
+            return true;
+
+        return false;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -360,19 +353,17 @@ class SpaceManager
 
         private void findNext()
         {
-            DiagnosticUtil.diagnose("SpaceManager.HIterator#findNext", "SpaceManager", () -> {
-                nextDict = null;
-                while (iterator.hasNext())
-                {
-                    BHistoryConfig cfg = (BHistoryConfig)iterator.next();
+            nextDict = null;
+            while (iterator.hasNext())
+            {
+                BHistoryConfig cfg = (BHistoryConfig) iterator.next();
 
-                    if (isVisibleHistory(cfg))
-                    {
-                        nextDict = server.getTagManager().createHistoryTags(cfg);
-                        break;
-                    }
+                if (isVisibleHistory(cfg))
+                {
+                    nextDict = server.getTagManager().createHistoryTags(cfg);
+                    break;
                 }
-            });
+            }
         }
 
         private final HistoryDbIterator iterator;

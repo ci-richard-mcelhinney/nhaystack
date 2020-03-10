@@ -3,25 +3,17 @@
 // 
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
-//    11 May 2017  Christian Tremblay  Update (added tags download)
-//    09 May 2018  Eric Anderson       Updating to latest Niagara Gradle conventions
+//    11 May 2017  Christian Tremblay Update (added tags download)
 
-def getGradleProperty(String propName) {
-  if (gradle.hasProperty(propName)) {
-    gradle.getProperty(propName)
-  } else {
-    // Get system property, or, failing that, fall back to environment variable
-    // This allows setting, e.g., -Pniagara_home=blah
-    System.getProperty(propName) ?: System.getenv(propName)
+ext {
+  niagaraHome = System.getenv("niagara_home")
+  if (niagaraHome == null) {
+    logger.error('niagara_home environment variable not set')
   }
 }
 
-ext.niagara_home = getGradleProperty('niagara_home')
-ext.niagara_dev_home = getGradleProperty('niagara_dev_home')
-ext.niagara_user_home = getGradleProperty('niagara_user_home')
-
-apply from: "${rootProject.ext.niagara_home}/etc/gradle/eclipse.gradle"
-apply from: "${rootProject.ext.niagara_home}/etc/gradle/idea.gradle"
+apply from: "${System.getenv("niagara_home")}/etc/gradle/eclipse.gradle"
+apply from: "${System.getenv("niagara_home")}/etc/gradle/idea.gradle"
 
 gradle.beforeProject { p ->
   configure(p) {
@@ -29,14 +21,7 @@ gradle.beforeProject { p ->
     if (vendorSettings.exists()) {
       apply from: vendorSettings
     }
-    apply from: "${rootProject.ext.niagara_home}/etc/gradle/niagara.gradle"
-    pluginManager.withPlugin("idea") {
-      idea {
-        module {
-          scopes.TEST.plus += [configurations.niagaraModuleTestCompile]
-        }
-      }
-    }
+    apply from: "${System.getenv("niagara_home")}/etc/gradle/niagara.gradle"
   }
 }
 
@@ -103,6 +88,7 @@ task downloadTags (type: FilesDownload) {
   srcs = srcList
   targets = targetList
 }
+
 
 def resList = [
   'https://project-haystack.org/download/tags.csv',

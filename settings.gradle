@@ -34,11 +34,6 @@ if (mySettings.exists()) {
   apply from: mySettings
 }
 
-def environment = file('environment.gradle')
-if (environment.exists()) {
-  apply from: environment
-}
-
 // DO NOT MODIFY the niagaraRoots configuration
 niagaraRoots.collect({ file(it) }).findAll({ it.exists() }).each { File projectRoot ->
   projectRoot.traverse(
