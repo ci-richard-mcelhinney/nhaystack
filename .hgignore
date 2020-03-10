@@ -1,4 +1,8 @@
 syntax: glob
-*/build/
+nhaystack-rt/build/
+nhaystack-wb/build/
 .gradle/
-.idea/
+gradle\wrapper\gradle-wrapper.jar
+gradle\wrapper\gradle-wrapper.properties
+gradlew
+gradlew.bat
