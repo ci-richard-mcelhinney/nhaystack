@@ -53,8 +53,9 @@ dependencies {
   testCompile fileTree(dir: 'lib', include: ['*.jar'])
 
   uberjar "javax.servlet:javax.servlet-api:3.0.1"
-  uberjar "com.e-movimento.tinytools:privilegedaccessor:1.2.2"
-  uberjar "org.mockito:mockito-inline:2.24.0"
+
+  testUberjar "com.e-movimento.tinytools:privilegedaccessor:1.2.2"
+  testUberjar "org.mockito:mockito-inline:2.24.0"
 }
 
 test {
