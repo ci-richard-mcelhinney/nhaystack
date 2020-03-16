@@ -20,4 +20,5 @@
   <type class="nhaystack.ntest.helper.BTestProxyExt" name="TestProxyExt"/>
   <!--nhaystack.server-->
   <type class="nhaystack.server.BPointIOTest" name="PointIOTest"/>
+  <type class="nhaystack.server.BRemotePointTest" name="RemotePointTest"/>
 </types>

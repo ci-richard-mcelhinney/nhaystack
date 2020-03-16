@@ -28,7 +28,7 @@ import javax.baja.util.BTypeSpec;
   * associated NiagaraNetwork history, or an associated 
   * NiagaraNetwork point, or both.
   */
-class RemotePoint
+public class RemotePoint
 {
     /**
       * Return whether the point is remote
@@ -43,7 +43,7 @@ class RemotePoint
     /**
       * Return whether the point is remote
       */
-    private static boolean isRemoteDevice(BDevice device)
+    public static boolean isRemoteDevice(BDevice device)
     {
         if (device.getType().is(NIAGARA_STATION)) return true;
 //        if (device instanceof BNHaystackServer) return true;
@@ -141,7 +141,7 @@ class RemotePoint
         return new RemotePoint(cfg.getId().getDeviceName(), slotPath);
     }
 
-    private static SlotPath makeSlotPath(String slotPathStr)
+    public static SlotPath makeSlotPath(String slotPathStr)
     {
         if (!slotPathStr.startsWith("slot:"))
         {
