@@ -21,4 +21,6 @@
   <!--nhaystack.server-->
   <type class="nhaystack.server.BPointIOTest" name="PointIOTest"/>
   <type class="nhaystack.server.BRemotePointTest" name="RemotePointTest"/>
+  <!--nhaystack.e2e-->
+  <type class="nhaystack.e2e.BSimpleClientTest" name="SimpleClientTest"/>
 </types>

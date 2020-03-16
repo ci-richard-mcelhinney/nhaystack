@@ -143,6 +143,10 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
 
     private static final String SECURE_URI = "https://localhost/haystack/";
 
+    protected static final String LOCAL_URI = "http://localhost/";
+    protected static final String INVALID_USER = "badUserName";
+    protected static final String INVALID_PASS = "badPass1234";
+
     protected static final String EXTENDED_OP_NAME = "extended";
     protected static final String FUNCTION_OP_ARG_NAME = "function";
 
