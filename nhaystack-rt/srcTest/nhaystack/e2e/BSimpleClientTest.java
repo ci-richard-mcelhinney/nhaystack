@@ -10,9 +10,11 @@ package nhaystack.e2e;
 
 import com.tridium.history.log.BLogHistoryService;
 import com.tridium.kitControl.math.BSine;
+import com.tridium.kitControl.util.BMultiVibrator;
 import com.tridium.kitControl.util.BSineWave;
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
 import nhaystack.server.BNHaystackRebuildCacheJob;
+import nhaystack.server.BNHaystackService;
 import nhaystack.site.BHSite;
 import org.projecthaystack.*;
 import org.projecthaystack.client.CallException;
@@ -22,11 +24,15 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import javax.baja.control.*;
+import javax.baja.history.ext.BBooleanCovHistoryExt;
+import javax.baja.history.ext.BHistoryExt;
+import javax.baja.history.ext.BNumericCovHistoryExt;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.*;
 import javax.baja.tag.Id;
 import javax.baja.units.BUnit;
 import javax.baja.util.BFolder;
+import javax.baja.util.BFormat;
 
 import java.util.Iterator;
 
@@ -62,6 +68,12 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
 
     private void setupCompTree()
     {
+        BNHaystackService service = (BNHaystackService) station.getServices().get("NHaystackService");
+        if (service == null)
+            System.out.println("Can't find nhaystack service...");
+
+        service.setShowLinkedHistories(false);
+
         BFolder home = new BFolder();
         station.add("home", home);
         BHSite winterfell = new BHSite();
@@ -113,6 +125,16 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
         sine5.tags().set(Id.newId("foo"), BMarker.DEFAULT);
         sine5.tags().set(Id.newId("ph", "bar"), BMarker.DEFAULT);
         sine5.tags().set(Id.newId("foo"), BMarker.DEFAULT);
+
+        // add histories
+        addNumericPointHis(sine);
+        addNumericPointHis(sine2);
+        addNumericPointHis(sine4);
+        addNumericPointHis(e2sine2);
+        addNumericPointHis(e2sine3);
+        addNumericPointHis(nm);
+        addNumericPointHis(sine5);
+        addBooleanPointHis(station, bw);
 
         // relations
         addSiteRefRelation(equip1, winterfell);
@@ -230,6 +252,7 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
         HGrid grid = client.readAll("id");
 
         // do checks
+printBasicGrid(grid);
         Assert.assertEquals(grid.numRows(), 16);
         Assert.assertEquals(grid.row( 0).id(), HRef.make("S.Winterfell"));
         Assert.assertEquals(grid.row( 1).id(), HRef.make("S.Winterfell.equip1"));
@@ -282,10 +305,178 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
         Assert.assertEquals(dict.get("dis"), HStr.make("SineWave5"));
         Assert.assertEquals(dict.get("navName"), HStr.make("SineWave5"));
 
-        printBasicGrid(grid);
+//        printBasicGrid(grid);
     }
 
+//////////////////////////////////////////////////////////////////////////
+// Nav
+//////////////////////////////////////////////////////////////////////////
 
+    @Test
+    public void verifyNav() throws Exception
+    {
+        HGrid grid = client.call("read", makeIdGrid(HUri.make("sep:/Winterfell")));
+        Assert.assertEquals(grid.numRows(), 1);
+        Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell"));
+
+        grid = client.call("read", makeIdGrid(HUri.make("sep:/Winterfell/equip1")));
+        Assert.assertEquals(grid.numRows(), 1);
+        Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell.equip1"));
+
+        HGrid n = makeNavGrid(HStr.make("sep:/Winterfell/equip1"));
+        grid = client.call("nav", n);
+        Assert.assertEquals(grid.numRows(), 6);
+        Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell.equip1.BooleanWritable"));
+        Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.equip1.EnumWritable"));
+        Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.equip1.StringWritable"));
+        Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.equip1.SineWave"));
+        Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.equip1.SineWave2"));
+        Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.equip1.SineWave4"));
+
+        grid = client.call("nav", HGrid.EMPTY);
+        Assert.assertEquals(grid.numRows(), 3);
+        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("slot:/"));
+        Assert.assertEquals(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
+        Assert.assertEquals(grid.row(1).get("navId"), HStr.make("his:/"));
+        Assert.assertEquals(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
+        Assert.assertEquals(grid.row(2).get("navId"), HStr.make("sep:/"));
+        Assert.assertEquals(grid.row(2).get("dis"),   HStr.make("Site"));
+
+        n = makeNavGrid(HStr.make("his:/"));
+        grid = client.call("nav", n);
+        Assert.assertEquals(grid.numRows(), 1);
+        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("his:/test"));
+
+        n = makeNavGrid(HStr.make("his:/test"));
+        grid = client.call("nav", n);
+//printBasicGrid(grid);
+        Assert.assertEquals(grid.numRows(), 1);
+
+        n = makeNavGrid(HStr.make("slot:/"));
+        grid = client.call("nav", n);
+//printBasicGrid(grid);
+        Assert.assertEquals(grid.numRows(), 7);
+        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("slot:/Services"));
+        Assert.assertEquals(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
+//printFullGrid(grid);
+        Assert.assertTrue(grid.row(2).missing("navId"));
+        Assert.assertTrue(grid.row(3).has("navId"));
+        Assert.assertEquals(grid.row(4).get("navId"), HStr.make("slot:/SineWave2"));
+        Assert.assertEquals(grid.row(5).get("navId"), HStr.make("slot:/SineWave4"));
+        Assert.assertEquals(grid.row(6).get("navId"), HStr.make("slot:/SineWave5"));
+//        Assert.assertEquals(grid.row(7).get("navId"), HStr.make("slot:/SineWave5"));
+//        Assert.assertTrue(grid.row(8).missing("navId"));
+//        Assert.assertEquals(grid.row(9).get("navId"), HStr.make("slot:/AHU2"));
+
+//        traverseComponents((HStr) grid.row(0).get("navId"));
+//        traverseComponents((HStr) grid.row(1).get("navId"));
+//        traverseComponents((HStr) grid.row(2).get("navId"));
+//
+////[sep:/] 'Site'
+////    [sep:/Richmond] 'Richmond'
+////        [sep:/Richmond/AHU1] 'Richmond AHU1'
+////            [---] 'Richmond AHU1 AHU2_BooleanWritable'
+////            [---] 'Richmond AHU1 AHU3_BooleanWritable'
+////        [sep:/Richmond/AHU2] 'Richmond AHU2'
+////            [---] 'Richmond AHU2 NumericWritable'
+////            [---] 'Richmond AHU2 NumericWritable1'
+////        [sep:/Richmond/AHU3] 'Richmond AHU3'
+////            [---] 'Richmond AHU3 NumericWritable'
+////            [---] 'Richmond AHU3 NumericWritable1'
+//
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/")));
+        Assert.assertEquals(grid.numRows(), 2);
+        Assert.assertEquals(grid.row(1).get("navId"), HStr.make("sep:/Richmond"));
+        Assert.assertEquals(grid.row(1).get("dis"), HStr.make("Richmond"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond")));
+        Assert.assertEquals(grid.numRows(), 1);
+        Assert.assertEquals(grid.row(0).get("navId"), HStr.make("sep:/Richmond/AHU2"));
+        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2"));
+
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
+        Assert.assertEquals(grid.numRows(), 1);
+        Assert.assertTrue(grid.row(0).missing("navId"));
+
+        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+// TODO add some more tests in here
+
+        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU2")));
+        Assert.assertEquals(grid.numRows(), 1);
+        Assert.assertTrue(grid.row(0).missing("navId"));
+        Assert.assertEquals(grid.row(0).get("dis"), HStr.make("Richmond AHU2 NumericWritable"));
+
+// TODO add in another AHU for testing
+//        grid = client.call("nav", makeNavGrid(HStr.make("sep:/Richmond/AHU3")));
+//        verifyEq(grid.numRows(), 2);
+//        verify(grid.row(0).missing("navId"));
+//        verify(grid.row(1).missing("navId"));
+//        verifyEq(grid.row(0).get("dis"), HStr.make("Richmond AHU3 NumericWritable"));
+//        verifyEq(grid.row(1).get("dis"), HStr.make("Richmond AHU3 NumericWritable1"));
+    }
+
+    private void traverseComponents(HStr navId)
+    {
+        HGrid grid = client.call("nav", makeNavGrid(navId));
+
+        for (int i = 0; i < grid.numRows(); i++)
+        {
+            if (grid.row(i).has("navId"))
+                traverseComponents((HStr) grid.row(i).get("navId"));
+        }
+    }
+
+    @Test
+    public void verifyHisRead() throws Exception
+    {
+        HGrid grid = client.readAll("his");
+        Assert.assertEquals(grid.numRows(), 8);
+
+        ///////////////////////////////////////////////
+
+        HDict dict = client.read("axSlotPath==\"slot:/Equip1/SineWave1\"");
+        HGrid his = client.hisRead(dict.id(), "today");
+
+        Assert.assertEquals(his.meta().id(), dict.id());
+        Assert.assertTrue(his.numRows() > 0);
+
+        int last = his.numRows()-1;
+        Assert.assertEquals(ts(his.row(last)).date, HDate.today());
+
+        Assert.assertEquals(numVal(his.row(0)).unit, "°F");
+
+        his = client.hisRead(dict.id(), "2018-01-01");
+//    System.out.println("******************************** " + his.numRows());
+//    his.dump();
+        Assert.assertTrue(his.isEmpty());
+
+        ///////////////////////////////////////////////
+
+        dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
+        his = client.hisRead(dict.id(), "today");
+        Assert.assertEquals(his.meta().id(), dict.id());
+        Assert.assertTrue(his.numRows() > 0);
+
+        last = his.numRows()-1;
+        Assert.assertEquals(ts(his.row(last)).date, HDate.today());
+
+        // test read with no data expected
+        his = client.hisRead(dict.id(), "2018-01-01");
+//    System.out.println("******************************** " + his.numRows());
+//    his.dump();
+        Assert.assertTrue(his.isEmpty());
+
+        ///////////////////////////////////////////////
+
+//        dict = client.read("axHistoryId==\"/nhaystack_simple/SineWave5\"");
+//        his = client.hisRead(dict.id(), "today");
+//        verifyEq(his.meta().id(), dict.id());
+
+//        ///////////////////////////////////////////////
+
+//    client.hisRead(HRef.make("C.AHU2.NumericWritable"), "today");
+//        client.hisRead(HRef.make("S.Richmond.AHU2.NumericWritable"), "today");
+    }
 
 ////////////////////////////////////////////////////////////////
 // Utils
@@ -315,6 +506,31 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     {
         point.relations().add(new BRelation(ID_EQUIP_REF, equip));
     }
+
+    private static void addNumericPointHis(BNumericPoint point)
+    {
+        BNumericCovHistoryExt cov = new BNumericCovHistoryExt();
+        addPointHis(point, cov);
+    }
+
+    private static void addBooleanPointHis(BStation station, BBooleanPoint point)
+    {
+        // setup a data source for a boolean point
+        BMultiVibrator mv = new BMultiVibrator();
+        station.add("mv?", mv);
+        point.linkTo(mv, BMultiVibrator.out, BBooleanWritable.in10);
+
+        BBooleanCovHistoryExt ext = new BBooleanCovHistoryExt();
+        addPointHis(point, ext);
+    }
+
+    private static void addPointHis(BControlPoint point, BHistoryExt ext)
+    {
+        point.add("histExt", ext);
+        ext.setHistoryName(BFormat.make("%parent.name%"));
+        ext.setEnabled(true);
+    }
+
 
     protected void rebuildCache()
     {
@@ -371,9 +587,22 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
         }
     }
 
-////////////////////////////////////////////////////////////////
-// Utils
-////////////////////////////////////////////////////////////////
+    static HGrid makeIdGrid(HVal id)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("id", id);
+        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    }
 
+    static HGrid makeNavGrid(HStr navId)
+    {
+        HDictBuilder hd = new HDictBuilder();
+        hd.add("navId", navId);
+        return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    }
+
+    HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
+    HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
+    HNum numVal(HRow r) { return (HNum)r.get("val"); }
     HStr localTz() { return HStr.make(HTimeZone.DEFAULT.name); }
 }
