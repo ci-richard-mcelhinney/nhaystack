@@ -457,11 +457,12 @@ public class TagManager implements NHaystackConst
       *
       * This method never returns null.
       */
-    HDict createComponentTags(BComponent comp)
+    public HDict createComponentTags(BComponent comp)
     {
         HDictBuilder hdb = new HDictBuilder();
         hdb.add(generateComponentTags(comp));
         hdb.add(convertRelationsToRefTags(comp));
+
         if (comp instanceof BHTagged)
         {
             hdb.add(((BHTagged) comp).generateTags(server));
