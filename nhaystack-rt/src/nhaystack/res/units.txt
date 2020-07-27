@@ -3,7 +3,7 @@ percent,%
 pixel,px
 decibel,db
 power_factor,pf
-pH
+ph,pH
 percent_relative_humidity,%RH
 grams_of_water_per_kilogram_dry_air,gH₂O/kgAir
 volts_per_degree_kelvin,V/K
@@ -14,8 +14,8 @@ percent_obscuration_per_meter,%obsc/m
 psi_per_degree_fahrenheit,psi/°F
 square_meters_per_newton,m²/N
 watts_per_square_meter_degree_kelvin,W/m²K
-db_milliVolt,dBmV
-db_microVolt,dBµV
+db_millivolt,dBmV
+db_microvolt,dBµV
 parts_per_unit,ppu
 parts_per_million,ppm
 parts_per_billion,ppb
@@ -209,8 +209,8 @@ farad,F
 
 -- cooling efficiency --
 coefficient_of_performance,COP
-kilowatt_per_ton,kW/ton
 energy_efficiency_ratio,Btu/Wh,EER
+kilowatt_per_ton,kW/ton
 
 -- density --
 kilograms_per_cubic_meter,kg/m³
@@ -237,10 +237,10 @@ amperes_per_square_meter,A/m²
 volts_per_meter,V/m
 
 -- electric potential --
-Volt,V
-milliVolt,mV
-kiloVolt,kV
-megaVolt,MV
+volt,Volt,V
+millivolt,mV
+kilovolt,kV
+megavolt,MV
 
 -- electric resistance --
 ohm,Ω,Ω
@@ -272,6 +272,9 @@ gigajoule,GJ
 newton_meter,Nm
 cubic_meters_natural_gas,m³_gas
 cubic_feet_natural_gas,ft³_gas
+hundred_cubic_feet_natural_gas
+thousand_cubic_feet_natural_gas
+million_cubic_feet_natural_gas
 
 -- apparent energy --
 volt_ampere_hour,VAh
@@ -343,7 +346,8 @@ degrees_kelvin_per_minute,K/min
 
 -- illuminance --
 lux,lx
-candelas_per_square_meter,cd/m²
+footcandle,fc
+phot
 
 -- inductance --
 henry,H
@@ -363,12 +367,15 @@ foot,ft
 yard,yd
 mile
 
--- luminescence --
-candela,cd
-footcandle,ftcd
+-- luminance --
+candelas_per_square_meter,cd/m²
+candels_per_square_foot,cd/ft²
 
 -- luminous flux --
 lumen,lm
+
+-- luminous intensity --
+candela,cd
 
 -- magnetic field strength --
 amperes_per_meter,A/m
@@ -420,6 +427,7 @@ megabtus_per_hour,MBTU/h,MMBTU/h
 joules_per_hour,J/h
 kilojoules_per_hour,kJ/h
 megajoules_per_hour,MJ/h
+gigajoules_per_hour,GJ/h
 
 -- power by area --
 watts_per_square_meter,W/m²
@@ -535,6 +543,7 @@ kilocubic_feet_per_minute,kcfm
 imperial_gallons_per_minute,galUK/min
 liters_per_minute,L/min
 gallons_per_minute,gal/min
+gallons_per_hour,gal/hr,gph
 liters_per_hour,L/h
 cubic_meters_per_minute,m³/min
 cubic_meters_per_hour,m³/h

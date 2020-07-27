@@ -3,67 +3,58 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   04 Oct 2012  Mike Jarmy  Creation
+//   04 Oct 2012  Mike Jarmy     Creation
+//   10 Mar 2020  Eric Anderson  Logging errors encountered creating
+//                               RemotePoints instead of failing caching
 //
 package nhaystack.server;
 
+import javax.baja.control.BControlPoint;
+import javax.baja.control.ext.BAbstractProxyExt;
+import javax.baja.driver.BDevice;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.naming.*;
+import javax.baja.sys.*;
+import javax.baja.util.BTypeSpec;
 import java.util.logging.*;
 
-import javax.baja.control.*;
-import javax.baja.control.ext.*;
-import javax.baja.driver.*;
-import javax.baja.fox.*;
-import javax.baja.history.*;
-import javax.baja.naming.*;
-import javax.baja.security.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
-
-//import nhaystack.driver.*;
-//import nhaystack.driver.point.*;
-
 /**
-  * A RemotePoint represents a point that is present in
-  * in a NiagaraNetwork.  A RemotePoint always has either an 
-  * associated NiagaraNetwork history, or an associated 
-  * NiagaraNetwork point, or both.
-  */
-class RemotePoint
-{
+ * A RemotePoint represents a point that is present in
+ * in a NiagaraNetwork.  A RemotePoint always has either an
+ * associated NiagaraNetwork history, or an associated
+ * NiagaraNetwork point, or both.
+ */
+public class RemotePoint {
     /**
-      * Return whether the point is remote
-      */
-    static boolean isRemotePoint(BControlPoint point)
-    {
+     * Return whether the point is remote
+     */
+    static boolean isRemotePoint(BControlPoint point) {
         if (point.getProxyExt().getType().is(NIAGARA_PROXY_EXT)) return true;
 //        if (point.getProxyExt() instanceof BNHaystackProxyExt) return true;
         return false;
     }
 
     /**
-      * Return whether the point is remote
-      */
-    private static boolean isRemoteDevice(BDevice device)
-    {
+     * Return whether the point is remote
+     */
+    public static boolean isRemoteDevice(BDevice device) {
         if (device.getType().is(NIAGARA_STATION)) return true;
 //        if (device instanceof BNHaystackServer) return true;
         return false;
     }
 
     /**
-      * Create a RemotePoint from a BControlPoint, or return null.
-      * The BControlPoint must be an imported point.
-      */
-    static RemotePoint fromControlPoint(BControlPoint point)
-    {
+     * Create a RemotePoint from a BControlPoint, or return null.
+     * The BControlPoint must be an imported point.
+     */
+    static RemotePoint fromControlPoint(BControlPoint point) {
         if (!isRemotePoint(point)) return null;
 
         BAbstractProxyExt proxyExt = point.getProxyExt();
 
         // "pointId" seems to always contain the slotPath on 
         // the remote host.
-        if (proxyExt.get("pointId") == null)
-        {
+        if (proxyExt.get("pointId") == null) {
             LOG.warning("Cannot find pointId for " + point.getSlotPath());
             return null;
         }
@@ -82,8 +73,7 @@ class RemotePoint
         if (!isRemoteDevice(device)) return null;
 
         SlotPath slotPath = makeSlotPath(slotPathStr);
-        if (slotPath == null)
-        {
+        if (slotPath == null) {
             LOG.warning("Could not create SlotPath for remote point for point " + point.getSlotPath());
             return null;
         }
@@ -93,11 +83,10 @@ class RemotePoint
     }
 
     /**
-      * Create a RemotePoint from a BHistoryConfig, or return null.
-      * The BHistoryConfig must be an imported history.
-      */
-    static RemotePoint fromHistoryConfig(BHistoryConfig cfg)
-    {
+     * Create a RemotePoint from a BHistoryConfig, or return null.
+     * The BHistoryConfig must be an imported history.
+     */
+    static RemotePoint fromHistoryConfig(BHistoryConfig cfg) {
         // cannot be local history
         if (cfg.getId().getDeviceName().equals(Sys.getStation().getStationName()))
             throw new IllegalStateException();
@@ -131,8 +120,7 @@ class RemotePoint
         slotPathStr = slotPathStr.substring(0, last);
 
         SlotPath slotPath = makeSlotPath(slotPathStr);
-        if (slotPath == null)
-        {
+        if (slotPath == null) {
             LOG.warning("Could not create SlotPath for remote point for history config " + cfg.getSlotPath());
             return null;
         }
@@ -141,37 +129,30 @@ class RemotePoint
         return new RemotePoint(cfg.getId().getDeviceName(), slotPath);
     }
 
-    private static SlotPath makeSlotPath(String slotPathStr)
-    {
-        if (!slotPathStr.startsWith("slot:"))
-        {
+    public static SlotPath makeSlotPath(String slotPathStr) {
+        if (!slotPathStr.startsWith("slot:")) {
             LOG.warning("Unexpected slot path value: '" + slotPathStr + '\'');
             return null;
         }
 
-        try
-        {
+        try {
             return new SlotPath("slot", slotPathStr.substring("slot:".length()));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             LOG.log(Level.WARNING, "Error encountered creating SlotPath for " + slotPathStr, e);
             return null;
         }
     }
 
-    private RemotePoint(String stationName, SlotPath slotPath)
-    {
+    private RemotePoint(String stationName, SlotPath slotPath) {
         this.stationName = stationName;
         this.slotPath = slotPath;
         this.hashCode =
-            31*31*stationName.hashCode() + 
-            31*slotPath.getScheme().hashCode() +
-            slotPath.getBody().hashCode();
+                31 * 31 * stationName.hashCode() +
+                        31 * slotPath.getScheme().hashCode() +
+                        slotPath.getBody().hashCode();
     }
 
-    static BDevice findParentDevice(BComplex cpx)
-    {
+    static BDevice findParentDevice(BComplex cpx) {
         if (cpx == null) return null;
         if (cpx instanceof BDevice) return (BDevice) cpx;
         return findParentDevice(cpx.getParent());
@@ -181,28 +162,25 @@ class RemotePoint
 // Object
 ////////////////////////////////////////////////////////////////
 
-    public String toString()
-    {
+    public String toString() {
         return "[RemotePoint " +
-            "stationName:" + stationName + ", " +
-            "slotPath:" + slotPath + "]";
+                "stationName:" + stationName + ", " +
+                "slotPath:" + slotPath + "]";
     }
 
-    public boolean equals(Object obj) 
-    {
+    public boolean equals(Object obj) {
         if (this == obj) return true;
 
         if (!(obj instanceof RemotePoint)) return false;
 
         RemotePoint that = (RemotePoint) obj;
-        return 
-            this.stationName          .equals(that.stationName) &&
-            this.slotPath.getScheme() .equals(that.slotPath.getScheme()) &&
-            this.slotPath.getBody()   .equals(that.slotPath.getBody());
+        return
+                this.stationName.equals(that.stationName) &&
+                        this.slotPath.getScheme().equals(that.slotPath.getScheme()) &&
+                        this.slotPath.getBody().equals(that.slotPath.getBody());
     }
 
-    public int hashCode() 
-    { 
+    public int hashCode() {
         return hashCode;
     }
 
@@ -211,16 +189,20 @@ class RemotePoint
 ////////////////////////////////////////////////////////////////
 
     /**
-      * The name of the remote station that the point is proxied from.  
-      * This will always correspond to the name of a NiagaraStation 
-      * underneath the NiagaraNetwork.
-      */
-    String getStationName() { return stationName; }
+     * The name of the remote station that the point is proxied from.
+     * This will always correspond to the name of a NiagaraStation
+     * underneath the NiagaraNetwork.
+     */
+    String getStationName() {
+        return stationName;
+    }
 
     /**
-      * The slotPath of the point on the remote station.
-      */
-    SlotPath getSlotPath() { return slotPath; }
+     * The slotPath of the point on the remote station.
+     */
+    SlotPath getSlotPath() {
+        return slotPath;
+    }
 
 ////////////////////////////////////////////////////////////////
 // Attributes
@@ -230,10 +212,10 @@ class RemotePoint
 
     private static final Type NIAGARA_PROXY_EXT;
     private static final Type NIAGARA_STATION;
-    static
-    {
-        NIAGARA_PROXY_EXT = BTypeSpec.make("niagaraDriver:NiagaraProxyExt") .getResolvedType();
-        NIAGARA_STATION   = BTypeSpec.make("niagaraDriver:NiagaraStation")  .getResolvedType();
+
+    static {
+        NIAGARA_PROXY_EXT = BTypeSpec.make("niagaraDriver:NiagaraProxyExt").getResolvedType();
+        NIAGARA_STATION = BTypeSpec.make("niagaraDriver:NiagaraStation").getResolvedType();
     }
 
     private final String stationName;

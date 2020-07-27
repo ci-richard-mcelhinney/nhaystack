@@ -1,0 +1,16 @@
+actions
+axAnnotated
+axHistoryId
+axHistoryRef
+axPointRef
+axSlotPath
+axStatus
+axType
+geoLat
+geoLon
+navId
+navName
+navNameFormat
+precision
+schedulable
+weeklySchedule

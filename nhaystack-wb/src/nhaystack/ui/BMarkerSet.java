@@ -3,55 +3,59 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   23 Apr 2013  Mike Jarmy  Creation
+//   23 Apr 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 //
 
 package nhaystack.ui;
 
-import javax.baja.gx.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.enums.*;
-import javax.baja.ui.pane.*;
-import javax.baja.nre.util.*;
+import javax.baja.gx.BInsets;
+import javax.baja.nre.annotations.NiagaraAction;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.nre.util.TextUtil;
+import javax.baja.sys.Action;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BDropDown;
+import javax.baja.ui.BListDropDown;
+import javax.baja.ui.enums.BHalign;
+import javax.baja.ui.enums.BValign;
+import javax.baja.ui.pane.BBorderPane;
+import javax.baja.ui.pane.BEdgePane;
+import javax.baja.ui.pane.BGridPane;
+import nhaystack.res.Resources;
 
-import nhaystack.res.*;
-
+@NiagaraType
+@NiagaraAction(
+  name = "setsModified"
+)
 public class BMarkerSet extends BEdgePane
 {
-    /*-
-    class BMarkerSet
-    {
-        actions
-        {
-            setsModified()
-        }
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.ui.BMarkerSet(3020760542)1.0$ @*/
-/* Generated Tue Apr 23 18:43:23 EDT 2013 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BMarkerSet(3744666326)1.0$ @*/
+/* Generated Mon Nov 20 13:21:13 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Action "setsModified"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>setsModified</code> action.
-   * @see nhaystack.ui.BMarkerSet#setsModified()
+   * Slot for the {@code setsModified} action.
+   * @see #setsModified()
    */
-  public static final Action setsModified = newAction(0,null);
+  public static final Action setsModified = newAction(0, null);
   
   /**
-   * Invoke the <code>setsModified</code> action.
-   * @see nhaystack.ui.BMarkerSet#setsModified
+   * Invoke the {@code setsModified} action.
+   * @see #setsModified
    */
-  public void setsModified() { invoke(setsModified,null,null); }
+  public void setsModified() { invoke(setsModified, null, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BMarkerSet.class);
 
@@ -59,47 +63,50 @@ public class BMarkerSet extends BEdgePane
 
     public BMarkerSet()
     {
-        this.markerSets = new BListDropDown();
-        this.markerSetTags = new BListDropDown();
+        markerSetsDropDown = new BListDropDown();
+        markerSetTagsDropDown = new BListDropDown();
 
         BGridPane grid = new BGridPane(3); 
         grid.setHalign(BHalign.left);
         grid.setValign(BValign.top);
-        grid.add(null, markerSets);
-        grid.add(null, markerSetTags);
+        grid.add(null, markerSetsDropDown);
+        grid.add(null, markerSetTagsDropDown);
         BBorderPane border = new BBorderPane(grid);
         border.setPadding(BInsets.make(4));
 
-        String[] ms = Resources.getMarkerSets();
-        for (int i = 0; i < ms.length; i++)
-            markerSets.getList().addItem(ms[i]);
-        markerSets.setSelectedItem(ms[0]);
+        String[] markerSets = Resources.getMarkerSets();
+        for (String markerSet : markerSets)
+          markerSetsDropDown.getList().addItem(markerSet);
 
-        String[] mt = Resources.getMarkerSetTags(ms[0]);
-        for (int i = 0; i < mt.length; i++)
-            markerSetTags.getList().addItem(mt[i]);
-        markerSetTags.setSelectedItem(mt[0]);
+        markerSetsDropDown.setSelectedItem(markerSets[0]);
 
-        linkTo(markerSets, BDropDown.valueModified, setsModified);  
+        String[] markerSetTags = Resources.getMarkerSetTags(markerSets[0]);
+        for (String markerSetTag : markerSetTags)
+          markerSetTagsDropDown.getList().addItem(markerSetTag);
+
+        markerSetTagsDropDown.setSelectedItem(markerSetTags[0]);
+
+        linkTo(markerSetsDropDown, BDropDown.valueModified, setsModified);
         setCenter(border);
     }
 
     public void doSetsModified()
     {
-        String ms = (String) markerSets.getSelectedItem();
+        String ms = (String) markerSetsDropDown.getSelectedItem();
 
-        markerSetTags.setSelectedIndex(-1);
-        markerSetTags.getList().removeAllItems();
+        markerSetTagsDropDown.setSelectedIndex(-1);
+        markerSetTagsDropDown.getList().removeAllItems();
 
-        String[] mt = Resources.getMarkerSetTags(ms);
-        for (int i = 0; i < mt.length; i++)
-            markerSetTags.getList().addItem(mt[i]);
-        markerSetTags.setSelectedItem(mt[0]);
+        String[] markerSetTags = Resources.getMarkerSetTags(ms);
+        for (String markerSetTag : markerSetTags)
+          markerSetTagsDropDown.getList().addItem(markerSetTag);
+
+        markerSetTagsDropDown.setSelectedItem(markerSetTags[0]);
     }
 
     public String[] getMarkers()
     {
-        String mt = (String) markerSetTags.getSelectedItem();
+        String mt = (String) markerSetTagsDropDown.getSelectedItem();
         return TextUtil.split(mt, ' ');
     }
 
@@ -107,6 +114,6 @@ public class BMarkerSet extends BEdgePane
 // Attributes
 ////////////////////////////////////////////////////////////////
 
-    private BListDropDown markerSets;
-    private BListDropDown markerSetTags;
+    private final BListDropDown markerSetsDropDown;
+    private final BListDropDown markerSetTagsDropDown;
 }

@@ -7,9 +7,8 @@
 //
 package nhaystack;
 
-import javax.baja.sys.*;
-
-import org.projecthaystack.*;
+import javax.baja.sys.BajaRuntimeException;
+import org.projecthaystack.HRef;
 
 /**
   * NHRef uniquely identifies an object by its 
@@ -26,7 +25,7 @@ public class NHRef
     {
         String val = ref.val;
 
-        int dot = val.indexOf(".");
+        int dot = val.indexOf('.');
         if (dot == -1)
             throw new BajaRuntimeException(
                 "Could not parse HRef '" + ref + "'.");
@@ -49,7 +48,7 @@ public class NHRef
               space.equals(SEP)))
         {
             throw new BajaRuntimeException(
-                "Invalid space: '" + space + "'");
+                "Invalid space: '" + space + '\'');
         }
 
         return new NHRef(space, path);
@@ -60,7 +59,7 @@ public class NHRef
       */
     private NHRef(String space, String path)
     {
-        this.ref   = HRef.make(space + "." + path);
+        this.ref   = HRef.make(space + '.' + path);
         this.space = space;
         this.path  = path;
     }
@@ -74,7 +73,7 @@ public class NHRef
         return "[NHRef " +
             "ref:" + ref + ", " +
             "space:" + space + ", " +
-            "path:" + path + "]";
+            "path:" + path + ']';
     }
 
     public int hashCode() { return ref.hashCode(); }
@@ -83,7 +82,7 @@ public class NHRef
     {
         if (this == obj) return true;
 
-        return (obj instanceof NHRef) ?
+        return obj instanceof NHRef ?
             ref.equals(((NHRef) obj).ref) :
             false;
     }

@@ -3,10 +3,13 @@
 // 
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+//    14 Feb 2017  Andrew Saunders     Modified to support Niagara Haystack tags
+//                                     and relations
 
 group = 'Project Haystack'
 
-def moduleVersion = '2.1.2'
+//TODO: What should this version be?
+def moduleVersion = '3.0.3'
 def moduleVersionPatch = [:]
 
 version = "${moduleVersion}${moduleVersionPatch.get(project.name, '')}"

@@ -32,13 +32,17 @@ NHaystack is licensed under the
 
 The development of NHaystack has been funded by 
 [J2 Innovations](http://www.j2inn.com) and
-[Conserve It](http://www.conserveit.com.au).
+[Conserve It](http://www.conserveit.com.au) and
+[Tridium](https://www.tridium.com).
 
 Further contributions have been made by:
 * Christian Tremblay, Servisys Inc.
 * Stuart Longland, VRT Systems
+* Bryant Holland, CBRE|ESI
+* Eric Anderson, Tridium
+* Andy Saunders, Tridium
 
-###Benefits
+### Benefits
 
 * The ability to include meta data tags as part of Niagara data structures 
 allows external applications to automatically interpret the meaning of data 
@@ -52,7 +56,7 @@ access to data, and presentation in third party applications.
 and server machines, allowing for third-parties to integrate easily with your 
 equipment and data.
 
-###Key Features
+### Key Features
 
 * Provides drop-in support for the Haystack REST API on a Niagara 4 system.
 * Unifies the Component and History namespaces
@@ -60,6 +64,35 @@ equipment and data.
 * Makes it easy to create a Site-Equip-Point Hierarchy view of your system.
 * Provides a standard Niagara 4 driver so that remote Haystack servers can be 
 modelled inside of N4.
+
+### Usage
+The nhaystack distribution archive comes with 2 modules and a patched
+'haystack-rt.jar' file for a number of different version of Niagara 4:
+* nhaystack-rt.jar
+* nhaystack-wb.jar
+
+First of all, drop both of these jar files into your '<niagara_home>\modules' 
+folder and restart your workbench.  
+
+Next, select the patched version of the 'haystack-rt.jar' file that 
+corresponds to the version of Niagara 4 you are using.  The new version of 
+'nhaystack' is not supported before version 4.4.93.40.  If you are using a 
+later version and a patched 'haystack-rt.jar' file is not available then 
+most likely this means that the version you are using already has the 
+appropriate modifications to that module.
+
+
+If the Niagara 4 installation is a Web Supervisor then all you need to 
+do is restart any running stations on the platform, connect to the stations 
+and drop the NHaystackService into the running station.
+
+For use on a "Jace" style platform the minimum installation required is
+for the 'nhaystack-rt.jar' file to be installed.  Only install 'nhaystack-wb.jar'
+if you intend to access the Java based built-in workbench through a web browser.
+To install the modules on a "Jace" type of platform, use the standard
+Niagara Workbench tools.  As indicated above, a patched version of the 
+'haystack-rt.jar' file is required.  This must also be installed on the 
+target platform.
 
 ### 1. Using NHaystack as a server
 
@@ -74,6 +107,43 @@ serving up all its ControlPoint objects and Histories as haystack
 [Haystack REST Api](http://project-haystack.org/doc/Rest). 
 Many of the tags that are defined as being associated with `points`, like 
 `kind`, `unit`, `tz`, `his`, `cur`, etc. are automatically generated for you.
+
+#### 1.1 The Cache
+The NHaystackService maintains an in-memory cache of all the Haystack records
+it finds in your Niagara Station.  When you first add the NHaystackService to
+your station it needs to be enabled.  This can be done from the Property Sheet
+of the NHaystackService.  When the service initialises it builds the in-memory
+cache of the Haystack records it finds.  
+
+This process also happens when the station is started or restarted.  If you 
+examine the output from the Application Director of your station you will see
+a number of messages logged there advising of the status of the cache building
+process.
+
+If at anytime whilst the station is running you make a change to any tags or 
+site/equipment entities then it you must make sure you execute a cache rebuild.
+This can be done by finding the NHaystackService in your station and
+right-clicking on the service.  From the context menu that appears select 
+_Actions->Rebuild Cache_.  If you do not do this then your changes will not
+appear in any queries to the NHaystackService from either internal or external
+clients.
+
+#### 1.2 The Haystack Servlet
+When using the NHaystack module in Niagara and configuring your station as a
+Haystack server you will most likely want to enable the servlet.  The 
+NHaystackService comes with a built-in, fully compliant implementation of the
+Project Haystack REST API specification.  This servlet enables external 
+Haystack clients to interact with your Niagara Station.
+
+To enable the built-in servlet that implements the Project Haystack REST API
+navigate to the Property Sheet of the NHaystackService in your station and you
+will find the property that enables the servlet.  Additionally there is an 
+opportunity to provide a custom name for the servlet.  By default the servlet
+name is _haystack_ and it is recommended that this default name remains unchanged
+as other clients will be expecting this servlet name as a defacto standard.
+
+It is recommended to enable the servlet immediately after installing the
+NHaystackService so that other clients are able to interact with your station.
 
 ### 2. How point recs are generated
 
@@ -227,7 +297,9 @@ status is not null. This means that if a point in N4 has the "null" status flag
 set, then it will be reported with a curStatus of "ok", but it will simply not
 have a curVal.
 
-### 3. Tagging via the "haystack" slot
+### 3. How to tag points in Niagara
+
+#### 3.1 Tagging via the "haystack" slot
 
 For many use cases of NHaystack, you will not need to do any explicit tagging
 on the station.  However, sometimes you want to actually add tags to the 
@@ -259,7 +331,13 @@ Whenever you alter a tag with the FieldEditor, you usually need to run
 `rebuildCache`. Its best to just get in the habit of running it any time you
 change a tag or alter the structure of a station.
 
-### 3.1 A better Workbench Interface
+#### 3.2 Tagging using the Niagara Interface
+To do...community contributions accepted!
+
+#### 3.3 Refs and Relations
+To do...community contributions accepted!
+
+#### 3.4 A better Workbench Interface
 The nHaystack Service View is really simple. There's no need to rebuild 
 everything but adding a few buttons add a lot of flexibility to the view. 
 The displayed text has also been modified so we can get rid of ~ codes and retrieve 

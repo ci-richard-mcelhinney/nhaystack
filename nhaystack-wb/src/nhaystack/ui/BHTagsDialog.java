@@ -3,42 +3,52 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   01 Feb 2013  Mike Jarmy Creation
+//   01 Feb 2013  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 //
 
-package nhaystack.driver.ui;
+package nhaystack.ui;
 
-import java.util.*;
-
-import javax.baja.gx.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.pane.*;
-import javax.baja.ui.table.*;
-import javax.baja.util.*;
-
-import org.projecthaystack.*;
-
-import nhaystack.driver.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import javax.baja.gx.BImage;
+import javax.baja.gx.Graphics;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.ui.BButton;
+import javax.baja.ui.BDialog;
+import javax.baja.ui.Command;
+import javax.baja.ui.CommandArtifact;
+import javax.baja.ui.pane.BBorderPane;
+import javax.baja.ui.pane.BEdgePane;
+import javax.baja.ui.table.BTable;
+import javax.baja.ui.table.TableCellRenderer;
+import javax.baja.ui.table.TableModel;
+import javax.baja.util.Lexicon;
+import nhaystack.driver.BHTags;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HMarker;
+import org.projecthaystack.HVal;
 
 /**
   * BHTagsDialog is used by a BHTagsFE.
   */
+
+@NiagaraType
 public final class BHTagsDialog extends BDialog
 {
-    /*-
-    class BHTagsDialog
-    {
-    }
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.ui.BHTagsDialog(4266311391)1.0$ @*/
-/* Generated Thu Apr 10 15:56:03 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.ui.BHTagsDialog(2979906276)1.0$ @*/
+/* Generated Mon Nov 20 13:09:09 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHTagsDialog.class);
 
@@ -60,12 +70,12 @@ public final class BHTagsDialog extends BDialog
         this.vals = new HVal[dict.size()];
 
         int n = 0;
-        Iterator it = dict.iterator();
+        Iterator<Map.Entry<String, HVal>> it = dict.iterator();
         while (it.hasNext())
         {
-            Map.Entry entry = (Map.Entry) it.next();
-            String name = (String) entry.getKey();
-            HVal val = (HVal) entry.getValue();
+            Map.Entry<String, HVal> entry = it.next();
+            String name = entry.getKey();
+            HVal val = entry.getValue();
 
             this.tags[n] = name;
             this.vals[n++] = val;
@@ -78,15 +88,16 @@ public final class BHTagsDialog extends BDialog
         for (int i = 0; i < tags.length; i++)
             indexNames[i] = new IndexName(i, tags[i]);
 
-        Arrays.sort(indexNames, new Comparator() {
-            public int compare(Object o1, Object o2) {
-                IndexName c1 = (IndexName) o1;
-                IndexName c2 = (IndexName) o2;
-
+        Arrays.sort(indexNames, new Comparator<IndexName>()
+        {
+            @Override
+            public int compare(IndexName c1, IndexName c2)
+            {
                 if (c1.name.equals("id")) return -1;
                 else if (c2.name.equals("id")) return 1;
-                else return (c1.name.compareTo(c2.name));
-        }});
+                else return c1.name.compareTo(c2.name);
+            }
+        });
 
         this.rowIndex = new int[indexNames.length];
         for (int i = 0; i < indexNames.length; i++)
@@ -119,13 +130,14 @@ public final class BHTagsDialog extends BDialog
 // Commands
 ////////////////////////////////////////////////////////////////
 
-    class Ok extends Command
+    static class Ok extends Command
     {
         public Ok(BHTagsDialog owner) 
         { 
             super(owner, LEX.getText("ok")); 
         }
 
+        @Override
         public CommandArtifact doInvoke()
         {
             ((BDialog) getOwner()).close();
@@ -139,8 +151,11 @@ public final class BHTagsDialog extends BDialog
 
     class Model extends TableModel
     {
+        @Override
         public int getRowCount() { return tags.length; }
+        @Override
         public int getColumnCount() { return 2; }
+        @Override
         public String getColumnName(int col)
         {
             switch(col)
@@ -150,6 +165,7 @@ public final class BHTagsDialog extends BDialog
                 default: throw new IllegalStateException();
             }
         }
+        @Override
         public Object getValueAt(int row, int col)
         {
             switch(col)
@@ -165,8 +181,9 @@ public final class BHTagsDialog extends BDialog
 // TableCellRenderer
 ////////////////////////////////////////////////////////////////
 
-    class CellRenderer extends TableCellRenderer
+    static class CellRenderer extends TableCellRenderer
     {
+        @Override
         public void paintCell(Graphics g, Cell cell)
         {
             if (cell.value instanceof HMarker)
@@ -189,7 +206,7 @@ public final class BHTagsDialog extends BDialog
 ////////////////////////////////////////////////////////////////
 
     private static final Lexicon LEX = Lexicon.make("nhaystack");
-    private static BImage CHECK = BImage.make("module://icons/x16/check.png");
+    private static final BImage CHECK = BImage.make("module://icons/x16/check.png");
 
     private String[] tags;
     private HVal[] vals;

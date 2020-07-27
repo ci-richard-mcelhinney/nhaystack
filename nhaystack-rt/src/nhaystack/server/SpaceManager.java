@@ -3,36 +3,48 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   04 Oct 2012  Mike Jarmy  Creation
+//   04 Oct 2012  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Added missing @Overrides annotations, added use of generics
+//   26 Sep 2018  Andrew Saunders  Provided access to isVisibleComponent method from wb module
+//   13 Mar 2019  Andrew Saunders  Added plain components with site or equip tags to isVisibleComponent
 //
 package nhaystack.server;
 
-import java.util.*;
-import java.util.logging.*;
+import java.util.Iterator;
+import java.util.logging.Logger;
+import javax.baja.control.BControlPoint;
+import javax.baja.control.ext.BAbstractProxyExt;
+import javax.baja.driver.BDevice;
+import javax.baja.driver.BDeviceNetwork;
+import javax.baja.driver.point.BPointDeviceExt;
+import javax.baja.history.BHistoryConfig;
+import javax.baja.history.HistorySpaceConnection;
+import javax.baja.history.ext.BHistoryExt;
+import javax.baja.naming.BOrd;
+import javax.baja.naming.UnresolvedException;
+import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BValue;
+import javax.baja.sys.Context;
+import javax.baja.sys.Property;
+import javax.baja.sys.SlotCursor;
+import javax.baja.sys.Sys;
+import javax.baja.tag.Tags;
 
-import javax.baja.control.*;
-import javax.baja.control.ext.*;
-import javax.baja.driver.*;
-import javax.baja.driver.point.*;
-import javax.baja.history.*;
-import javax.baja.history.ext.*;
-import javax.baja.naming.*;
-import javax.baja.schedule.*;
-import javax.baja.sys.*;
-
-import org.projecthaystack.*;
-
-import nhaystack.*;
-import nhaystack.collection.*;
-import nhaystack.site.*;
-import nhaystack.util.*;
+import nhaystack.BHDict;
+import nhaystack.collection.ComponentTreeIterator;
+import nhaystack.collection.HistoryDbIterator;
+import nhaystack.site.BHTagged;
+import nhaystack.util.NHaystackConst;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HDict;
 
 /**
   * SpaceManager does various tasks associated with the ComponentSpace and
   * the HistorySpace, including iterating through the spaces, and relating the
   * two spaces to each other.
   */
-class SpaceManager
+public class SpaceManager
 {
     SpaceManager(NHServer server)
     {
@@ -47,7 +59,7 @@ class SpaceManager
     /**
       * Iterate through all the points
       */
-    Iterator makeComponentSpaceIterator()
+    Iterator<HDict> makeComponentSpaceIterator()
     {
         return new CIterator();
     }
@@ -56,21 +68,30 @@ class SpaceManager
       * Return whether the given component
       * ought to be turned into a Haystack record.
       */
-    boolean isVisibleComponent(BComponent comp)
+    public static boolean isVisibleComponent(BComponent comp)
     {
         // check permissions on this Thread's saved context
         Context cx = ThreadContext.getContext(Thread.currentThread());
         if (!TypeUtil.canRead(comp, cx)) 
             return false;
 
-        if (comp instanceof BHTagged) return true;
-        if (comp instanceof BControlPoint) return true;
-        if (comp instanceof BDevice) return true;
-        if (comp instanceof BWeeklySchedule) return true;
+        if (comp instanceof BHTagged)
+            return true;
+        if (comp instanceof BControlPoint)
+            return true;
+        if (comp instanceof BDevice)
+            return true;
+        if (comp instanceof BWeeklySchedule)
+            return true;
 
         // Return true for components that are annotated with a BHDict.
         BValue haystack = comp.get("haystack");
-        if ((haystack != null) && (haystack instanceof BHDict))
+        if (haystack instanceof BHDict)
+            return true;
+
+        // Return true for components tagged with hs:site or hs:equip tags
+        Tags tags = comp.tags();
+        if (tags.contains(NHaystackConst.ID_SITE) || tags.contains(NHaystackConst.ID_EQUIP))
             return true;
 
         // nope
@@ -142,10 +163,8 @@ class SpaceManager
         BControlPoint[] points = pointDevExt.getPoints(); 
 
         // find a point with matching slot path
-        for (int i = 0; i < points.length; i++)
+        for (BControlPoint point : points)
         {
-            BControlPoint point = points[i];
-
             // check for remote point
             if (!RemotePoint.isRemotePoint(point)) continue;
 
@@ -168,7 +187,7 @@ class SpaceManager
 // Iterator
 ////////////////////////////////////////////////////////////////
 
-    class CIterator implements Iterator
+    class CIterator implements Iterator<HDict>
     {
         CIterator()
         {
@@ -177,12 +196,14 @@ class SpaceManager
             findNext();
         }
 
-        public boolean hasNext() 
+        @Override
+        public boolean hasNext()
         { 
             return nextDict != null; 
         }
 
-        public Object next()
+        @Override
+        public HDict next()
         {
             if (nextDict == null) throw new IllegalStateException();
 
@@ -191,7 +212,8 @@ class SpaceManager
             return dict;
         }
 
-        public void remove() 
+        @Override
+        public void remove()
         { 
             throw new UnsupportedOperationException(); 
         }
@@ -201,7 +223,7 @@ class SpaceManager
             nextDict = null;
             while (iterator.hasNext())
             {
-                BComponent comp = (BComponent) iterator.next();
+                BComponent comp = iterator.next();
 
                 if (isVisibleComponent(comp))
                 {
@@ -222,7 +244,7 @@ class SpaceManager
     /**
       * Iterate through all the histories.
       */
-    Iterator makeHistorySpaceIterator()
+    Iterator<HDict> makeHistorySpaceIterator()
     {
         return new HIterator();
     }
@@ -249,7 +271,7 @@ class SpaceManager
       */
     BHistoryExt lookupHistoryExt(BControlPoint point)
     {
-        SlotCursor cursor = point.getProperties();
+        SlotCursor<Property> cursor = point.getProperties();
         if (cursor.next(BHistoryExt.class))
         {
             BHistoryExt ext = (BHistoryExt) cursor.get();
@@ -327,7 +349,7 @@ class SpaceManager
 // HIterator
 ////////////////////////////////////////////////////////////////
 
-    class HIterator implements Iterator
+    class HIterator implements Iterator<HDict>
     {
         HIterator()
         {
@@ -335,14 +357,17 @@ class SpaceManager
             findNext();
         }
 
-        public boolean hasNext() 
+        @Override
+        public boolean hasNext()
         { 
             return nextDict != null; 
         }
 
+        @Override
         public void remove() { throw new UnsupportedOperationException(); }
 
-        public Object next()
+        @Override
+        public HDict next()
         {
             if (nextDict == null) throw new IllegalStateException();
 
@@ -356,7 +381,7 @@ class SpaceManager
             nextDict = null;
             while (iterator.hasNext())
             {
-                BHistoryConfig cfg = (BHistoryConfig) iterator.next();
+                BHistoryConfig cfg = iterator.next();
 
                 if (isVisibleHistory(cfg))
                 {

@@ -3,31 +3,57 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   04 Feb 2015  Mike Jarmy  Creation
+//   04 Feb 2015  Mike Jarmy     Creation
+//   10 May 2018  Eric Anderson  Added missing @Overrides annotations, added use of generics
 //
 package nhaystack.server;
 
-import java.util.*;
-import java.util.logging.*;
-
-import javax.baja.control.*;
-import javax.baja.control.enums.*;
-import javax.baja.fox.*;
-import javax.baja.naming.*;
-import javax.baja.schedule.*;
-import javax.baja.security.*;
-import javax.baja.status.*;
-import javax.baja.sys.*;
-
-import org.projecthaystack.*;
-
-import nhaystack.*;
-import nhaystack.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.control.BBooleanWritable;
+import javax.baja.control.BControlPoint;
+import javax.baja.control.BEnumWritable;
+import javax.baja.control.BIWritablePoint;
+import javax.baja.control.BNumericWritable;
+import javax.baja.control.BStringWritable;
+import javax.baja.control.enums.BPriorityLevel;
+import javax.baja.fox.BFoxProxySession;
+import javax.baja.naming.BOrd;
+import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.security.PermissionException;
+import javax.baja.status.BStatus;
+import javax.baja.status.BStatusBoolean;
+import javax.baja.status.BStatusEnum;
+import javax.baja.status.BStatusNumeric;
+import javax.baja.status.BStatusString;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.BEnum;
+import javax.baja.sys.BEnumRange;
+import javax.baja.sys.BFacets;
+import javax.baja.sys.BLink;
+import javax.baja.sys.BajaRuntimeException;
+import javax.baja.sys.Context;
+import javax.baja.sys.Flags;
+import nhaystack.BHDict;
+import nhaystack.BHGrid;
+import nhaystack.util.SlotUtil;
+import nhaystack.util.TypeUtil;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HDictBuilder;
+import org.projecthaystack.HGrid;
+import org.projecthaystack.HGridBuilder;
+import org.projecthaystack.HHisItem;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HVal;
 
 /**
   * PointIO handles onPointWriteArray() and onPointWrite()
   */
-class PointIO
+public class PointIO
 {
     PointIO(
         BNHaystackService service,
@@ -90,7 +116,7 @@ class PointIO
                     "val:"   + val      + ", " +
                     "who:"   + who      + ", " +
                     "dur:"   + dur      + ", " +
-                    "opts:"   + ((opts == null) ? "null" : opts.toZinc()));
+                    "opts:"  + (opts == null ? "null" : opts.toZinc()));
 
             HHisItem[] schedItems = schedMgr.getOptionsSchedule(opts);
             if (schedItems == null)
@@ -107,7 +133,6 @@ class PointIO
                 else if (comp instanceof BWeeklySchedule)
                 {
                     LOG.fine("ignoring write to " + comp.getSlotPath());
-                    return;
                 }
                 else
                 {
@@ -167,7 +192,7 @@ class PointIO
                 if (!(remote instanceof BIWritablePoint))
                 {
                     LOG.severe("cannot write to " + remote.getSlotPath() + ", it is not writable.");
-                    throw new IllegalStateException("point is not writable: " + remote.getSlotPath().toString());
+                    throw new IllegalStateException("point is not writable: " + remote.getSlotPath());
                 }
                 working = remote;
             }
@@ -257,7 +282,7 @@ class PointIO
                 if (vals[i] != null)
                     hd.add("val", vals[i]);
 
-                if (who[i].length() > 0)
+                if (!who[i].isEmpty())
                     hd.add("who", who[i]);
 
                 result[i] = hd.toDict();
@@ -274,7 +299,7 @@ class PointIO
     /**
       * return point array for BWeeklySchedule
       */
-    private HGrid doScheduleArray(BWeeklySchedule sched)
+    private static HGrid doScheduleArray(BWeeklySchedule sched)
     {
         return HGrid.EMPTY;
     }
@@ -282,48 +307,48 @@ class PointIO
     /**
       * get the source for each link that is connected to [in1..in16, fallback]
       */
-    private String[] getLinkWho(BControlPoint point)
+    private static String[] getLinkWho(BControlPoint point)
     {
         String[] who = new String[17];
         for (int i = 0; i < 17; i++)
             who[i] = "";
 
         BLink[] links = point.getLinks();
-        for (int i = 0; i < links.length; i++)
+        for (BLink link : links)
         {
-            String target = links[i].getTargetSlot().getName();
-            Integer level = (Integer) POINT_PROP_LEVELS.get(target);
+            String target = link.getTargetSlot().getName();
+            Integer level = POINT_PROP_LEVELS.get(target);
             if (level != null)
             {
-                who[level.intValue()-1] +=
-                    (links[i].getSourceComponent().getSlotPath() + "/" + 
-                     links[i].getSourceSlot().getName());
+                who[level.intValue() - 1] +=
+                    link.getSourceComponent().getSlotPath() + "/" +
+                    link.getSourceSlot().getName();
             }
         }
 
         return who;
     }
 
-    private static Map POINT_PROP_LEVELS = new HashMap();
+    private static final Map<String, Integer> POINT_PROP_LEVELS = new HashMap<>();
     static
     {
-        POINT_PROP_LEVELS.put("in1",  new Integer(1));
-        POINT_PROP_LEVELS.put("in2",  new Integer(2));
-        POINT_PROP_LEVELS.put("in3",  new Integer(3));
-        POINT_PROP_LEVELS.put("in4",  new Integer(4));
-        POINT_PROP_LEVELS.put("in5",  new Integer(5));
-        POINT_PROP_LEVELS.put("in6",  new Integer(6));
-        POINT_PROP_LEVELS.put("in7",  new Integer(7));
-        POINT_PROP_LEVELS.put("in8",  new Integer(8));
-        POINT_PROP_LEVELS.put("in9",  new Integer(9));
-        POINT_PROP_LEVELS.put("in10", new Integer(10));
-        POINT_PROP_LEVELS.put("in11", new Integer(11));
-        POINT_PROP_LEVELS.put("in12", new Integer(12));
-        POINT_PROP_LEVELS.put("in13", new Integer(13));
-        POINT_PROP_LEVELS.put("in14", new Integer(14));
-        POINT_PROP_LEVELS.put("in15", new Integer(15));
-        POINT_PROP_LEVELS.put("in16", new Integer(16));
-        POINT_PROP_LEVELS.put("fallback", new Integer(17));
+        POINT_PROP_LEVELS.put("in1",  Integer.valueOf(1));
+        POINT_PROP_LEVELS.put("in2",  Integer.valueOf(2));
+        POINT_PROP_LEVELS.put("in3",  Integer.valueOf(3));
+        POINT_PROP_LEVELS.put("in4",  Integer.valueOf(4));
+        POINT_PROP_LEVELS.put("in5",  Integer.valueOf(5));
+        POINT_PROP_LEVELS.put("in6",  Integer.valueOf(6));
+        POINT_PROP_LEVELS.put("in7",  Integer.valueOf(7));
+        POINT_PROP_LEVELS.put("in8",  Integer.valueOf(8));
+        POINT_PROP_LEVELS.put("in9",  Integer.valueOf(9));
+        POINT_PROP_LEVELS.put("in10", Integer.valueOf(10));
+        POINT_PROP_LEVELS.put("in11", Integer.valueOf(11));
+        POINT_PROP_LEVELS.put("in12", Integer.valueOf(12));
+        POINT_PROP_LEVELS.put("in13", Integer.valueOf(13));
+        POINT_PROP_LEVELS.put("in14", Integer.valueOf(14));
+        POINT_PROP_LEVELS.put("in15", Integer.valueOf(15));
+        POINT_PROP_LEVELS.put("in16", Integer.valueOf(16));
+        POINT_PROP_LEVELS.put("fallback", Integer.valueOf(17));
     }
   
     /**
@@ -353,7 +378,7 @@ class PointIO
     private static HGrid saveLastWriteToGrid(HGrid grid, int level, String who)
     {
         // store rows by level
-        Map map = new HashMap();
+        Map<HVal, HDict> map = new HashMap<>();
         for (int i = 0; i < grid.numRows(); i++)
         {
             HDict row = grid.row(i);
@@ -370,9 +395,8 @@ class PointIO
         // create new grid
         HDict[] dicts = new HDict[map.size()];
         int n = 0;
-        Iterator it = map.values().iterator();
-        while (it.hasNext())
-            dicts[n++] = (HDict) it.next();
+        for (HDict hDict : map.values())
+            dicts[n++] = hDict;
 
         return HGridBuilder.dictsToGrid(dicts);
     }
@@ -447,86 +471,234 @@ class PointIO
     /**
       * onControlPointWriteLevel
       */
-    private void onControlPointWriteLevel(
+    private static void onControlPointWriteLevel(
         BControlPoint point, /*BFacets facets,*/
         int level, HVal val, String who)
     {
-        BPriorityLevel plevel = BPriorityLevel.make(level);
+        BPriorityLevel plevel = matchLevel(level);
+
+        if (plevel == BPriorityLevel.none)
+        {
+            LOG.severe("invalid priority level received " + level + " for " + point.getSlotPath().toDisplayString());
+            return;
+        }
 
         if (point instanceof BNumericWritable)
         {
-            BNumericWritable nw = (BNumericWritable) point;
-            BStatusNumeric sn = (BStatusNumeric) nw.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                sn.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                HNum num = (HNum) val;
-                sn.setValue(num.val);
-                sn.setStatus(BStatus.ok);
-            }
-            nw.set("in" + level, sn);
+            writeNW(point, plevel, val);
         }
         else if (point instanceof BBooleanWritable)
         {
-            BBooleanWritable bw = (BBooleanWritable) point;
-            BStatusBoolean sb = (BStatusBoolean) bw.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                sb.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                HBool bool = (HBool) val;
-                sb.setValue(bool.val);
-                sb.setStatus(BStatus.ok);
-            }
-            bw.set("in" + level, sb);
+            writeBW(point, plevel, val);
         }
         else if (point instanceof BEnumWritable)
         {
-            BEnumWritable ew = (BEnumWritable) point;
-            BStatusEnum se = (BStatusEnum) ew.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                se.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                String str = SlotUtil.toNiagara(((HStr) val).val);
-                BFacets facets = point.getFacets();
-                BEnumRange range = (BEnumRange) facets.get(BFacets.RANGE);
-                BEnum enm = range.get(str);
-                se.setValue(enm);
-                se.setStatus(BStatus.ok);
-            }
-            ew.set("in" + level, se);
+            writeEW(point, plevel, val);
         }
         else if (point instanceof BStringWritable)
         {
-            BStringWritable sw = (BStringWritable) point;
-            BStatusString s = (BStatusString) sw.getLevel(plevel).newCopy();
-
-            if (val == null)
-            {
-                s.setStatus(BStatus.nullStatus);
-            }
-            else
-            {
-                HStr str = (HStr) val;
-                s.setValue(str.val);
-                s.setStatus(BStatus.ok);
-            }
-            sw.set("in" + level, s);
+            writeSW(point, plevel, val);
         }
         else 
         {
             LOG.severe("cannot write to " + point.getSlotPath() + ", unknown point type " + point.getClass());
+        }
+    }
+
+    /**
+     * Find the appropriate Niagara BControlPoint level in a priority
+     * array based on an integer between 1 - 17.  In Niagara, level 17
+     * is the fallback slot however Haystack doesn't recognise the
+     * enumeration so it needs to be translated.
+     *
+     * @param level valid value is from 1 - 17
+     * @return the corresponding priority level or none
+     */
+    public static BPriorityLevel matchLevel(int level)
+    {
+        BPriorityLevel plevel = BPriorityLevel.make(BPriorityLevel.NONE);
+
+        if (level == FALLBACK_LEVEL)
+        {
+            plevel = BPriorityLevel.make(BPriorityLevel.FALLBACK);
+        }
+        else if (level >= 1 && level <= 16)
+        {
+            plevel = BPriorityLevel.make(level);
+        }
+
+        return plevel;
+    }
+
+    /**
+     * Handle the actual write to a numeric writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to, including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeNW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BNumericWritable nw = (BNumericWritable) p;
+        BStatusNumeric sn = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            sn = (BStatusNumeric) nw.getFallback().newCopy();
+        }
+        else
+        {
+            sn = (BStatusNumeric) nw.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            sn.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            HNum num = (HNum) val;
+            sn.setValue(num.val);
+            sn.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            nw.setFallback(sn);
+        }
+        else
+        {
+            nw.set("in" + l.getOrdinal(), sn);
+        }
+
+    }
+
+    /**
+     * Handle the actual write to a boolean writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to, including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeBW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BBooleanWritable bw = (BBooleanWritable) p;
+        BStatusBoolean sb = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            sb = (BStatusBoolean) bw.getFallback().newCopy();
+        }
+        else
+        {
+            sb = (BStatusBoolean) bw.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            sb.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            HBool bool = (HBool) val;
+            sb.setValue(bool.val);
+            sb.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            bw.setFallback(sb);
+        }
+        else
+        {
+            bw.set("in" + l.getOrdinal(), sb);
+        }
+    }
+
+    /**
+     * Handle the actual write to an enum writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to, including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeEW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BEnumWritable ew = (BEnumWritable) p;
+        BStatusEnum se = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            se = (BStatusEnum) ew.getFallback().newCopy();
+        }
+        else
+        {
+            se = (BStatusEnum) ew.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            se.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            String str = SlotUtil.toNiagara(((HStr) val).val);
+            BFacets facets = ew.getFacets();
+            BEnumRange range = (BEnumRange) facets.get(BFacets.RANGE);
+            BEnum enm = range.get(str);
+            se.setValue(enm);
+            se.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            ew.setFallback(se);
+        }
+        else
+        {
+            ew.set("in" + l.getOrdinal(), se);
+        }
+    }
+
+    /**
+     * Handle the actual write to a string writable point
+     *
+     * @param p the control point being written to
+     * @param l the priority level to write to including the fallback level
+     * @param val the value to write, including null
+     */
+    public static void writeSW(BControlPoint p, BPriorityLevel l, HVal val)
+    {
+        BStringWritable sw = (BStringWritable) p;
+        BStatusString ss = null;
+
+        if (l == BPriorityLevel.fallback)
+        {
+            ss = (BStatusString) sw.getFallback().newCopy();
+        }
+        else
+        {
+            ss = (BStatusString) sw.getLevel(l).newCopy();
+        }
+
+        if (val == null)
+        {
+            ss.setStatus(BStatus.nullStatus);
+        }
+        else
+        {
+            HStr str = (HStr) val;
+            ss.setValue(str.val);
+            ss.setStatus(BStatus.ok);
+        }
+
+        if (l == BPriorityLevel.fallback)
+        {
+            sw.setFallback(ss);
+        }
+        else
+        {
+            sw.set("in" + l.getOrdinal(), ss);
         }
     }
 
@@ -536,6 +708,8 @@ class PointIO
 
     private static final Logger LOG = Logger.getLogger("nhaystack");
     private static final String LAST_WRITE = "haystackLastWrite";
+
+    private static final int FALLBACK_LEVEL = 17;
 
     private final BNHaystackService service;
     private final Cache cache;

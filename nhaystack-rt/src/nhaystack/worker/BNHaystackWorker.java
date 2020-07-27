@@ -3,70 +3,78 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   14 Apr 2014  Mike Jarmy  Creation
+//   14 Apr 2014  Mike Jarmy     Creation
+//   09 May 2018  Eric Anderson  Migrated to slot annotations, added missing @Overrides annotations
 
 package nhaystack.worker;
 
-import java.util.logging.*;
-
-import javax.baja.status.*;
-import javax.baja.sys.*;
-import javax.baja.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.baja.nre.annotations.NiagaraProperty;
+import javax.baja.nre.annotations.NiagaraType;
+import javax.baja.status.BStatus;
+import javax.baja.sys.BComponent;
+import javax.baja.sys.Context;
+import javax.baja.sys.NotRunningException;
+import javax.baja.sys.Property;
+import javax.baja.sys.Sys;
+import javax.baja.sys.Type;
+import javax.baja.util.BWorker;
+import javax.baja.util.Queue;
+import javax.baja.util.Worker;
 
 /**
   * BNHaystackWorker is a BWorker that serves nhaystack.
   */
+
+@NiagaraType
+/**
+ * the size of the queue
+ */
+@NiagaraProperty(
+  name = "maxQueueSize",
+  type = "int",
+  defaultValue = "5000"
+)
 public class BNHaystackWorker
   extends BWorker
   implements BINHaystackWorker
 {
-    /*-
-
-    class BNHaystackWorker
-    {
-        properties
-        {
-            maxQueueSize: int
-                -- the size of the queue
-                default {[ 5000 ]}
-        }
-    }
-
-    -*/
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.worker.BNHaystackWorker(1126374167)1.0$ @*/
-/* Generated Sun Jun 01 13:38:16 EDT 2014 by Slot-o-Matic 2000 (c) Tridium, Inc. 2000 */
+/*@ $nhaystack.worker.BNHaystackWorker(1643292908)1.0$ @*/
+/* Generated Mon Nov 20 09:48:49 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "maxQueueSize"
 ////////////////////////////////////////////////////////////////
   
   /**
-   * Slot for the <code>maxQueueSize</code> property.
+   * Slot for the {@code maxQueueSize} property.
    * the size of the queue
-   * @see nhaystack.worker.BNHaystackWorker#getMaxQueueSize
-   * @see nhaystack.worker.BNHaystackWorker#setMaxQueueSize
+   * @see #getMaxQueueSize
+   * @see #setMaxQueueSize
    */
-  public static final Property maxQueueSize = newProperty(0, 5000,null);
+  public static final Property maxQueueSize = newProperty(0, 5000, null);
   
   /**
-   * Get the <code>maxQueueSize</code> property.
+   * Get the {@code maxQueueSize} property.
    * the size of the queue
-   * @see nhaystack.worker.BNHaystackWorker#maxQueueSize
+   * @see #maxQueueSize
    */
   public int getMaxQueueSize() { return getInt(maxQueueSize); }
   
   /**
-   * Set the <code>maxQueueSize</code> property.
+   * Set the {@code maxQueueSize} property.
    * the size of the queue
-   * @see nhaystack.worker.BNHaystackWorker#maxQueueSize
+   * @see #maxQueueSize
    */
-  public void setMaxQueueSize(int v) { setInt(maxQueueSize,v,null); }
+  public void setMaxQueueSize(int v) { setInt(maxQueueSize, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
   
+  @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackWorker.class);
 
@@ -76,6 +84,7 @@ public class BNHaystackWorker
 // BComponent
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public void changed(Property property, Context context)
     {
         super.changed(property, context);
@@ -95,15 +104,17 @@ public class BNHaystackWorker
         }
     }
 
+    @Override
     public boolean isParentLegal(BComponent parent)
     {
-        return (parent instanceof BINHaystackWorkerParent);
+        return parent instanceof BINHaystackWorkerParent;
     }
 
 ////////////////////////////////////////////////////////////////
 // BWorker
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public synchronized Worker getWorker()
     {
         if (worker == null)
@@ -124,6 +135,7 @@ public class BNHaystackWorker
         return queue.maxSize();
     }
 
+    @Override
     protected String getWorkerThreadName()
     {
         return "NHaystackWorker:" + ((BComponent) getParent()).getSlotPath();
@@ -133,11 +145,13 @@ public class BNHaystackWorker
 // public
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public BINHaystackWorkerParent getWorkerParent()
     {
         return (BINHaystackWorkerParent) getParent();
     }
 
+    @Override
     public synchronized void enqueueChore(WorkerChore chore)
     {
         if (!isRunning() || queue == null)
@@ -161,7 +175,7 @@ public class BNHaystackWorker
             return;
         }
 
-        if (queue.size() == 0)
+        if (queue.isEmpty())
         {
             if (log.isLoggable(Level.FINE))
                 log.fine("Chore ENQUEUE " + chore);
@@ -193,6 +207,6 @@ public class BNHaystackWorker
 // attributes 
 ////////////////////////////////////////////////////////////////
 
-    private Queue queue = null;
-    private Worker worker = null;
+    private Queue queue;
+    private Worker worker;
 }

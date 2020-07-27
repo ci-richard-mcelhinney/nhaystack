@@ -1,29 +1,34 @@
 //  Copyright (c) 2012, J2 Innovations
 //  Licensed under the Academic Free License version 3.0
-// 
+//
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
+//    26 Sep 2018  Andrew Saunders     Added dependency on tagdictionary to support Niagara
+//                                     Haystack tags
+//
+
+description = "nhaystack workbench module"
 
 niagaraModule {
-  preferredSymbol = "nh"
-  runtimeProfile = "wb"
-  moduleName = "nhaystack"
+    preferredSymbol = "nh"
+    runtimeProfile = "wb"
+    moduleName = "nhaystack"
 }
 
 dependencies {
-  compile "Tridium:nre:4.2.36.38"
-  compile "Tridium:baja:4.2.36.38"
-  compile "Tridium:alarm-rt:4.2.36.38"
-  compile "Tridium:driver-rt:4.2.36.38"
-  compile "Tridium:gx-rt:4.2.36.38"
-  compile "Tridium:control-rt:4.2.36.38"
-  compile "Tridium:driver-wb:4.2.36.38"
-  compile "Tridium:basicDriver-rt:4.2.36.38"
-  compile "Tridium:workbench-wb:4.2.36.38"
-  compile "Tridium:bajaui-wb:4.2.36.38"
-  compile "Tridium:gx-wb:4.2.36.38"
-  compile "Tridium:fox-rt:4.2.36.38"
-  
-  compile "Project Haystack:nhaystack-rt:2.1.0"
-  
+    compile "Tridium:nre:4.4.93.40"
+    compile "Tridium:baja:4.4.93.40"
+    compile "Tridium:alarm-rt:4.4.93.40"
+    compile "Tridium:driver-rt:4.4.93.40"
+    compile "Tridium:gx-rt:4.4.93.40"
+    compile "Tridium:control-rt:4.4.93.40"
+    compile "Tridium:driver-wb:4.4.93.40"
+    compile "Tridium:basicDriver-rt:4.4.93.40"
+    compile "Tridium:workbench-wb:4.4.93.40"
+    compile "Tridium:bajaui-wb:4.4.93.40"
+    compile "Tridium:gx-wb:4.4.93.40"
+    compile "Tridium:fox-rt:4.4.93.40"
+    compile "Tridium:tagdictionary-rt:4.4.93.40"
+
+    compile project(":nhaystack-rt")
 }

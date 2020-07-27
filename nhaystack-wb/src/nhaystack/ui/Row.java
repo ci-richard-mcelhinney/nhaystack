@@ -3,30 +3,63 @@
 // Licensed under the Academic Free License version 3.0
 //
 // History:
-//   02 Feb 2013  Mike Jarmy Creation
+//   02 Feb 2013  Mike Jarmy       Creation
+//   10 May 2018  Eric Anderson    Added use of generics
+//   26 Sep 2018  Andrew Saunders  Managing interaction with Niagara Haystack tags
 //
 
 package nhaystack.ui;
 
-import javax.baja.fox.*;
-import javax.baja.naming.*;
-import javax.baja.sys.*;
-import javax.baja.ui.*;
-import javax.baja.ui.list.*;
-import javax.baja.nre.util.*;
-import javax.baja.workbench.fieldeditor.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import javax.baja.fox.BFoxProxySession;
+import javax.baja.naming.BOrd;
+import javax.baja.sys.BBoolean;
+import javax.baja.sys.BString;
+import javax.baja.ui.BDropDown;
+import javax.baja.ui.BListDropDown;
+import javax.baja.ui.BTextDropDown;
+import javax.baja.ui.list.BList;
+import javax.baja.workbench.fieldeditor.BWbFieldEditor;
+import nhaystack.BHDict;
+import nhaystack.BHFloor;
+import nhaystack.BHNum;
+import nhaystack.BHRef;
+import nhaystack.BHTimeZone;
+import nhaystack.BHUnit;
+import nhaystack.NHRef;
+import nhaystack.util.NHaystackConst;
+import nhaystack.res.Resources;
+import nhaystack.server.BNHaystackService;
+import nhaystack.util.SlotUtil;
+import org.projecthaystack.HBool;
+import org.projecthaystack.HCoord;
+import org.projecthaystack.HDict;
+import org.projecthaystack.HMarker;
+import org.projecthaystack.HNum;
+import org.projecthaystack.HRef;
+import org.projecthaystack.HStr;
+import org.projecthaystack.HTimeZone;
+import org.projecthaystack.HUri;
+import org.projecthaystack.HVal;
+import org.projecthaystack.util.Base64;
 
-import org.projecthaystack.*;
-import nhaystack.*;
-import nhaystack.res.*;
-import nhaystack.server.*;
-
-class Row
+class Row implements NHaystackConst
 {
-    Row(BHDictEditor editor, String name, HVal val)
+    Row(BHDictEditor editor, String name, HVal val, boolean isDirectTag, boolean isNew)
+    {
+        this(editor, name, val, isDirectTag, isNew, null);
+    }
+
+    Row(BHDictEditor editor, String name, HVal val, boolean isDirectTag, boolean isNew, String relationSlot)
     {
         String kind = makeKind(val);
-
+        this.isDirectTag = isDirectTag;
+        this.isNew = isNew;
+        this.isUnresolvedRef = false;
+        this.relationSlot = relationSlot;
         this.kinds = new BListDropDown();
         populateKinds(kind, kinds);
         kinds.setSelectedItem(kind);
@@ -37,7 +70,8 @@ class Row
         names.setText(name);
         editor.linkTo(names, BDropDown.valueModified, BHDictEditor.namesModified);  
 
-        this.fe = makeValueFE(editor, name, val);
+        this.fe = makeValueFE(editor, name, val, this);
+        editor.linkTo(fe, BWbFieldEditor.pluginModified, BHDictEditor.valueModified);
 
         switch(editor.editorType())
         {
@@ -51,6 +85,12 @@ class Row
                 fe.setReadonly(true);
                 break;
         }
+        if(!isDirectTag) // if implied (tagGroup tag) disable editors
+        {
+            kinds.setEnabled(false);
+            names.setEnabled(false);
+            fe.setReadonly(kinds.getSelectedItem().equals("Marker"));
+        }
     }
 
 ////////////////////////////////////////////////////////////////
@@ -61,62 +101,65 @@ class Row
     {
         BList list = names.getList();
         list.removeAllItems();
-        String[] tags = Resources.getKindTags(kind);
+        List<String> tags = new ArrayList<>(Arrays.asList(Resources.getKindTags(kind)));
 
         // smuggle navNameFormat into the dropdown
         if (kind.equals("Str"))
         {
-            Array arr = new Array(tags);
-            arr.add("navNameFormat");
-            tags = (String[]) arr.sort().trim();
+            tags.add("navNameFormat");
+            Collections.sort(tags);
         }
 
-        for (int i = 0; i < tags.length; i++)
+        for (String tag : tags)
         {
-            if (tags[i].equals("id")) continue;
-            if (tags[i].equals("siteRef")) continue;
-            if (tags[i].equals("equipRef")) continue;
+            if (tag.equals("id")) continue;
+            if (tag.equals(SITE_REF)) continue;
+            if (tag.equals(EQUIP_REF)) continue;
 
-            list.addItem(tags[i]);
+            list.addItem(tag);
         }
     }
 
-    static BWbFieldEditor initValueFE(String kind)
+    static BWbFieldEditor initValueFE(String kind, boolean isUnresolvedRef)
     {
-        if (kind.equals("Marker"))
+        switch (kind)
         {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            fe.setReadonly(true);
-            return fe;
+            case "Marker":
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.DEFAULT);
+                fe.setReadonly(true);
+                return fe;
+            }
+            case "Number":
+            {
+                BWbFieldEditor fe = new BHNumFE();
+                fe.loadValue(BHNum.DEFAULT);
+                return fe;
+            }
+            case "Str":
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.DEFAULT);
+                return fe;
+            }
+            case "Ref":
+            {
+                // because we removed siteRef and equipRef from the names dropdown,
+                // its OK to just use the default ord FE
+                BWbFieldEditor fe = new BRefOrdFE(isUnresolvedRef);
+                fe.loadValue(BOrd.DEFAULT);
+                return fe;
+            }
+            case "Bool":
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
+                fe.loadValue(BBoolean.DEFAULT);
+                return fe;
+            }
+            default:
+                throw new IllegalStateException();
         }
-        else if (kind.equals("Number"))
-        {
-            BWbFieldEditor fe = new BHNumFE();
-            fe.loadValue(BHNum.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Str"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Ref"))
-        {
-            // because we removed siteRef and equipRef from the names dropdown,
-            // its OK to just use the default ord FE
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
-            fe.loadValue(BOrd.DEFAULT);
-            return fe;
-        }
-        else if (kind.equals("Bool"))
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BBoolean.DEFAULT);
-            fe.loadValue(BBoolean.DEFAULT);
-            return fe;
-        }
-        else throw new IllegalStateException();
     }
 
 ////////////////////////////////////////////////////////////////
@@ -130,7 +173,8 @@ class Row
         else if (val instanceof HStr)    return "Str";
         else if (val instanceof HRef)    return "Ref";
         else if (val instanceof HBool)   return "Bool";
-        else if (val instanceof HUri)      return "Str"; //"Uri";
+        else if (val instanceof HUri)    return "Str"; //"Uri";
+        else if (val instanceof HCoord)  return "Str";
 //        else if (val instanceof HBin)      return "Bin";
 //        else if (val instanceof HDate)     return "Date";
 //        else if (val instanceof HTime)     return "Time";
@@ -155,7 +199,7 @@ class Row
     }
 
     private static BWbFieldEditor makeValueFE(
-        BHDictEditor editor, String name, HVal val)
+        BHDictEditor editor, String name, HVal val, Row row)
     {
         if (val instanceof HMarker) 
             return makeMarkerFE();
@@ -167,12 +211,22 @@ class Row
             return makeStrFE(name, (HStr) val);
 
         else if (val instanceof HRef)
-            return makeRefFE(editor, name, (HRef) val);
+            return makeRefFE(editor, name, (HRef) val, row.isUnresolvedRef);
 
         else if (val instanceof HBool)
             return makeBoolFE((HBool) val);
 
+        else if (val instanceof HCoord)
+            return makeCoordFE((HCoord)val);
+
         else throw new IllegalStateException();
+    }
+
+    private static BWbFieldEditor makeCoordFE(HCoord coord)
+    {
+        BWbFieldEditor fe = new BHCoordFE();
+        fe.loadValue(BString.make(coord.toString()));
+        return fe;
     }
 
     private static BWbFieldEditor makeMarkerFE()
@@ -192,69 +246,87 @@ class Row
 
     private static BWbFieldEditor makeStrFE(String name, HStr str)
     {
-        if (name.equals("tz"))
+        switch (name)
         {
-            BWbFieldEditor fe = new BHTimeZoneFE();
-            fe.loadValue(BHTimeZone.make(HTimeZone.make(str.val)));
-            return fe;
-        }
-        else if (name.equals("unit"))
-        {
-            BWbFieldEditor fe = new BHUnitFE();
-            fe.loadValue(BHUnit.make(Resources.getSymbolUnit(str.val).symbol));
-            return fe;
-        }
-        else if (name.equals("floorName"))
-        {
-            BWbFieldEditor fe = new BHFloorFE();
-            fe.loadValue(BHFloor.make(str.val));
-            return fe;
-        }
-        else
-        {
-            BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
-            fe.loadValue(BString.make(str.val));
+            case "tz":
+            {
+                BWbFieldEditor fe = new BHTimeZoneFE();
+                fe.loadValue(BHTimeZone.make(HTimeZone.make(str.val)));
+                return fe;
+            }
+            case "unit":
+            {
+                BWbFieldEditor fe = new BHUnitFE();
+                fe.loadValue(BHUnit.make(Resources.getSymbolUnit(str.val).symbol));
+                return fe;
+            }
+            case "floorName":
+            {
+                BWbFieldEditor fe = new BHFloorFE();
+                fe.loadValue(BHFloor.make(str.val));
+                return fe;
+            }
+            default:
+            {
+                BWbFieldEditor fe = BWbFieldEditor.makeFor(BString.DEFAULT);
+                fe.loadValue(BString.make(str.val));
 
-            if (name.equals("weeklySchedule"))
-                fe.setReadonly(true);
+                if (name.equals("weeklySchedule"))
+                    fe.setReadonly(true);
 
-            return fe;
+                return fe;
+            }
         }
     }
 
     private static BWbFieldEditor makeRefFE(
-        BHDictEditor editor, String name, HRef ref)
+        BHDictEditor editor, String name, HRef ref, boolean isUnresolvedRef)
     {
         BFoxProxySession session = editor.group().session();
 
         // create ord
         BOrd ord = BOrd.DEFAULT;
 
-        if (!(BHRef.make(ref).equals(BHRef.DEFAULT)))
+        final BHRef bhRef = BHRef.make(ref);
+        if (!bhRef.equals(BHRef.DEFAULT))
         {
-            HDict dict = ((BHDict) editor.group().service().invoke(
-                    BNHaystackService.readById, BHRef.make(ref))).getDict();
-
-            // workaround for weird problem with axSlotPath
-            if (dict.has("axSlotPath"))
-                ord = BOrd.make("station:|" + dict.getStr("axSlotPath"));
-            else
-                System.out.println("ERROR: " + dict.toZinc() + " does not have axSlotPath.");
+            HDict dict = null;
+            try
+            {
+                dict = ((BHDict)editor.group().service().invoke(
+                    BNHaystackService.readById, bhRef)).getDict();
+            }
+            catch(Exception e)
+            {
+                final NHRef nhRef = NHRef.make(ref);
+                ord = BOrd.make("station:|" +
+                    (nhRef.getSpace().equals(NHRef.COMP) ?
+                        "slot:" + SlotUtil.toNiagara(nhRef.getPath()) :
+                        Base64.URI.decodeUTF8(nhRef.getPath())));
+            }
+            if(dict != null)
+            {
+                // workaround for weird problem with axSlotPath
+                if (dict.has("axSlotPath"))
+                    ord = BOrd.make("station:|" + dict.getStr("axSlotPath"));
+                else
+                    System.out.println("ERROR: " + dict.toZinc() + " does not have axSlotPath.");
+            }
         }
 
         // create field editor
-        BWbFieldEditor fe = null;
-        if (name.equals("siteRef"))
+        BWbFieldEditor fe;
+        switch (name)
         {
+        case SITE_REF:
             fe = new BSiteRefFE(editor.group());
-        }
-        else if (name.equals("equipRef"))
-        {
+            break;
+        case EQUIP_REF:
             fe = new BEquipRefFE(editor.group());
-        }
-        else
-        {
-            fe = BWbFieldEditor.makeFor(BOrd.DEFAULT);
+            break;
+        default:
+            fe = new BRefOrdFE(isUnresolvedRef);
+            break;
         }
 
         // load
@@ -273,7 +345,11 @@ class Row
 // Attribs
 ////////////////////////////////////////////////////////////////
 
-    BListDropDown kinds;
-    BTextDropDown names;
+    final BListDropDown kinds;
+    final BTextDropDown names;
     BWbFieldEditor fe;
+    boolean isDirectTag;
+    final boolean isNew;
+    boolean isUnresolvedRef;
+    String relationSlot;
 }
