@@ -253,22 +253,26 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     HGrid grid = client.readAll("id");
 
     // do checks
-    printBasicGrid(grid);
-    Assert.assertEquals(grid.numRows(), 16);
-    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell"));
-    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.equip1"));
-    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.equip1.BooleanWritable"));
-    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.equip1.EnumWritable"));
-    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.equip1.StringWritable"));
-    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.equip1.SineWave"));
-    Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.equip2"));
-    Assert.assertEquals(grid.row(7).id(), HRef.make("S.Winterfell.equip2.SineWave2"));
-    Assert.assertEquals(grid.row(8).id(), HRef.make("S.Winterfell.equip2.SineWave3"));
-    Assert.assertEquals(grid.row(9).id(), HRef.make("S.Richmond"));
+//System.out.println("verifyRead");
+//printBasicGrid(grid);
+    Assert.assertEquals(grid.numRows(), 17);
+    Assert.assertEquals(grid.row(0).id(),  HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(1).id(),  HRef.make("S.Winterfell.equip1"));
+    Assert.assertEquals(grid.row(2).id(),  HRef.make("S.Winterfell.equip1.BooleanWritable"));
+    Assert.assertEquals(grid.row(3).id(),  HRef.make("S.Winterfell.equip1.EnumWritable"));
+    Assert.assertEquals(grid.row(4).id(),  HRef.make("S.Winterfell.equip1.StringWritable"));
+    Assert.assertEquals(grid.row(5).id(),  HRef.make("S.Winterfell.equip1.SineWave"));
+    Assert.assertEquals(grid.row(6).id(),  HRef.make("S.Winterfell.equip2"));
+    Assert.assertEquals(grid.row(7).id(),  HRef.make("S.Winterfell.equip2.SineWave2"));
+    Assert.assertEquals(grid.row(8).id(),  HRef.make("S.Winterfell.equip2.SineWave3"));
+    Assert.assertEquals(grid.row(9).id(),  HRef.make("S.Richmond"));
     Assert.assertEquals(grid.row(10).id(), HRef.make("S.Richmond.AHU2"));
     Assert.assertEquals(grid.row(11).id(), HRef.make("S.Richmond.AHU2.NumericWritable"));
     Assert.assertEquals(grid.row(12).id(), HRef.make("S.Winterfell.equip1.SineWave2"));
     Assert.assertEquals(grid.row(13).id(), HRef.make("S.Winterfell.equip1.SineWave4"));
+    Assert.assertEquals(grid.row(14).id(), HRef.make("C.SineWave5"));
+    Assert.assertEquals(grid.row(15).id(), HRef.make("C.mv"));
+    Assert.assertEquals(grid.row(16).id(), HRef.make("H.test.LogHistory"));
 
     Assert.assertEquals(grid.row(1).get("siteRef"), HRef.make("S.Winterfell"));
     Assert.assertEquals(grid.row(2).get("siteRef"), HRef.make("S.Winterfell"));
@@ -355,16 +359,18 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
 
     n = makeNavGrid(HStr.make("slot:/"));
     grid = client.call("nav", n);
+//System.out.println("verifyNav- slot:/");
 //printBasicGrid(grid);
-    Assert.assertEquals(grid.numRows(), 7);
+    Assert.assertEquals(grid.numRows(), 8);
     Assert.assertEquals(grid.row(0).get("navId"), HStr.make("slot:/Services"));
     Assert.assertEquals(grid.row(1).get("navId"), HStr.make("slot:/Drivers"));
 //printFullGrid(grid);
     Assert.assertTrue(grid.row(2).missing("navId"));
-    Assert.assertTrue(grid.row(3).has("navId"));
+    Assert.assertEquals(grid.row(3).get("navId"), HStr.make("slot:/home"));
     Assert.assertEquals(grid.row(4).get("navId"), HStr.make("slot:/SineWave2"));
     Assert.assertEquals(grid.row(5).get("navId"), HStr.make("slot:/SineWave4"));
     Assert.assertEquals(grid.row(6).get("navId"), HStr.make("slot:/SineWave5"));
+    Assert.assertEquals(grid.row(7).get("navId"), HStr.make("slot:/mv"));
 //        Assert.assertEquals(grid.row(7).get("navId"), HStr.make("slot:/SineWave5"));
 //        Assert.assertTrue(grid.row(8).missing("navId"));
 //        Assert.assertEquals(grid.row(9).get("navId"), HStr.make("slot:/AHU2"));
@@ -433,7 +439,18 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
   public void verifyHisRead() throws Exception
   {
     HGrid grid = client.readAll("his");
-    Assert.assertEquals(grid.numRows(), 8);
+//System.out.println("verifyHisRead");
+//printBasicGrid(grid);
+    Assert.assertEquals(grid.numRows(), 9);
+    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell.equip1.BooleanWritable"));
+    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.equip1.SineWave"));
+    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.equip2.SineWave2"));
+    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.equip2.SineWave3"));
+    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Richmond.AHU2.NumericWritable"));
+    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.equip1.SineWave2"));
+    Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.equip1.SineWave4"));
+    Assert.assertEquals(grid.row(7).id(), HRef.make("C.SineWave5"));
+    Assert.assertEquals(grid.row(8).id(), HRef.make("H.test.LogHistory"));
 
     ///////////////////////////////////////////////
 

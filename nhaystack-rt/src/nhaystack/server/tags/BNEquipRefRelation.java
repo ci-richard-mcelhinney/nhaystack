@@ -4,6 +4,7 @@
 //
 // History:
 //   11 Apr 2019  Eric Anderson  Creation based on class in haystack-rt
+//   08 Jan 2021  Eric Anderson  Minor performance improvements
 //
 package nhaystack.server.tags;
 
@@ -14,10 +15,10 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.baja.control.BControlPoint;
 import javax.baja.control.ext.BNullProxyExt;
 import javax.baja.nre.annotations.NiagaraType;
-import javax.baja.sys.BComplex;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BRelation;
 import javax.baja.sys.Property;
@@ -60,24 +61,28 @@ public class BNEquipRefRelation extends BRelationInfo
      * BHEquip component within an ancestor. The entity must be a BControlPoint.
      */
     @Override
-    public Optional<Relation> getRelation(Entity point)
+    public Optional<Relation> getRelation(Entity source)
     {
-        if (!(point instanceof BControlPoint))
+        if (!(source instanceof BControlPoint))
         {
             return Optional.empty();
         }
 
         Id relationId = getRelationId();
-        if (!hasDirectRelation((BComponent) point, relationId))
+        if (hasDirectRelation((BComponent) source, relationId))
         {
-            BComponent equip = getImpliedEquip((BControlPoint) point);
-            if (equip != null)
-            {
-                return Optional.of(new BasicRelation(relationId, equip, Relation.OUTBOUND));
-            }
+            return Optional.empty();
         }
 
-        return Optional.empty();
+        BComponent equip = getImpliedEquip((BControlPoint) source);
+        if (equip != null)
+        {
+            return Optional.of(new BasicRelation(relationId, equip, Relation.OUTBOUND));
+        }
+        else
+        {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -92,32 +97,37 @@ public class BNEquipRefRelation extends BRelationInfo
      * {@link #getRelation(Entity)}.
      */
     @Override
-    public void addRelations(Entity entity, Collection<Relation> relations)
+    public void addRelations(Entity source, Collection<Relation> relations)
     {
         // Add the outbound relation to a BControlPoint
-        getRelation(entity).ifPresent(relations::add);
-
-        if (entity instanceof BHEquip)
+        Optional<Relation> outbound = getRelation(source);
+        if (outbound.isPresent())
         {
-            if (isPrimaryHEquip((BHEquip) entity))
+            relations.add(outbound.get());
+        }
+
+        if (source instanceof BHEquip)
+        {
+            if (isPrimaryHEquip((BHEquip) source))
             {
                 // Traverse descendants starting with the parent component so
                 // siblings of this BHEquip will be included.
-                BComponent start = ((BHEquip) entity).getParent().asComponent();
+                BComponent start = ((BHEquip) source).getParent().asComponent();
                 relateFromDescendantPoints(start, relations);
 
                 // Traverse descendants starting of this BHEquip, too.
-                relateFromDescendantPoints((BHEquip) entity, relations);
+                relateFromDescendantPoints((BHEquip) source, relations);
             }
         }
-        else if (entity instanceof BComponent && hasEquipTag(entity) &&
-                 !hasHEquipChild((BComponent) entity))
+        else if (source instanceof BComponent &&
+                 hasEquipTag(source) &&
+                 !hasHEquipChild((BComponent) source))
         {
             // Give preference to the BHEquip component even if this component
             // has an hs:equip tag.
             // Wait for the BHEquip child to be handled so relations are made to
             // it.
-            relateFromDescendantPoints((BComponent) entity, relations);
+            relateFromDescendantPoints((BComponent) source, relations);
         }
     }
 
@@ -128,21 +138,21 @@ public class BNEquipRefRelation extends BRelationInfo
             return null;
         }
 
-        BComplex parent = point.getParent();
+        BComponent parent = (BComponent) point.getParent();
         while (parent != null)
         {
-            BHEquip hEquip = getHEquipChild(parent.asComponent());
+            BHEquip hEquip = getHEquipChild(parent);
             if (hEquip != null)
             {
                 return hEquip;
             }
 
-            if (hasEquipTag(parent.asComponent()))
+            if (hasEquipTag(parent))
             {
-                return parent.asComponent();
+                return parent;
             }
 
-            parent = parent.getParent();
+            parent = (BComponent) parent.getParent();
         }
 
         return null;
