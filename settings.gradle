@@ -4,67 +4,84 @@
 //  History:
 //    10 Mar 2016  Richard McElhinney  Creation
 
-import groovy.io.FileVisitResult
 import groovy.io.FileType
+import groovy.io.FileVisitResult
 
+pluginManagement {
+    apply from: 'environment.gradle'
+
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.namespace == 'com.tridium') {
+                useModule('com.tridium.tools:niagara-plugins:4.1.5')
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "${gradle.ext.niagara_home}/etc/m2/repository"
+        }
+        gradlePluginPortal()
+    }
+}
 
 def discoveredProjects = [:] as Map<String, File>
 
 ext {
-  // CONFIGURE your sub-project folders here.
-  // This will include ALL sub-folders as sub-projects.
-  niagaraRoots = ['.']
-  // To explicitly define sub-project folders, name them in the array like this
-  //niagaraRoots = ['componentLinks', 'envCtrlDriver']
+    // CONFIGURE your sub-project folders here.
+    // This will include ALL sub-folders as sub-projects.
+    niagaraRoots = ['.']
+    // To explicitly define sub-project folders, name them in the array like this
+    //niagaraRoots = ['componentLinks', 'envCtrlDriver']
 
-  // CONFIGURE any directories to exclude from search for nested sub-projects
-  excludeDirs = ['.hg', 'build', 'out', 'src', 'srcTest', 'lib', 'test', 'libJar', 'docs']
+    // CONFIGURE any directories to exclude from search for nested sub-projects
+    excludeDirs = ['.hg', 'build', 'out', 'src', 'srcTest', 'lib', 'test', 'libJar', 'docs']
 }
 
 // OR set the 'userRepos' gradle property.
 //
 if (hasProperty('userRepos')) {
-  settings.ext.niagaraRoots += userRepos.split(",").collect()
+    settings.ext.niagaraRoots += userRepos.split(",").collect()
 }
 
 // my-settings.gradle.
 //
 def mySettings = file('my-settings.gradle')
 if (mySettings.exists()) {
-  apply from: mySettings
+    apply from: mySettings
 }
 
 def environment = file('environment.gradle')
 if (environment.exists()) {
-  apply from: environment
+    apply from: environment
 }
 
 // DO NOT MODIFY the niagaraRoots configuration
 niagaraRoots.collect({ file(it) }).findAll({ it.exists() }).each { File projectRoot ->
-  projectRoot.traverse(
-    type: FileType.DIRECTORIES,
-    preRoot: true,
-    preDir: { File projectDir ->
-      def projectName = projectDir.name
-      if (excludeDirs.contains(projectName)) {
-        return FileVisitResult.SKIP_SUBTREE
-      }
+    projectRoot.traverse(
+            type: FileType.DIRECTORIES,
+            preRoot: true,
+            preDir: { File projectDir ->
+                def projectName = projectDir.name
+                if (excludeDirs.contains(projectName)) {
+                    return FileVisitResult.SKIP_SUBTREE
+                }
 
-      File buildScript = new File(projectDir, "${projectName}.gradle")
-      if (buildScript.exists()) {
-        discoveredProjects[projectName] = projectDir
-        include projectName
-        return FileVisitResult.SKIP_SUBTREE
-      }
-    }
-  )
+                File buildScript = new File(projectDir, "${projectName}.gradle")
+                if (buildScript.exists()) {
+                    discoveredProjects[projectName] = projectDir
+                    include projectName
+                    return FileVisitResult.SKIP_SUBTREE
+                }
+            }
+    )
 }
 
 // Can we change the rootproject.name?
 rootProject.name = 'nhaystack'
 rootProject.children.each { project ->
-  project.projectDir = discoveredProjects[project.name]
-  project.buildFileName = "${project.name}.gradle"
-  assert project.projectDir.isDirectory()
-  assert project.buildFile.isFile()
+    project.projectDir = discoveredProjects[project.name]
+    project.buildFileName = "${project.name}.gradle"
+    assert project.projectDir.isDirectory()
+    assert project.buildFile.isFile()
 }
