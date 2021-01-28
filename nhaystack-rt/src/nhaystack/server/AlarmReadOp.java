@@ -1,3 +1,11 @@
+//
+// Copyright (c) 2021, Project Haystack Corporation
+// Licensed under the Academic Free License version 3.0
+//
+// History:
+//   28 Jan 2021  Richard McElhinney  Creation
+//
+
 package nhaystack.server;
 
 import org.projecthaystack.*;
@@ -9,9 +17,20 @@ import javax.baja.control.*;
 import javax.baja.naming.BOrdList;
 import javax.baja.sys.*;
 import java.util.*;
+import java.util.logging.Logger;
 
+/**
+ * Implements a Haystack REST API Op for reading alarms generated
+ * by a specific control point
+ *
+ * @author Richard McElhinney
+ */
 public class AlarmReadOp extends HOp
 {
+  public AlarmReadOp()
+  {
+  }
+
   @Override
   public String name()
   {
@@ -39,27 +58,33 @@ public class AlarmReadOp extends HOp
     try (AlarmDbConnection conn = alarmService.getAlarmDb().getDbConnection(null))
     {
       // find the point in the station and check for any alarm extensions
+      req.dump();
       HDict filter = req.row(0);
       BControlPoint point = (BControlPoint) tagMgr.lookupComponent(filter.id());
+      log.fine("Found point by id " + filter.id().toString());
       Optional<BAlarmSourceExt> optExt = findAlarmExt(point);
       if (!optExt.isPresent())
       {
+        log.fine("Point " + point.getSlotPath() + " has no alarm extension");
         return HGrid.EMPTY;
       }
 
       // get the open alarms for the found alarm extension
-      BOrdList list = BOrdList.make(optExt.get().getAbsoluteOrd());
+      log.fine("Using source ord: " + optExt.get().getNavOrd() + " for alarm source list");
+      BOrdList list = BOrdList.make(optExt.get().getNavOrd());
       Cursor<BAlarmRecord> alarmCursor = conn.getOpenAlarmsForSource(list);
 
       HGridBuilder gridBuilder = new HGridBuilder();
       ArrayList<HDict> a = new ArrayList<>();
 
       // process the alarms
+      log.fine("Start processing alarm records");
       while (alarmCursor.next())
       {
         BAlarmRecord alarmRec = alarmCursor.get();
         a.add(createAlarmRecordDict(alarmRec));
       }
+      log.fine("Processed open alarms search, found " + a.size() + " records");
 
       // do a array type conversion!
       HDict[] dicts = new HDict[a.size()];
@@ -74,11 +99,18 @@ public class AlarmReadOp extends HOp
     }
   }
 
+  /**
+   * Helper function to create an HDict from a BAlarmRecord
+   *
+   * @param alarmRec a BAlarmRecord to translate into HDict
+   * @return a HDict containing the given tags for the alarm record
+   * @throws Exception if a problem retrieving the BAlarmRecord Uuid as a String
+   */
   public static HDict createAlarmRecordDict(BAlarmRecord alarmRec) throws Exception
   {
     HDictBuilder dictBuilder = new HDictBuilder();
 
-    dictBuilder.add("uuid", HRef.make(alarmRec.getUuid().encodeToString()));
+    dictBuilder.add("uuid", HStr.make(alarmRec.getUuid().encodeToString()));
     dictBuilder.add("ackState", HStr.make(alarmRec.getAckState().getTag()));
     dictBuilder.add("alarmClass", HStr.make(alarmRec.getAlarmClass()));
     dictBuilder.add("ts", HDateTime.make(alarmRec.getTimestamp().getMillis()));
@@ -89,6 +121,12 @@ public class AlarmReadOp extends HOp
     return dictBuilder.toDict();
   }
 
+  /**
+   * Helper function to retrieve the first BAlarmSourceExt from a BControlPoint
+   *
+   * @param point the BControlPoint to search for a BAlarmSourceExt
+   * @return an Optional of BAlarmSourceExt
+   */
   public static Optional<BAlarmSourceExt> findAlarmExt(BControlPoint point)
   {
     BPointExtension[] exts = point.getExtensions();
@@ -107,4 +145,6 @@ public class AlarmReadOp extends HOp
 
     return Optional.empty();
   }
+
+  private Logger log = Logger.getLogger("nhaystack.alarm");
 }
