@@ -57,9 +57,13 @@ public class AlarmReadOp extends HOp
     BAlarmService alarmService = (BAlarmService) Sys.getService(BAlarmService.TYPE);
     try (AlarmDbConnection conn = alarmService.getAlarmDb().getDbConnection(null))
     {
-      // find the point in the station and check for any alarm extensions
-      req.dump();
       HDict filter = req.row(0);
+      if (!filter.has("id"))
+      {
+        return HGrid.EMPTY;
+      }
+
+      // find the point in the station and check for any alarm extensions
       BControlPoint point = (BControlPoint) tagMgr.lookupComponent(filter.id());
       log.fine("Found point by id " + filter.id().toString());
       Optional<BAlarmSourceExt> optExt = findAlarmExt(point);
@@ -74,10 +78,8 @@ public class AlarmReadOp extends HOp
       BOrdList list = BOrdList.make(optExt.get().getNavOrd());
       Cursor<BAlarmRecord> alarmCursor = conn.getOpenAlarmsForSource(list);
 
-      HGridBuilder gridBuilder = new HGridBuilder();
-      ArrayList<HDict> a = new ArrayList<>();
-
       // process the alarms
+      ArrayList<HDict> a = new ArrayList<>();
       log.fine("Start processing alarm records");
       while (alarmCursor.next())
       {
