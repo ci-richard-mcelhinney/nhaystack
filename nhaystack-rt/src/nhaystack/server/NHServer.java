@@ -869,7 +869,7 @@ public class NHServer extends HServer
   private static final String LAST_WRITE = "haystackLastWrite";
   private static final HHisItem[] EMPTY_HIS_ITEM_ARR = new HHisItem[0];
 
-  private static final HOp[] OPS = {HStdOps.about, HStdOps.ops, HStdOps.formats, HStdOps.read, HStdOps.nav, HStdOps.watchSub, HStdOps.watchUnsub, HStdOps.watchPoll, HStdOps.pointWrite, HStdOps.hisRead, HStdOps.hisWrite, HStdOps.invokeAction, new NHServerOps.ExtendedReadOp(), new NHServerOps.ExtendedOp(), new AlarmAckOp()};
+  private static final HOp[] OPS = {HStdOps.about, HStdOps.ops, HStdOps.formats, HStdOps.read, HStdOps.nav, HStdOps.watchSub, HStdOps.watchUnsub, HStdOps.watchPoll, HStdOps.pointWrite, HStdOps.hisRead, HStdOps.hisWrite, HStdOps.invokeAction, new NHServerOps.ExtendedReadOp(), new NHServerOps.ExtendedOp(), new AlarmAckOp(), new AlarmReadOp()};
 
   private final Map<String, NHWatch> watches = new HashMap<>();
 
