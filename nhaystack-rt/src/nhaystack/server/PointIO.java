@@ -21,6 +21,7 @@ import javax.baja.schedule.*;
 import javax.baja.security.PermissionException;
 import javax.baja.status.*;
 import javax.baja.sys.*;
+import javax.baja.timezone.BTimeZone;
 import javax.baja.units.BUnit;
 import java.util.*;
 import java.util.logging.*;
@@ -296,6 +297,10 @@ public class PointIO
     BDailySchedule[] days = (BDailySchedule[]) week.getChildren(BDailySchedule.class);
     log.fine("Found " + days.length + " in schedule " + sched.getName() + " to process");
 
+    // timezone
+    BTimeZone stTz = BTimeZone.getLocal();
+    String tz = stTz.getId();
+
     ArrayList<HDict> items = new ArrayList<>();
     for (BDailySchedule day : days)
     {
@@ -320,6 +325,8 @@ public class PointIO
     HGrid schGrid = HGridBuilder.dictsToGrid(dicts);
 
     HDictBuilder sch = new HDictBuilder();
+    sch.add("enum", processFacets(sched));
+    sch.add("tz", HStr.make(tz));
     sch.add("schedule");
     sch.add("scheduleGrid", schGrid);
     sch.add("dis", sched.getDisplayName(null));
@@ -416,6 +423,34 @@ public class PointIO
     }
 
     return val;
+  }
+
+  public static HVal processFacets(BWeeklySchedule w)
+  {
+    HVal facets = null;
+    BFacets f = w.getFacets();
+
+    if (w.getType() == BBooleanSchedule.TYPE)
+    {
+      String enumDef = f.get("falseText") + "," + f.get("trueText");
+      facets = HStr.make(enumDef);
+    }
+    else if (w.getType() == BNumericSchedule.TYPE)
+    {
+      HDictBuilder numFacets = new HDictBuilder();
+      numFacets.add("unit", HStr.make(f.gets("units", "")));
+      numFacets.add("minVal", HNum.make(f.getf("min", Float.MIN_VALUE)));
+      numFacets.add("maxVal", HNum.make(f.getf("max", Float.MAX_VALUE)));
+      numFacets.add("precision", HNum.make(f.geti("precision", 1)));
+
+      facets = numFacets.toDict();
+    }
+    else
+    {
+      facets = HStr.make("");
+    }
+
+    return facets;
   }
 
   /**

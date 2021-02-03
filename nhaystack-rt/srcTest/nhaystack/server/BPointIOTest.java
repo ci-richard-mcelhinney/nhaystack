@@ -15,7 +15,7 @@ import javax.baja.control.*;
 import javax.baja.control.enums.BPriorityLevel;
 import javax.baja.driver.util.BPollFrequency;
 import javax.baja.nre.annotations.NiagaraType;
-import javax.baja.schedule.BTimeSchedule;
+import javax.baja.schedule.*;
 import javax.baja.status.*;
 import javax.baja.sys.*;
 import javax.baja.test.BTestNg;
@@ -228,6 +228,37 @@ public class BPointIOTest extends BTestNg
     pointVal.setFacets(BFacets.make("test", 1));
     pointVal.setOut(new BStatusNumeric(35.1d));
     assertEquals(PointIO.processStatusValue(pointVal.getOut()), HNum.make(35.1d));
+  }
+
+  @Test
+  public void testBooleanFacetsOnSchedule()
+  {
+    BWeeklySchedule boolSched = new BBooleanSchedule();
+    boolSched.setFacets(BFacets.makeBoolean("occupied", "unoccupied"));
+    HStr enumTag = (HStr) PointIO.processFacets(boolSched);
+    assertEquals(enumTag.val, "unoccupied,occupied");
+
+    boolSched.setFacets(BFacets.makeBoolean("enabled", "disabled"));
+    enumTag = (HStr) PointIO.processFacets(boolSched);
+    assertEquals(enumTag.val, "disabled,enabled");
+  }
+
+  @Test
+  public void testNumericFacetsOnSchedule()
+  {
+    BWeeklySchedule numSched = new BNumericSchedule();
+    numSched.setFacets(BFacets.makeNumeric(BUnit.getUnit("celsius"), 2, 1, 20));
+
+    HDict facets = (HDict) PointIO.processFacets(numSched);
+    assertTrue(facets.has("unit"));
+    assertTrue(facets.has("minVal"));
+    assertTrue(facets.has("maxVal"));
+    assertTrue(facets.has("precision"));
+
+    assertEquals(facets.getStr("unit"), "°C");
+    assertEquals(facets.getDouble("minVal"), 1d);
+    assertEquals(facets.getDouble("maxVal"), 20d);
+    assertEquals(facets.getInt("precision"), 2);
   }
 
   private void verifyPointArrayStatus(BControlPoint p, BPriorityLevel skip, BStatus st)
