@@ -15,6 +15,7 @@
   <type class="nhaystack.ntest.BSiteRefRelationTest" name="SiteRefRelationTest"/>
   <type class="nhaystack.ntest.BSlotUtilTest" name="SlotUtilTest"/>
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
+  <type class="nhaystack.ntest.BNHaystackTagDictionaryTest" name="NHaystackTagDictionaryTest"/>
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
   <type class="nhaystack.ntest.helper.BTestProxyExt" name="TestProxyExt"/>

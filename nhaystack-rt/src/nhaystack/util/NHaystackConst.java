@@ -74,7 +74,7 @@ public interface NHaystackConst
     String TN_SITE_REF        = "hs$3asiteRef";
     String TN_TZ              = "hs$3atz";
 
-    String TAGS_VERSION = BHsTagDictionary.HAYSTACK_VERSION + " NH.2";
+    String TAGS_VERSION = BHsTagDictionary.HAYSTACK_VERSION + " NH.3";
     String IMPORT_SUFIX = " (import)";
     String TAGS_VERSION_IMPORT = TAGS_VERSION + IMPORT_SUFIX;
     String TAGS_CSV_FILE_VERSION = BHsTagDictionary.TAGS_CSV_FILE_VERSION;
