@@ -6,14 +6,21 @@
 //    11 May 2017  Christian Tremblay  Update (added tags download)
 //    09 May 2018  Eric Anderson       Updating to latest Niagara Gradle conventions
 
+plugins {
+    id 'com.tridium.niagara-signing'
+    id 'com.tridium.niagara' apply false
+    id 'com.tridium.niagara-module' apply false
+    id 'com.tridium.niagara-rjs' apply false
+}
+
 def getGradleProperty(String propName) {
-  if (gradle.hasProperty(propName)) {
-    gradle.getProperty(propName)
-  } else {
-    // Get system property, or, failing that, fall back to environment variable
-    // This allows setting, e.g., -Pniagara_home=blah
-    System.getProperty(propName) ?: System.getenv(propName)
-  }
+    if (gradle.hasProperty(propName)) {
+        gradle.getProperty(propName)
+    } else {
+        // Get system property, or, failing that, fall back to environment variable
+        // This allows setting, e.g., -Pniagara_home=blah
+        System.getProperty(propName) ?: System.getenv(propName)
+    }
 }
 
 ext.niagara_home = getGradleProperty('niagara_home')
@@ -24,43 +31,53 @@ apply from: "${rootProject.ext.niagara_home}/etc/gradle/eclipse.gradle"
 apply from: "${rootProject.ext.niagara_home}/etc/gradle/idea.gradle"
 
 gradle.beforeProject { p ->
-  configure(p) {
-    def vendorSettings = file("${rootDir}/vendor.gradle")
-    if (vendorSettings.exists()) {
-      apply from: vendorSettings
-    }
-    apply from: "${rootProject.ext.niagara_home}/etc/gradle/niagara.gradle"
-    pluginManager.withPlugin("idea") {
-      idea {
-        module {
-          scopes.TEST.plus += [configurations.niagaraModuleTestCompile]
+    configure(p) {
+        def vendorSettings = file("${rootDir}/vendor.gradle")
+        if (vendorSettings.exists()) {
+            apply from: vendorSettings
         }
-      }
+        apply from: "${rootDir}/gradle/niagara.gradle"
+        pluginManager.withPlugin("idea") {
+            idea {
+                module {
+                    scopes.TEST.plus += [configurations.niagaraModuleTestCompile]
+                }
+            }
+        }
     }
-  }
+}
+
+subprojects { Project p ->
+    p.pluginManager.withPlugin('com.tridium.niagara-module') {
+        p.niagaraModule {
+            certAlias = "ph-code-cert"
+        }
+    }
 }
 
 tasks.addRule("""
 Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a set of modules rooted at path.
 """) { String taskName ->
-  def matcher = taskName =~ /(.*?)(Test)?\/(.*)/
-  if (matcher) {
-    def command = matcher.group(1)
-    def includeTestModules = matcher.group(2) == 'Test'
-    def path = file("${projectDir}/${matcher.group(3)}").toPath()
+    def matcher = taskName =~ /(.*?)(Test)?\/(.*)/
+    if (matcher) {
+        def command = matcher.group(1)
+        def includeTestModules = matcher.group(2) == 'Test'
+        def path = file("${projectDir}/${matcher.group(3)}").toPath()
 
-    assert path.toFile().exists()
-    def targetProjects = subprojects.findAll { it.projectDir.toPath().startsWith(path) }
+        assert path.toFile().exists()
+        def targetProjects = subprojects.findAll { it.projectDir.toPath().startsWith(path) }
 
-    // default is build command and build is an alias for Gradle's jar task
-    if (command.isEmpty() || command == 'build') { command = 'jar' }
+        // default is build command and build is an alias for Gradle's jar task
+        if (command.isEmpty() || command == 'build') {
+            command = 'jar'
+        }
 
-    // Create task for subproject
-    task(taskName, dependsOn: targetProjects.tasks[command])
-    if (includeTestModules && command == 'jar') {
-      tasks[taskName].dependsOn targetProjects.moduleTestJar
+        // Create task for subproject
+        task(taskName, dependsOn: targetProjects.tasks[command])
+        if (includeTestModules && command == 'jar') {
+            tasks[taskName].dependsOn targetProjects.moduleTestJar
+        }
     }
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -68,68 +85,68 @@ Pattern: [jar[Test]|clean|<any gradle task>]/[path]: Run a Gradle task against a
 ///////////////////////////////////////////////////////////////////////////
 
 def srcList = [
-  'https://project-haystack.org/download/equip-points/ahu',
-  'https://project-haystack.org/download/equip-points/boiler',
-  'https://project-haystack.org/download/equip-points/chilledWaterPlant',
-  'https://project-haystack.org/download/equip-points/chiller',
-  'https://project-haystack.org/download/equip-points/coolingTower',
-  'https://project-haystack.org/download/equip-points/elecMeter',
-  'https://project-haystack.org/download/equip-points/heatExchanger',
-  'https://project-haystack.org/download/equip-points/hotWaterPlant',
-  'https://project-haystack.org/download/equip-points/steamPlant',
-  'https://project-haystack.org/download/equip-points/tank',
-  'https://project-haystack.org/download/equip-points/vav',
-  'https://project-haystack.org/download/equip-points/vfd',
-  'https://project-haystack.org/download/equip-points/zone']
+        'https://project-haystack.org/download/equip-points/ahu',
+        'https://project-haystack.org/download/equip-points/boiler',
+        'https://project-haystack.org/download/equip-points/chilledWaterPlant',
+        'https://project-haystack.org/download/equip-points/chiller',
+        'https://project-haystack.org/download/equip-points/coolingTower',
+        'https://project-haystack.org/download/equip-points/elecMeter',
+        'https://project-haystack.org/download/equip-points/heatExchanger',
+        'https://project-haystack.org/download/equip-points/hotWaterPlant',
+        'https://project-haystack.org/download/equip-points/steamPlant',
+        'https://project-haystack.org/download/equip-points/tank',
+        'https://project-haystack.org/download/equip-points/vav',
+        'https://project-haystack.org/download/equip-points/vfd',
+        'https://project-haystack.org/download/equip-points/zone']
 
 def targetList = [
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/boiler.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/chilledWaterPlant.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/chiller.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/coolingTower.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/elecMeter.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/hotWaterPlant.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/steamPlant.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/tank.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/vav.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/vfd.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/equip-points/zone.txt'),
-  ]
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/ahu.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/boiler.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/chilledWaterPlant.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/chiller.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/coolingTower.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/elecMeter.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/heatExchanger.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/hotWaterPlant.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/steamPlant.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/tank.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/vav.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/vfd.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/equip-points/zone.txt'),
+]
 
-task downloadTags (type: FilesDownload) {
-  group 'nhaystack'
-  srcs = srcList
-  targets = targetList
+task downloadTags(type: FilesDownload) {
+    group 'nhaystack'
+    srcs = srcList
+    targets = targetList
 }
 
 def resList = [
-  'https://project-haystack.org/download/tags.csv',
-  'https://project-haystack.org/download/tz.txt',
-  'https://project-haystack.org/download/units.txt']
+        'https://project-haystack.org/download/tags.csv',
+        'https://project-haystack.org/download/tz.txt',
+        'https://project-haystack.org/download/units.txt']
 
 def resTargetList = [
-  new File('nhaystack-rt/src/nhaystack/res/tags.csv'),
-  new File('nhaystack-rt/src/nhaystack/res/tz.txt'),
-  new File('nhaystack-rt/src/nhaystack/res/units.txt')]
+        new File('nhaystack-rt/src/nhaystack/res/tags.csv'),
+        new File('nhaystack-rt/src/nhaystack/res/tz.txt'),
+        new File('nhaystack-rt/src/nhaystack/res/units.txt')]
 
-task downloadResources (type: FilesDownload) {
-  group 'nhaystack'
-  srcs = resList
-  targets = resTargetList
+task downloadResources(type: FilesDownload) {
+    group 'nhaystack'
+    srcs = resList
+    targets = resTargetList
 }
 
 class FilesDownload extends DefaultTask {
 
-  List<String> srcs
-  List<File>   targets
+    List<String> srcs
+    List<File> targets
 
-  @TaskAction
-  void download() {
-    srcs.eachWithIndex { src, index ->
-      println "Downloading ${src} to ${targets[index].toString()}"
-      ant.get(src: src, dest: targets[index])
+    @TaskAction
+    void download() {
+        srcs.eachWithIndex { src, index ->
+            println "Downloading ${src} to ${targets[index].toString()}"
+            ant.get(src: src, dest: targets[index])
+        }
     }
-  }
 }

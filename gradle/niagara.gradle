@@ -1,0 +1,83 @@
+/*
+  Copyright 2020 ConserveIt, All Rights Reserved.
+ */
+apply plugin: 'java'
+apply plugin: 'com.tridium.niagara'
+apply plugin: 'com.tridium.niagara-module'
+apply plugin: 'com.tridium.niagara-rjs'
+
+
+repositories {
+  flatDir {
+    name = "External JARs"
+    dirs "${rootProject.ext.niagara_home}/bin/ext"
+  }
+  flatDir {
+    name = "Nigara Modules"
+    dirs "${rootProject.ext.niagara_home}/modules"
+  }
+  mavenCentral()
+}
+
+dependencies {
+  niagaraModuleTestCompile "Tridium:test-wb:4.0.0"
+}
+
+test {
+  useTestNG()
+}
+
+
+javadoc.configure {
+  failOnError false
+  options.tags 'creation:a:Creation:'
+  // Include or exclude specific package paths using the following syntax as an example
+  include 'com/examples/**'
+  exclude 'com/proprietary/**'
+}
+
+task javadocJar (dependsOn: javadoc, type: Jar) {
+  description 'Assemble javadoc jar for Niagara module'
+  classifier 'javadoc'
+  from javadoc.destinationDir
+  
+  doLast {
+    project.copy {
+      into { "$rootProject.ext.niagara_home/javadoc" }
+      from archivePath
+      rename archiveName, "${baseName}-javadoc.jar"
+    }
+  }
+}
+
+import javax.tools.ToolProvider
+import javax.tools.StandardLocation
+
+class Bajadoc extends DefaultTask {
+
+  def Iterable<String> options = []
+  def Iterable<File> sources = []
+  def Iterable<File> classpath = []
+  def Class<?> doclet
+
+  @TaskAction
+  void doc() {     
+    def tool = ToolProvider.getSystemDocumentationTool();
+    def fm = tool.getStandardFileManager(null, null, null);
+    fm.setLocation(StandardLocation.CLASS_PATH, classpath)
+
+    tool.getTask(null, fm, null, doclet, options, fm.getJavaFileObjectsFromFiles(sources)).call()
+  }
+}
+
+task generateBajadoc(type: Bajadoc) {
+  doFirst {
+    configurations.compile.each { f -> classpath << f }
+    options << '-module' << project.niagaraModule.moduleName.toString()
+    options << '-rtprofile' << project.niagaraModule.runtimeProfile.toString()
+    options << '-description' << project.description.toString().replace('\'', '')
+    options << '-vendor' << project.group.toString()
+    options << '-vendorVersion' << project.version.toString()
+    options << '-bajaVersion' << project.niagaraModule.bajaVersion.toString()
+  }
+}

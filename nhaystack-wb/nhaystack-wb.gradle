@@ -13,6 +13,7 @@ niagaraModule {
     preferredSymbol = "nh"
     runtimeProfile = "wb"
     moduleName = "nhaystack"
+    certAlias = "ph-code-cert"
 }
 
 dependencies {
