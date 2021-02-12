@@ -70,9 +70,7 @@ final class NHServerOps implements NHaystackConst
 
       String filter = params.getStr("filter");
 
-      int limit = params.has("limit") ?
-              params.getInt("limit") :
-              Integer.MAX_VALUE;
+      int limit = params.has("limit") ? params.getInt("limit") : Integer.MAX_VALUE;
 
       HGrid result = server.onReadAll(filter, limit);
 
@@ -109,9 +107,7 @@ final class NHServerOps implements NHaystackConst
         {
           HVal val = row.get(column);
           Integer count = (Integer) map.get(val);
-          map.put(val, count == null ?
-                  Integer.valueOf(1) :
-                  Integer.valueOf(count.intValue() + 1));
+          map.put(val, count == null ? Integer.valueOf(1) : Integer.valueOf(count.intValue() + 1));
         }
       }
 
@@ -278,7 +274,18 @@ final class NHServerOps implements NHaystackConst
     // execute a read all using the provided filter
     // on the local server
     BAbsTime queryStart = BAbsTime.now();
-    results = server.readAll(((HStr) filter).val);
+
+    if (((HStr) filter).val.equals("site"))
+    {
+      LOG.fine("NHServerOps::simpleStrContains -> searching cached sites");
+      results = server.getService().getSitesGrid();
+    }
+    else
+    {
+      LOG.fine("NHServerOps::simpleStrContains -> searching full cache on filter: " + ((HStr) filter).val);
+      results = server.readAll(((HStr) filter).val);
+    }
+
     numResults = results.numRows();
     BAbsTime queryEnd = BAbsTime.now();
 
@@ -328,14 +335,23 @@ final class NHServerOps implements NHaystackConst
   private static void searchTagList(Array<HDict> array, String[] tagList, HRow rec, HVal keyword)
   {
     // cannot continue of there are no given tags to search through
-    if (tagList == null) return;
+    if (tagList == null)
+    {
+      return;
+    }
 
     for (int i = 0; i < tagList.length; i++)
     {
-      if (!rec.has(tagList[i])) continue;
+      if (!rec.has(tagList[i]))
+      {
+        continue;
+      }
 
       HVal value = rec.get(tagList[i]);
-      if (!(value instanceof HStr)) continue;
+      if (!(value instanceof HStr))
+      {
+        continue;
+      }
 
       if (value.toString().toLowerCase().contains(keyword.toString().toLowerCase()))
       {
@@ -356,8 +372,14 @@ final class NHServerOps implements NHaystackConst
   {
     // no point continuing the search if either of these
     // conditions are true
-    if (row == null) return;
-    if (row.isEmpty()) return;
+    if (row == null)
+    {
+      return;
+    }
+    if (row.isEmpty())
+    {
+      return;
+    }
 
     Iterator<Map.Entry<String, Object>> iterator = row.iterator();
     while (iterator.hasNext())
@@ -385,8 +407,7 @@ final class NHServerOps implements NHaystackConst
   {
     try
     {
-      Iterator<BComponent> itr = new ComponentTreeIterator(
-              (BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
+      Iterator<BComponent> itr = new ComponentTreeIterator((BComponent) BOrd.make("slot:/").resolve(server.getService(), null).get());
 outer:
       while (itr.hasNext())
       {
@@ -471,8 +492,7 @@ outer:
       }
 
       BComponent from = server.getTagManager().lookupComponent(fromId);
-      HDict fromTags = from instanceof BHEquip ?
-              ((BHEquip) from).generateTags(server) : HDict.EMPTY;
+      HDict fromTags = from instanceof BHEquip ? ((BHEquip) from).generateTags(server) : HDict.EMPTY;
 
       BComponent[] toEquips = getFilterComponents(server, targetFilter, toEquipIds);
 
@@ -514,8 +534,7 @@ outer:
 
       for (BComponent toEquip : toEquips)
       {
-        BComponent comp = toEquip instanceof BHEquip ?
-                (BComponent) toEquip.getParent() : toEquip;
+        BComponent comp = toEquip instanceof BHEquip ? (BComponent) toEquip.getParent() : toEquip;
         applyPointDicts(comp, pointDictMap, cx);
       }
 
@@ -597,9 +616,7 @@ outer:
   {
     try
     {
-      return (BHDict)
-              BHDict.DEFAULT.decodeFromString(
-                      dict.encodeToString());
+      return (BHDict) BHDict.DEFAULT.decodeFromString(dict.encodeToString());
     }
     catch (Exception e)
     {
@@ -932,13 +949,11 @@ outer:
     if (params.has("siteName"))
     {
       String siteName = params.getStr("siteName");
-      HDict siteGrid = server.read(
-              "site and dis == \"" + siteName + '"', false);
+      HDict siteGrid = server.read("site and dis == \"" + siteName + '"', false);
 
       if (siteGrid == null)
       {
-        BComponent root = (BComponent)
-                BOrd.make("slot:/").get(server.getService(), cx);
+        BComponent root = (BComponent) BOrd.make("slot:/").get(server.getService(), cx);
 
         // check permissions on this Thread's saved context
         if (!TypeUtil.canWrite(root, cx))
@@ -952,8 +967,7 @@ outer:
       }
       else
       {
-        BComponent site = server.getTagManager().lookupComponent(
-                siteGrid.getRef("id"));
+        BComponent site = server.getTagManager().lookupComponent(siteGrid.getRef("id"));
         siteRef = TagManager.makeSlotPathRef(site).getHRef();
       }
     }
@@ -1043,8 +1057,7 @@ outer:
     HDict navRec = lookupSiteNav(server, siteNav);
     if (navRec == null)
     {
-      BComponent root = (BComponent)
-              BOrd.make("slot:/").get(server.getService(), cx);
+      BComponent root = (BComponent) BOrd.make("slot:/").get(server.getService(), cx);
 
       // check permissions on this Thread's saved context
       if (!TypeUtil.canWrite(root, cx))
@@ -1084,9 +1097,7 @@ outer:
   /**
    * ensureEquip
    */
-  private static HRef ensureEquip(
-          NHServer server, Context cx,
-          HRef siteRef, String siteNav, String equipNav)
+  private static HRef ensureEquip(NHServer server, Context cx, HRef siteRef, String siteNav, String equipNav)
   {
     HDict navRec = lookupEquipNav(server, siteNav, equipNav);
     if (navRec == null)
@@ -1121,8 +1132,7 @@ outer:
   /**
    * lookupEquipNav
    */
-  private static HDict lookupEquipNav(
-          NHServer server, String siteNav, String equipNav)
+  private static HDict lookupEquipNav(NHServer server, String siteNav, String equipNav)
   {
     HGrid grid = server.getNav().onNav("sep:/" + siteNav);
     for (int i = 0; i < grid.numRows(); i++)
@@ -1148,8 +1158,7 @@ outer:
       throw new PermissionException("Cannot invoke rebuildCache");
     }
 
-    server.getService().invoke(
-            BNHaystackService.rebuildCache, null, null);
+    server.getService().invoke(BNHaystackService.rebuildCache, null, null);
 
     return HGrid.EMPTY;
   }
@@ -1180,10 +1189,7 @@ outer:
       int n = name.indexOf(searchText);
       if (n != -1)
       {
-        String newName =
-                name.substring(0, n) +
-                        replaceText +
-                        name.substring(n + searchText.length());
+        String newName = name.substring(0, n) + replaceText + name.substring(n + searchText.length());
 
         BComponent parent = (BComponent) comp.getParent();
         parent.rename(comp.getPropertyInParent(), newName);
@@ -1203,9 +1209,7 @@ outer:
   private static HGrid uniqueTags(NHServer server, HRow params)
   {
     String filter = params.getStr("filter");
-    int limit = params.has("limit") ?
-            params.getInt("limit") :
-            Integer.MAX_VALUE;
+    int limit = params.has("limit") ? params.getInt("limit") : Integer.MAX_VALUE;
     HGrid grid = server.onReadAll(filter, limit);
 
     // get all the distinct markers from the grid
@@ -1451,8 +1455,7 @@ outer:
     BHGrid grid = (BHGrid) server.getService().get(BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES);
     if (grid == null)
     {
-      throw new IllegalStateException(
-              '\'' + BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES + "' not found.");
+      throw new IllegalStateException('\'' + BUniqueEquipTypeJob.UNIQUE_EQUIP_TYPES + "' not found.");
     }
 
     return grid.getGrid();
@@ -1508,8 +1511,7 @@ outer:
         HStr slotPath = (HStr) grid.row(i).get("axSlotPath", false);
         if (slotPath != null)
         {
-          compArr.add((BComponent) BOrd.make("station:|" + slotPath.val).get(
-                  server.getService(), null));
+          compArr.add((BComponent) BOrd.make("station:|" + slotPath.val).get(server.getService(), null));
         }
       }
     }
@@ -1588,6 +1590,7 @@ outer:
     @Override
     protected HGrid onPointWriteArray(HDict rec)
     {
+      System.out.println("********************* found my exception!");
       throw new UnsupportedOperationException();
     }
 

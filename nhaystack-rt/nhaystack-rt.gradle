@@ -19,6 +19,7 @@ niagaraModule {
         name = "nhaystack-wb"
         runtimeProfile = "wb"
     }
+    certAlias = "ph-code-cert"
 }
 
 repositories {
