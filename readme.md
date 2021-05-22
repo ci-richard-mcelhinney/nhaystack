@@ -2,10 +2,10 @@
  
 ## ![NHaystack](docs/tag.png) NHaystack
 
-NHaystack is an open-source [Niagara4](https://www.tridium.com/en/products-services/niagara4)
+NHaystack is an open-source [Niagara4](https://www.tridium.com/us/en/Products/niagara)
 module that enables Niagara stations (JACE and WebSupervisor) to act as either servers
 _or_ clients in the [Project Haystack](http://project-haystack.org) format, via 
-a [RESTful](http://project-haystack.org/doc/Rest) protocol.  Using NHaystack, 
+a [RESTful](https://project-haystack.org/doc/docHaystack/HttpApi) protocol.  Using NHaystack, 
 external applications receive data that includes essential meta data (tags) 
 to describe the meaning of the data. 
 
@@ -104,7 +104,7 @@ of your station.
 This is all you need to do to get rolling.  Your station is now automatically
 serving up all its ControlPoint objects and Histories as haystack 
 `point` [recs][rec], via the 
-[Haystack REST Api](http://project-haystack.org/doc/Rest). 
+[Haystack REST Api](https://project-haystack.org/doc/docHaystack/HttpApi). 
 Many of the tags that are defined as being associated with `points`, like 
 `kind`, `unit`, `tz`, `his`, `cur`, etc. are automatically generated for you.
 
