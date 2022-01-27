@@ -43,7 +43,8 @@ public class SimpleClientTest extends TestCore
     {
       this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
       client.about();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       e.printStackTrace();
       fail();
@@ -69,7 +70,8 @@ public class SimpleClientTest extends TestCore
     {
       HClient.open(SIMPLE_URI, INVALID_USER, INVALID_PASS).about();
       fail();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       Assert.assertTrue(true);
     }
@@ -78,7 +80,8 @@ public class SimpleClientTest extends TestCore
     {
       HClient.open(SIMPLE_URI, SIMPLE_USER, INVALID_PASS).about();
       fail();
-    } catch (CallException e)
+    }
+    catch (CallException e)
     {
       Assert.assertTrue(true);
     }
@@ -87,7 +90,8 @@ public class SimpleClientTest extends TestCore
     {
       this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
       client.about();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       e.printStackTrace();
       fail();
@@ -106,8 +110,8 @@ public class SimpleClientTest extends TestCore
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
-    Assert.assertEquals(r.getStr("productVersion"), "4.4.93.40");
-    Assert.assertEquals(r.getStr("moduleVersion"), "3.0.3");
+    Assert.assertEquals(r.getStr("productVersion"), "4.10.1.36");
+    Assert.assertEquals(r.getStr("moduleVersion"), "3.2.0");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,6 +123,7 @@ public class SimpleClientTest extends TestCore
   {
     this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HGrid g = client.ops();
+    printFullGrid(g);
 
     // verify required columns
     Assert.assertTrue(g.col("name") != null);
@@ -147,6 +152,7 @@ public class SimpleClientTest extends TestCore
   public void verifyFormats() throws Exception
   {
     HGrid g = client.formats();
+//    printFullGrid(g);
 
     // verify required columns
     Assert.assertTrue(g.col("mime") != null);
@@ -327,7 +333,8 @@ public class SimpleClientTest extends TestCore
     try
     {
       client.readById(HRef.make("c.Mg~~"));
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       Assert.assertNotNull(e);
     }
@@ -444,10 +451,10 @@ public class SimpleClientTest extends TestCore
 
     for (int i = 0; i < grid.numRows(); i++)
     {
-        if (grid.row(i).has("navId"))
-        {
-            traverseComponents((HStr) grid.row(i).get("navId"));
-        }
+      if (grid.row(i).has("navId"))
+      {
+        traverseComponents((HStr) grid.row(i).get("navId"));
+      }
     }
   }
 
@@ -574,7 +581,8 @@ public class SimpleClientTest extends TestCore
     {
       w.pollRefresh();
       Assert.fail();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       verifyEx(e);
     }
@@ -588,7 +596,8 @@ public class SimpleClientTest extends TestCore
     {
       w.sub(new HRef[]{badId}).dump();
       fail();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
       verifyEx(e);
     }
@@ -811,16 +820,16 @@ public class SimpleClientTest extends TestCore
       System.out.print(row + ", ");
       System.out.print(r.id());
       System.out.print("              ");
-        if (r.has("equipRef"))
-        {
-            System.out.println(r.get("equipRef"));
-        }
+      if (r.has("equipRef"))
+      {
+        System.out.println(r.get("equipRef"));
+      }
 
       System.out.print("              ");
-        if (r.has("kind"))
-        {
-            System.out.println(r.get("kind"));
-        }
+      if (r.has("kind"))
+      {
+        System.out.println(r.get("kind"));
+      }
       System.out.println();
       row++;
     }
