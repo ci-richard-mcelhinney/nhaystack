@@ -90,7 +90,7 @@ public class NHServer extends HServer
 
       hd.add("moduleName", BNHaystackService.TYPE.getModule().getModuleName());
       hd.add("moduleVersion", BNHaystackService.TYPE.getVendorVersion().toString());
-      hd.add("moduleUri", HUri.make("https://bitbucket.org/richiemac_77/nhaystack"));
+      hd.add("moduleUri", HUri.make("https://github.com/ci-richard-mcelhinney/nhaystack"));
 
       return hd.toDict();
     }
