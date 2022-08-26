@@ -24,10 +24,19 @@ import javax.baja.test.BTestNg;
 @Test
 public class BRemotePointTest extends BTestNg
 {
-    @Override
-    public Type getType() { return TYPE; }
-    public static final Type TYPE = Sys.loadType(BRemotePointTest.class);
+/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
+/*@ $nhaystack.server.BRemotePointTest(2979906276)1.0$ @*/
+/* Generated Fri Aug 26 11:06:01 AEST 2022 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
+////////////////////////////////////////////////////////////////
+// Type
+////////////////////////////////////////////////////////////////
+  
+  @Override
+  public Type getType() { return TYPE; }
+  public static final Type TYPE = Sys.loadType(BRemotePointTest.class);
+
+/*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
     @Test
     public void testMakeSlotPath()
     {

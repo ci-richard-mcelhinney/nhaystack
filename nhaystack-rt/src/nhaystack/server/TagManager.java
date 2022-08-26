@@ -829,9 +829,9 @@ public class TagManager implements NHaystackConst
         BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
         BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
         BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
-        if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
-        if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
-        if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
+        if (minVal    != null && minVal    != BDouble.NaN) hdb.add("minVal",    HNum.make(minVal.getInt()));
+        if (maxVal    != null && maxVal    != BDouble.NaN) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
+        if (precision != null && precision != BDouble.NaN) hdb.add("precision", HNum.make(precision.getInt()));
 
         // actions tag
         if (point.isWritablePoint() || tags.has("writable"))
@@ -971,10 +971,25 @@ public class TagManager implements NHaystackConst
         return siteRef;
     }
 
-    private static BNumber getNumberFacet(BFacets facets, String name)
+    public static BNumber getNumberFacet(BFacets facets, String name)
     {
+        if (!(facets.get(name) instanceof BNumber))
+        {
+            LOG.warning("Detected incorrectly configured facet supplied for :" + name);
+            LOG.warning("Please check all facets are correctly configured on all Control Points");
+            return BDouble.NaN;
+        }
+
+        if (!name.equals(BFacets.MAX) &&
+            !name.equals(BFacets.MIN) &&
+            !name.equals(BFacets.PRECISION))
+        {
+            LOG.warning("Trying to retrieve unsupported number facet: " + name);
+            return BDouble.NaN;
+        }
+
         BNumber num = (BNumber) facets.get(name);
-        if (num == null) return null;
+        if (num == null)                   return null;
         if (num.toString().equals("+inf")) return null;
         if (num.toString().equals("-inf")) return null;
         return num;

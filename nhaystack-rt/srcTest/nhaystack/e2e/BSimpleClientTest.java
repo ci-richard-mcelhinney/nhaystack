@@ -33,14 +33,19 @@ import static nhaystack.util.NHaystackConst.*;
 @Test
 public class BSimpleClientTest extends BNHaystackStationTestBase
 {
+/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
+/*@ $nhaystack.e2e.BSimpleClientTest(2979906276)1.0$ @*/
+/* Generated Fri Aug 26 11:06:01 AEST 2022 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
+////////////////////////////////////////////////////////////////
+// Type
+////////////////////////////////////////////////////////////////
+  
   @Override
-  public Type getType()
-  {
-    return TYPE;
-  }
-
+  public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BSimpleClientTest.class);
+
+/*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
   @Override
   protected void configureTestStation(BStation station, String stationName, int webPort, int foxPort) throws Exception
@@ -203,8 +208,8 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
-    Assert.assertEquals(r.getStr("productVersion"), "4.9.0.198");
-    Assert.assertEquals(r.getStr("moduleVersion"), "3.1.0");
+    Assert.assertEquals(r.getStr("productVersion"), "4.11.0.142");
+    Assert.assertEquals(r.getStr("moduleVersion"), "3.2.0");
   }
 
   @Test
