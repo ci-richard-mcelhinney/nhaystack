@@ -102,10 +102,10 @@ public class BTagManagerTest extends BTestNg
     number.setFacets(f);
 
     facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX);
-    assertEquals(facetVal, null);
+    assertEquals(facetVal, BDouble.NaN);
 
     facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN);
-    assertEquals(facetVal, null);
+    assertEquals(facetVal, BDouble.NaN);
 
     facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION);
     assertEquals(facetVal, BDouble.make(2d));

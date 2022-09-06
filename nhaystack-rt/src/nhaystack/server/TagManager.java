@@ -16,12 +16,7 @@
 //
 package nhaystack.server;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.baja.control.BBooleanPoint;
@@ -826,12 +821,21 @@ public class TagManager implements NHaystackConst
         hdb.add("axStatus", axStatus(point.getStatus()));
 
         // minVal, maxVal, precision
-        BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
-        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
-        BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
-        if (minVal    != null && minVal    != BDouble.NaN) hdb.add("minVal",    HNum.make(minVal.getInt()));
-        if (maxVal    != null && maxVal    != BDouble.NaN) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
-        if (precision != null && precision != BDouble.NaN) hdb.add("precision", HNum.make(precision.getInt()));
+        HashMap<String, String> supportedFacetNames = new HashMap<>();
+        supportedFacetNames.put(BFacets.MIN, "minVal");
+        supportedFacetNames.put(BFacets.MAX, "maxVal");
+        supportedFacetNames.put(BFacets.PRECISION, "precision");
+        supportedFacetNames.forEach((k, v) -> {
+            BNumber facetVal = getNumberFacet(facets, k);
+            if (facetVal != BDouble.NaN)
+            {
+                hdb.add(v, HNum.make(facetVal.getInt()));
+            }
+            else
+            {
+                LOG.warning("Problem generating tags from facets for: " + point.getSlotPath().toDisplayString());
+            }
+        });
 
         // actions tag
         if (point.isWritablePoint() || tags.has("writable"))
@@ -989,9 +993,9 @@ public class TagManager implements NHaystackConst
         }
 
         BNumber num = (BNumber) facets.get(name);
-        if (num == null)                   return null;
-        if (num.toString().equals("+inf")) return null;
-        if (num.toString().equals("-inf")) return null;
+        if (num == null)                   return BDouble.NaN;
+        if (num.toString().equals("+inf")) return BDouble.NaN;
+        if (num.toString().equals("-inf")) return BDouble.NaN;
         return num;
     }
 
