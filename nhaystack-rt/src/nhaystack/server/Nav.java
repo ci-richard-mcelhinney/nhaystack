@@ -256,7 +256,7 @@ public class Nav
         {
             hdb.add("dis", comp.getDisplayName(null));
             hdb.add(AXTYPE, comp.getType().toString());
-            hdb.add("axSlotPath", comp.getSlotPath().toString());
+            hdb.add("n4SlotPath", comp.getSlotPath().toString());
         }
 
         // always use a slot path ref

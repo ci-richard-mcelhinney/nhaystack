@@ -205,9 +205,9 @@ public class BNHaystackHistoryExport extends BHistoryExport
   {
     BHistoryId id = getHistoryId();
     StringBuilder pointFilter = new StringBuilder();
-    pointFilter.append("point and axStation==");
+    pointFilter.append("point and n4Station==");
     pointFilter.append(HStr.make(Sys.getStation().getStationName()).toZinc());
-    pointFilter.append(" and axHistoryId==");
+    pointFilter.append(" and n4HistoryId==");
     pointFilter.append(HStr.make(id.encodeToString()).toZinc());
 
     LOG.info("Searching for point for history "
@@ -376,9 +376,9 @@ public class BNHaystackHistoryExport extends BHistoryExport
     // - tz: history TZ
     // - unit: if known and numeric
     // - enum: if an enum, the values
-    // - axStation: name of the station this driver is running on
-    // - axSlotPath: the ORD of the source, if known
-    // - axHistoryId: the history ID
+    // - n4Station: name of the station this driver is running on
+    // - n4SlotPath: the ORD of the source, if known
+    // - n4HistoryId: the history ID
     HDictBuilder newRec = new HDictBuilder();
     // Mandatory fields
     newRec.add("name", pointName);
@@ -387,11 +387,11 @@ public class BNHaystackHistoryExport extends BHistoryExport
     newRec.add("his", HMarker.VAL);
     newRec.add("kind", pointKind);
     newRec.add("tz", tz.name);
-    newRec.add("axStation", Sys.getStation().getStationName());
-    newRec.add("axHistoryId", id.encodeToString());
+    newRec.add("n4Station", Sys.getStation().getStationName());
+    newRec.add("n4HistoryId", id.encodeToString());
 
     if (pointPath != null)
-      newRec.add("axSlotPath", pointPath);
+      newRec.add("n4SlotPath", pointPath);
     if (pointEnum != null)
       newRec.add("enum", pointEnum);
     if (pointUnit != null)

@@ -57,7 +57,7 @@ public class BSiteRefFE extends BWbFieldEditor
 
         for (int i = 0; i < grid.numRows(); i++)
         {
-            String slotPath = grid.row(i).getStr("axSlotPath");
+            String slotPath = grid.row(i).getStr("n4SlotPath");
             dropDown.getList().addItem(slotPath);
         }
 

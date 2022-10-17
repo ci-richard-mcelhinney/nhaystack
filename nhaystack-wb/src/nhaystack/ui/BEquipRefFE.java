@@ -65,7 +65,7 @@ public class BEquipRefFE extends BWbFieldEditor
         // add the equips
         for (int i = 0; i < equipsGrid.numRows(); i++)
         {
-            String slotPath = equipsGrid.row(i).getStr("axSlotPath");
+            String slotPath = equipsGrid.row(i).getStr("n4SlotPath");
 
             if (implicitEquip != null && slotPath.equals(implicitEquip))
                 dropDown.getList().addItem(
@@ -85,7 +85,7 @@ public class BEquipRefFE extends BWbFieldEditor
         String compSlotPath = comp.getSlotPath().toString();
         for (int i = 0; i < equipsGrid.numRows(); i++)
         {
-            String slotPath = equipsGrid.row(i).getStr("axSlotPath");
+            String slotPath = equipsGrid.row(i).getStr("n4SlotPath");
             int n = slotPath.lastIndexOf('/');
             String parentSlotPath = slotPath.substring(0, n);
             

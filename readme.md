@@ -716,7 +716,7 @@ a server that supports time-zone conversion.
 
 For more detail on tagging assumptions, see section 7.1.2 below.
 
-##### 7.1.2 Automatic look-up using `axStation` and `axHistoryId`.
+##### 7.1.2 Automatic look-up using `n4Station` and `n4HistoryId`.
 
 Depending on the Project Haystack server, it may be easier to retrieve a list
 of histories from the station and tag the points so the station can find them.
@@ -735,9 +735,9 @@ Filter out of that list the histories you want to upload.  To associate a
 history in this list to a point in your asset model, tag the point with the
 following two tags:
 
-* `axStation` (Str): should be the name of your Niagara station (as seen in
+* `n4Station` (Str): should be the name of your Niagara station (as seen in
   brackets in the WorkPlace navigation tree, e.g. `mystation`).
-* `axHistoryId` (Str): should be the ID of the history taken from your BQL
+* `n4HistoryId` (Str): should be the ID of the history taken from your BQL
   query dump.
 
 The `point` will also need to have `kind` and `tz` set up properly:
@@ -769,9 +769,9 @@ containing the following columns:
   the type of history being exported.
 * `tz` (Str): The timezone of the history (this is set in the Add dialogue,
   default is automatically determined from the history database).
-* `axStation` (Str): The name of the Niagara station exporting the history
-* `axHistoryId` (Str): The ID of the history being exported
-* `axSlotPath` (Str): If known, the slot path of the control point (may be
+* `n4Station` (Str): The name of the Niagara station exporting the history
+* `n4HistoryId` (Str): The ID of the history being exported
+* `n4SlotPath` (Str): If known, the slot path of the control point (may be
   omitted if not known).
 * `unit` (Str): If known and history is a `NumericTrendRecord`, the
   measurement unit for the control point
@@ -779,7 +779,7 @@ containing the following columns:
   enumeration values for the control point
 
 It is assumed that `siteRef` and `equipRef` are optional and can be filled in
-later via other CRUD ops by the end user.  The `axStation` and `axHistoryId`
+later via other CRUD ops by the end user.  The `n4Station` and `n4HistoryId`
 should be used to obtain listings of the orphaned `point` entities so they can
 be associated with the correct `site` and `equip`.
 

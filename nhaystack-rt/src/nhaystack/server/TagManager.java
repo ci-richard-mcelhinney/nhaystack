@@ -485,7 +485,7 @@ public class TagManager implements NHaystackConst
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
             if (comp.getSlotPath() != null)
-                hdb.add("axSlotPath", comp.getSlotPath().toString());
+                hdb.add("n4SlotPath", comp.getSlotPath().toString());
 
             // points get special treatment
             if (comp instanceof BControlPoint)
@@ -588,7 +588,7 @@ public class TagManager implements NHaystackConst
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());
-        hdb.add("axHistoryId", cfg.getId().toString());
+        hdb.add("n4HistoryId", cfg.getId().toString());
 
         hdb.add("point");
         hdb.add("his");
@@ -1284,10 +1284,10 @@ public class TagManager implements NHaystackConst
     /** Every single tag which the server may have auto-generated.  */
     static final String[] AUTO_GEN_TAGS = {
         "axAnnotated",
-        "axHistoryId",
+        "n4HistoryId",
         "axHistoryRef",
         "axPointRef",
-        "axSlotPath", 
+        "n4SlotPath", 
         "axType",
         "axStatus",
 

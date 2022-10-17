@@ -1,9 +1,9 @@
 actions
 axAnnotated
-axHistoryId
+n4HistoryId
 axHistoryRef
 axPointRef
-axSlotPath
+n4SlotPath
 axStatus
 axType
 geoLat

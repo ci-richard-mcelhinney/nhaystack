@@ -362,7 +362,7 @@ public class BHSite extends BHTagged
 
         // add misc other tags
         hdb.add("axType", getType().toString());
-        hdb.add("axSlotPath", getSlotPath().toString());
+        hdb.add("n4SlotPath", getSlotPath().toString());
 
         return hdb.toDict();
     }

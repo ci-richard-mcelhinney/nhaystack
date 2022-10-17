@@ -75,7 +75,7 @@ public class SupervisorClientTest extends TestCore
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 
     Assert.assertTrue(dict.has("curStatus"));
-    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j1/points/SineWave1"));
+    Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j1/points/SineWave1"));
     Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
     Assert.assertTrue(dict.has("point"));
 //    Assert.assertTrue(dict.has("his"));
@@ -87,7 +87,7 @@ public class SupervisorClientTest extends TestCore
     Assert.assertEquals(dict.get("axType"), HStr.make("control:NumericPoint"));
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
     Assert.assertTrue(dict.has("curStatus"));
-    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2"));
+    Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2"));
     Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
     Assert.assertTrue(dict.has("point"));
 //        verify(dict.has("his"));
@@ -100,7 +100,7 @@ public class SupervisorClientTest extends TestCore
 //        verifyEq(dict.get("kind"), HStr.make("Number"));
 //        verify(dict.missing("his"));
 //        verify(dict.has("curStatus"));
-//        verifyEq(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace2/points/SineWave1"));
+//        verifyEq(dict.get("n4SlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_jace2/points/SineWave1"));
 //        verifyEq(dict.get("unit"), HStr.make("?F"));
 //        verify(dict.has("point"));
 //        verify(dict.missing("tz"));
@@ -118,7 +118,7 @@ public class SupervisorClientTest extends TestCore
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace2/SineWave2"));
+//        verifyEq(dict.get("n4HistoryId"), HStr.make("/nhaystack_jace2/SineWave2"));
 ////        verifyEq(dict.get("hisInterpolate"), HStr.make("cov")); TODO
 //        verifyEq(dict.get("unit"), HStr.make("psi"));
 //
@@ -129,7 +129,7 @@ public class SupervisorClientTest extends TestCore
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_sup/AuditHistory"));
+//        verifyEq(dict.get("n4HistoryId"), HStr.make("/nhaystack_sup/AuditHistory"));
 //        verify(dict.missing("hisInterpolate"));
 //        verify(dict.missing("unit"));
 //
@@ -141,7 +141,7 @@ public class SupervisorClientTest extends TestCore
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_sup/LogHistory"));
+//        verifyEq(dict.get("n4HistoryId"), HStr.make("/nhaystack_sup/LogHistory"));
 //        verify(dict.missing("hisInterpolate"));
 //        verify(dict.missing("unit"));
 //
@@ -153,7 +153,7 @@ public class SupervisorClientTest extends TestCore
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/AuditHistory"));
+//        verifyEq(dict.get("n4HistoryId"), HStr.make("/nhaystack_jace1/AuditHistory"));
 //        verify(dict.missing("hisInterpolate"));
 //        verify(dict.missing("unit"));
 //
@@ -165,7 +165,7 @@ public class SupervisorClientTest extends TestCore
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        verifyEq(dict.get("tz"), localTz());
-//        verifyEq(dict.get("axHistoryId"), HStr.make("/nhaystack_jace1/LogHistory"));
+//        verifyEq(dict.get("n4HistoryId"), HStr.make("/nhaystack_jace1/LogHistory"));
 //        verify(dict.missing("hisInterpolate"));
 //        verify(dict.missing("unit"));
     }
@@ -257,7 +257,7 @@ public class SupervisorClientTest extends TestCore
     HGrid grid = client.readAll("his");
     Assert.assertEquals(grid.numRows(), 5);
 
-    HDict dict = client.read("axSlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2\"");
+    HDict dict = client.read("n4SlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2\"");
     HGrid his = client.hisRead(dict.id(), "today");
 
     Assert.assertEquals(his.meta().id(), dict.id());
@@ -270,7 +270,7 @@ public class SupervisorClientTest extends TestCore
 
     try
     {
-      client.read("axHistoryId==\"/nhaystack_j1/SineWave1\"");
+      client.read("n4HistoryId==\"/nhaystack_j1/SineWave1\"");
       Assert.fail("Should have received an exception....");
     }
     catch (UnknownRecException e)

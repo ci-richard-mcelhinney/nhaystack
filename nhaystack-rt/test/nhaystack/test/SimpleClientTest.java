@@ -222,7 +222,7 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
     Assert.assertTrue(dict.has("his"));
     Assert.assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
-    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/SineWave5"));
+    Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/SineWave5"));
     Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
     Assert.assertTrue(dict.has("point"));
     Assert.assertEquals(dict.get("tz"), localTz());
@@ -253,7 +253,7 @@ public class SimpleClientTest extends TestCore
 //    Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 //    verify(dict.has("his"));
 //    Assert.assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
-//    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Foo/SineWave1"));
+//    Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Foo/SineWave1"));
 //    Assert.assertEquals(dict.get("unit"), HStr.make("\\uxxB0" + "F"));
 //    verify(dict.has("point"));
 //    Assert.assertEquals(dict.get("tz"), localTz());
@@ -276,7 +276,7 @@ public class SimpleClientTest extends TestCore
 //        verify(dict.has("his"));
 //        Assert.assertEquals(dict.get("curStatus"), HStr.make("ok"));
 //        verify(dict.has("hisInterpolate"));
-//        Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Foo/Sine$20Wave2$2fabc"));
+//        Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Foo/Sine$20Wave2$2fabc"));
 //        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
 //        verify(dict.has("point"));
 //        verify(dict.has("tz"));
@@ -302,7 +302,7 @@ public class SimpleClientTest extends TestCore
     Assert.assertTrue(dict.missing("curStatus"));
     Assert.assertTrue(dict.missing("curVal"));
     Assert.assertEquals(dict.get("tz"), localTz());
-    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/AuditHistory"));
+    Assert.assertEquals(dict.get("n4HistoryId"), HStr.make("/nhaystack_simple/AuditHistory"));
     Assert.assertTrue(dict.missing("hisInterpolate"));
     Assert.assertTrue(dict.missing("unit"));
 
@@ -314,7 +314,7 @@ public class SimpleClientTest extends TestCore
     Assert.assertTrue(dict.missing("curStatus"));
     Assert.assertTrue(dict.missing("curVal"));
     Assert.assertEquals(dict.get("tz"), localTz());
-    Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
+    Assert.assertEquals(dict.get("n4HistoryId"), HStr.make("/nhaystack_simple/LogHistory"));
     Assert.assertTrue(dict.missing("hisInterpolate"));
     Assert.assertTrue(dict.missing("unit"));
 
@@ -326,7 +326,7 @@ public class SimpleClientTest extends TestCore
 //        verify(dict.missing("curStatus"));
 //        verify(dict.missing("curVal"));
 //        Assert.assertEquals(dict.get("tz"), localTz());
-//        Assert.assertEquals(dict.get("axHistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
+//        Assert.assertEquals(dict.get("n4HistoryId"), HStr.make("/nhaystack_simple/SineWave3"));
 //        verify(dict.missing("hisInterpolate"));
 //        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
 //
@@ -470,7 +470,7 @@ public class SimpleClientTest extends TestCore
 
     ///////////////////////////////////////////////
 
-    HDict dict = client.read("axSlotPath==\"slot:/Equip1/SineWave1\"");
+    HDict dict = client.read("n4SlotPath==\"slot:/Equip1/SineWave1\"");
     HGrid his = client.hisRead(dict.id(), "today");
 
     Assert.assertEquals(his.meta().id(), dict.id());
@@ -488,7 +488,7 @@ public class SimpleClientTest extends TestCore
 
     ///////////////////////////////////////////////
 
-    dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
+    dict = client.read("n4HistoryId==\"/nhaystack_simple/LogHistory\"");
     his = client.hisRead(dict.id(), "today");
     Assert.assertEquals(his.meta().id(), dict.id());
     Assert.assertTrue(his.numRows() > 0);
@@ -504,7 +504,7 @@ public class SimpleClientTest extends TestCore
 
     ///////////////////////////////////////////////
 
-//        dict = client.read("axHistoryId==\"/nhaystack_simple/SineWave5\"");
+//        dict = client.read("n4HistoryId==\"/nhaystack_simple/SineWave5\"");
 //        his = client.hisRead(dict.id(), "today");
 //        verifyEq(his.meta().id(), dict.id());
 
@@ -757,8 +757,8 @@ public class SimpleClientTest extends TestCore
 //    {
 //        HGrid grid = client.readAll("point and equipRef->navName == \"AHU1\"");
 //        Assert.assertEquals(grid.numRows(), 2);
-//        Assert.assertEquals(grid.row(0).get("axSlotPath"), HStr.make("slot:/AHU2/BooleanWritable"));
-//        Assert.assertEquals(grid.row(1).get("axSlotPath"), HStr.make("slot:/AHU3/BooleanWritable"));
+//        Assert.assertEquals(grid.row(0).get("n4SlotPath"), HStr.make("slot:/AHU2/BooleanWritable"));
+//        Assert.assertEquals(grid.row(1).get("n4SlotPath"), HStr.make("slot:/AHU3/BooleanWritable"));
 //    }
 //
 
