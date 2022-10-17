@@ -439,9 +439,6 @@ public class BNHaystackHistoryExport extends BHistoryExport
       try (HistorySpaceConnection conn = db.getConnection(null))
       {
         BIHistory history = conn.getHistory(id);
-        BHistoryConfig cfg = history.getConfig();
-        BTypeSpec recTypeSpec = cfg.getRecordType();
-        Type recType = recTypeSpec.getResolvedType();
 
         // Do we have a point defined?
         if (hsId == null)
@@ -461,181 +458,198 @@ public class BNHaystackHistoryExport extends BHistoryExport
             // Save it for next time.
             setId(BHRef.make(hsId));
           }
-        }
 
-        // Range start: our upload start time.
-        BAbsTime rangeStart = getUploadFromTime();
-        // Range end: our last recorded timestamp.
-        BAbsTime rangeEnd = conn.getLastTimestamp(history);
-        BITable table = (BITable) conn.timeQuery(history, rangeStart, rangeEnd);
-
-        // Count the number of items uploaded.
-        long itemCount = 0;
-
-        // Gather items to be exported
-        Deque<HHisItem> itemQueue = new LinkedList<HHisItem>();
-
-        // Make a note of the previous row timestamp
-        long prevMillis = 0;
-
-        try (TableCursor cursor = table.cursor())
-        {
-          // iterate over results and extract HHisItem's
-          while (cursor.next())
-          {
-            BHistoryRecord hrec = (BHistoryRecord) cursor.get();
-            BAbsTime timestamp = (BAbsTime) hrec.get("timestamp");
-
-            // Extract the timestamp in milliseconds
-            long millis = timestamp.getMillis();
-
-            // Kludge handling of identical timestamps.  Trend records should
-            // never trigger this code, but (Security)AuditRecord and LogRecord
-            // may.
-            if (millis <= prevMillis)
-            {
-              millis = prevMillis + 1;
-            }
-
-            // extract the timestamp, declare a HVal for value storage
-            HVal val = null;
-
-            switch (recTypeSpec.toString()) // "module:type"
-            {
-              case "history:AuditRecord":
-              case "history:LogRecord":
-                // serialise the entire hrec
-                val = HStr.make(hrec.toString());
-                break;
-              case "history:SecurityAuditRecord":
-                // security record does not have a meaningful .toString()
-                // it just gives us the timestamp (which we already have)
-                Property[] recProps = hrec.getPropertiesArray();
-                StringBuilder recStr = new StringBuilder();
-                int i;
-                boolean firstEmitted = false;
-                for (i = 0; i < recProps.length; i++)
-                {
-                  String prop = recProps[i].getName();
-                  if (prop == "timestamp")
-                  {
-                    // we'll handle this separately
-                    continue;
-                  }
-
-                  if (firstEmitted)
-                  {
-                    recStr.append("; ");
-                  }
-                  recStr.append(prop);
-                  recStr.append(": ");
-                  recStr.append(hrec.get(prop).toString());
-                  firstEmitted = true;
-                }
-                val = HStr.make(recStr.toString());
-                break;
-              default:
-                // extract value from BTrendRecord
-                BValue value = hrec.get("value");
-                if (value != null)
-                {
-                  if (recType.is(BNumericTrendRecord.TYPE))
-                  {
-                    BNumber num = (BNumber) value;
-                    val = HNum.make(num.getDouble());
-                  }
-                  else if (recType.is(BBooleanTrendRecord.TYPE))
-                  {
-                    BBoolean bool = (BBoolean) value;
-                    val = HBool.make(bool.getBoolean());
-                  }
-                  else if (recType.is(BEnumTrendRecord.TYPE))
-                  {
-                    BDynamicEnum dyn = (BDynamicEnum) value;
-                    BFacets facets = (BFacets) cfg.get("valueFacets");
-                    BEnumRange er = (BEnumRange) facets.get("range");
-                    val = HStr.make(SlotUtil.fromNiagara(er.getTag(dyn.getOrdinal())));
-                  }
-                  else
-                  {
-                    val = HStr.make(value.toString());
-                  }
-                }
-            }
-
-            if (val != null)
-            {
-              HDateTime ts = HDateTime.make(millis, tz);
-              itemQueue.addLast(HHisItem.make(ts, val));
-              prevMillis = millis;
-            }
-          }
-        }
-
-        while (!itemQueue.isEmpty())
-        {
-          // Convert the first uploadSize elements of itemQueue to an array.
-          HHisItem[] hisItems = new HHisItem[
-            Math.min(itemQueue.size(), getUploadSize())
-          ];
-          for (int i = 0; (i < hisItems.length) && (!itemQueue.isEmpty()); i++)
-          {
-            hisItems[i] = itemQueue.removeFirst();
-          }
-
-          // Issue the write request
+          // Stop here.  Some implementations of Haystack (e.g. WideSky)
+          // require some time after creating an entity to re-load
+          // authorisation caches (or otherwise, the request will be refused).
+          // This should have been completed by the next time we're scheduled
+          // to push data.
           if (LOG.isLoggable(Level.FINE))
-            LOG.fine("Uploading " + hisItems.length + " records for " + id
-                + " from " + hisItems[0].ts + " to "
-                + hisItems[hisItems.length-1].ts);
+            LOG.fine("historyExport.doExecute end " + id
+                + ": entity created, will commence upload on next run.");
+        }
+        else
+        {
+          // The point exists in the destination Haystack server, so we can
+          // commence with shovelling the data into its new home.
+          BHistoryConfig cfg = history.getConfig();
+          BTypeSpec recTypeSpec = cfg.getRecordType();
+          Type recType = recTypeSpec.getResolvedType();
 
-          try
-          {
-            client.hisWrite(hsId, hisItems);
-          }
-          catch (CallNetworkException e)
-          {
-            // How to bugger up someone else's error handling in one easy
-            // step:  Uselessly wrap the original exception in another
-            // exception.
+          // Range start: our upload start time.
+          BAbsTime rangeStart = getUploadFromTime();
+          // Range end: our last recorded timestamp.
+          BAbsTime rangeEnd = conn.getLastTimestamp(history);
+          BITable table = (BITable) conn.timeQuery(history, rangeStart, rangeEnd);
 
-            Throwable cause = e.getCause();
-            if (cause instanceof CallHttpException)
+          // Count the number of items uploaded.
+          long itemCount = 0;
+
+          // Gather items to be exported
+          Deque<HHisItem> itemQueue = new LinkedList<HHisItem>();
+
+          // Make a note of the previous row timestamp
+          long prevMillis = 0;
+
+          try (TableCursor cursor = table.cursor())
+          {
+            // iterate over results and extract HHisItem's
+            while (cursor.next())
             {
-              CallHttpException httpError = (CallHttpException)cause;
+              BHistoryRecord hrec = (BHistoryRecord) cursor.get();
+              BAbsTime timestamp = (BAbsTime) hrec.get("timestamp");
 
-              if (httpError.code == 413)
+              // Extract the timestamp in milliseconds
+              long millis = timestamp.getMillis();
+
+              // Kludge handling of identical timestamps.  Trend records should
+              // never trigger this code, but (Security)AuditRecord and LogRecord
+              // may.
+              if (millis <= prevMillis)
               {
-                // This is a "payload too big" error.  Try halving the size next
-                // time.  We'll still fail this attempt though so the user is
-                // alerted to the fact there was a problem.  (And it means we'll
-                // retry the samples that were de-queued.)
-                setUploadSize(Math.max(1, hisItems.length / 2));
-                LOG.log(Level.WARNING,
-                    "Server reports "
-                    + hisItems.length
-                    + " is too many for it to handle.  Upload size now set to "
-                    + getUploadSize(), httpError);
+                millis = prevMillis + 1;
               }
-              else
+
+              // extract the timestamp, declare a HVal for value storage
+              HVal val = null;
+
+              switch (recTypeSpec.toString()) // "module:type"
               {
-                LOG.log(Level.WARNING,
-                    "Server reports unhandled HTTP error code " + httpError.code, httpError);
+                case "history:AuditRecord":
+                case "history:LogRecord":
+                  // serialise the entire hrec
+                  val = HStr.make(hrec.toString());
+                  break;
+                case "history:SecurityAuditRecord":
+                  // security record does not have a meaningful .toString()
+                  // it just gives us the timestamp (which we already have)
+                  Property[] recProps = hrec.getPropertiesArray();
+                  StringBuilder recStr = new StringBuilder();
+                  int i;
+                  boolean firstEmitted = false;
+                  for (i = 0; i < recProps.length; i++)
+                  {
+                    String prop = recProps[i].getName();
+                    if (prop == "timestamp")
+                    {
+                      // we'll handle this separately
+                      continue;
+                    }
+
+                    if (firstEmitted)
+                    {
+                      recStr.append("; ");
+                    }
+                    recStr.append(prop);
+                    recStr.append(": ");
+                    recStr.append(hrec.get(prop).toString());
+                    firstEmitted = true;
+                  }
+                  val = HStr.make(recStr.toString());
+                  break;
+                default:
+                  // extract value from BTrendRecord
+                  BValue value = hrec.get("value");
+                  if (value != null)
+                  {
+                    if (recType.is(BNumericTrendRecord.TYPE))
+                    {
+                      BNumber num = (BNumber) value;
+                      val = HNum.make(num.getDouble());
+                    }
+                    else if (recType.is(BBooleanTrendRecord.TYPE))
+                    {
+                      BBoolean bool = (BBoolean) value;
+                      val = HBool.make(bool.getBoolean());
+                    }
+                    else if (recType.is(BEnumTrendRecord.TYPE))
+                    {
+                      BDynamicEnum dyn = (BDynamicEnum) value;
+                      BFacets facets = (BFacets) cfg.get("valueFacets");
+                      BEnumRange er = (BEnumRange) facets.get("range");
+                      val = HStr.make(SlotUtil.fromNiagara(er.getTag(dyn.getOrdinal())));
+                    }
+                    else
+                    {
+                      val = HStr.make(value.toString());
+                    }
+                  }
+              }
+
+              if (val != null)
+              {
+                HDateTime ts = HDateTime.make(millis, tz);
+                itemQueue.addLast(HHisItem.make(ts, val));
+                prevMillis = millis;
               }
             }
-            throw e;
           }
 
-          itemCount += hisItems.length;
+          while (!itemQueue.isEmpty())
+          {
+            // Convert the first uploadSize elements of itemQueue to an array.
+            HHisItem[] hisItems = new HHisItem[
+              Math.min(itemQueue.size(), getUploadSize())
+            ];
+            for (int i = 0; (i < hisItems.length) && (!itemQueue.isEmpty()); i++)
+            {
+              hisItems[i] = itemQueue.removeFirst();
+            }
 
-          // Make a note of when we last were successful.
-          lastSuccessTime = BAbsTime.make(
-              hisItems[hisItems.length-1].ts.millis());
+            // Issue the write request
+            if (LOG.isLoggable(Level.FINE))
+              LOG.fine("Uploading " + hisItems.length + " records for " + id
+                  + " from " + hisItems[0].ts + " to "
+                  + hisItems[hisItems.length-1].ts);
+
+            try
+            {
+              client.hisWrite(hsId, hisItems);
+            }
+            catch (CallNetworkException e)
+            {
+              // How to bugger up someone else's error handling in one easy
+              // step:  Uselessly wrap the original exception in another
+              // exception.
+
+              Throwable cause = e.getCause();
+              if (cause instanceof CallHttpException)
+              {
+                CallHttpException httpError = (CallHttpException)cause;
+
+                if (httpError.code == 413)
+                {
+                  // This is a "payload too big" error.  Try halving the size next
+                  // time.  We'll still fail this attempt though so the user is
+                  // alerted to the fact there was a problem.  (And it means we'll
+                  // retry the samples that were de-queued.)
+                  setUploadSize(Math.max(1, hisItems.length / 2));
+                  LOG.log(Level.WARNING,
+                      "Server reports "
+                      + hisItems.length
+                      + " is too many for it to handle.  Upload size now set to "
+                      + getUploadSize(), httpError);
+                }
+                else
+                {
+                  LOG.log(Level.WARNING,
+                      "Server reports unhandled HTTP error code " + httpError.code, httpError);
+                }
+              }
+              throw e;
+            }
+
+            itemCount += hisItems.length;
+
+            // Make a note of when we last were successful.
+            lastSuccessTime = BAbsTime.make(
+                hisItems[hisItems.length-1].ts.millis());
+          }
+
+          if (LOG.isLoggable(Level.FINE))
+            LOG.fine("historyExport.doExecute end " + id
+                + ": exported " + itemCount + " rows.");
         }
-
-        if (LOG.isLoggable(Level.FINE))
-          LOG.fine("historyExport.doExecute end " + id
-              + ": exported " + itemCount + " rows.");
       }
 
       executeOk();
