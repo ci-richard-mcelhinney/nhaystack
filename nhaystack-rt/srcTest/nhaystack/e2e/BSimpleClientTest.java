@@ -209,7 +209,7 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
     Assert.assertEquals(r.getStr("productVersion"), "4.11.0.142");
-    Assert.assertEquals(r.getStr("moduleVersion"), "3.2.0");
+    Assert.assertEquals(r.getStr("moduleVersion"), "3.2.1");
   }
 
   @Test

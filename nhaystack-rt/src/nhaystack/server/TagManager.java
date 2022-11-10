@@ -834,6 +834,7 @@ public class TagManager implements NHaystackConst
             else
             {
                 LOG.warning("Problem generating tags from facets for: " + point.getSlotPath().toDisplayString());
+                LOG.warning("Type of component with problem facets is: " + point.getType().getDisplayName(null));
             }
         });
 
