@@ -564,16 +564,18 @@ public class TagManager implements NHaystackConst
             tags = HDict.EMPTY;
         hdb.add(tags);
 
-        // add dis
-        String dis = cfg.getId().toString();
-        if (dis.startsWith("/")) dis = dis.substring(1);
-        dis = TextUtil.replace(dis, "/", "_");
+        // add dis and navName tags
+        String dis = new String();
+        String navName = cfg.getId().toString();
+        if (navName.startsWith("/")) navName = navName.substring(1);
+        navName = TextUtil.replace(navName, "/", "_");
         hdb.add("dis", dis);
-        hdb.add("navName", dis);
+        hdb.add("navName", navName);
 
         // add id
         HRef ref = makeComponentRef(cfg).getHRef();
-        hdb.add("id", HRef.make(ref.val, dis));
+        hdb.add("id", HRef.make(ref.val, navName));
+
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());
