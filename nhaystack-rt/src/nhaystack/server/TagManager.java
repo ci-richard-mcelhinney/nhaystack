@@ -557,6 +557,7 @@ public class TagManager implements NHaystackConst
     HDict createHistoryTags(BHistoryConfig cfg)
     {
         HDictBuilder hdb = new HDictBuilder();
+        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
 
         // add existing tags
         HDict tags = BHDict.findTagAnnotation(cfg);
@@ -565,12 +566,20 @@ public class TagManager implements NHaystackConst
         hdb.add(tags);
 
         // add dis and navName tags
-        String dis = new String();
         String navName = cfg.getId().toString();
         if (navName.startsWith("/")) navName = navName.substring(1);
         navName = TextUtil.replace(navName, "/", "_");
-        hdb.add("dis", dis);
         hdb.add("navName", navName);
+
+        String dis;
+        if (point == null) hdb.add("dis", navName);
+        else
+        {
+            dis = point.getDisplayName(null);
+            if (dis == null)
+                dis = navName;
+            hdb.add("dis", dis);
+        }
 
         // add id
         HRef ref = makeComponentRef(cfg).getHRef();
@@ -606,7 +615,6 @@ public class TagManager implements NHaystackConst
         }
 
         // check if this history has a point
-        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
         if (point != null)
         {
             // add point ref
