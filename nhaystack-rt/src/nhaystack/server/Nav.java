@@ -9,7 +9,7 @@
 //
 package nhaystack.server;
 
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import javax.baja.history.BHistoryConfig;
 import javax.baja.naming.BOrd;
@@ -68,7 +68,7 @@ public class Nav
 
     static String makeSiteNavId(String siteNav)
     {
-        return "sep:/" + siteNav;
+        return SEP + siteNav;
     }
 
     static String makeEquipNavId(String siteNav, String equipNav)
@@ -83,18 +83,18 @@ public class Nav
     {
         if (navId == null) return roots();
 
-        else if (navId.startsWith("slot:/")) return onCompNav(navId);
-        else if (navId.startsWith("his:/"))  return onHisNav(navId);
-        else if (navId.startsWith("sep:/")) return onSepNav(navId);
+        else if (navId.startsWith(SLOT)) return onCompNav(navId);
+        else if (navId.startsWith(HIS))  return onHisNav(navId);
+        else if (navId.startsWith(SEP)) return onSepNav(navId);
 
         else
-            throw new IllegalStateException("Cannot lookup nav for " + navId);
+            throw new IllegalStateException(STATEMSG + navId);
     }
 
     /**
       * Fetch the site-equip-point nav tree in xml format
       */
-    String fetchSepNav() throws Exception
+    String fetchSepNav() throws IOException
     {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         XWriter out = new XWriter(bout);
@@ -110,27 +110,27 @@ public class Nav
             for (BComponent site : sites)
             {
                 HDict siteTags = tagMgr.createComponentTags(site);
-                String siteName = siteTags.getStr("navName");
+                String siteName = siteTags.getStr(NAVNAME);
 
                 BComponent[] equips = cache.getNavSiteEquips(makeSiteNavId(siteName));
                 if (equips.length == 0)
                 {
                     out.indent(1)
                         .w("<site ")
-                        .attr("navName", siteTags.getStr("navName"))
+                        .attr(NAVNAME, siteTags.getStr(NAVNAME))
                         .w("/>").nl();
                 }
                 else
                 {
                     out.indent(1)
                         .w("<site ")
-                        .attr("navName", siteTags.getStr("navName"))
+                        .attr(NAVNAME, siteTags.getStr(NAVNAME))
                         .w(">").nl();
 
                     for (BComponent equip : equips)
                     {
                         HDict equipTags = tagMgr.createComponentTags(equip);
-                        String equipName = equipTags.getStr("navName");
+                        String equipName = equipTags.getStr(NAVNAME);
 
                         BComponent[] points = cache.getNavEquipPoints(
                             makeEquipNavId(siteName, equipName));
@@ -139,14 +139,14 @@ public class Nav
                         {
                             out.indent(2)
                                 .w("<equip ")
-                                .attr("navName", equipTags.getStr("navName"))
+                                .attr(NAVNAME, equipTags.getStr(NAVNAME))
                                 .w("/>").nl();
                         }
                         else
                         {
                             out.indent(2)
                                 .w("<equip ")
-                                .attr("navName", equipTags.getStr("navName"))
+                                .attr(NAVNAME, equipTags.getStr(NAVNAME))
                                 .w(">").nl();
 
                             for (BComponent point : points)
@@ -154,8 +154,8 @@ public class Nav
                                 HDict pointTags = tagMgr.createComponentTags(point);
                                 out.indent(3)
                                     .w("<point ")
-                                    .attr("navName", pointTags.getStr("navName")).w(" ")
-                                    .attr("axType", pointTags.getStr("axType"))
+                                    .attr("NAVNAME", pointTags.getStr(NAVNAME)).w(" ")
+                                    .attr(AXTYPE, pointTags.getStr(AXTYPE))
                                     .w("/>").nl();
                             }
                             out.indent(2).w("</equip>").nl();
@@ -181,17 +181,17 @@ public class Nav
     {
         HDict[] dicts = {
             new HDictBuilder()
-                .add("navId", "slot:/")
+                .add(NAVID, SLOT)
                 .add("dis", "ComponentSpace")
                 .toDict(),
 
             new HDictBuilder()
-                .add("navId", "his:/")
+                .add(NAVID, HIS)
                 .add("dis", "HistorySpace")
                 .toDict(),
 
             new HDictBuilder()
-                .add("navId", "sep:/")
+                .add(NAVID, SEP)
                 .add("dis", "Site")
                 .toDict()
         };
@@ -204,7 +204,7 @@ public class Nav
         Context cx = ThreadContext.getContext(Thread.currentThread());
 
         // child of ComponentSpace root
-        if (navId.equals("slot:/"))
+        if (navId.equals(SLOT))
         {
             BComponent root = (BComponent) 
                 BOrd.make("station:|slot:/").get(service, null);
@@ -212,15 +212,15 @@ public class Nav
             return getHGrid(navId, cx, root);
         }
         // ComponentSpace component
-        else if (navId.startsWith("slot:/"))
+        else if (navId.startsWith(SLOT))
         {
-            String slotPath = navId.substring("slot:/".length());
+            String slotPath = navId.substring(SLOT.length());
             BOrd ord = BOrd.make("station:|slot:/" + slotPath);
             BComponent comp = (BComponent) ord.get(service, null);
 
             return getHGrid(navId, cx, comp);
         }
-        else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
+        else throw new BajaRuntimeException(STATEMSG + navId);
     }
 
     private HGrid getHGrid(String navId, Context cx, BComponent root)
@@ -245,7 +245,7 @@ public class Nav
         // add a navId, but only if this component is not a leaf
         if (comp.getChildComponents().length > 0)
         {
-            hdb.add("navId", comp.getSlotPath().toString());
+            hdb.add(NAVID, comp.getSlotPath().toString());
         }
 
         if (SpaceManager.isVisibleComponent(comp))
@@ -255,7 +255,7 @@ public class Nav
         else
         {
             hdb.add("dis", comp.getDisplayName(null));
-            hdb.add("axType", comp.getType().toString());
+            hdb.add(AXTYPE, comp.getType().toString());
             hdb.add("axSlotPath", comp.getSlotPath().toString());
         }
 
@@ -270,7 +270,7 @@ public class Nav
         Context cx = ThreadContext.getContext(Thread.currentThread());
 
         // distinct station names
-        if (navId.equals("his:/"))
+        if (navId.equals(HIS))
         {
             String[] stationNames = cache.getNavHistoryStationNames();
 
@@ -280,7 +280,7 @@ public class Nav
                 if (getAccessibleHistoryConfigs(stationName, cx).length > 0)
                 {
                     HDictBuilder hd = new HDictBuilder();
-                    hd.add("navId", "his:/" + stationName);
+                    hd.add(NAVID, HIS + stationName);
                     hd.add("dis", stationName);
                     hd.add("stationName", stationName);
                     dicts.add(hd.toDict());
@@ -290,9 +290,9 @@ public class Nav
         }
 
         // histories that go with station
-        else if (navId.startsWith("his:/"))
+        else if (navId.startsWith(HIS))
         {
-            String stationName = navId.substring("his:/".length());
+            String stationName = navId.substring(HIS.length());
 
             BHistoryConfig[] configs = getAccessibleHistoryConfigs(stationName, cx);
 
@@ -302,7 +302,7 @@ public class Nav
             return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
 
-        else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
+        else throw new BajaRuntimeException(STATEMSG + navId);
     }
 
     private BHistoryConfig[] getAccessibleHistoryConfigs(String stationName, Context cx)
@@ -320,7 +320,7 @@ public class Nav
 
     private HGrid onSepNav(String navId)
     {
-        if (navId.equals("sep:/"))
+        if (navId.equals(SEP))
         {
             Context cx = ThreadContext.getContext(Thread.currentThread());
             ArrayList<HDict> dicts = new ArrayList<>();
@@ -332,10 +332,10 @@ public class Nav
 
                 HDict tags = tagMgr.createComponentTags(site);
 
-                String siteNav = makeSiteNavId(tags.getStr("navName"));
+                String siteNav = makeSiteNavId(tags.getStr(NAVNAME));
 
                 HDictBuilder hd = new HDictBuilder();
-                hd.add("navId", HStr.make(siteNav));
+                hd.add(NAVID, HStr.make(siteNav));
                 hd.add(tags);
 
                 dicts.add(hd.toDict());
@@ -344,21 +344,21 @@ public class Nav
             return HGridBuilder.dictsToGrid(dicts.toArray(EMPTY_HDICT_ARRAY));
         }
 
-        else if (navId.startsWith("sep:/"))
+        else if (navId.startsWith(SEP))
         {
-            String str = navId.substring("sep:/".length());
+            String str = navId.substring(SEP.length());
 
             String[] navNames = TextUtil.split(str, '/');
             switch (navNames.length)
             {
                 case 1: return makeSiteNav(navNames[0]);
                 case 2: return makeEquipNav(navNames[0], navNames[1]);
-                default: throw new BajaRuntimeException("Cannot lookup nav for " + navId);
+                default: throw new BajaRuntimeException(STATEMSG + navId);
             }
         }
 
         // oops
-        else throw new BajaRuntimeException("Cannot lookup nav for " + navId);
+        else throw new BajaRuntimeException(STATEMSG + navId);
     }
 
     private HGrid makeSiteNav(String siteName)
@@ -376,10 +376,10 @@ public class Nav
             HDict tags = tagMgr.createComponentTags(equip);
 
             String equipNav = makeEquipNavId(
-                siteNav, tags.getStr("navName"));
+                siteNav, tags.getStr(NAVNAME));
 
             HDictBuilder hd = new HDictBuilder();
-            hd.add("navId", HStr.make(equipNav));
+            hd.add(NAVID, HStr.make(equipNav));
             hd.add(tags);
             dicts.add(hd.toDict());
         }
@@ -409,6 +409,14 @@ public class Nav
 
     private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
     private static final BHistoryConfig[] EMPTY_HISTORY_CONFIG_ARRAY = new BHistoryConfig[0];
+
+    private static final String SEP = "sep:/";
+    private static final String SLOT = "slot:/";
+    private static final String HIS = "his:/";
+    private static final String STATEMSG = "Cannot lookup nav for ";
+    private static final String NAVNAME = "navName";
+    private static final String NAVID = "navId";
+    private static final String AXTYPE = "axType";
 
     final BNHaystackService service;
     final Cache cache;

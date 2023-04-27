@@ -10,25 +10,26 @@
 description = "nhaystack workbench module"
 
 niagaraModule {
-  preferredSymbol = "nh"
-  runtimeProfile = "wb"
-  moduleName = "nhaystack"
+    preferredSymbol = "nh"
+    runtimeProfile = "wb"
+    moduleName = "nhaystack"
+    certAlias = "ph-code-cert"
 }
 
 dependencies {
-  compile "Tridium:nre:4.4.93.40"
-  compile "Tridium:baja:4.4.93.40"
-  compile "Tridium:alarm-rt:4.4.93.40"
-  compile "Tridium:driver-rt:4.4.93.40"
-  compile "Tridium:gx-rt:4.4.93.40"
-  compile "Tridium:control-rt:4.4.93.40"
-  compile "Tridium:driver-wb:4.4.93.40"
-  compile "Tridium:basicDriver-rt:4.4.93.40"
-  compile "Tridium:workbench-wb:4.4.93.40"
-  compile "Tridium:bajaui-wb:4.4.93.40"
-  compile "Tridium:gx-wb:4.4.93.40"
-  compile "Tridium:fox-rt:4.4.93.40"
-  compile "Tridium:tagdictionary-rt:4.4.93.40"
+    compile "Tridium:nre:4.4.93.40"
+    compile "Tridium:baja:4.4.93.40"
+    compile "Tridium:alarm-rt:4.4.93.40"
+    compile "Tridium:driver-rt:4.4.93.40"
+    compile "Tridium:gx-rt:4.4.93.40"
+    compile "Tridium:control-rt:4.4.93.40"
+    compile "Tridium:driver-wb:4.4.93.40"
+    compile "Tridium:basicDriver-rt:4.4.93.40"
+    compile "Tridium:workbench-wb:4.4.93.40"
+    compile "Tridium:bajaui-wb:4.4.93.40"
+    compile "Tridium:gx-wb:4.4.93.40"
+    compile "Tridium:fox-rt:4.4.93.40"
+    compile "Tridium:tagdictionary-rt:4.4.93.40"
 
-  compile project(":nhaystack-rt")
+    compile project(":nhaystack-rt")
 }

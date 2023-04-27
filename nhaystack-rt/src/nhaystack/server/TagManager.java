@@ -557,6 +557,7 @@ public class TagManager implements NHaystackConst
     HDict createHistoryTags(BHistoryConfig cfg)
     {
         HDictBuilder hdb = new HDictBuilder();
+        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
 
         // add existing tags
         HDict tags = BHDict.findTagAnnotation(cfg);
@@ -564,16 +565,26 @@ public class TagManager implements NHaystackConst
             tags = HDict.EMPTY;
         hdb.add(tags);
 
-        // add dis
-        String dis = cfg.getId().toString();
-        if (dis.startsWith("/")) dis = dis.substring(1);
-        dis = TextUtil.replace(dis, "/", "_");
-        hdb.add("dis", dis);
-        hdb.add("navName", dis);
+        // add dis and navName tags
+        String navName = cfg.getId().toString();
+        if (navName.startsWith("/")) navName = navName.substring(1);
+        navName = TextUtil.replace(navName, "/", "_");
+        hdb.add("navName", navName);
+
+        String dis;
+        if (point == null) hdb.add("dis", navName);
+        else
+        {
+            dis = point.getDisplayName(null);
+            if (dis == null)
+                dis = navName;
+            hdb.add("dis", dis);
+        }
 
         // add id
         HRef ref = makeComponentRef(cfg).getHRef();
-        hdb.add("id", HRef.make(ref.val, dis));
+        hdb.add("id", HRef.make(ref.val, navName));
+
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());
@@ -604,7 +615,6 @@ public class TagManager implements NHaystackConst
         }
 
         // check if this history has a point
-        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
         if (point != null)
         {
             // add point ref
@@ -912,55 +922,63 @@ public class TagManager implements NHaystackConst
         HDict tags)
     {
         // the point is explicitly tagged with an equipRef
-        // the hdb will contain an equipRef tag converted from a equipRef relation if it exist.
+        // the hdb will contain an equipRef tag converted from a equipRef
+        // relation, if it exists.
         if (hdb.has(EQUIP_REF))
         {
-            BComponent equip = lookupComponent((HRef) hdb.get(EQUIP_REF));
-
-            if (equip != null)
+            if (!hdb.has(SITE_REF))
             {
-                // this will convert an existing siteRef relation to a siteRef tag in thie HDict equipTags
-                final HDict equipTags = convertRelationsToRefTags(equip);
-                // try to look up siteRef too
-                if (equipTags.has(SITE_REF))
+                BComponent equip = lookupComponent((HRef) hdb.get(EQUIP_REF));
+                if (equip != null)
                 {
-                    HRef siteRef = convertAnnotatedRefTag(equipTags.getRef(SITE_REF));
+                    HRef siteRef = findSiteRef(equip);
                     if (siteRef != null)
+                    {
                         hdb.add(SITE_REF, siteRef);
+                    }
                 }
             }
         }
-        // maybe we've cached an implicit equipRef
         else
         {
+            // maybe we've cached an implicit equipRef
             BComponent equip = server.getCache().getImplicitEquip(point);
             if (equip != null)
             {
                 hdb.add(EQUIP_REF, makeComponentRef(equip).getHRef());
 
                 // try to look up siteRef too
-                HRef siteRef = null;
-                // check for hs:siteRef niagara relation on the equip component
-                Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
-                if (optRelation.isPresent())
-                {
-                    BComponent site = (BComponent) optRelation.get().getEndpoint();
-                    siteRef = makeComponentRef(site).getHRef();
-                }
-
-                if (siteRef == null)
-                {
-                    HDict equipTags = BHDict.findTagAnnotation(equip);
-                    if (equipTags.has(SITE_REF))
-                    {
-                        siteRef = convertAnnotatedRefTag(equipTags.getRef(SITE_REF));
-                    }
-                }
-
+                HRef siteRef = findSiteRef(equip);
                 if (siteRef != null)
+                {
                     hdb.add(SITE_REF, siteRef);
+                }
             }
         }
+    }
+
+    private HRef findSiteRef(BComponent equip)
+    {
+        HRef siteRef = null;
+
+        // check for hs:siteRef niagara relation on the equip component
+        Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
+        if (optRelation.isPresent())
+        {
+            BComponent site = (BComponent) optRelation.get().getEndpoint();
+            siteRef = makeComponentRef(site).getHRef();
+        }
+
+        if (siteRef == null)
+        {
+            HDict equipTags = BHDict.findTagAnnotation(equip);
+            if (equipTags != null && equipTags.has(SITE_REF))
+            {
+                siteRef = convertAnnotatedRefTag(equipTags.getRef(SITE_REF));
+            }
+        }
+
+        return siteRef;
     }
 
     private static BNumber getNumberFacet(BFacets facets, String name)

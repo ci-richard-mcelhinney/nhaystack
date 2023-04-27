@@ -11,78 +11,79 @@
 description = "nhaystack runtime module"
 
 niagaraModule {
-  preferredSymbol = "nh"
-  runtimeProfile = "rt"
-  moduleName = "nhaystack"
+    preferredSymbol = "nh"
+    runtimeProfile = "rt"
+    moduleName = "nhaystack"
 
-  modulePart {
-    name = "nhaystack-wb"
-    runtimeProfile = "wb"
-  }
+    modulePart {
+        name = "nhaystack-wb"
+        runtimeProfile = "wb"
+    }
+    certAlias = "ph-code-cert"
 }
 
 repositories {
-  jcenter()
+    jcenter()
 }
 
 dependencies {
-  compile fileTree(dir: 'lib', include: ['*.jar'])
+    compile fileTree(dir: 'lib', include: ['*.jar'])
 
-  compile "Tridium:nre:4.4.93.40"
-  compile "Tridium:alarm-rt:4.4.93.40"
-  compile "Tridium:baja:4.4.93.40"
-  compile "Tridium:bql-rt:4.4.93.40"
-  compile "Tridium:control-rt:4.4.93.40"
-  compile "Tridium:driver-rt:4.4.93.40"
-  compile "Tridium:fox-rt:4.4.93.40"
-  compile "Tridium:haystack-rt:4.4.94.40.3"
-  compile "Tridium:history-rt:4.4.93.40"
-  compile "Tridium:net-rt:4.4.93.40"
-  compile "Tridium:niagaraDriver-rt:4.4.93.40"
-  compile "Tridium:schedule-rt:4.4.93.40"
-  compile "Tridium:tagdictionary-rt:4.4.93.40"
-  compile "Tridium:web-rt:4.4.93.40"
+    compile "Tridium:nre:4.4.93.40"
+    compile "Tridium:alarm-rt:4.4.93.40"
+    compile "Tridium:baja:4.4.93.40"
+    compile "Tridium:bql-rt:4.4.93.40"
+    compile "Tridium:control-rt:4.4.93.40"
+    compile "Tridium:driver-rt:4.4.93.40"
+    compile "Tridium:fox-rt:4.4.93.40"
+    compile "Tridium:haystack-rt:4.4.94.40.3"
+    compile "Tridium:history-rt:4.4.93.40"
+    compile "Tridium:net-rt:4.4.93.40"
+    compile "Tridium:niagaraDriver-rt:4.4.93.40"
+    compile "Tridium:schedule-rt:4.4.93.40"
+    compile "Tridium:tagdictionary-rt:4.4.93.40"
+    compile "Tridium:web-rt:4.4.93.40"
 
-  niagaraModuleTestCompile "Tridium:test-se:4.4.93.40"
-  niagaraModuleTestCompile "Tridium:haystack-rt:4.4"
-  niagaraModuleTestCompile "Tridium:kitControl-rt:4.4.93.40.22"
-  niagaraModuleTestCompile "Tridium:jetty-rt:4.4.93.40"
-  niagaraModuleTestCompile "Tridium:bacnet-rt:4.4.93.40"
-  
-  testCompile 'org.testng:testng:6.10'
-  testCompile "Tridium:alarm-rt:4.4.93.40"
-  testCompile fileTree(dir: 'lib', include: ['*.jar'])
+    niagaraModuleTestCompile "Tridium:test-se:4.4.93.40"
+    niagaraModuleTestCompile "Tridium:haystack-rt:4.4"
+    niagaraModuleTestCompile "Tridium:kitControl-rt:4.4.93.40.22"
+    niagaraModuleTestCompile "Tridium:jetty-rt:4.4.93.40"
+    niagaraModuleTestCompile "Tridium:bacnet-rt:4.4.93.40"
 
-  uberjar "javax.servlet:javax.servlet-api:3.0.1"
+    testCompile 'org.testng:testng:6.10'
+    testCompile "Tridium:alarm-rt:4.4.93.40"
+    testCompile fileTree(dir: 'lib', include: ['*.jar'])
 
-  testUberjar "com.e-movimento.tinytools:privilegedaccessor:1.2.2"
-  testUberjar "org.mockito:mockito-inline:2.24.0"
+    uberjar "javax.servlet:javax.servlet-api:3.0.1"
+
+    testUberjar "com.e-movimento.tinytools:privilegedaccessor:1.2.2"
+    testUberjar "org.mockito:mockito-inline:2.24.0"
 }
 
 test {
-  useTestNG()
+    useTestNG()
 
-  include 'nhaystack/test/**'
-  include 'nhaystack/server/**'
+    include 'nhaystack/test/**'
+    include 'nhaystack/server/**'
 
-  testLogging.showStandardStreams = true
+    testLogging.showStandardStreams = true
 }
 
 jar {
-  from('src') {
-    include 'nhaystack/res/*.csv'
-    include 'nhaystack/res/*.txt'
-    include 'nhaystack/res/equip-points/*.txt'
-    include 'nhaystack/icons/*.*'
-  }
-  from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) })
-  {
-    include "org/projecthaystack/**"
-  }
+    from('src') {
+        include 'nhaystack/res/*.csv'
+        include 'nhaystack/res/*.txt'
+        include 'nhaystack/res/equip-points/*.txt'
+        include 'nhaystack/icons/*.*'
+    }
+    from(configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) })
+            {
+                include "org/projecthaystack/**"
+            }
 }
 
 moduleTestJar {
-  from('srcTest') {
-    include 'stations/importTestStation.xml'
-  }
+    from('srcTest') {
+        include 'stations/importTestStation.xml'
+    }
 }

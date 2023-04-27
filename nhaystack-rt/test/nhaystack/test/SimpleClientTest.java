@@ -11,11 +11,10 @@ package nhaystack.test;
 import org.projecthaystack.*;
 import org.projecthaystack.client.*;
 import org.projecthaystack.util.Base64;
+import org.testng.Assert;
 import org.testng.annotations.*;
-import org.testng.*;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import static org.testng.Assert.fail;
 
@@ -45,8 +44,11 @@ public class SimpleClientTest extends TestCore
       this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
       client.about();
     }
-    catch(Exception e)
-    {  e.printStackTrace(); fail(); }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      fail();
+    }
   }
 
   @AfterMethod(alwaysRun = true)
@@ -65,14 +67,20 @@ public class SimpleClientTest extends TestCore
   {
     // get bad credentials
     try
-    {  HClient.open(SIMPLE_URI, INVALID_USER, INVALID_PASS).about(); fail(); }
+    {
+      HClient.open(SIMPLE_URI, INVALID_USER, INVALID_PASS).about();
+      fail();
+    }
     catch (Exception e)
     {
       Assert.assertTrue(true);
     }
 
     try
-    {  HClient.open(SIMPLE_URI, SIMPLE_USER, INVALID_PASS).about(); fail(); }
+    {
+      HClient.open(SIMPLE_URI, SIMPLE_USER, INVALID_PASS).about();
+      fail();
+    }
     catch (CallException e)
     {
       Assert.assertTrue(true);
@@ -83,8 +91,11 @@ public class SimpleClientTest extends TestCore
       this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
       client.about();
     }
-    catch(Exception e)
-    {  e.printStackTrace(); fail(); }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      fail();
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,8 +110,8 @@ public class SimpleClientTest extends TestCore
     HDict r = client.about();
     Assert.assertEquals(r.getStr("haystackVersion"), "2.0");
     Assert.assertEquals(r.getStr("productName"), "Niagara 4");
-    Assert.assertEquals(r.getStr("productVersion"), "4.4.93.40");
-    Assert.assertEquals(r.getStr("moduleVersion"), "3.0.1.999");
+    Assert.assertEquals(r.getStr("productVersion"), "4.10.1.36");
+    Assert.assertEquals(r.getStr("moduleVersion"), "3.2.0");
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -112,6 +123,7 @@ public class SimpleClientTest extends TestCore
   {
     this.client = HClient.open(SIMPLE_URI, SIMPLE_USER, SIMPLE_PASS);
     HGrid g = client.ops();
+    printFullGrid(g);
 
     // verify required columns
     Assert.assertTrue(g.col("name") != null);
@@ -140,6 +152,7 @@ public class SimpleClientTest extends TestCore
   public void verifyFormats() throws Exception
   {
     HGrid g = client.formats();
+//    printFullGrid(g);
 
     // verify required columns
     Assert.assertTrue(g.col("mime") != null);
@@ -163,16 +176,16 @@ public class SimpleClientTest extends TestCore
 
 //    printFullGrid(grid);
     Assert.assertEquals(grid.numRows(), 17);
-    Assert.assertEquals(grid.row( 0).id(), HRef.make("S.Winterfell"));
-    Assert.assertEquals(grid.row( 1).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
-    Assert.assertEquals(grid.row( 2).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
-    Assert.assertEquals(grid.row( 3).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
-    Assert.assertEquals(grid.row( 4).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
-    Assert.assertEquals(grid.row( 5).id(), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row( 6).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
-    Assert.assertEquals(grid.row( 7).id(), HRef.make("S.Winterfell.Equip2.SineWave2"));
-    Assert.assertEquals(grid.row( 8).id(), HRef.make("S.Winterfell.Equip2.SineWave3"));
-    Assert.assertEquals(grid.row( 9).id(), HRef.make("S.Winterfell.Equip2"));
+    Assert.assertEquals(grid.row(0).id(), HRef.make("S.Winterfell"));
+    Assert.assertEquals(grid.row(1).id(), HRef.make("S.Winterfell.Equip1.BooleanWritable"));
+    Assert.assertEquals(grid.row(2).id(), HRef.make("S.Winterfell.Equip1.EnumWritable"));
+    Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.Equip1.StringWritable"));
+    Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.Equip1.SineWave1"));
+    Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.Equip1.SineWave2"));
+    Assert.assertEquals(grid.row(7).id(), HRef.make("S.Winterfell.Equip2.SineWave2"));
+    Assert.assertEquals(grid.row(8).id(), HRef.make("S.Winterfell.Equip2.SineWave3"));
+    Assert.assertEquals(grid.row(9).id(), HRef.make("S.Winterfell.Equip2"));
     Assert.assertEquals(grid.row(10).id(), HRef.make("S.Winterfell.Equip1.SineWave4"));
     Assert.assertEquals(grid.row(11).id(), HRef.make("C.SineWave5"));
     Assert.assertEquals(grid.row(12).id(), HRef.make("S.Richmond"));
@@ -192,12 +205,12 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(grid.row(9).get("siteRef"), HRef.make("S.Winterfell"));
 
     // TODO add check for equipRef to Equip2
-    Assert.assertEquals(grid.row( 1).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row( 2).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row( 3).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row( 4).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row( 6).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
-    Assert.assertEquals(grid.row( 7).get("equipRef"), HRef.make("S.Winterfell.Equip2"));
+    Assert.assertEquals(grid.row(1).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(2).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(3).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(4).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(6).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
+    Assert.assertEquals(grid.row(7).get("equipRef"), HRef.make("S.Winterfell.Equip2"));
     Assert.assertEquals(grid.row(10).get("equipRef"), HRef.make("S.Winterfell.Equip1"));
 
     //////////////////////////////////////////
@@ -275,11 +288,11 @@ public class SimpleClientTest extends TestCore
 //        Assert.assertEquals(dict.get("navName"), HStr.make("Sine-Wave2~2fabc"));
 //        verify(dict.missing("navNameFormat"));
 //
-        //////////////////////////////////////////
+    //////////////////////////////////////////
 
-        dict = client.readById(HRef.make("S.Richmond.AHU2.NumericWritable"));
+    dict = client.readById(HRef.make("S.Richmond.AHU2.NumericWritable"));
 
-        //////////////////////////////////////////
+    //////////////////////////////////////////
 
     dict = client.readById(HRef.make("H.nhaystack_simple.AuditHistory"));
     Assert.assertEquals(dict.get("axType"), HStr.make("history:HistoryConfig"));
@@ -317,8 +330,14 @@ public class SimpleClientTest extends TestCore
 //        verify(dict.missing("hisInterpolate"));
 //        Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
 //
-        try { client.readById(HRef.make("c.Mg~~")); }
-        catch(Exception e) { Assert.assertNotNull(e); }
+    try
+    {
+      client.readById(HRef.make("c.Mg~~"));
+    }
+    catch (Exception e)
+    {
+      Assert.assertNotNull(e);
+    }
   }
 
 //////////////////////////////////////////////////////////////////////////
@@ -349,11 +368,11 @@ public class SimpleClientTest extends TestCore
     grid = client.call("nav", HGrid.EMPTY);
     Assert.assertEquals(grid.numRows(), 3);
     Assert.assertEquals(grid.row(0).get("navId"), HStr.make("slot:/"));
-    Assert.assertEquals(grid.row(0).get("dis"),   HStr.make("ComponentSpace"));
+    Assert.assertEquals(grid.row(0).get("dis"), HStr.make("ComponentSpace"));
     Assert.assertEquals(grid.row(1).get("navId"), HStr.make("his:/"));
-    Assert.assertEquals(grid.row(1).get("dis"),   HStr.make("HistorySpace"));
+    Assert.assertEquals(grid.row(1).get("dis"), HStr.make("HistorySpace"));
     Assert.assertEquals(grid.row(2).get("navId"), HStr.make("sep:/"));
-    Assert.assertEquals(grid.row(2).get("dis"),   HStr.make("Site"));
+    Assert.assertEquals(grid.row(2).get("dis"), HStr.make("Site"));
 
     n = makeNavGrid(HStr.make("his:/"));
     grid = client.call("nav", n);
@@ -433,7 +452,9 @@ public class SimpleClientTest extends TestCore
     for (int i = 0; i < grid.numRows(); i++)
     {
       if (grid.row(i).has("navId"))
+      {
         traverseComponents((HStr) grid.row(i).get("navId"));
+      }
     }
   }
 
@@ -455,7 +476,7 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(his.meta().id(), dict.id());
     Assert.assertTrue(his.numRows() > 0);
 
-    int last = his.numRows()-1;
+    int last = his.numRows() - 1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
 
     Assert.assertEquals(numVal(his.row(0)).unit, "°F");
@@ -472,7 +493,7 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(his.meta().id(), dict.id());
     Assert.assertTrue(his.numRows() > 0);
 
-    last = his.numRows()-1;
+    last = his.numRows() - 1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
 
     // test read with no data expected
@@ -519,13 +540,13 @@ public class SimpleClientTest extends TestCore
 //System.out.println(d);
 
     // do first sub
-    HGrid sub = w.sub(new HRef[] { a.id(), b.id() });
+    HGrid sub = w.sub(new HRef[]{a.id(), b.id()});
     Assert.assertEquals(sub.numRows(), 2);
     Assert.assertEquals(sub.row(0).id(), a.id());
     Assert.assertEquals(sub.row(1).id(), b.id());
 
     // now add c, d
-    sub = w.sub(new HRef[] { c.id(), d.id() }, false);
+    sub = w.sub(new HRef[]{c.id(), d.id()}, false);
     Assert.assertEquals(sub.numRows(), 2);
     Assert.assertEquals(sub.row(0).id(), c.id());
     Assert.assertEquals(sub.row(1).id(), d.id());
@@ -550,20 +571,36 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(poll.numRows(), 1);
 
     // remove d, and then poll refresh
-    w.unsub(new HRef[] { d.id() });
+    w.unsub(new HRef[]{d.id()});
     poll = w.pollRefresh();
     Assert.assertEquals(poll.numRows(), 3);
 
     // close
     w.close();
-    try { w.pollRefresh(); Assert.fail(); } catch (Exception e) { verifyEx(e); }
+    try
+    {
+      w.pollRefresh();
+      Assert.fail();
+    }
+    catch (Exception e)
+    {
+      verifyEx(e);
+    }
     Assert.assertEquals(client.watch(w.id(), false), null);
     Assert.assertEquals(client.watches().length, 0);
 
     // check bad id
     w = client.watchOpen("Bogus Test", HNum.make(120, "s"));
     HRef badId = HRef.make("c." + Base64.URI.encode("badBadBad"));
-    try { w.sub(new HRef[] { badId }).dump(); fail(); } catch (Exception e) { verifyEx(e); }
+    try
+    {
+      w.sub(new HRef[]{badId}).dump();
+      fail();
+    }
+    catch (Exception e)
+    {
+      verifyEx(e);
+    }
   }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -607,8 +644,8 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
-      switch(i+1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
+      switch (i + 1)
       {
         case 10:
           Assert.assertEquals(grid.row(i).get("val"), HNum.make(222));
@@ -628,8 +665,8 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
-      switch(i+1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
+      switch (i + 1)
       {
         case 10:
           Assert.assertTrue(grid.row(i).missing("val"));
@@ -669,8 +706,8 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
-      switch(i+1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
+      switch (i + 1)
       {
         case 1:
           Assert.assertEquals(grid.row(i).get("val"), HNum.make(333));
@@ -694,8 +731,8 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(grid.numRows(), 17);
     for (int i = 0; i < 17; i++)
     {
-      Assert.assertEquals(grid.row(i).getInt("level"), i+1);
-      switch(i+1)
+      Assert.assertEquals(grid.row(i).getInt("level"), i + 1);
+      switch (i + 1)
       {
         case 10:
           Assert.assertTrue(grid.row(i).missing("val"));
@@ -733,23 +770,27 @@ public class SimpleClientTest extends TestCore
   {
     HDictBuilder hd = new HDictBuilder();
     hd.add("id", id);
-    return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    return HGridBuilder.dictsToGrid(new HDict[]{hd.toDict()});
   }
 
   static HGrid makeNavGrid(HStr navId)
   {
     HDictBuilder hd = new HDictBuilder();
     hd.add("navId", navId);
-    return HGridBuilder.dictsToGrid(new HDict[] { hd.toDict() });
+    return HGridBuilder.dictsToGrid(new HDict[]{hd.toDict()});
   }
 
   void verifyGridContains(HGrid g, String col, HVal val)
   {
     boolean found = false;
-    for (int i=0; i<g.numRows(); ++i)
+    for (int i = 0; i < g.numRows(); ++i)
     {
       HVal x = g.row(i).get(col, false);
-      if (x != null && x.equals(val)) { found = true; break; }
+      if (x != null && x.equals(val))
+      {
+        found = true;
+        break;
+      }
     }
     if (!found)
     {
@@ -773,18 +814,22 @@ public class SimpleClientTest extends TestCore
   void printBasicGrid(HGrid grid)
   {
     int row = 0;
-    for (Iterator i = grid.iterator(); i.hasNext();)
+    for (Iterator i = grid.iterator(); i.hasNext(); )
     {
       HRow r = (HRow) i.next();
       System.out.print(row + ", ");
       System.out.print(r.id());
       System.out.print("              ");
       if (r.has("equipRef"))
+      {
         System.out.println(r.get("equipRef"));
+      }
 
       System.out.print("              ");
       if (r.has("kind"))
+      {
         System.out.println(r.get("kind"));
+      }
       System.out.println();
       row++;
     }
@@ -798,7 +843,7 @@ public class SimpleClientTest extends TestCore
   void printFullGrid(HGrid grid)
   {
     int row = 0;
-    for (Iterator i = grid.iterator(); i.hasNext();)
+    for (Iterator i = grid.iterator(); i.hasNext(); )
     {
       HRow r = (HRow) i.next();
       System.out.print(row + ", " + r.toString());
@@ -815,14 +860,12 @@ public class SimpleClientTest extends TestCore
    */
   void printDict(HDict dict)
   {
-    for (Iterator i = dict.iterator(); i.hasNext();)
+    for (Iterator i = dict.iterator(); i.hasNext(); )
     {
       Map.Entry e = (Map.Entry) i.next();
       String name = (String) e.getKey();
       HVal val = (HVal) e.getValue();
-      if (name == "id" ||
-              name == "dis" ||
-              name == "equipRef")
+      if (name == "id" || name == "dis" || name == "equipRef")
       {
         System.out.print(name + ":" + val.toString() + " ");
       }
@@ -830,8 +873,23 @@ public class SimpleClientTest extends TestCore
     System.out.println();
   }
 
-  HDateTime ts(HDict r, String col) { return (HDateTime)r.get(col); }
-  HDateTime ts(HDict r) { return (HDateTime)r.get("ts"); }
-  HNum numVal(HRow r) { return (HNum)r.get("val"); }
-  HStr localTz() { return HStr.make(HTimeZone.DEFAULT.name); }
+  HDateTime ts(HDict r, String col)
+  {
+    return (HDateTime) r.get(col);
+  }
+
+  HDateTime ts(HDict r)
+  {
+    return (HDateTime) r.get("ts");
+  }
+
+  HNum numVal(HRow r)
+  {
+    return (HNum) r.get("val");
+  }
+
+  HStr localTz()
+  {
+    return HStr.make(HTimeZone.DEFAULT.name);
+  }
 }

@@ -4,6 +4,7 @@
 //
 // History:
 //   11 Apr 2019  Eric Anderson  Creation based on class in haystack-rt
+//   08 Jan 2021  Eric Anderson  Fixed major performance problem with getting all relations
 //
 package nhaystack.server.tags;
 
@@ -15,6 +16,7 @@ import static nhaystack.util.NHaystackConst.ID_SITE;
 
 import java.util.Collection;
 import java.util.Optional;
+
 import javax.baja.control.BControlPoint;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.BComponent;
@@ -56,24 +58,32 @@ public class BNSiteRefRelation extends BRelationInfo
      * BControlPoint.
      */
     @Override
-    public Optional<Relation> getRelation(Entity point)
+    public Optional<Relation> getRelation(Entity source)
     {
-        if (!(point instanceof BControlPoint))
+        if (!(source instanceof BControlPoint))
         {
             return Optional.empty();
         }
 
         Id relationId = getRelationId();
-        if (!hasDirectRelation((BComponent) point, relationId))
+        if (hasDirectRelation((BComponent) source, relationId))
         {
-            BComponent equip = getEquip((BControlPoint) point);
-            if (equip != null)
+            return Optional.empty();
+        }
+
+        BComponent equip = getEquip((BControlPoint) source);
+        if (equip == null)
+        {
+            return Optional.empty();
+        }
+
+        Optional<Relation> equipSiteRef = equip.relations().get(relationId, Relations.OUT);
+        if (equipSiteRef.isPresent())
+        {
+            Entity equipSite = equipSiteRef.get().getEndpoint();
+            if (hasSiteTag(equipSite))
             {
-                Relation siteRef = getRelation(equip, relationId);
-                if (siteRef != null)
-                {
-                    return Optional.of(new BasicRelation(relationId, siteRef.getEndpoint(), Relation.OUTBOUND));
-                }
+                return Optional.of(new BasicRelation(relationId, equipSite, Relation.OUTBOUND));
             }
         }
 
@@ -89,26 +99,32 @@ public class BNSiteRefRelation extends BRelationInfo
      * {@link #getRelation(Entity)}.
      */
     @Override
-    public void addRelations(Entity entity, Collection<Relation> relations)
+    public void addRelations(Entity source, Collection<Relation> relations)
     {
         // Add the outbound relation to a BControlPoint
-        getRelation(entity).ifPresent(relations::add);
-
-        // If equip entity found, it will add an inbound hs:siteRef from each of the equip's descendant
-        // BControlPoints if the BControlPoint doesn't have a direct hs:siteRef relation.
-        String relationQName = getRelationId().getQName();
-        if (entity instanceof BComponent && hasSiteTag(entity))
+        Optional<Relation> outbound = getRelation(source);
+        if (outbound.isPresent())
         {
-            // Traverse any direct inbound hs:equipRef relations.
-            for (RelationKnob relationKnob : ((BComponent)entity).getRelationKnobs())
+            relations.add(outbound.get());
+        }
+
+        if (!(source instanceof BComponent) || !hasSiteTag(source))
+        {
+            return;
+        }
+
+        // If equip entity found, it will add an inbound hs:siteRef from each of the equip's
+        // descendant BControlPoints if the BControlPoint doesn't have a direct hs:siteRef relation.
+        String relationQName = getRelationId().getQName();
+        // Traverse any direct inbound hs:equipRef relations.
+        for (RelationKnob relationKnob : ((BComponent) source).getRelationKnobs())
+        {
+            if (relationQName.equals(relationKnob.getRelationId()))
             {
-                if (relationQName.equals(relationKnob.getRelationId()))
+                BComponent equip = relationKnob.getRelationComponent();
+                if (hasEquipTag(equip))
                 {
-                    BComponent equip = relationKnob.getRelationComponent();
-                    if (hasEquipTag(equip))
-                    {
-                        addRelationsToEquipPoints(equip, relations);
-                    }
+                    addRelationsToEquipPoints(equip, relations);
                 }
             }
         }
@@ -118,14 +134,10 @@ public class BNSiteRefRelation extends BRelationInfo
     {
         for (Relation relation : equip.relations().getAll(ID_EQUIP_REF, Relations.IN))
         {
-            Entity endpoint = relation.getEndpoint();
-            if (endpoint instanceof BControlPoint)
+            BComponent endpoint = (BComponent) relation.getEndpoint();
+            if (endpoint instanceof BControlPoint && !hasDirectRelation(endpoint, getRelationId()))
             {
-                BControlPoint point = (BControlPoint) endpoint;
-                if (!hasDirectRelation(point, getRelationId()))
-                {
-                    relations.add(new BasicRelation(getRelationId(), point, Relation.INBOUND));
-                }
+                relations.add(new BasicRelation(getRelationId(), endpoint, Relation.INBOUND));
             }
         }
     }
@@ -133,17 +145,5 @@ public class BNSiteRefRelation extends BRelationInfo
     private static boolean hasSiteTag(Entity entity)
     {
         return entity.tags().contains(ID_SITE);
-    }
-
-    private static Relation getRelation(BComponent component, Id id)
-    {
-        for (Relation relation : component.relations())
-        {
-            if (relation.getId().equals(id))
-            {
-                return relation;
-            }
-        }
-        return null;
     }
 }

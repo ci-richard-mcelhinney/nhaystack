@@ -15,12 +15,14 @@
   <type class="nhaystack.ntest.BSiteRefRelationTest" name="SiteRefRelationTest"/>
   <type class="nhaystack.ntest.BSlotUtilTest" name="SlotUtilTest"/>
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
+  <type class="nhaystack.ntest.BNHaystackTagDictionaryTest" name="NHaystackTagDictionaryTest"/>
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
   <type class="nhaystack.ntest.helper.BTestProxyExt" name="TestProxyExt"/>
   <!--nhaystack.server-->
   <type class="nhaystack.server.BPointIOTest" name="PointIOTest"/>
   <type class="nhaystack.server.BRemotePointTest" name="RemotePointTest"/>
+  <type class="nhaystack.server.BAlarmReadOpTest" name="AlarmReadOpTest"/>
   <!--nhaystack.e2e-->
   <type class="nhaystack.e2e.BSimpleClientTest" name="SimpleClientTest"/>
 </types>

@@ -1,4 +1,4 @@
-version,3.0.2 NH.2,,,,,,,,,,
+version,3.0.2 NH.3,,,,,,,,,,
 ,,,impliedTagRules,,,,Validity Rules,,,,
 name,kind,SmartType,hasTags,isType,hasAncestors,filter,hasTags,isType,hasAncestor,filter,units
 ** change the SmartType of the curVal, writeVal, id, equipRef, and siteRef tags,,,,,,,,,,,
@@ -7,3 +7,5 @@ writeVal,Obj,nhaystack:NWriteValTag,,control:ControlPoint,,,point,,,,
 id,Ref,nhaystack:NIdTag,,baja:Component,,,,,,,
 equipRef,Ref,nhaystack:NEquipRefRelation,,,,,point equip,,,,
 siteRef,Ref,nhaystack:NSiteRefRelation,,,,,equip point,,,,
+** do not imply the equip tag on all driver:Devices,,,,,,,,,,,
+equip,Marker,,,,,,siteRef,,,,
