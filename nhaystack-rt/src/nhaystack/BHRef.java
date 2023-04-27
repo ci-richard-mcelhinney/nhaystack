@@ -70,6 +70,7 @@ public final class BHRef
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return ref.hashCode(); 

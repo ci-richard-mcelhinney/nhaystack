@@ -180,7 +180,7 @@ public class BHTimeZoneFE extends BWbFieldEditor
             int slash = id.indexOf('/');
             if (slash < 0) continue;
             String region = id.substring(0, slash);
-            if (!BHTimeZone.TZ_REGIONS.contains(region)) continue;
+            if (!BHTimeZone.getTzRegions().contains(region)) continue;
 
             // get city name as haystack id
             slash = id.lastIndexOf('/');

@@ -642,7 +642,7 @@ public class NHServer extends HServer
     {
       String region = tzName.substring(0, n);
       LOG.fine("NHServer::fromBajaTimeZone -> region = " + region);
-      if (BHTimeZone.TZ_REGIONS.contains(region))
+      if (BHTimeZone.getTzRegions().contains(region))
       {
         LOG.fine("NHServer::fromBajaTimeZone -> a region was supplied and it is valid");
         tzName = tzName.substring(n + 1);

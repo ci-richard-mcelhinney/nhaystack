@@ -70,6 +70,7 @@ public final class BHGrid
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return grid.hashCode(); 

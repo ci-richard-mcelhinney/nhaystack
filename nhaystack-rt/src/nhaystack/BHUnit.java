@@ -62,6 +62,7 @@ public final class BHUnit
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return symbol.hashCode(); 
