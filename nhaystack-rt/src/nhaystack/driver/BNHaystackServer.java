@@ -566,12 +566,15 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
       HClient client = getHaystackClient();
       client.about();
       pingOk();
-    } catch (Exception e)
+    }
+    catch (Exception e)
     {
+      e.printStackTrace();
       resetClient();
       pingFail(e.getMessage());
       throw new BajaRuntimeException(e);
-    } finally
+    }
+    finally
     {
       if (LOG.isLoggable(Level.FINE))
       {

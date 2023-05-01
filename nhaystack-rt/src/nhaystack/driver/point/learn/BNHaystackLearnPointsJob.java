@@ -71,15 +71,21 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
     @Override
     public void run(Context ctx) throws Exception
     {
+        LOG.fine("Server DISCOVER POINTS starting point discovery");
         NameGenerator nameGen = new NameGenerator();
         Map<String, BNHaystackPointEntry> entries = new TreeMap<>();
         
         HClient client = server.getHaystackClient();
-        HGrid grid = client.readAll("point");
+        HGrid grid = client.readAll("point and not schedule and not calendar");
+
+        LOG.fine(String.format("Server DISCOVER POINTS found %d points on remote server %s",
+                grid.numRows(),
+                server.getName()));
+
         for (int i = 0; i < grid.numRows(); i++)
         {
             HRow row = grid.row(i);
-
+            System.out.println(row.toZinc());
             String name = SlotPath.escape(nameGen.makeUniqueName(row.dis()));
 
             BNHaystackPointEntry entry = new BNHaystackPointEntry();
@@ -95,6 +101,7 @@ public class BNHaystackLearnPointsJob extends BSimpleJob
         {
             add(entry.getKey(), entry.getValue());
         }
+        LOG.fine("Server DISCOVER POINTS finished point discovery");
     }
 
     static BFacets makePointFacets(HDict rec)

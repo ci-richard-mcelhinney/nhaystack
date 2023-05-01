@@ -14,6 +14,7 @@ import org.projecthaystack.util.Base64;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import java.util.*;
 
 import static org.testng.Assert.fail;
