@@ -595,7 +595,11 @@ public class TagManager implements NHaystackConst
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());
-        hdb.add("n4HistoryId", cfg.getId().toString());
+
+        // expose under both tag names to not break older clients.
+        String historyId = cfg.getId().toString();
+        hdb.add("axHistoryId", historyId);
+        hdb.add("n4HistoryId", historyId);
 
         hdb.add("point");
         hdb.add("his");
@@ -1291,12 +1295,15 @@ public class TagManager implements NHaystackConst
     /** Every single tag which the server may have auto-generated.  */
     static final String[] AUTO_GEN_TAGS = {
         "axAnnotated",
-        "n4HistoryId",
+        "axHistoryId",  // backward compatibility
         "axHistoryRef",
         "axPointRef",
-        "n4SlotPath", 
         "axType",
+        "axSlotPath",   // backward compatibility
         "axStatus",
+
+        "n4HistoryId",  // replaces axHistoryId
+        "n4SlotPath",   // replaces axSlotPath
 
         "actions",
         "cur",
