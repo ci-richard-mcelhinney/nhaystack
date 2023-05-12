@@ -75,6 +75,7 @@ public class SupervisorClientTest extends TestCore
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 
     Assert.assertTrue(dict.has("curStatus"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j1/points/SineWave1"));
     Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j1/points/SineWave1"));
     Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
     Assert.assertTrue(dict.has("point"));
@@ -87,6 +88,7 @@ public class SupervisorClientTest extends TestCore
     Assert.assertEquals(dict.get("axType"), HStr.make("control:NumericPoint"));
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
     Assert.assertTrue(dict.has("curStatus"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2"));
     Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2"));
     Assert.assertEquals(dict.get("unit"), HStr.make("psi"));
     Assert.assertTrue(dict.has("point"));
@@ -268,9 +270,24 @@ public class SupervisorClientTest extends TestCore
 
     Assert.assertEquals(numVal(his.row(0)).unit, "psi");
 
+    // check axSlotPath works
+    dict = client.read("axSlotPath==\"slot:/Drivers/NiagaraNetwork/nhaystack_j2/points/SineWave2\"");
+    Assert.assertEquals(dict.id(), his.meta().id());
+
     try
     {
       client.read("n4HistoryId==\"/nhaystack_j1/SineWave1\"");
+      Assert.fail("Should have received an exception....");
+    }
+    catch (UnknownRecException e)
+    {
+      Assert.assertEquals(e.getClass(), UnknownRecException.class);
+    }
+
+    // ditto for axHistoryId
+    try
+    {
+      client.read("axHistoryId==\"/nhaystack_j1/SineWave1\"");
       Assert.fail("Should have received an exception....");
     }
     catch (UnknownRecException e)
