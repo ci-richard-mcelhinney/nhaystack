@@ -264,6 +264,7 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     Assert.assertEquals(grid.row(3).id(), HRef.make("S.Winterfell.equip1.EnumWritable"));
     Assert.assertEquals(grid.row(4).id(), HRef.make("S.Winterfell.equip1.StringWritable"));
     Assert.assertEquals(grid.row(5).id(), HRef.make("S.Winterfell.equip1.SineWave"));
+    Assert.assertTrue(grid.row(5).has("axSlotPath"));
     Assert.assertTrue(grid.row(5).has("n4SlotPath"));
 //    printFullGrid(grid);
     Assert.assertEquals(grid.row(6).id(), HRef.make("S.Winterfell.equip2"));
@@ -302,6 +303,7 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
 //        Assert.assertTrue(dict.has("his"));
 //        Assert.assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/SineWave5"));
     Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/SineWave5"));
     Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
     Assert.assertTrue(dict.has("point"));
@@ -457,6 +459,10 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
     int last = his.numRows() - 1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
 
+    // check we haven't broken axSlotPath either
+    dict = client.read("axSlotPath==\"slot:/home/Winterfell/equip1/SineWave\"");
+    Assert.assertEquals(dict.id(), his.meta().id());
+
     // TODO
 //    Assert.assertEquals(numVal(his.row(0)).unit, "°F");
 
@@ -474,6 +480,9 @@ public class BSimpleClientTest extends BNHaystackStationTestBase
 
     last = his.numRows() - 1;
     Assert.assertEquals(ts(his.row(last)).date, HDate.today());
+
+    dict = client.read("axHistoryId==\"/test/LogHistory\"");
+    Assert.assertEquals(dict.id(), his.meta().id());
 
     // test read with no data expected
     his = client.hisRead(dict.id(), "2018-01-01");
