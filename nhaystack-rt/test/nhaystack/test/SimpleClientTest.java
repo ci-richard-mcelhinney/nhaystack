@@ -222,6 +222,7 @@ public class SimpleClientTest extends TestCore
     Assert.assertEquals(dict.get("kind"), HStr.make("Number"));
     Assert.assertTrue(dict.has("his"));
     Assert.assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
+    Assert.assertEquals(dict.get("axSlotPath"), HStr.make("slot:/SineWave5"));
     Assert.assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/SineWave5"));
     Assert.assertEquals(dict.get("unit"), HStr.make("°F"));
     Assert.assertTrue(dict.has("point"));
@@ -486,6 +487,10 @@ public class SimpleClientTest extends TestCore
 //    his.dump();
     Assert.assertTrue(his.isEmpty());
 
+    // check axSlotPath works too
+    dict = client.read("axSlotPath==\"slot:/Equip1/SineWave1\"");
+    Assert.assertEquals(dict.id(), his.meta().id());
+
     ///////////////////////////////////////////////
 
     dict = client.read("n4HistoryId==\"/nhaystack_simple/LogHistory\"");
@@ -501,6 +506,10 @@ public class SimpleClientTest extends TestCore
 //    System.out.println("******************************** " + his.numRows());
 //    his.dump();
     Assert.assertTrue(his.isEmpty());
+
+    // check axHistoryId works too
+    dict = client.read("axHistoryId==\"/nhaystack_simple/LogHistory\"");
+    Assert.assertEquals(dict.id(), his.meta().id());
 
     ///////////////////////////////////////////////
 
