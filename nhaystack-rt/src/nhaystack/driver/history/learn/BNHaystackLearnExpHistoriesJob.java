@@ -123,7 +123,7 @@ public class BNHaystackLearnExpHistoriesJob extends BSimpleJob
     if (n != -1)
     {
       String region = tzName.substring(0, n);
-      if (BHTimeZone.TZ_REGIONS.contains(region))
+      if (BHTimeZone.getTzRegions().contains(region))
         tzName = tzName.substring(n+1);
     }
 
