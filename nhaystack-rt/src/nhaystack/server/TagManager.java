@@ -485,7 +485,14 @@ public class TagManager implements NHaystackConst
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
             if (comp.getSlotPath() != null)
-                hdb.add("n4SlotPath", comp.getSlotPath().toString());
+            {
+                // Expose the slot path under both the old axSlotPath and
+                // the new n4SlotPath tags so we don't break existing clients
+                // expecting the old name.
+                String slotPath = comp.getSlotPath().toString()
+                hdb.add("axSlotPath", slotPath);
+                hdb.add("n4SlotPath", slotPath);
+            }
 
             // points get special treatment
             if (comp instanceof BControlPoint)
