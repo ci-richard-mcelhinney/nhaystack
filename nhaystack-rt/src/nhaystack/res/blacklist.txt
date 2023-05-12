@@ -1,13 +1,15 @@
 actions
 axAnnotated
-n4HistoryId
+axHistoryId
 axHistoryRef
 axPointRef
-n4SlotPath
+axSlotPath
 axStatus
 axType
 geoLat
 geoLon
+n4HistoryId
+n4SlotPath
 navId
 navName
 navNameFormat
