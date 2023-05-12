@@ -57,7 +57,7 @@ public class BSiteRefFE extends BWbFieldEditor
 
         for (int i = 0; i < grid.numRows(); i++)
         {
-            String slotPath = grid.row(i).getStr("n4SlotPath");
+            String slotPath = getRowSlotPath(grid.row(i));
             dropDown.getList().addItem(slotPath);
         }
 
@@ -100,6 +100,14 @@ public class BSiteRefFE extends BWbFieldEditor
         {
             return BOrd.make("station:|" + str);
         }
+    }
+
+    private static String getRowSlotPath(HRow row)
+    {
+        if (row.has("n4SlotPath"))
+            return row.getStr("n4SlotPath");
+        else
+            return row.getStr("axSlotPath");
     }
 
 ////////////////////////////////////////////////////////////////
