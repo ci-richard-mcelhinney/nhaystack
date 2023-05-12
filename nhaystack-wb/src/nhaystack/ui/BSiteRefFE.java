@@ -22,6 +22,7 @@ import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import nhaystack.BHGrid;
 import nhaystack.server.BNHaystackService;
 import org.projecthaystack.HGrid;
+import org.projecthaystack.HRow;
 
 /**
   * BSiteRefFE edits a 'siteRef' BOrd
