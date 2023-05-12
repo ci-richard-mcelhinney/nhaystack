@@ -204,17 +204,32 @@ public class BNHaystackHistoryExport extends BHistoryExport
   private HRef locatePoint(HClient client)
   {
     BHistoryId id = getHistoryId();
-    StringBuilder pointFilter = new StringBuilder();
-    pointFilter.append("point and n4Station==");
-    pointFilter.append(HStr.make(Sys.getStation().getStationName()).toZinc());
-    pointFilter.append(" and n4HistoryId==");
-    pointFilter.append(HStr.make(id.encodeToString()).toZinc());
+
+    // Get station / history IDs formatted so we're not doing it repeatedly.
+    String station = HStr.make(Sys.getStation().getStationName()).toZinc();
+    String historyId = HStr.make(id.encodeToString()).toZinc();
+
+    // Construct the filter string.  Note we must support existing
+    // sites that may still be using tags with an "ax" prefix, but new
+    // sites should use "n4" prefixes on tags going forward.
+    StringBuilder pointFilterSB = new StringBuilder();
+    pointFilterSB.append("point and (n4Station==");
+    pointFilterSB.append(station);
+    pointFilterSB.append(" or axStation==");
+    pointFilterSB.append(station);
+    pointFilterSB.append(") and (n4HistoryId==");
+    pointFilterSB.append(historyId);
+    pointFilterSB.append(" or axHistoryId==");
+    pointFilterSB.append(historyId);
+    pointFilterSB.append(")");
+
+    String pointFilter = pointFilterSB.toString();
 
     LOG.info("Searching for point for history "
-        + id + ": " + pointFilter.toString());
+        + id + ": " + pointFilter);
     try
     {
-      HDict res = client.read(pointFilter.toString());
+      HDict res = client.read(pointFilter);
       HRef hsId = res.getRef("id");
       LOG.info("Existing entity for " + id + " is " + hsId);
       return hsId;
