@@ -489,7 +489,7 @@ public class TagManager implements NHaystackConst
                 // Expose the slot path under both the old axSlotPath and
                 // the new n4SlotPath tags so we don't break existing clients
                 // expecting the old name.
-                String slotPath = comp.getSlotPath().toString()
+                String slotPath = comp.getSlotPath().toString();
                 hdb.add("axSlotPath", slotPath);
                 hdb.add("n4SlotPath", slotPath);
             }
