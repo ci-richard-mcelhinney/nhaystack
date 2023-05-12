@@ -362,7 +362,12 @@ public class BHSite extends BHTagged
 
         // add misc other tags
         hdb.add("axType", getType().toString());
-        hdb.add("n4SlotPath", getSlotPath().toString());
+
+        // slot path added using both ax and n4 prefix for backward
+        // compatibility with older clients.
+        String slotPath = getSlotPath().toString();
+        hdb.add("axSlotPath", slotPath);
+        hdb.add("n4SlotPath", slotPath);
 
         return hdb.toDict();
     }
