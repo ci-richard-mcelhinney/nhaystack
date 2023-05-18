@@ -20,12 +20,7 @@ import javax.baja.naming.SlotPath;
 import javax.baja.nre.annotations.AgentOn;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.nre.util.TextUtil;
-import javax.baja.sys.BObject;
-import javax.baja.sys.BString;
-import javax.baja.sys.BajaRuntimeException;
-import javax.baja.sys.Context;
-import javax.baja.sys.Sys;
-import javax.baja.sys.Type;
+import javax.baja.sys.*;
 import javax.baja.ui.BBorder;
 import javax.baja.ui.BButton;
 import javax.baja.ui.BHyperlinkLabel;
@@ -354,10 +349,16 @@ public class BNHaystackServiceView extends BWbComponentView
             super(model);
             this.text = toggleTextFormat(xsite.get("navName"), buttonToggleFormat.isSelected());
 
-            XElem[] xequips = xsite.elems("equip");
-            equips = new EquipNode[xequips.length];
+            XElem[] siteEquips = xsite.elems("equip");
+
+            XElem[] xspaces = xsite.elems("space");
+            spaces = new SpaceNode[xspaces.length];
+            for (int i = 0; i < spaces.length; i++)
+              spaces[i] = new SpaceNode(model, xspaces[i], siteEquips);
+
+            equips = new EquipNode[siteEquips.length];
             for (int i = 0; i < equips.length; i++)
-                equips[i] = new EquipNode(model, xequips[i]);
+              equips[i] = new EquipNode(model, siteEquips[i]);
 
             setExpanded(true);
         }
@@ -367,12 +368,80 @@ public class BNHaystackServiceView extends BWbComponentView
         @Override
         public BImage getIcon() { return BImage.make(BHSite.ICON); }
         @Override
-        public int getChildCount() { return equips.length; }
+        public int getChildCount() { return equips.length + spaces.length; }
         @Override
-        public TreeNode getChild(int index) { return equips[index]; }
+        public TreeNode getChild(int index) {
+          if (index >= spaces.length) {
+            return equips[index - spaces.length];
+          } else {
+            return spaces[index];
+          }
+        }
 
         private final String text;
+        private final SpaceNode[] spaces;
         private final EquipNode[] equips;
+    }
+
+    class SpaceNode extends TreeNode
+    {
+      SpaceNode(NavTreeModel model, XElem xspace, XElem[] siteEquips)
+      {
+        super(model);
+        this.text = toggleTextFormat(xspace.get("navName"), buttonToggleFormat.isSelected());
+
+        XElem[] xspaces = xspace.elems("space");
+        spaces = new SpaceNode[xspaces.length];
+        for (int i = 0; i < spaces.length; i++)
+          spaces[i] = new SpaceNode(model, xspaces[i], siteEquips);
+
+        // Find equip in root as equips under spaces don't include points.
+        XElem[] xequips = xspace.elems("equip");
+        equips = new EquipNode[xequips.length];
+        for (int i = 0; i < equips.length; i++)
+        {
+          String name = xequips[i].get("navName");
+          for (XElem siteEquip : siteEquips)
+          {
+            if (siteEquip.get("navName").equals(name))
+            {
+              equips[i] = new EquipNode(model, siteEquip);
+              break;
+            }
+          }
+        }
+
+        XElem[] xpoints = xspace.elems("point");
+        points = new PointNode[xpoints.length];
+        for (int i = 0; i < points.length; i++)
+          points[i] = new PointNode(model, xpoints[i]);
+      }
+
+      @Override
+      public String getText() { return text; }
+      @Override
+      public BImage getIcon() { return BImage.make(BHSite.ICON); }
+      @Override
+      public int getChildCount()
+      {
+        return spaces.length + equips.length + points.length;
+      }
+      @Override
+      public TreeNode getChild(int index) {
+        if (index >= spaces.length + equips.length) {
+          return points[index - (spaces.length + equips.length)];
+        }
+        if (index >= spaces.length) {
+          return equips[index - spaces.length];
+        } else {
+          return spaces[index];
+        }
+      }
+
+      private final String text;
+      private final SpaceNode[] spaces;
+      private final EquipNode[] equips;
+      private final PointNode[] points;
     }
 
     class EquipNode extends TreeNode

@@ -76,6 +76,11 @@ public class Nav
         return siteNav + '/' + equipNav;
     }
 
+    static String makeSpaceNavId(String siteNav, String spaceNav)
+    {
+        return makeEquipNavId(siteNav, spaceNav);
+    }
+
     /**
       * Return navigation tree children for given navId. 
       */
@@ -112,8 +117,10 @@ public class Nav
                 HDict siteTags = tagMgr.createComponentTags(site);
                 String siteName = siteTags.getStr(NAVNAME);
 
-                BComponent[] equips = cache.getNavSiteEquips(makeSiteNavId(siteName));
-                if (equips.length == 0)
+                String siteNavId = makeSiteNavId(siteName);
+                BComponent[] equips = cache.getNavSiteEquips(siteNavId);
+                BComponent[] spaces = cache.getNavSiteSpaces(siteNavId);
+                if (equips.length == 0 && spaces.length == 0)
                 {
                     out.indent(1)
                         .w("<site ")
@@ -129,37 +136,12 @@ public class Nav
 
                     for (BComponent equip : equips)
                     {
-                        HDict equipTags = tagMgr.createComponentTags(equip);
-                        String equipName = equipTags.getStr(NAVNAME);
+                        writeEquipXml(out, 2, equip, siteName);
+                    }
 
-                        BComponent[] points = cache.getNavEquipPoints(
-                            makeEquipNavId(siteName, equipName));
-
-                        if (points.length == 0)
-                        {
-                            out.indent(2)
-                                .w("<equip ")
-                                .attr(NAVNAME, equipTags.getStr(NAVNAME))
-                                .w("/>").nl();
-                        }
-                        else
-                        {
-                            out.indent(2)
-                                .w("<equip ")
-                                .attr(NAVNAME, equipTags.getStr(NAVNAME))
-                                .w(">").nl();
-
-                            for (BComponent point : points)
-                            {
-                                HDict pointTags = tagMgr.createComponentTags(point);
-                                out.indent(3)
-                                    .w("<point ")
-                                    .attr("NAVNAME", pointTags.getStr(NAVNAME)).w(" ")
-                                    .attr(AXTYPE, pointTags.getStr(AXTYPE))
-                                    .w("/>").nl();
-                            }
-                            out.indent(2).w("</equip>").nl();
-                        }
+                    for (BComponent space : spaces)
+                    {
+                        writeSpaceXml(out, 2, space, siteName, false);
                     }
                     out.indent(1).w("</site>").nl();
                 }
@@ -170,12 +152,139 @@ public class Nav
 
         out.close();
 
-        return new String(bout.toByteArray());
+        String xml = bout.toString();
+        System.out.println(xml);
+        return xml;
     }
 
 ////////////////////////////////////////////////////////////////
 // private
 ////////////////////////////////////////////////////////////////
+
+    /**
+     * Write XML description of a space to a given XML writer.
+     *
+     * @param out XML writer to write space data out to.
+     * @param indent Indentation level to start at.
+     * @param space Space to encode to XML.
+     * @param siteName Name of site the space is associated with.
+     * @param isChild this is being written as a child of another space
+     */
+    private void writeSpaceXml(
+      XWriter out,
+      int indent,
+      BComponent space,
+      String siteName,
+      boolean isChild
+    )
+    {
+        HDict spaceTags = tagMgr.createComponentTags(space);
+        String spaceName = spaceTags.getStr(NAVNAME);
+
+        String spaceNavId = makeSpaceNavId(siteName, spaceName);
+
+        // Space is a child of another space, will be included in that spaces
+        // tree instead.
+        BComponent parent = cache.getNavSpaceParent(spaceNavId);
+        if (!isChild && parent != null)
+        {
+            return;
+        }
+
+        BComponent[] spaces = cache.getNavSpaceChildren(spaceNavId);
+        BComponent[] equips = cache.getNavSpaceEquips(spaceNavId);
+        BComponent[] points = cache.getNavSpacePoints(spaceNavId);
+
+        if (spaces.length == 0 && equips.length == 0 && points.length == 0)
+        {
+            out.indent(indent)
+              .w("<space ")
+              .attr(NAVNAME, spaceTags.getStr(NAVNAME))
+              .w("/>").nl();
+        }
+        else
+        {
+            out.indent(indent)
+              .w("<space ")
+              .attr(NAVNAME, spaceTags.getStr(NAVNAME))
+              .w(">").nl();
+
+            for (BComponent child : spaces) {
+                writeSpaceXml(out, indent + 1, child, siteName, true);
+            }
+
+            // Don't include points to avoid duplication with site level.
+            for (BComponent equip : equips) {
+                HDict equipTags = tagMgr.createComponentTags(equip);
+                out.indent(indent + 1)
+                  .w("<equip ")
+                  .attr(NAVNAME, equipTags.getStr(NAVNAME))
+                  .w("/>").nl();
+            }
+            writePointListXml(out, indent + 1, points);
+
+            out.indent(indent).w("</space>").nl();
+        }
+    }
+
+    /**
+     * Write XML description of an equip to a given XML writer.
+     *
+     * @param out XML writer to use to write equip data out to.
+     * @param indent Indentation level for equipment entry.
+     * @param equip Equipment object to encode.
+     * @param siteName Name of the site the equipment is on.
+     */
+    private void writeEquipXml(
+      XWriter out, int indent, BComponent equip, String siteName
+    )
+    {
+        HDict equipTags = tagMgr.createComponentTags(equip);
+        String equipName = equipTags.getStr(NAVNAME);
+
+        BComponent[] points = cache.getNavEquipPoints(
+          makeEquipNavId(siteName, equipName));
+
+        if (points.length == 0)
+        {
+            out.indent(indent)
+              .w("<equip ")
+              .attr(NAVNAME, equipTags.getStr(NAVNAME))
+              .w("/>").nl();
+        }
+        else
+        {
+            out.indent(indent)
+              .w("<equip ")
+              .attr(NAVNAME, equipTags.getStr(NAVNAME))
+              .w(">").nl();
+
+            writePointListXml(out, indent + 1, points);
+            out.indent(indent).w("</equip>").nl();
+        }
+    }
+
+    /**
+     * Encode points to XML and write to the provided writer.
+     *
+     * @param out XML writer to use to write points out to.
+     * @param indent Indentation level for each line of XML.
+     * @param points Points to encode.
+     */
+    private void writePointListXml(
+      XWriter out, int indent, BComponent[] points
+    )
+    {
+        for (BComponent point : points)
+        {
+            HDict pointTags = tagMgr.createComponentTags(point);
+            out.indent(indent)
+              .w("<point ")
+              .attr(NAVNAME, pointTags.getStr(NAVNAME)).w(" ")
+              .attr(AXTYPE, pointTags.getStr(AXTYPE))
+              .w("/>").nl();
+        }
+    }
 
     private static HGrid roots()
     {

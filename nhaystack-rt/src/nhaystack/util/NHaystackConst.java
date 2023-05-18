@@ -38,6 +38,8 @@ public interface NHaystackConst
     String POINT           = "point";
     String SITE            = "site";
     String SITE_REF        = "siteRef";
+    String SPACE           = "space";
+    String SPACE_REF       = "spaceRef";
     String TZ              = "tz";
     String VAV             = "vav";
 
@@ -57,6 +59,8 @@ public interface NHaystackConst
     Id ID_POINT           = Id.newId(NAME_SPACE, POINT);
     Id ID_SITE            = Id.newId(NAME_SPACE, SITE);
     Id ID_SITE_REF        = Id.newId(NAME_SPACE, SITE_REF);
+    Id ID_SPACE           = Id.newId(NAME_SPACE, SPACE);
+    Id ID_SPACE_REF       = Id.newId(NAME_SPACE, SPACE_REF);
     Id ID_TZ              = Id.newId(NAME_SPACE, TZ);
     Id ID_VAV             = Id.newId(NAME_SPACE, VAV);
 
