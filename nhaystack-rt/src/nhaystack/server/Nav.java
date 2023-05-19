@@ -10,19 +10,22 @@
 package nhaystack.server;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.*;
+import javax.baja.control.BControlPoint;
 import javax.baja.history.BHistoryConfig;
 import javax.baja.naming.BOrd;
 import javax.baja.naming.SlotPath;
 import javax.baja.nre.util.TextUtil;
+import javax.baja.schedule.BWeeklySchedule;
 import javax.baja.security.PermissionException;
 import javax.baja.sys.BComponent;
 import javax.baja.sys.BajaRuntimeException;
 import javax.baja.sys.Context;
 import javax.baja.util.BFormat;
 import javax.baja.xml.XWriter;
-import nhaystack.util.SlotUtil;
-import nhaystack.util.TypeUtil;
+
+import nhaystack.site.*;
+import nhaystack.util.*;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HDictBuilder;
 import org.projecthaystack.HGrid;
@@ -105,49 +108,56 @@ public class Nav
         XWriter out = new XWriter(bout);
 
         BComponent[] sites = cache.getAllSites();
-        if (sites.length == 0)
-        {
-            out.w("<sepNav/>").nl();
-        }
-        else
-        {
-            out.w("<sepNav>").nl();
-            for (BComponent site : sites)
+        out.w("<sepNav").w(sites.length == 0 ? "/>" : ">").nl();
+        for (BComponent site: sites) {
+            HDict siteTags = tagMgr.createComponentTags(site);
+            String siteName = siteTags.getStr(NAVNAME);
+
+            String siteNavId = makeSiteNavId(siteName);
+            BComponent[] equips = cache.getNavSiteEquips(siteNavId);
+            BComponent[] spaces = cache.getNavSiteSpaces(siteNavId);
+
+            boolean noChildren = equips.length + spaces.length == 0;
+            openTag(out, "site", siteTags, 1, noChildren);
+
+            for (BComponent space : spaces)
             {
-                HDict siteTags = tagMgr.createComponentTags(site);
-                String siteName = siteTags.getStr(NAVNAME);
-
-                String siteNavId = makeSiteNavId(siteName);
-                BComponent[] equips = cache.getNavSiteEquips(siteNavId);
-                BComponent[] spaces = cache.getNavSiteSpaces(siteNavId);
-                if (equips.length == 0 && spaces.length == 0)
-                {
-                    out.indent(1)
-                        .w("<site ")
-                        .attr(NAVNAME, siteTags.getStr(NAVNAME))
-                        .w("/>").nl();
+                // Only include components that aren't a child of another space
+                // in this site (as those components will be included in those
+                // subtrees instead).
+                BComponent parent = cache.getParent(space);
+                if (
+                  parent == null ||
+                    Arrays.stream(spaces).noneMatch(parent::equals)
+                ) {
+                    writeXml(out, 2, space);
                 }
-                else
-                {
-                    out.indent(1)
-                        .w("<site ")
-                        .attr(NAVNAME, siteTags.getStr(NAVNAME))
-                        .w(">").nl();
-
-                    for (BComponent equip : equips)
-                    {
-                        writeEquipXml(out, 2, equip, siteName);
-                    }
-
-                    for (BComponent space : spaces)
-                    {
-                        writeSpaceXml(out, 2, space, siteName, false);
-                    }
-                    out.indent(1).w("</site>").nl();
-                }
-
             }
-            out.w("</sepNav>").nl();
+
+            for (BComponent equip : equips)
+            {
+                // Only include components that aren't a child of another space
+                // or equip in this site (as those components will be included
+                // in those subtrees instead).
+                BComponent parent = cache.getParent(equip);
+                if (
+                  parent == null
+                    || (
+                      Arrays.stream(equips).noneMatch(parent::equals)
+                        && Arrays.stream(spaces).noneMatch(parent::equals)
+                    )
+                ) {
+                    writeXml(out, 2, equip);
+                }
+            }
+
+            if (!noChildren) {
+                closeTag(out, "site", 1);
+            }
+        }
+
+        if (sites.length != 0) {
+            closeTag(out, "sepNav", 0);
         }
 
         out.close();
@@ -162,105 +172,114 @@ public class Nav
 ////////////////////////////////////////////////////////////////
 
     /**
-     * Write XML description of a space to a given XML writer.
+     * Return XML tag name for a given component, based on its haystack tagging.
      *
-     * @param out XML writer to write space data out to.
-     * @param indent Indentation level to start at.
-     * @param space Space to encode to XML.
-     * @param siteName Name of site the space is associated with.
-     * @param isChild this is being written as a child of another space
+     * @param comp Component to return tag name for.
+     * @return Tag name for component, or null if unable to choose.
      */
-    private void writeSpaceXml(
-      XWriter out,
-      int indent,
-      BComponent space,
-      String siteName,
-      boolean isChild
-    )
-    {
-        HDict spaceTags = tagMgr.createComponentTags(space);
-        String spaceName = spaceTags.getStr(NAVNAME);
-
-        String spaceNavId = makeSpaceNavId(siteName, spaceName);
-
-        // Space is a child of another space, will be included in that spaces
-        // tree instead.
-        BComponent parent = cache.getNavSpaceParent(spaceNavId);
-        if (!isChild && parent != null)
+    private static String getTag(BComponent comp) {
+        if (comp instanceof BControlPoint || comp instanceof BWeeklySchedule)
         {
-            return;
+            return NHaystackConst.POINT;
+        }
+        else if (
+            comp instanceof BHSite
+                || comp.tags().contains(NHaystackConst.ID_SITE)
+        )
+        {
+            return NHaystackConst.SITE;
+        }
+        else if (
+            comp instanceof BHEquip
+                || comp.tags().contains(NHaystackConst.ID_EQUIP)
+        ) {
+            return NHaystackConst.EQUIP;
+        }
+        else if (comp.tags().contains(NHaystackConst.ID_SPACE)) {
+            return NHaystackConst.SPACE;
         }
 
-        BComponent[] spaces = cache.getNavSpaceChildren(spaceNavId);
-        BComponent[] equips = cache.getNavSpaceEquips(spaceNavId);
-        BComponent[] points = cache.getNavSpacePoints(spaceNavId);
-
-        if (spaces.length == 0 && equips.length == 0 && points.length == 0)
-        {
-            out.indent(indent)
-              .w("<space ")
-              .attr(NAVNAME, spaceTags.getStr(NAVNAME))
-              .w("/>").nl();
-        }
-        else
-        {
-            out.indent(indent)
-              .w("<space ")
-              .attr(NAVNAME, spaceTags.getStr(NAVNAME))
-              .w(">").nl();
-
-            for (BComponent child : spaces) {
-                writeSpaceXml(out, indent + 1, child, siteName, true);
-            }
-
-            // Don't include points to avoid duplication with site level.
-            for (BComponent equip : equips) {
-                HDict equipTags = tagMgr.createComponentTags(equip);
-                out.indent(indent + 1)
-                  .w("<equip ")
-                  .attr(NAVNAME, equipTags.getStr(NAVNAME))
-                  .w("/>").nl();
-            }
-            writePointListXml(out, indent + 1, points);
-
-            out.indent(indent).w("</space>").nl();
-        }
+        return null;
     }
 
     /**
-     * Write XML description of an equip to a given XML writer.
+     * Write an XML opening tag to out. If empty is specified, will include a
+     * closing slash.
      *
-     * @param out XML writer to use to write equip data out to.
-     * @param indent Indentation level for equipment entry.
-     * @param equip Equipment object to encode.
-     * @param siteName Name of the site the equipment is on.
+     * @param out        Writer to write tag to.
+     * @param tagName    Tag name of tag to open.
+     * @param entityTags Tags of the entity to include nav name from.
+     * @param indent     Indentation level.
+     * @param empty      Whether the tag should be closed.
      */
-    private void writeEquipXml(
-      XWriter out, int indent, BComponent equip, String siteName
+    private static void openTag(
+      XWriter out, String tagName, HDict entityTags, int indent, boolean empty
     )
     {
-        HDict equipTags = tagMgr.createComponentTags(equip);
-        String equipName = equipTags.getStr(NAVNAME);
+        out
+            .indent(indent)
+            .w("<")
+            .w(tagName)
+            .w(" ")
+            .attr(NAVNAME, entityTags.getStr(NAVNAME))
+            .w(empty ? "/>" : ">")
+            .nl();
+    }
 
-        BComponent[] points = cache.getNavEquipPoints(
-          makeEquipNavId(siteName, equipName));
+    /**
+     * Write an XML closing tag to out with a given tag name.
+     * @param out     Writer to write tag to.
+     * @param tagName Name of tag to close.
+     * @param indent  Indentation level.
+     */
+    private static void closeTag(XWriter out, String tagName, int indent) {
+        out
+            .indent(indent)
+            .w("</")
+            .w(tagName)
+            .w(">")
+            .nl();
+    }
 
-        if (points.length == 0)
-        {
-            out.indent(indent)
-              .w("<equip ")
-              .attr(NAVNAME, equipTags.getStr(NAVNAME))
-              .w("/>").nl();
+    /**
+     * Write XML description of a component to a given XML writer.
+     *
+     * @param out XML writer to write component data out to.
+     * @param indent Indentation level to start at.
+     * @param comp Component to encode to XML.
+     */
+    private void writeXml(XWriter out, int indent, BComponent comp)
+    {
+        BComponent[] children = cache.getChildren(comp);
+
+        String tagName = getTag(comp);
+
+        BComponent[] points = null;
+        if (NHaystackConst.EQUIP.equals(tagName))  {
+            points = cache.getEquipPoints(comp);
+        } else if (NHaystackConst.SPACE.equals(tagName)) {
+            points = cache.getSpacePoints(comp);
         }
-        else
-        {
-            out.indent(indent)
-              .w("<equip ")
-              .attr(NAVNAME, equipTags.getStr(NAVNAME))
-              .w(">").nl();
 
+        boolean hasChildren = (
+          children.length > 0
+            || (points != null && points.length > 0)
+        );
+
+        HDict tags = tagMgr.createComponentTags(comp);
+        openTag(out, tagName, tags, indent, !hasChildren);
+
+        for (BComponent child : children) {
+            writeXml(out, indent + 1, child);
+        }
+
+        if (points != null) {
             writePointListXml(out, indent + 1, points);
-            out.indent(indent).w("</equip>").nl();
+        }
+
+        if (hasChildren)
+        {
+            closeTag(out, tagName, indent);
         }
     }
 

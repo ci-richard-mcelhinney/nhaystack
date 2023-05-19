@@ -342,79 +342,20 @@ public class BNHaystackServiceView extends BWbComponentView
         SiteNode[] sites;
     }
 
-    class SiteNode extends TreeNode
-    {
-        SiteNode(NavTreeModel model, XElem xsite)
-        {
-            super(model);
-            this.text = toggleTextFormat(xsite.get("navName"), buttonToggleFormat.isSelected());
-
-            XElem[] siteEquips = xsite.elems("equip");
-
-            XElem[] xspaces = xsite.elems("space");
-            spaces = new SpaceNode[xspaces.length];
-            for (int i = 0; i < spaces.length; i++)
-              spaces[i] = new SpaceNode(model, xspaces[i], siteEquips);
-
-            equips = new EquipNode[siteEquips.length];
-            for (int i = 0; i < equips.length; i++)
-              equips[i] = new EquipNode(model, siteEquips[i]);
-
-            setExpanded(true);
-        }
-
-        @Override
-        public String getText() { return text; }
-        @Override
-        public BImage getIcon() { return BImage.make(BHSite.ICON); }
-        @Override
-        public int getChildCount() { return equips.length + spaces.length; }
-        @Override
-        public TreeNode getChild(int index) {
-          if (index >= spaces.length) {
-            return equips[index - spaces.length];
-          } else {
-            return spaces[index];
-          }
-        }
-
-        private final String text;
-        private final SpaceNode[] spaces;
-        private final EquipNode[] equips;
-    }
-
-    class SpaceNode extends TreeNode
-    {
-      SpaceNode(NavTreeModel model, XElem xspace, XElem[] siteEquips)
-      {
+    abstract static class EntityNode extends TreeNode {
+      private EntityNode(NavTreeModel model, XElem elem) {
         super(model);
-        this.text = toggleTextFormat(xspace.get("navName"), buttonToggleFormat.isSelected());
 
-        XElem[] xspaces = xspace.elems("space");
-        spaces = new SpaceNode[xspaces.length];
-        for (int i = 0; i < spaces.length; i++)
-          spaces[i] = new SpaceNode(model, xspaces[i], siteEquips);
+        this.text = toggleTextFormat(
+          elem.get("navName"), buttonToggleFormat.isSelected()
+        );
 
-        // Find equip in root as equips under spaces don't include points.
-        XElem[] xequips = xspace.elems("equip");
-        equips = new EquipNode[xequips.length];
-        for (int i = 0; i < equips.length; i++)
-        {
-          String name = xequips[i].get("navName");
-          for (XElem siteEquip : siteEquips)
-          {
-            if (siteEquip.get("navName").equals(name))
-            {
-              equips[i] = new EquipNode(model, siteEquip);
-              break;
-            }
-          }
+        XElem[] childElements = elem.elems();
+        children = new TreeNode[childElements.length];
+
+        for (int i = 0; i < childElements.length; i++) {
+          children[i] = nodeFromXml(model, childElements[i]);
         }
-
-        XElem[] xpoints = xspace.elems("point");
-        points = new PointNode[xpoints.length];
-        for (int i = 0; i < points.length; i++)
-          points[i] = new PointNode(model, xpoints[i]);
       }
 
       @Override
@@ -422,64 +363,61 @@ public class BNHaystackServiceView extends BWbComponentView
       @Override
       public BImage getIcon() { return BImage.make(BHSite.ICON); }
       @Override
-      public int getChildCount()
-      {
-        return spaces.length + equips.length + points.length;
-      }
+      public int getChildCount() { return children.length; }
       @Override
       public TreeNode getChild(int index) {
-        if (index >= spaces.length + equips.length) {
-          return points[index - (spaces.length + equips.length)];
-        }
-        if (index >= spaces.length) {
-          return equips[index - spaces.length];
-        } else {
-          return spaces[index];
-        }
+        return children[index];
       }
 
       private final String text;
-      private final SpaceNode[] spaces;
-      private final EquipNode[] equips;
-      private final PointNode[] points;
+      private final TreeNode[] children;
     }
 
-    class EquipNode extends TreeNode
+    static class SiteNode extends EntityNode
     {
-        EquipNode(NavTreeModel model, XElem xequip)
+        private SiteNode(NavTreeModel model, XElem xSite)
         {
-            super(model);
-            this.text = toggleTextFormat(xequip.get("navName"), buttonToggleFormat.isSelected());
+            super(model, xSite);
+            setExpanded(true);
+        }
 
-            XElem[] xpoints = xequip.elems("point");
-            points = new PointNode[xpoints.length];
-            for (int i = 0; i < points.length; i++)
-                points[i] = new PointNode(model, xpoints[i]);
+        @Override
+        public BImage getIcon() { return BImage.make(BHSite.ICON); }
+    }
 
+    static class SpaceNode extends EntityNode
+    {
+      private SpaceNode(NavTreeModel model, XElem xSpace)
+      {
+        super(model, xSpace);
+      }
+
+      @Override
+      public BImage getIcon() { return BImage.make(ICON); }
+
+      private final static BIcon ICON =
+        BIcon.make("module://nhaystack/nhaystack/icons/space.png");
+    }
+
+    static class EquipNode extends EntityNode
+    {
+        private EquipNode(NavTreeModel model, XElem xEquip)
+        {
+            super(model, xEquip);
             setExpanded(false);
         }
 
         @Override
-        public String getText() { return text; }
-        @Override
         public BImage getIcon() { return BImage.make(BHEquip.ICON); }
-        @Override
-        public int getChildCount() { return points.length; }
-        @Override
-        public TreeNode getChild(int index) { return points[index]; }
-
-        private final String text;
-        private final PointNode[] points;
     }
 
-    class PointNode extends TreeNode
+    static class PointNode extends EntityNode
     {
-        PointNode(NavTreeModel model, XElem xpoint)
+        private PointNode(NavTreeModel model, XElem xPoint)
         {
-            super(model);
-            this.text = toggleTextFormat(xpoint.get("navName"), buttonToggleFormat.isSelected());
+            super(model, xPoint);
 
-            String type = xpoint.get("axType");
+            String type = xPoint.get("axType");
             this.icon = POINT_ICONS.get(type);
             if (this.icon == null)
             {
@@ -491,15 +429,8 @@ public class BNHaystackServiceView extends BWbComponentView
         }
 
         @Override
-        public String getText() { return text; }
-        @Override
         public BImage getIcon() { return icon; }
-        @Override
-        public int getChildCount() { return 0; }
-        @Override
-        public TreeNode getChild(int index) { throw new IllegalStateException(); }
 
-        private final String text;
         private BImage icon;
     }
 
@@ -536,6 +467,21 @@ public class BNHaystackServiceView extends BWbComponentView
         return str;
     }
 
+    private static TreeNode nodeFromXml(NavTreeModel model, XElem elem) {
+      switch (elem.name()) {
+        case "site":
+          return new SiteNode(model, elem);
+        case "space":
+          return new SpaceNode(model, elem);
+        case "equip":
+          return new EquipNode(model, elem);
+        case "point":
+          return new PointNode(model, elem);
+        default:
+          return null;
+      }
+    }
+
 ////////////////////////////////////////////////////////////////
 // Attributes 
 ////////////////////////////////////////////////////////////////
@@ -554,7 +500,7 @@ public class BNHaystackServiceView extends BWbComponentView
     private final RebuildCacheCommand rebuildCache;
     private final InitializeCommand initialize;
     private final LoadCustomTagDictionary loadCustomTagDict;
-    BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
+    private static final BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
     
     String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
     private final String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";

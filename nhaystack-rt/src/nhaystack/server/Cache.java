@@ -142,6 +142,31 @@ class Cache implements NHaystackConst
         return implicitEquips.get(point);
     }
 
+    /**
+     * Return the parent space or equip referenced by the entity, if any, else
+     * null.
+     *
+     * @param entity Entity to return parent of.
+     * @return Parent component or null.
+     */
+    synchronized BComponent getParent(BComponent entity)
+    {
+        requireInitialized();
+        return parents.get(entity);
+    }
+
+    /**
+     * Return the child spaces or equips which reference the entity.
+     *
+     * @param entity Entity to return children of.
+     * @return Child components.
+     */
+    synchronized BComponent[] getChildren(BComponent entity)
+    {
+        requireInitialized();
+        return compsToArr(children.get(entity));
+    }
+
     synchronized BComponent[] getAllSites()
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
@@ -179,69 +204,12 @@ class Cache implements NHaystackConst
     }
 
     /**
-     * Get the parent space component for a given space nav.
-     *
-     * @param spaceNav Nav of space to get parent of.
-     * @return Parent space of the given space.
-     */
-    synchronized BComponent getNavSpaceParent(String spaceNav)
-    {
-        requireInitialized();
-        return spaceParents.get(spaceNavs.get(spaceNav));
-    }
-
-    /**
-     * Get all child spaces of a space by nav of the space.
-     *
-     * @param spaceNav Nav of the space to get children of.
-     * @return Children of the given space.
-     */
-    synchronized BComponent[] getNavSpaceChildren(String spaceNav)
-    {
-        requireInitialized();
-        return compsToArr(spaceChildren.get(spaceNavs.get(spaceNav)));
-    }
-
-    /**
-     * Get all equips associated with the given space navId.
-     * @param spaceNav navId of the space for which to get associated equips.
-     * @return Equips associated with the given space.
-     */
-    synchronized BComponent[] getNavSpaceEquips(String spaceNav)
-    {
-        requireInitialized();
-        return getSpaceEquips(spaceNavs.get(spaceNav));
-    }
-
-    /**
-     * Get all points associated with the given space navId.
-     * @param spaceNav navId of the space for which to get associated points.
-     * @return Points associated with the given space.
-     */
-    synchronized BComponent[] getNavSpacePoints(String spaceNav)
-    {
-        requireInitialized();
-        return getSpacePoints(spaceNavs.get(spaceNav));
-    }
-
-    /**
       * Get all the points associated with the given equip navId.
       */
     synchronized BComponent[] getNavEquipPoints(String equipNav)
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
         return getEquipPoints(equipNavs.get(equipNav));
-    }
-
-    /**
-     * Get all the equips associated with the given space.
-     *
-     * @param space Space to get associated equips for.
-     * @return Equips associated with the given space.
-     */
-    synchronized BComponent[] getSpaceEquips(BComponent space)
-    {
-        return compsToArr(spaceEquips.get(space));
     }
 
     /**
@@ -317,13 +285,13 @@ class Cache implements NHaystackConst
     private void rebuildComponentCache_firstPass()
     {
         remoteToPoint = new HashMap<>();
+        parents = new HashMap<>();
         implicitEquips = new HashMap<>();
-        spaceParents = new HashMap<>();
         siteNavs = new HashMap<>();
         spaceNavs = new HashMap<>();
         equipNavs = new HashMap<>();
         siteSpaces = new HashMap<>();
-        spaceChildren = new HashMap<>();
+        children = new HashMap<>();
         siteEquips = new HashMap<>();
         spaceEquips = new HashMap<>();
         spacePoints = new HashMap<>();
@@ -510,18 +478,18 @@ class Cache implements NHaystackConst
     }
 
     /**
-     * Add a spaceRef association from a child space to a parent space.
+     * Add a ref association from a child to a parent.
      *
-     * @param parentSpace Space the child has a spaceRef to.
-     * @param childSpace Child which has a spaceRef to parentSpace.
+     * @param parent Space or equip the child has a ref to.
+     * @param child Child which has a ref to parent.
      */
-    private void addSpaceToParent(BComponent parentSpace, BComponent childSpace)
+    private void addChildToParent(BComponent parent, BComponent child)
     {
-        spaceChildren.computeIfAbsent(
-          parentSpace,
+        children.computeIfAbsent(
+          parent,
           k -> new ArrayList<>()
-        ).add(childSpace);
-        spaceParents.put(childSpace, parentSpace);
+        ).add(child);
+        parents.put(child, parent);
     }
 
     /**
@@ -654,8 +622,16 @@ class Cache implements NHaystackConst
                 equip);
         }
 
+        // Add equip to relevant space, add association with parent.
+        Optional<BComponent> equipOpt = findReferencedEquip(equip, equipTags);
+        equipOpt.ifPresent(bComponent -> addChildToParent(bComponent, equip));
         findReferencedSpace(equip, equipTags).ifPresent(
-          space -> addEquipToSpace(space, equip)
+          space -> {
+              addEquipToSpace(space, equip);
+              if (!equipOpt.isPresent()) {
+                  addChildToParent(space, equip);
+              }
+          }
         );
     }
 
@@ -696,7 +672,7 @@ class Cache implements NHaystackConst
         }
 
         findReferencedSpace(space, spaceTags).ifPresent(
-            parent -> addSpaceToParent(parent, space)
+            parent -> addChildToParent(parent, space)
         );
     }
 
@@ -906,13 +882,26 @@ class Cache implements NHaystackConst
     private Collection<BComponent> spaces = Collections.emptyList();
     private Collection<BComponent> equips = Collections.emptyList();
 
+    /**
+     * Map from child component to parent component, by ref. For example an
+     * equip with an equip ref to a parent equipment would be placed in here
+     * with the parent as value. An equip or space with a space ref would also
+     * be placed here. Equip refs are prioritised above space refs for
+     * parenthood.
+     */
+    private Map<BComponent, BComponent> parents;
     private Map<BComponent, BComponent> implicitEquips;
-    private Map<BComponent, BComponent> spaceParents;
     private Map<String, BComponent> siteNavs;
     private Map<String, BComponent> spaceNavs;
     private Map<String, BComponent> equipNavs;
+
+    /**
+     * Map from parent component to collection of child components, by ref. For
+     * instance if a chiller has an equip ref to a plant, the plant would be the
+     * key and the chiller would be added to the collection of children.
+     */
+    private Map<BComponent, Collection<BComponent>> children;
     private Map<BComponent, Collection<BComponent>> siteSpaces;
-    private Map<BComponent, Collection<BComponent>> spaceChildren;
     private Map<BComponent, Collection<BComponent>> siteEquips;
     private Map<BComponent, Collection<BComponent>> equipPoints;
     private Map<BComponent, Collection<BComponent>> spaceEquips;
