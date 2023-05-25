@@ -529,11 +529,15 @@ class Cache implements NHaystackConst
     )
     {
         BComponent referenced = null;
+
+        // Check for tagged reference.
         if (tags.has(refTag)) {
             HRef ref = tags.getRef(refTag);
             referenced = server.getTagManager().lookupComponent(ref);
         }
-        else // Check for Niagara relation to initialize entity.
+
+        // Check for Niagara relation to initialize entity.
+        if (referenced == null)
         {
             Optional<Relation> relationOpt = entity.relations().get(refId);
             if (relationOpt.isPresent()) {

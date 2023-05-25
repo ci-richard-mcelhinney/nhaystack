@@ -163,7 +163,6 @@ public class Nav
         out.close();
 
         String xml = bout.toString();
-        System.out.println(xml);
         return xml;
     }
 

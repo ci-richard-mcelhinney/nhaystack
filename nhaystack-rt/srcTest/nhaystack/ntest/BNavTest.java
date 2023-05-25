@@ -11,6 +11,7 @@ import nhaystack.util.NHaystackConst;
 import org.testng.Assert;
 import org.testng.annotations.*;
 
+import javax.baja.control.BNumericWritable;
 import javax.baja.nre.annotations.NiagaraType;
 import javax.baja.sys.*;
 import javax.baja.tag.*;
@@ -51,9 +52,17 @@ public class BNavTest
     folder.add("site", site = new BHSite());
   }
 
+  @AfterMethod
+  public void tearDown() {
+    site.removeAll();
+  }
+
   @Test
   public void testNavHierarchy() throws Exception
   {
+    // Test that the XML returned by the Nav has the appropriate structure for
+    // the constructed reference tags.
+    //
     // Structure:
     // site
     //   zone
@@ -61,25 +70,29 @@ public class BNavTest
     //       equip
     //       equip
     //         equip
+    //           point
+    //           point
     //     equip
+    //     point
     BComponent zone1 = newSpace();
     site.add("zone" + suffix++, zone1);
-    newEquip(zone1);
     BComponent zone2 = newSpace(zone1);
+    newEquip(zone1);
+    newPoint(zone1);
     newEquip(zone2);
     BComponent equip3 = newEquip(zone2);
-    newEquip(equip3);
+    BComponent equip4 = newEquip(equip3);
+    newPoint(equip4);
+    newPoint(equip4);
 
-    XElem root = getXml();
-    Assert.assertEquals(root.elems().length, 1); // [sepNav]
-    XElem sepNav = root.elems()[0];
+    XElem sepNav = getXml();
     Assert.assertEquals(sepNav.elems().length, 1); // [site]
-    XElem site = sepNav.elems()[0];
+    XElem site = sepNav.elem(0);
     Assert.assertEquals(site.name(), "site");
     Assert.assertEquals(site.elems().length, 1); // [zone1]
-    XElem space1 = site.elems()[0];
+    XElem space1 = site.elem(0);
     Assert.assertEquals(space1.name(), "space");
-    Assert.assertEquals(space1.elems().length, 2); // [zone2, equip1]
+    Assert.assertEquals(space1.elems().length, 3); // [zone2, equip1]
     XElem space2 = space1.elem("space");
     Assert.assertEquals(space2.elems().length, 2); // [equip2, equip3]
 
@@ -90,9 +103,32 @@ public class BNavTest
       if (equip.elems().length == 1) {
         Assert.assertFalse(childFound); // Only equip3 has a child equip
         childFound = true;
+
+        XElem child = equip.elem(0);
+        Assert.assertEquals(child.elems().length, 2); // [point2, point3]
+        Assert.assertEquals(child.elems("point").length, 2);
       }
     }
     Assert.assertTrue(childFound);
+  }
+
+  @Test
+  public void testOrphan() throws Exception
+  {
+    // Test that an equip with no space ref is still added to the site.
+    // Structure:
+    // site
+    //   zone
+    //     equip (not space refd)
+
+    BComponent zone1 = newSpace();
+    site.add("zone" + suffix++, zone1);
+    zone1.add("equip" + suffix++, newEquip());
+
+    XElem sepNav = getXml();
+    XElem site = sepNav.elem(0);
+    Assert.assertEquals(site.elems().length, 2);
+    Assert.assertEquals(site.elems("equip").length, 1);
   }
 
   private XElem getXml() throws Exception
@@ -100,7 +136,6 @@ public class BNavTest
       new BNHaystackRebuildCacheJob(nhaystackService).run(null);
       BValue val = nhaystackService.invoke(BNHaystackService.fetchSepNav, null);
       String xml = ((BString) val).getString();
-      System.out.println(xml);
       return XParser.make(xml).parse();
   }
 
@@ -138,6 +173,20 @@ public class BNavTest
     return equip;
   }
 
+  private BComponent newPoint(BComponent parent) {
+    BNumericWritable point = new BNumericWritable();
+    siteRef(point);
+    if (parent != null) {
+      if (parent.tags().contains(NHaystackConst.ID_EQUIP)) {
+        equipRef(parent, point);
+      } else if (parent.tags().contains(NHaystackConst.ID_SPACE)) {
+        spaceRef(parent, point);
+      }
+      parent.add("point" + suffix++, point);
+    }
+    return point;
+  }
+
   private void siteRef(BComponent comp) {
     relate(comp, site, NHaystackConst.ID_SITE_REF);
   }
@@ -152,10 +201,13 @@ public class BNavTest
 
   private static void tag(BComponent comp, Id tag) {
     comp.tags().set(Tag.newTag(tag.getQName()));
+    Assert.assertTrue(comp.tags().contains(tag));
   }
 
   private static void relate(BComponent from, BComponent to, Id id) {
-    from.makeRelation(id, to, null);
+    from.add(null, from.makeRelation(id, to, null));
+    Assert.assertTrue(from.relations().get(id).isPresent());
+    Assert.assertTrue(from.relations().get(id).get().isOutbound());
   }
 
   private BFolder folder;
