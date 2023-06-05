@@ -485,7 +485,14 @@ public class TagManager implements NHaystackConst
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
             if (comp.getSlotPath() != null)
-                hdb.add("axSlotPath", comp.getSlotPath().toString());
+            {
+                // Expose the slot path under both the old axSlotPath and
+                // the new n4SlotPath tags so we don't break existing clients
+                // expecting the old name.
+                String slotPath = comp.getSlotPath().toString();
+                hdb.add("axSlotPath", slotPath);
+                hdb.add("n4SlotPath", slotPath);
+            }
 
             // points get special treatment
             if (comp instanceof BControlPoint)
@@ -588,7 +595,11 @@ public class TagManager implements NHaystackConst
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());
-        hdb.add("axHistoryId", cfg.getId().toString());
+
+        // expose under both tag names to not break older clients.
+        String historyId = cfg.getId().toString();
+        hdb.add("axHistoryId", historyId);
+        hdb.add("n4HistoryId", historyId);
 
         hdb.add("point");
         hdb.add("his");
@@ -1284,12 +1295,15 @@ public class TagManager implements NHaystackConst
     /** Every single tag which the server may have auto-generated.  */
     static final String[] AUTO_GEN_TAGS = {
         "axAnnotated",
-        "axHistoryId",
+        "axHistoryId",  // backward compatibility
         "axHistoryRef",
         "axPointRef",
-        "axSlotPath", 
         "axType",
+        "axSlotPath",   // backward compatibility
         "axStatus",
+
+        "n4HistoryId",  // replaces axHistoryId
+        "n4SlotPath",   // replaces axSlotPath
 
         "actions",
         "cur",

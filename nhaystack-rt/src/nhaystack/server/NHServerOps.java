@@ -1508,7 +1508,13 @@ outer:
       HGrid grid = hserver.readAll(filter);
       for (int i = 0; i < grid.numRows(); i++)
       {
-        HStr slotPath = (HStr) grid.row(i).get("axSlotPath", false);
+        HStr slotPath = (HStr) grid.row(i).get("n4SlotPath", false);
+        if (slotPath == null)
+        {
+          // try axSlotPath instead
+          slotPath = (HStr) grid.row(i).get("axSlotPath", false);
+        }
+
         if (slotPath != null)
         {
           compArr.add((BComponent) BOrd.make("station:|" + slotPath.val).get(server.getService(), null));

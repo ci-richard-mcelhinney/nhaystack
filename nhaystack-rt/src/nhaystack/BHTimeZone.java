@@ -61,6 +61,7 @@ public final class BHTimeZone
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return timeZone.hashCode(); 
@@ -112,11 +113,16 @@ public final class BHTimeZone
       */
     public HTimeZone getTimeZone() { return timeZone; }
 
+    public static Set<String> getTzRegions()
+    {
+      return TZ_REGIONS;
+    }
+
 ////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////// 
 
-    public static final Set<String> TZ_REGIONS;
+    protected static final Set<String> TZ_REGIONS;
     static
     {
         TZ_REGIONS = new HashSet<>(Arrays.asList(

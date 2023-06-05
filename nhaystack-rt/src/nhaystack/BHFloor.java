@@ -55,6 +55,7 @@ public final class BHFloor
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return floor.hashCode(); 

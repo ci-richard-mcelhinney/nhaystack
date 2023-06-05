@@ -22,6 +22,7 @@ import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import nhaystack.BHGrid;
 import nhaystack.server.BNHaystackService;
 import org.projecthaystack.HGrid;
+import org.projecthaystack.HRow;
 
 /**
   * BSiteRefFE edits a 'siteRef' BOrd
@@ -57,7 +58,7 @@ public class BSiteRefFE extends BWbFieldEditor
 
         for (int i = 0; i < grid.numRows(); i++)
         {
-            String slotPath = grid.row(i).getStr("axSlotPath");
+            String slotPath = getRowSlotPath(grid.row(i));
             dropDown.getList().addItem(slotPath);
         }
 
@@ -100,6 +101,14 @@ public class BSiteRefFE extends BWbFieldEditor
         {
             return BOrd.make("station:|" + str);
         }
+    }
+
+    private static String getRowSlotPath(HRow row)
+    {
+        if (row.has("n4SlotPath"))
+            return row.getStr("n4SlotPath");
+        else
+            return row.getStr("axSlotPath");
     }
 
 ////////////////////////////////////////////////////////////////

@@ -70,6 +70,7 @@ public final class BHNum
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
         return num.hashCode(); 

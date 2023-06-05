@@ -54,6 +54,8 @@ import org.projecthaystack.HVal;
   */
 public abstract class TypeUtil
 {
+    private TypeUtil() {}
+
     public static BSimple toBajaSimple(HVal val)
     {
         if (val instanceof HStr)
@@ -98,7 +100,7 @@ public abstract class TypeUtil
             return BString.make(val.toString());
         }
 
-        throw new IllegalStateException("Cannot convert " + 
+        throw new IllegalStateException(CANNOT_CONVERT +
             val.getClass() + ": " + val);
     }
 
@@ -115,7 +117,7 @@ public abstract class TypeUtil
             case "minute":            return BRelTime.makeMinutes((int) num.val);
             case "hour":              return BRelTime.makeHours((int) num.val);
             case "day":               return BRelTime.makeHours((int) (num.val * 24));
-            default: throw new IllegalStateException("Cannot convert " + num + " to RelTime");
+            default: throw new IllegalStateException(CANNOT_CONVERT + num + " to RelTime");
         }
     }
 
@@ -141,7 +143,7 @@ public abstract class TypeUtil
             return HStr.make(SlotUtil.fromEnum(((BEnum) simple).getTag(), translateEnum));
         }
 
-        throw new IllegalStateException("Cannot convert " + simple.getClass());
+        throw new IllegalStateException(CANNOT_CONVERT + simple.getClass());
     }
 
     public static HVal fromBajaDataValue(BIDataValue dataValue)
@@ -178,7 +180,7 @@ public abstract class TypeUtil
             }
         }
 
-        throw new IllegalStateException("Cannot convert " + dataValue.getClass());
+        throw new IllegalStateException(CANNOT_CONVERT + dataValue.getClass());
     }
 
     /**
@@ -274,7 +276,7 @@ public abstract class TypeUtil
             return BStatus.nullStatus;
         }
 
-        throw new IllegalStateException("Cannot convert " + curStatus.val + " to BStatus");
+        throw new IllegalStateException(CANNOT_CONVERT + curStatus.val + " to BStatus");
     }
 
 ////////////////////////////////////////////////////////////////
@@ -339,5 +341,7 @@ public abstract class TypeUtil
             return comp.getPermissions(cx);
         }
     }
+
+    private static final String CANNOT_CONVERT = "Cannot convert ";
 }
 

@@ -60,6 +60,11 @@
       <on type="nhaystack:NHaystackHistoryDeviceExt"/>
     </agent>
   </type>
+  <type class="nhaystack.ui.history.BNHaystackHistoryExportManager" name="NHaystackHistoryExportManager">
+    <agent>
+      <on type="nhaystack:NHaystackHistoryDeviceExt"/>
+    </agent>
+  </type>
   <!--nhaystack.ui.point-->
   <type class="nhaystack.ui.point.BNHaystackPointManager" name="NHaystackPointManager">
     <agent>

@@ -9,6 +9,8 @@ package nhaystack.util;
 
 public abstract class SlotUtil
 {
+    private SlotUtil() {}
+
     /**
       * Convert an AX path, which may contain '/', or escape sequences like '$20' or '$7f',
       * into a haystack-friendly path encoding.

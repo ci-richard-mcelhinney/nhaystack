@@ -19,6 +19,7 @@ import javax.baja.sys.BSimple;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
 import org.projecthaystack.HRef;
+import org.projecthaystack.HVal;
 import org.projecthaystack.io.HZincReader;
 
 /**
@@ -28,8 +29,8 @@ import org.projecthaystack.io.HZincReader;
 public final class BHRef
     extends BSimple
 {
-    /** * The default is HRef.make("null"). */
-    public static final BHRef DEFAULT = new BHRef(HRef.nullRef);
+    /** * The default is null. */
+    public static final BHRef DEFAULT = new BHRef(null);
 
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.BHRef(2979906276)1.0$ @*/
@@ -47,22 +48,49 @@ public final class BHRef
     /**
       * Make a BHRef instance from an HRef.
       */
-    public static BHRef make(HRef ref) 
-    { 
-        return new BHRef(ref);  
+    public static BHRef make(HRef ref)
+    {
+        return new BHRef(ref);
+    }
+
+    /**
+      * Make an empty BHRef instance.
+      */
+    public static BHRef make()
+    {
+        return new BHRef(null);
     }
 
     /**
       * Make a BHRef instance from a ZINC-encoded string.
       */
-    public static BHRef make(String s) 
-    { 
-        HZincReader zr = new HZincReader(s);
-        return new BHRef((HRef) zr.readVal());
+    public static BHRef make(String s)
+    {
+        if ((s != null) && (!s.isEmpty()))
+        {
+            HZincReader zr = new HZincReader(s);
+            HVal v = zr.readVal();
+            if (v == null)
+            {
+                return BHRef.make();
+            }
+            else if (v instanceof HRef)
+            {
+                return BHRef.make((HRef) v);
+            }
+            else
+            {
+                throw new ClassCastException("string is not a ref");
+            }
+        }
+        else
+        {
+            return BHRef.make();
+        }
     }
 
-    private BHRef(HRef ref) 
-    { 
+    private BHRef(HRef ref)
+    {
         this.ref = ref;
     }
 
@@ -70,9 +98,10 @@ public final class BHRef
 // Object
 ////////////////////////////////////////////////////////////////
 
+    @Override
     public int hashCode() 
     { 
-        return ref.hashCode(); 
+        return (ref != null) ? ref.hashCode() : 0;
     }
 
     public boolean equals(Object obj)
@@ -81,6 +110,9 @@ public final class BHRef
 
         if (!(obj instanceof BHRef)) return false;
         BHRef that = (BHRef) obj;
+
+        if (ref == null) return (that.ref == null);
+
         return ref.equals(that.ref);
     }
 
@@ -93,7 +125,7 @@ public final class BHRef
       */
     @Override
     public void encode(DataOutput encoder) throws IOException
-    { 
+    {
         encoder.writeUTF(ref.toZinc()); 
     }
 
@@ -102,18 +134,18 @@ public final class BHRef
       */
     @Override
     public BObject decode(DataInput decoder) throws IOException
-    { 
+    {
         HZincReader zr = new HZincReader(decoder.readUTF());
         return new BHRef((HRef) zr.readVal());
-    }  
+    }
 
     /**
       * Encode to ZINC format
       */
     @Override
     public String encodeToString() throws IOException
-    { 
-        return ref.toZinc(); 
+    {
+        return (ref != null) ? ref.toZinc() : "";
     }
 
     /**

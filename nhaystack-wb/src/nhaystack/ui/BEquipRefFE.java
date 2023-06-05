@@ -24,6 +24,7 @@ import javax.baja.workbench.fieldeditor.BWbFieldEditor;
 import nhaystack.BHGrid;
 import nhaystack.server.BNHaystackService;
 import org.projecthaystack.HGrid;
+import org.projecthaystack.HRow;
 
 /**
   * BEquipRefFE edits a 'equipRef' BOrd
@@ -65,7 +66,7 @@ public class BEquipRefFE extends BWbFieldEditor
         // add the equips
         for (int i = 0; i < equipsGrid.numRows(); i++)
         {
-            String slotPath = equipsGrid.row(i).getStr("axSlotPath");
+            String slotPath = getRowSlotPath(equipsGrid.row(i));
 
             if (implicitEquip != null && slotPath.equals(implicitEquip))
                 dropDown.getList().addItem(
@@ -85,7 +86,7 @@ public class BEquipRefFE extends BWbFieldEditor
         String compSlotPath = comp.getSlotPath().toString();
         for (int i = 0; i < equipsGrid.numRows(); i++)
         {
-            String slotPath = equipsGrid.row(i).getStr("axSlotPath");
+            String slotPath = getRowSlotPath(equipsGrid.row(i));
             int n = slotPath.lastIndexOf('/');
             String parentSlotPath = slotPath.substring(0, n);
             
@@ -93,6 +94,14 @@ public class BEquipRefFE extends BWbFieldEditor
                 return slotPath;
         }
         return null;
+    }
+
+    private static String getRowSlotPath(HRow row)
+    {
+        if (row.has("n4SlotPath"))
+            return row.getStr("n4SlotPath");
+        else
+            return row.getStr("axSlotPath");
     }
 
     @Override
