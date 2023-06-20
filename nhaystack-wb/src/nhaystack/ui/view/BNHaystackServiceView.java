@@ -342,7 +342,7 @@ public class BNHaystackServiceView extends BWbComponentView
         SiteNode[] sites;
     }
 
-    abstract static class EntityNode extends TreeNode {
+    abstract class EntityNode extends TreeNode {
       private EntityNode(NavTreeModel model, XElem elem) {
         super(model);
 
@@ -373,7 +373,7 @@ public class BNHaystackServiceView extends BWbComponentView
       private final TreeNode[] children;
     }
 
-    static class SiteNode extends EntityNode
+    private class SiteNode extends EntityNode
     {
         private SiteNode(NavTreeModel model, XElem xSite)
         {
@@ -385,7 +385,7 @@ public class BNHaystackServiceView extends BWbComponentView
         public BImage getIcon() { return BImage.make(BHSite.ICON); }
     }
 
-    static class SpaceNode extends EntityNode
+    private class SpaceNode extends EntityNode
     {
       private SpaceNode(NavTreeModel model, XElem xSpace)
       {
@@ -395,11 +395,11 @@ public class BNHaystackServiceView extends BWbComponentView
       @Override
       public BImage getIcon() { return BImage.make(ICON); }
 
-      private final static BIcon ICON =
+      private final BIcon ICON =
         BIcon.make("module://nhaystack/nhaystack/icons/space.png");
     }
 
-    static class EquipNode extends EntityNode
+    private class EquipNode extends EntityNode
     {
         private EquipNode(NavTreeModel model, XElem xEquip)
         {
@@ -411,7 +411,7 @@ public class BNHaystackServiceView extends BWbComponentView
         public BImage getIcon() { return BImage.make(BHEquip.ICON); }
     }
 
-    static class PointNode extends EntityNode
+    private class PointNode extends EntityNode
     {
         private PointNode(NavTreeModel model, XElem xPoint)
         {
@@ -467,7 +467,7 @@ public class BNHaystackServiceView extends BWbComponentView
         return str;
     }
 
-    private static TreeNode nodeFromXml(NavTreeModel model, XElem elem) {
+    private TreeNode nodeFromXml(NavTreeModel model, XElem elem) {
       switch (elem.name()) {
         case "site":
           return new SiteNode(model, elem);
@@ -500,7 +500,7 @@ public class BNHaystackServiceView extends BWbComponentView
     private final RebuildCacheCommand rebuildCache;
     private final InitializeCommand initialize;
     private final LoadCustomTagDictionary loadCustomTagDict;
-    private static final BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
+    private final BToggleButton buttonToggleFormat = new BToggleButton(LEX.getText("haystackFormat"));
     
     String shared_folder = Sys.getNiagaraSharedUserHome().getPath().replace("\\", "/");
     private final String customTagsDictFilePath = "local:|file:/"+shared_folder+"/nHaystack/customTagsDict.csv";
