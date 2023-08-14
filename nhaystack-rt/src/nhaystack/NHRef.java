@@ -83,7 +83,7 @@ public class NHRef
         if (this == obj) return true;
 
         return obj instanceof NHRef ?
-            ref.equals(((NHRef) obj).ref) :
+            this.ref.equals(((NHRef) obj).ref) :
             false;
     }
 

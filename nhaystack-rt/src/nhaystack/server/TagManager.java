@@ -480,7 +480,14 @@ public class TagManager implements NHaystackConst
             // add misc other tags
             hdb.add("axType", comp.getType().toString());
             if (comp.getSlotPath() != null)
-                hdb.add("axSlotPath", comp.getSlotPath().toString());
+            {
+                // Expose the slot path under both the old axSlotPath and
+                // the new n4SlotPath tags so we don't break existing clients
+                // expecting the old name.
+                String slotPath = comp.getSlotPath().toString();
+                hdb.add("axSlotPath", slotPath);
+                hdb.add("n4SlotPath", slotPath);
+            }
 
             // points get special treatment
             if (comp instanceof BControlPoint)
@@ -552,6 +559,7 @@ public class TagManager implements NHaystackConst
     HDict createHistoryTags(BHistoryConfig cfg)
     {
         HDictBuilder hdb = new HDictBuilder();
+        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
 
         // add existing tags
         HDict tags = BHDict.findTagAnnotation(cfg);
@@ -559,20 +567,34 @@ public class TagManager implements NHaystackConst
             tags = HDict.EMPTY;
         hdb.add(tags);
 
-        // add dis
-        String dis = cfg.getId().toString();
-        if (dis.startsWith("/")) dis = dis.substring(1);
-        dis = TextUtil.replace(dis, "/", "_");
-        hdb.add("dis", dis);
-        hdb.add("navName", dis);
+        // add dis and navName tags
+        String navName = cfg.getId().toString();
+        if (navName.startsWith("/")) navName = navName.substring(1);
+        navName = TextUtil.replace(navName, "/", "_");
+        hdb.add("navName", navName);
+
+        String dis;
+        if (point == null) hdb.add("dis", navName);
+        else
+        {
+            dis = point.getDisplayName(null);
+            if (dis == null)
+                dis = navName;
+            hdb.add("dis", dis);
+        }
 
         // add id
         HRef ref = makeComponentRef(cfg).getHRef();
-        hdb.add("id", HRef.make(ref.val, dis));
+        hdb.add("id", HRef.make(ref.val, navName));
+
 
         // add misc other tags
         hdb.add("axType", cfg.getType().toString());
-        hdb.add("axHistoryId", cfg.getId().toString());
+
+        // expose under both tag names to not break older clients.
+        String historyId = cfg.getId().toString();
+        hdb.add("axHistoryId", historyId);
+        hdb.add("n4HistoryId", historyId);
 
         hdb.add("point");
         hdb.add("his");
@@ -599,7 +621,6 @@ public class TagManager implements NHaystackConst
         }
 
         // check if this history has a point
-        BControlPoint point = spaceMgr.lookupPointFromHistory(cfg);
         if (point != null)
         {
             // add point ref
@@ -1294,12 +1315,15 @@ public class TagManager implements NHaystackConst
     /** Every single tag which the server may have auto-generated.  */
     static final String[] AUTO_GEN_TAGS = {
         "axAnnotated",
-        "axHistoryId",
+        "axHistoryId",  // backward compatibility
         "axHistoryRef",
         "axPointRef",
-        "axSlotPath", 
         "axType",
+        "axSlotPath",   // backward compatibility
         "axStatus",
+
+        "n4HistoryId",  // replaces axHistoryId
+        "n4SlotPath",   // replaces axSlotPath
 
         "actions",
         "cur",

@@ -17,6 +17,7 @@
   <type class="nhaystack.ntest.BTypeUtilTest" name="TypeUtilTest"/>
   <type class="nhaystack.ntest.BNHaystackTagDictionaryTest" name="NHaystackTagDictionaryTest"/>
   <type class="nhaystack.ntest.BTagManagerTest" name="TagManagerTest"/>
+  <type class="nhaystack.ntest.BNavTest" name="NavTest"/>
   <!--nhaystack.ntest.helper-->
   <type class="nhaystack.ntest.helper.BNHaystackStationTestBase" name="NHaystackStationTestBase"/>
   <type class="nhaystack.ntest.helper.BTestProxyExt" name="TestProxyExt"/>

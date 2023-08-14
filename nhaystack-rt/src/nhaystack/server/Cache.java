@@ -37,8 +37,7 @@ import javax.baja.sys.Context;
 import javax.baja.sys.Property;
 import javax.baja.sys.SlotCursor;
 import javax.baja.sys.Sys;
-import javax.baja.tag.Relation;
-import javax.baja.tag.Relations;
+import javax.baja.tag.*;
 
 import nhaystack.BHDict;
 import nhaystack.NHRef;
@@ -143,6 +142,31 @@ class Cache implements NHaystackConst
         return implicitEquips.get(point);
     }
 
+    /**
+     * Return the parent space or equip referenced by the entity, if any, else
+     * null.
+     *
+     * @param entity Entity to return parent of.
+     * @return Parent component or null.
+     */
+    synchronized BComponent getParent(BComponent entity)
+    {
+        requireInitialized();
+        return parents.get(entity);
+    }
+
+    /**
+     * Return the child spaces or equips which reference the entity.
+     *
+     * @param entity Entity to return children of.
+     * @return Child components.
+     */
+    synchronized BComponent[] getChildren(BComponent entity)
+    {
+        requireInitialized();
+        return compsToArr(children.get(entity));
+    }
+
     synchronized BComponent[] getAllSites()
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
@@ -153,6 +177,19 @@ class Cache implements NHaystackConst
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
         return equips.toArray(EMPTY_COMPONENT_ARRAY);
+    }
+
+    /**
+     * Get all the spaces associated with the given site navId.
+     *
+     * @param siteNav Site navId query.
+     * @return Spaces within that site.
+     */
+    synchronized BComponent[] getNavSiteSpaces(String siteNav)
+    {
+        requireInitialized();
+
+        return compsToArr(siteSpaces.get(siteNavs.get(siteNav)));
     }
 
     /**
@@ -173,6 +210,17 @@ class Cache implements NHaystackConst
     {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
         return getEquipPoints(equipNavs.get(equipNav));
+    }
+
+    /**
+     * Get all the points associated with the given space.
+     *
+     * @param space Space to get associated points for.
+     * @return Points associated with the given space.
+     */
+    synchronized BComponent[] getSpacePoints(BComponent space)
+    {
+        return compsToArr(spacePoints.get(space));
     }
 
     /**
@@ -236,17 +284,24 @@ class Cache implements NHaystackConst
       */
     private void rebuildComponentCache_firstPass()
     {
-        remoteToPoint  = new HashMap<>();
+        remoteToPoint = new HashMap<>();
+        parents = new HashMap<>();
         implicitEquips = new HashMap<>();
-        siteNavs  = new HashMap<>();
+        siteNavs = new HashMap<>();
+        spaceNavs = new HashMap<>();
         equipNavs = new HashMap<>();
-        siteEquips  = new HashMap<>();
+        siteSpaces = new HashMap<>();
+        children = new HashMap<>();
+        siteEquips = new HashMap<>();
+        spaceEquips = new HashMap<>();
+        spacePoints = new HashMap<>();
         equipPoints = new HashMap<>();
         sepRefToComp = new HashMap<>();
         compToSepRef = new HashMap<>();
         scheduledPoints = new ArrayList<>();
 
         sites = new ArrayList<>();
+        spaces = new ArrayList<>();
         equips = new ArrayList<>();
         Stack<ImplicitEquip> implicitEquipStack = new Stack<>();
         numPoints = 0;
@@ -358,32 +413,41 @@ class Cache implements NHaystackConst
             equips.add(comp);
             processEquip(comp);
         }
+        else if (comp.tags().contains(ID_SPACE))
+        {
+            spaces.add(comp);
+            processSpace(comp);
+        }
     }
 
-    private void handleEquip(BComponent component, HDict tags, BComponent curImplicitEquip)
+    /**
+     * Attempt to find an equip reference and a space reference for a point
+     * component and cache those associations.
+     *
+     * @param component Point component to find references for.
+     * @param tags Tags of the component.
+     * @param curImplicitEquip Implicit equip to fall back to.
+     */
+    private void handleEquip(
+      BComponent component, HDict tags, BComponent curImplicitEquip
+    )
     {
-        // explicit equip
-        Optional<Relation> optRelation = component.relations().get(ID_EQUIP_REF, Relations.OUT);
-        if (tags.has(EQUIP_REF))
+        Optional<BComponent> equipOpt = findReferencedEquip(component, tags);
+        if (equipOpt.isPresent())
         {
-            HRef ref = tags.getRef(EQUIP_REF);
-            BComponent equip = server.getTagManager().lookupComponent(ref);
-            addPointToEquip(equip, component);
+            // explicit equip
+            addPointToEquip(equipOpt.get(), component);
         }
-        else if (optRelation.isPresent())
-        {
-            BComponent equip = (BComponent)optRelation.get().getEndpoint();
-            addPointToEquip(equip, component);
-        }
-        else
-        {
+        else if (curImplicitEquip != null) {
             // implicit equip
-            if (curImplicitEquip != null)
-            {
-                addPointToEquip(curImplicitEquip, component);
-                implicitEquips.put(component, curImplicitEquip);
-            }
+            addPointToEquip(curImplicitEquip, component);
+            implicitEquips.put(component, curImplicitEquip);
         }
+
+        // explicit space
+        findReferencedSpace(component, tags).ifPresent(
+          space -> addPointToSpace(space, component)
+        );
     }
 
     /**
@@ -395,11 +459,140 @@ class Cache implements NHaystackConst
     }
 
     /**
+     * Cache association of a point with a space.
+     *
+     * @param space Space to associate the point with.
+     * @param point Point associated with the space.
+     */
+    private void addPointToSpace(BComponent space, BComponent point)
+    {
+        spacePoints.computeIfAbsent(space, k -> new ArrayList<>()).add(point);
+    }
+
+    /**
       * addEquipToSite
       */
     private void addEquipToSite(BComponent site, BComponent equip)
     {
         siteEquips.computeIfAbsent(site, k -> new ArrayList<>()).add(equip);
+    }
+
+    /**
+     * Add a ref association from a child to a parent.
+     *
+     * @param parent Space or equip the child has a ref to.
+     * @param child Child which has a ref to parent.
+     */
+    private void addChildToParent(BComponent parent, BComponent child)
+    {
+        children.computeIfAbsent(
+          parent,
+          k -> new ArrayList<>()
+        ).add(child);
+        parents.put(child, parent);
+    }
+
+    /**
+     * Cache that an equip has a relation to a space.
+     *
+     * @param space Parent space related to by child.
+     * @param equip Child equip relating to space.
+     */
+    private void addEquipToSpace(BComponent space, BComponent equip)
+    {
+        spaceEquips.computeIfAbsent(space, k -> new ArrayList<>()).add(equip);
+    }
+
+    /**
+     * Cache that a space has a relation to a site.
+     *
+     * @param site Parent site related to by the child space.
+     * @param space Child space related to parent site.
+     */
+    private void addSpaceToSite(BComponent site, BComponent space)
+    {
+        siteSpaces.computeIfAbsent(site, k -> new ArrayList<>()).add(space);
+    }
+
+    /**
+     * Follow a reference of a provided type to find a referenced entity from
+     * a provided entity.
+     *
+     * @param entity Entity to find reference from.
+     * @param tags Tags on the entity.
+     * @param refTag Tag to look for.
+     * @param refId Relation id to look for.
+     * @return Referenced entity if found, else empty.
+     */
+    private Optional<BComponent> findReferencedEntity(
+      BComponent entity, HDict tags, String refTag, Id refId
+    )
+    {
+        BComponent referenced = null;
+
+        // Check for tagged reference.
+        if (tags.has(refTag)) {
+            HRef ref = tags.getRef(refTag);
+            referenced = server.getTagManager().lookupComponent(ref);
+        }
+
+        // Check for Niagara relation to initialize entity.
+        if (referenced == null)
+        {
+            Optional<Relation> relationOpt = entity.relations().get(refId);
+            if (relationOpt.isPresent()) {
+                Relation relation = relationOpt.get();
+                if (relation.isOutbound()) {
+                    referenced = (BComponent) relation.getEndpoint();
+                }
+            }
+        }
+        return Optional.ofNullable(referenced);
+    }
+
+    /**
+     * Attempt to find the site component that the given entity is associated
+     * with.
+     *
+     * @param entity Entity to attempt to find site for.
+     * @param tags Tags on the entity.
+     * @return Associated site component if found, else empty.
+     */
+    private Optional<BComponent> findReferencedSite(
+      BComponent entity, HDict tags
+    )
+    {
+        return findReferencedEntity(entity, tags, SITE_REF, ID_SITE_REF);
+    }
+
+    /**
+     * Attempt to find the space component that the given entity is associated
+     * with.
+     *
+     * @param entity Entity to attempt to find space for.
+     * @param tags Tags on the entity.
+     * @return Associated space component if found, else empty.
+     */
+    private Optional<BComponent> findReferencedSpace(
+      BComponent entity, HDict tags
+    )
+    {
+        return findReferencedEntity(entity, tags, SPACE_REF, ID_SPACE_REF);
+    }
+
+    /**
+     * Attempt to find the equip component that the given entity is associated
+     * with.
+     *
+     * @param entity Entity to attempt to find equip for.
+     * @param tags Tags on the entity.
+     * @return Associated equip component if found, else empty.
+     */
+    private Optional<BComponent> findReferencedEquip(
+      BComponent entity, HDict tags
+    )
+    {
+        return findReferencedEntity(entity, tags, EQUIP_REF, ID_EQUIP_REF);
     }
 
     /**
@@ -413,23 +606,10 @@ class Cache implements NHaystackConst
             equipTags = HDict.EMPTY;
         }
 
-        BComponent site = null;
-        if (equipTags.has(SITE_REF))
+        Optional<BComponent> siteOpt = findReferencedSite(equip, equipTags);
+        if (siteOpt.isPresent())
         {
-            HRef ref = equipTags.getRef(SITE_REF);
-            site = server.getTagManager().lookupComponent(ref);
-        }
-        else  //check for niagara "hs:siteRef" relation to initialize site.
-        {
-            Optional<Relation> optRelation = equip.relations().get(ID_SITE_REF);
-            if (optRelation.isPresent())
-            {
-                site = (BComponent)optRelation.get().getEndpoint();
-            }
-        }
-
-        if (site != null)
-        {
+            BComponent site = siteOpt.get();
             addEquipToSite(site, equip);
 
             // save the equip nav
@@ -445,6 +625,59 @@ class Cache implements NHaystackConst
                     Nav.makeNavName(equip, equipTags)),
                 equip);
         }
+
+        // Add equip to relevant space, add association with parent.
+        Optional<BComponent> equipOpt = findReferencedEquip(equip, equipTags);
+        equipOpt.ifPresent(bComponent -> addChildToParent(bComponent, equip));
+        findReferencedSpace(equip, equipTags).ifPresent(
+          space -> {
+              addEquipToSpace(space, equip);
+              if (!equipOpt.isPresent()) {
+                  addChildToParent(space, equip);
+              }
+          }
+        );
+    }
+
+    /**
+     * Process a component tagged as a space, attempting to find a site to
+     * associate it with and cache an appropriate nav.
+     *
+     * @param space Space to process.
+     */
+    private void processSpace(BComponent space)
+    {
+        HDict spaceTags = BHDict.findTagAnnotation(space);
+        if (spaceTags == null)
+        {
+            spaceTags = HDict.EMPTY;
+        }
+
+        Optional<BComponent> siteOpt = findReferencedSite(space, spaceTags);
+        if (siteOpt.isPresent())
+        {
+            BComponent site = siteOpt.get();
+            addSpaceToSite(site, space);
+
+            // save the equip nav
+            HDict siteTags = BHDict.findTagAnnotation(site);
+            if (siteTags == null)
+            {
+                siteTags = HDict.EMPTY;
+            }
+
+            spaceNavs.put(
+                Nav.makeEquipNavId(
+                    Nav.makeNavName(site, siteTags),
+                    Nav.makeNavName(space, spaceTags)
+                ),
+              space
+            );
+        }
+
+        findReferencedSpace(space, spaceTags).ifPresent(
+            parent -> addChildToParent(parent, space)
+        );
     }
 
     /**
@@ -539,6 +772,33 @@ class Cache implements NHaystackConst
     }
 
 ////////////////////////////////////////////////////////////////
+// private -- helpers
+////////////////////////////////////////////////////////////////
+
+    /**
+     * Throw an exception if the cache is not initialized.
+     */
+    private void requireInitialized() {
+        if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
+    }
+
+    /**
+     * Add a collection of components to a new array. If comps is null, returns
+     * an empty array, otherwise returns and array of the components in the
+     * collection.
+     *
+     * @param comps Components to add to array.
+     * @return Array of components in the collection.
+     */
+    private static BComponent[] compsToArr(Collection<BComponent> comps) {
+        return (
+          comps == null
+            ? EMPTY_COMPONENT_ARRAY
+            : comps.toArray(EMPTY_COMPONENT_ARRAY)
+        );
+    }
+
+////////////////////////////////////////////////////////////////
 // spy
 ////////////////////////////////////////////////////////////////
 
@@ -623,13 +883,33 @@ class Cache implements NHaystackConst
     private Map<String, Collection<BHistoryConfig>> navHistories;
 
     private Collection<BComponent> sites = Collections.emptyList();
+    private Collection<BComponent> spaces = Collections.emptyList();
     private Collection<BComponent> equips = Collections.emptyList();
 
+    /**
+     * Map from child component to parent component, by ref. For example an
+     * equip with an equip ref to a parent equipment would be placed in here
+     * with the parent as value. An equip or space with a space ref would also
+     * be placed here. Equip refs are prioritised above space refs for
+     * parenthood.
+     */
+    private Map<BComponent, BComponent> parents;
     private Map<BComponent, BComponent> implicitEquips;
     private Map<String, BComponent> siteNavs;
+    private Map<String, BComponent> spaceNavs;
     private Map<String, BComponent> equipNavs;
+
+    /**
+     * Map from parent component to collection of child components, by ref. For
+     * instance if a chiller has an equip ref to a plant, the plant would be the
+     * key and the chiller would be added to the collection of children.
+     */
+    private Map<BComponent, Collection<BComponent>> children;
+    private Map<BComponent, Collection<BComponent>> siteSpaces;
     private Map<BComponent, Collection<BComponent>> siteEquips;
     private Map<BComponent, Collection<BComponent>> equipPoints;
+    private Map<BComponent, Collection<BComponent>> spaceEquips;
+    private Map<BComponent, Collection<BComponent>> spacePoints;
 
     private Map<NHRef, BComponent> sepRefToComp;
     private Map<BComponent, NHRef> compToSepRef;

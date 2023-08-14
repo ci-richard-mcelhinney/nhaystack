@@ -263,8 +263,8 @@ public class PointIO
       {
         HDictBuilder hd = new HDictBuilder();
         HNum level = HNum.make(i + 1);
-        hd.add("level", level);
-        hd.add("levelDis", "level " + (i + 1)); // TODO?
+        hd.add(LEVEL, level);
+        hd.add("levelDis", "level " + (i + 1));
         if (vals[i] != null)
         {
           hd.add("val", vals[i]);
@@ -294,7 +294,7 @@ public class PointIO
     Logger log = BNHaystackService.SCHEDULE_LOG;
     BCompositeSchedule compositeSchedule = sched.getSchedule();
     BWeekSchedule week = (BWeekSchedule) compositeSchedule.get("week");
-    BDailySchedule[] days = (BDailySchedule[]) week.getChildren(BDailySchedule.class);
+    BDailySchedule[] days = week.getChildren(BDailySchedule.class);
     log.fine("Found " + days.length + " in schedule " + sched.getName() + " to process");
 
     // timezone
@@ -310,7 +310,6 @@ public class PointIO
       BTimeSchedule[] times = dailyTimes.getTimesInOrder();
       log.fine("Found " + times.length + " to process");
 
-      HDictBuilder dict = new HDictBuilder();
       BWeekdaySchedule applicability = (BWeekdaySchedule) day.get("days");
       HStr dayVal = HStr.make(String.valueOf(applicability.getSet().getOrdinals()[0]));
       for (BTimeSchedule time : times)
@@ -531,7 +530,7 @@ public class PointIO
     // create or replace new row
     HNum hlevel = HNum.make(level);
     HDictBuilder db = new HDictBuilder();
-    db.add("level", hlevel);
+    db.add(LEVEL, hlevel);
     db.add("who", HStr.make(who));
     map.put(hlevel, db.toDict());
 
@@ -847,7 +846,8 @@ public class PointIO
 
   private static final Logger LOG = Logger.getLogger("nhaystack");
   private static final String LAST_WRITE = "haystackLastWrite";
-
+  private static final String LEVEL = "level";
+  private static final String UNITS = "units";
   private static final int FALLBACK_LEVEL = 17;
 
   private final BNHaystackService service;

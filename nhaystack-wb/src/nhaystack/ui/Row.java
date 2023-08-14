@@ -306,11 +306,13 @@ class Row implements NHaystackConst
             }
             if(dict != null)
             {
-                // workaround for weird problem with axSlotPath
-                if (dict.has("axSlotPath"))
+                // workaround for weird problem with axSlotPath / n4SlotPath
+                if (dict.has("n4SlotPath"))
+                    ord = BOrd.make("station:|" + dict.getStr("n4SlotPath"));
+		else if (dict.has("axSlotPath"))
                     ord = BOrd.make("station:|" + dict.getStr("axSlotPath"));
                 else
-                    System.out.println("ERROR: " + dict.toZinc() + " does not have axSlotPath.");
+                    System.out.println("ERROR: " + dict.toZinc() + " does not have n4SlotPath or axSlotPath.");
             }
         }
 

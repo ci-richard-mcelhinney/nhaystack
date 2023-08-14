@@ -8,6 +8,8 @@ axStatus
 axType
 geoLat
 geoLon
+n4HistoryId
+n4SlotPath
 navId
 navName
 navNameFormat

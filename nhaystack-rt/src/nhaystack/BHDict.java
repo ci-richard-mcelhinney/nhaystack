@@ -72,7 +72,8 @@ public final class BHDict
 // Object
 ////////////////////////////////////////////////////////////////
 
-    public int hashCode() 
+    @Override
+    public int hashCode()
     { 
         return dict.hashCode(); 
     }
