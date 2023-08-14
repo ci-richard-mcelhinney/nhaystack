@@ -129,7 +129,8 @@ public class Nav
                 if (
                   parent == null ||
                     Arrays.stream(spaces).noneMatch(parent::equals)
-                ) {
+                )
+                {
                     writeXml(out, 2, space);
                 }
             }
@@ -146,7 +147,8 @@ public class Nav
                       Arrays.stream(equips).noneMatch(parent::equals)
                         && Arrays.stream(spaces).noneMatch(parent::equals)
                     )
-                ) {
+                )
+                {
                     writeXml(out, 2, equip);
                 }
             }
@@ -176,7 +178,8 @@ public class Nav
      * @param comp Component to return tag name for.
      * @return Tag name for component, or null if unable to choose.
      */
-    private static String getTag(BComponent comp) {
+    private static String getTag(BComponent comp)
+    {
         if (comp instanceof BControlPoint || comp instanceof BWeeklySchedule)
         {
             return NHaystackConst.POINT;
@@ -191,10 +194,12 @@ public class Nav
         else if (
             comp instanceof BHEquip
                 || comp.tags().contains(NHaystackConst.ID_EQUIP)
-        ) {
+        )
+        {
             return NHaystackConst.EQUIP;
         }
-        else if (comp.tags().contains(NHaystackConst.ID_SPACE)) {
+        else if (comp.tags().contains(NHaystackConst.ID_SPACE))
+        {
             return NHaystackConst.SPACE;
         }
 
@@ -254,9 +259,12 @@ public class Nav
         String tagName = getTag(comp);
 
         BComponent[] points = null;
-        if (NHaystackConst.EQUIP.equals(tagName))  {
+        if (NHaystackConst.EQUIP.equals(tagName))
+        {
             points = cache.getEquipPoints(comp);
-        } else if (NHaystackConst.SPACE.equals(tagName)) {
+        }
+        else if (NHaystackConst.SPACE.equals(tagName))
+        {
             points = cache.getSpacePoints(comp);
         }
 
@@ -268,7 +276,8 @@ public class Nav
         HDict tags = tagMgr.createComponentTags(comp);
         openTag(out, tagName, tags, indent, !hasChildren);
 
-        for (BComponent child : children) {
+        for (BComponent child : children)
+        {
             writeXml(out, indent + 1, child);
         }
 

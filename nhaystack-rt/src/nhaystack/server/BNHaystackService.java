@@ -32,7 +32,7 @@ import javax.baja.nre.util.TextUtil;
 import javax.baja.spy.SpyWriter;
 import javax.baja.sys.*;
 import javax.baja.tag.TagDictionaryService;
-import javax.baja.tagdictionary.BTagDictionaryService;
+import javax.baja.tagdictionary.*;
 import javax.baja.util.*;
 import java.util.*;
 import java.util.logging.*;
@@ -1087,7 +1087,7 @@ public class BNHaystackService extends BAbstractService implements BINHaystackWo
       throw new RuntimeException(LEX.getText("haystackDictionary.tagsImportFile.alreadySet", new Object[]{hsDict.getTagsImportFile()}));
     }
 
-    hsDict.importDictionary();
+    hsDict.invoke(BTagDictionary.importDictionary, null);
   }
 
 ////////////////////////////////////////////////////////////////

@@ -539,13 +539,35 @@ class Cache implements NHaystackConst
         // Check for Niagara relation to initialize entity.
         if (referenced == null)
         {
-            Optional<Relation> relationOpt = entity.relations().get(refId);
-            if (relationOpt.isPresent()) {
-                Relation relation = relationOpt.get();
-                if (relation.isOutbound()) {
-                    referenced = (BComponent) relation.getEndpoint();
+            Iterator<Relation> i = entity.relations().iterator();
+            while (i.hasNext())
+            {
+                Relation rel = i.next();
+                // here we are looking for just the tag name, not the fully qualified name of the
+                // tag which has namespace and tag name in the format nn:mm
+                // this is to avoid relying on just the Haystack dictionary
+                // at this stage some tags in the supplied Haystack dictionary are not included, for example
+                // the space tag and spaceRef tags are not included, but a SI could create their own tag
+                // dictionary with those tags, so if that happens we want to ignore the namespace
+                if (rel.getId().getName().equals(refId.getName()))
+                {
+                    if (rel.isOutbound())
+                    {
+                        referenced = (BComponent) rel.getEndpoint();
+                        break;
+                    }
                 }
             }
+            // TODO put this back when the Haystack 4 dictionary is implemented if appropriate
+            //      either that or work out a way to look for both the Haystack 4 spaceRef relation
+            //      or look for a custom relation from a custom tag dictionary
+//            Optional<Relation> relationOpt = entity.relations().get(refId);
+//            if (relationOpt.isPresent()) {
+//                Relation relation = relationOpt.get();
+//                if (relation.isOutbound()) {
+//                    referenced = (BComponent) relation.getEndpoint();
+//                }
+//            }
         }
         return Optional.ofNullable(referenced);
     }
