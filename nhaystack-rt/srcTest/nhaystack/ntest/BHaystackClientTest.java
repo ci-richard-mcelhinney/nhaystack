@@ -293,6 +293,7 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
     assertTrue(dict.has("his"));
     assertEquals(dict.get("hisInterpolate"), HStr.make("cov"));
     assertEquals(dict.get("axSlotPath"), HStr.make("slot:/Playground/SiteA/EquipA/sineWave1"));
+    assertEquals(dict.get("n4SlotPath"), HStr.make("slot:/Playground/SiteA/EquipA/sineWave1"));
     assertEquals(dict.get("unit"), HStr.make("sec"));
     assertEquals(dict.get("precision"), HNum.make(3));
     assertEquals(dict.get("minVal"), HNum.make(-50));
@@ -359,7 +360,7 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
     HGrid grid = client.readAll("his");
     assertEquals(grid.numRows(), 3);
 
-    HDict dict = client.read("axSlotPath==\"slot:/Playground/SiteA/EquipA/sineWave1\"");
+    HDict dict = client.read("n4SlotPath==\"slot:/Playground/SiteA/EquipA/sineWave1\"");
     HGrid his = client.hisRead(dict.id(), "today");
 
     assertEquals(his.meta().id(), dict.id());
@@ -371,9 +372,13 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
     //TODO there is an issue with units here that needs to be solved
 //    Assert.assertEquals(numVal(his.row(0)).unit, "\\uxxB0" + "F");
 
+    // check axSlotPath is not broken
+    dict = client.read("axSlotPath==\"slot:/Playground/SiteA/EquipA/sineWave1\"");
+    assertEquals(dict.id(), his.meta().id());
+
     ///////////////////////////////////////////////
 
-    dict = client.read("axHistoryId==\"/test/LogHistory\"");
+    dict = client.read("n4HistoryId==\"/test/LogHistory\"");
     his = client.hisRead(dict.id(), "today");
     assertEquals(his.meta().id(), dict.id());
     assertTrue(his.numRows() > 0);
@@ -381,11 +386,19 @@ public class BHaystackClientTest extends BNHaystackStationTestBase
     last = his.numRows() - 1;
     assertEquals(ts(his.row(last)).date, HDate.today());
 
+    // check axHistoryId is not broken
+    dict = client.read("axHistoryId==\"/test/LogHistory\"");
+    assertEquals(dict.id(), his.meta().id());
+
     ///////////////////////////////////////////////
 
-    dict = client.read("axHistoryId==\"/test/sineWave1\"");
+    dict = client.read("n4HistoryId==\"/test/sineWave1\"");
     his = client.hisRead(dict.id(), "today");
     assertEquals(his.meta().id(), dict.id());
+
+    // check axHistoryId is not broken
+    dict = client.read("axHistoryId==\"/test/sineWave1\"");
+    assertEquals(dict.id(), his.meta().id());
 
     ///////////////////////////////////////////////
 

@@ -383,7 +383,13 @@ public class Nav
         {
             hdb.add("dis", comp.getDisplayName(null));
             hdb.add(AXTYPE, comp.getType().toString());
-            hdb.add("axSlotPath", comp.getSlotPath().toString());
+
+            // Older clients will expect to find this information as
+            // axSlotPath, but newer clients may look for n4SlotPath instead,
+            // so for now, expose it under both tags.
+            String slotPath = comp.getSlotPath().toString();
+            hdb.add("axSlotPath", slotPath);
+            hdb.add("n4SlotPath", slotPath);
         }
 
         // always use a slot path ref

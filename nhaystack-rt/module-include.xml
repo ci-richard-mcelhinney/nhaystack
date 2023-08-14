@@ -34,9 +34,12 @@
   <!--nhaystack.driver.history-->
   <type class="nhaystack.driver.history.BNHaystackHistoryDeviceExt" name="NHaystackHistoryDeviceExt"/>
   <type class="nhaystack.driver.history.BNHaystackHistoryImport" name="NHaystackHistoryImport"/>
+  <type class="nhaystack.driver.history.BNHaystackHistoryExport" name="NHaystackHistoryExport"/>
   <!--nhaystack.driver.history.learn-->
   <type class="nhaystack.driver.history.learn.BNHaystackHistoryEntry" name="NHaystackHistoryEntry"/>
   <type class="nhaystack.driver.history.learn.BNHaystackLearnHistoriesJob" name="NHaystackLearnHistoriesJob"/>
+  <type class="nhaystack.driver.history.learn.BNHaystackHistoryExpEntry" name="NHaystackHistoryExpEntry"/>
+  <type class="nhaystack.driver.history.learn.BNHaystackLearnExpHistoriesJob" name="NHaystackLearnExpHistoriesJob"/>
   <!--nhaystack.driver.point-->
   <type class="nhaystack.driver.point.BNHaystackBoolPoint" name="NHaystackBoolPoint"/>
   <type class="nhaystack.driver.point.BNHaystackBoolProxyExt" name="NHaystackBoolProxyExt"/>
