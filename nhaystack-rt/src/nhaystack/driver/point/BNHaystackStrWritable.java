@@ -25,7 +25,8 @@ import nhaystack.BHRef;
 @NiagaraProperty(
   name = "proxyExt",
   type = "BAbstractProxyExt",
-  defaultValue = "new BNHaystackStrProxyExt()"
+  defaultValue = "new BNHaystackStrProxyExt()",
+  override = true
 )
 public class BNHaystackStrWritable 
     extends BStringWritable

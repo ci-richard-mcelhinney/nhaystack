@@ -25,7 +25,8 @@ import nhaystack.BHRef;
 @NiagaraProperty(
   name = "proxyExt",
   type = "BAbstractProxyExt",
-  defaultValue = "new BNHaystackNumberProxyExt()"
+  defaultValue = "new BNHaystackNumberProxyExt()",
+  override = true
 )
 public class BNHaystackNumberPoint 
     extends BNumericPoint

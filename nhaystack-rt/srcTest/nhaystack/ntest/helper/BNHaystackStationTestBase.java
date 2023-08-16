@@ -109,7 +109,7 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
         nhServer = nhaystackService.getHaystackServer();
         client = openClient(false);
 
-        TestUtil.waitFor(10, () -> !"1.0".equals(haystackDict.getVersion()), "Waiting for asynchronous import to finish");
+        TestUtil.waitFor(() -> !"1.0".equals(haystackDict.getVersion()), 10);
         assertEquals(haystackDict.getVersion(), TAGS_VERSION_IMPORT, "dictionary version after import");
     }
 
@@ -129,8 +129,7 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
     {
         // wait up to 10 seconds for async operation to complete
         nhaystackService.doInitializeHaystack();
-        TestUtil.waitFor(10, () -> nhaystackService.getSchemaVersion() > 0,
-            "Tag update not completed after nhaystackService started, aborting test.");
+        TestUtil.waitFor(() -> nhaystackService.getSchemaVersion() > 0, 10);
 
         String baseURI = getBaseURI() + "haystack/";
         if (useHttps)

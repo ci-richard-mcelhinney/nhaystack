@@ -73,7 +73,7 @@ import org.projecthaystack.client.HClient;
 @NiagaraProperty(name = "points", type = "BNHaystackPointDeviceExt", defaultValue = "new BNHaystackPointDeviceExt()")
 @NiagaraProperty(name = "pollFrequency", type = "BPollFrequency", defaultValue = "BPollFrequency.normal")
 @NiagaraProperty(name = "worker", type = "BNHaystackWorker", defaultValue = "new BNHaystackWorker()")
-@NiagaraProperty(name = "alarmSourceInfo", type = "BAlarmSourceInfo", defaultValue = "new BAlarmSourceInfo()", flags = Flags.HIDDEN)
+@NiagaraProperty(name = "alarmSourceInfo", type = "BAlarmSourceInfo", defaultValue = "new BAlarmSourceInfo()", flags = Flags.HIDDEN, override = true)
 /**
  * The amount of time that objects in watches are leased.
  */

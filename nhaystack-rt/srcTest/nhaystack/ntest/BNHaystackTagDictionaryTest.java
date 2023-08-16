@@ -67,7 +67,7 @@ public class BNHaystackTagDictionaryTest extends BStationTestBase
     {
         super.setupStation();
 
-        TestUtil.waitFor(10, () -> TAGS_VERSION_IMPORT.equals(haystackDict.getVersion()), "Waiting for OVERLAY import to finish");
+        TestUtil.waitFor(() -> TAGS_VERSION_IMPORT.equals(haystackDict.getVersion()), 10);
     }
     
     public void assertEquipNotImpliedOnBDevices()

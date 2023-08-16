@@ -34,7 +34,8 @@ import com.tridium.tagdictionary.condition.BIsTypeCondition;
 @NiagaraProperty(
     name = "validity",
     type = "BTagRuleCondition",
-    defaultValue = "new BIsTypeCondition(BControlPoint.TYPE)"
+    defaultValue = "new BIsTypeCondition(BControlPoint.TYPE)",
+    override = true
 )
 public class BNCurValTag extends BTagInfo
 {

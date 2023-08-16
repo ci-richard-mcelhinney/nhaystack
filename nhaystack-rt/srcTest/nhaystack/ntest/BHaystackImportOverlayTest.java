@@ -84,7 +84,7 @@ public class BHaystackImportOverlayTest extends BStationTestBase
         BTagDictionaryService service = (BTagDictionaryService)Sys.getService(BTagDictionaryService.TYPE);
         haystackDict = (BHsTagDictionary)service.getSmartTagDictionary("hs").orElseThrow(() -> new Exception("No haystack dictionary"));
         haystackDict.doImportDictionary(Context.NULL);
-        TestUtil.waitFor(10, () -> !"1.0".equals(haystackDict.getVersion()), "Waiting for import to finish");
+        TestUtil.waitFor(() -> !"1.0".equals(haystackDict.getVersion()), 10);
     }
 
     public void testImport() throws Exception
@@ -97,7 +97,7 @@ public class BHaystackImportOverlayTest extends BStationTestBase
         // Set ImportTagsFile & ImportEquipFile
         haystackDict.setTagsImportFile(BOrd.make("module://nhaystack/nhaystack/res/tagsMerge.csv"));
         haystackDict.doImportDictionary(Context.NULL);
-        TestUtil.waitFor(10, () -> TAGS_VERSION_IMPORT.equals(haystackDict.getVersion()), "Waiting for OVERLAY import to finish");
+        TestUtil.waitFor(() -> TAGS_VERSION_IMPORT.equals(haystackDict.getVersion()), 10);
 
         assertEquals(haystackDict.getVersion(), TAGS_VERSION_IMPORT, "dictionary version after import");
         assertTagsModified(haystackDict);
