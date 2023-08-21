@@ -50,25 +50,9 @@ import javax.baja.status.BStatusEnum;
 import javax.baja.status.BStatusNumeric;
 import javax.baja.status.BStatusString;
 import javax.baja.status.BStatusValue;
-import javax.baja.sys.Action;
-import javax.baja.sys.BBoolean;
-import javax.baja.sys.BComponent;
-import javax.baja.sys.BDouble;
-import javax.baja.sys.BDynamicEnum;
-import javax.baja.sys.BEnumRange;
-import javax.baja.sys.BFacets;
-import javax.baja.sys.BFloat;
-import javax.baja.sys.BInteger;
-import javax.baja.sys.BLong;
-import javax.baja.sys.BMarker;
-import javax.baja.sys.BNumber;
-import javax.baja.sys.BObject;
-import javax.baja.sys.BString;
-import javax.baja.sys.BValue;
-import javax.baja.sys.Flags;
-import javax.baja.sys.Type;
-import javax.baja.tag.Relation;
-import javax.baja.tag.Tag;
+import javax.baja.sys.*;
+import javax.baja.tag.*;
+import javax.baja.tagdictionary.*;
 import javax.baja.timezone.BTimeZone;
 import javax.baja.units.BUnit;
 import javax.baja.units.BUnitConversion;
@@ -272,6 +256,7 @@ public class TagManager implements NHaystackConst
      */
     public HDict generateComponentTags(BComponent comp)
     {
+        LOG.fine("Generate Component Tags start");
         List<String> namespaces = service.getPrioritizedNamespaceList();
         Collection<Tag> tags = comp.tags().getAll();
         HDictBuilder hdb = new HDictBuilder();
@@ -280,6 +265,12 @@ public class TagManager implements NHaystackConst
         {
             for (Tag tag : tags)
             {
+                // skip this tag if we determine it is a Tag Group
+                // Tag Groups are already expanded into their individual tags
+                // and don't need to be added as their own tag
+                if (isTagGroup(tag))
+                    continue;
+
                 if (tag.getId().getDictionary().equals(namespaces.get(i)))
                 {
                     String tagName = tag.getId().getName();
@@ -353,7 +344,41 @@ public class TagManager implements NHaystackConst
             }
         }
 
+        LOG.fine("Generate Component Tags end");
         return hdb.toDict();
+    }
+
+    /**
+     * Helper method to determine if a provided Tag is actualy a Tag group.
+     *
+     * @param tag the Tag to check
+     * @return  true if the provided Tag is actually a tag group, false if not
+     */
+    public boolean isTagGroup(Tag tag)
+    {
+        boolean isTagGroup = false;
+
+        // TODO cache the reference to the dictionary service so it doesn't need to be looked up with every call
+        BTagDictionaryService dictService = (BTagDictionaryService) Sys.getService(BTagDictionaryService.TYPE);
+        isTagGroup = getAllTagGroupInfo(dictService).stream().anyMatch(tgi -> tgi.getName().equals(tag.getId().getName()));
+
+        return isTagGroup;
+    }
+
+    public List<TagGroupInfo> getAllTagGroupInfo(BTagDictionaryService service)
+    {
+        if (allTagGroups != null) return allTagGroups;
+
+        allTagGroups = new ArrayList<>();
+        service.getTagDictionaries().forEach(d -> {
+            Iterator<TagGroupInfo> it = d.getTagGroups();
+            while(it.hasNext())
+            {
+                allTagGroups.add(it.next());
+            }
+        });
+
+        return allTagGroups;
     }
 
     /**
@@ -361,14 +386,18 @@ public class TagManager implements NHaystackConst
      */
     public HDict convertRelationsToRefTags(BComponent comp)
     {
+        LOG.fine("Converting relations to ref tags start for " + comp.getSlotPath().toDisplayString());
         List<String> namespaces = service.getPrioritizedNamespaceList();
         Collection<Relation> relations = comp.relations().getAll();
         HDictBuilder hdb = new HDictBuilder();
 
+        LOG.fine("Found " + namespaces.size() + " namespaces");
         for (int i = namespaces.size() - 1; i >= 0; --i)
         {
+            LOG.fine("Processing relations in namespace: " + namespaces.get(i));
             for (Relation relation : relations)
             {
+                LOG.fine("Processing relation: " + relation.getId().getQName());
                 if (relation.getId().getDictionary().equals(namespaces.get(i)))
                 {
                     BComponent relationEndpoint = (BComponent) relation.getEndpoint();
@@ -377,6 +406,16 @@ public class TagManager implements NHaystackConst
                         LOG.fine("process relation: " + relation.getId() +
                             (relation.isOutbound() ? " out " : " in ") +
                             relationEndpoint.getSlotPath());
+                    }
+
+                    if (((BComponent) relation.getEndpoint()).getType().equals(BTagGroupInfo.TYPE))
+                    {
+                        LOG.fine("Found relation pointing to TagGroup, filtering out:" + ((BComponent) relation.getEndpoint()).getName());
+                        continue;
+                    }
+                    else
+                    {
+                        LOG.fine("Found relation is acceptable: " + relation.getId().getQName());
                     }
 
                     if (relation.isOutbound())
@@ -389,6 +428,7 @@ public class TagManager implements NHaystackConst
             }
         }
 
+        LOG.fine("Converting relations to ref tag end");
         return hdb.toDict();
     }
 
@@ -1362,6 +1402,7 @@ public class TagManager implements NHaystackConst
     private static final int ENUM_KIND    =  2;
     private static final int STRING_KIND  =  3;
 
+    private List<TagGroupInfo> allTagGroups;
     private final NHServer server;
     private final BNHaystackService service;
     private final SpaceManager spaceMgr;
