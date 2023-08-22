@@ -96,6 +96,9 @@ public class TagManager implements NHaystackConst
         this.service = service;
         this.spaceMgr = spaceMgr;
         this.cache = cache;
+
+        this.dictService = null;
+        this.allTagGroups = null;
     }
 
 ////////////////////////////////////////////////////////////////
@@ -256,7 +259,6 @@ public class TagManager implements NHaystackConst
      */
     public HDict generateComponentTags(BComponent comp)
     {
-        LOG.fine("Generate Component Tags start");
         List<String> namespaces = service.getPrioritizedNamespaceList();
         Collection<Tag> tags = comp.tags().getAll();
         HDictBuilder hdb = new HDictBuilder();
@@ -344,7 +346,6 @@ public class TagManager implements NHaystackConst
             }
         }
 
-        LOG.fine("Generate Component Tags end");
         return hdb.toDict();
     }
 
@@ -358,15 +359,47 @@ public class TagManager implements NHaystackConst
     {
         boolean isTagGroup = false;
 
-        // TODO cache the reference to the dictionary service so it doesn't need to be looked up with every call
-        BTagDictionaryService dictService = (BTagDictionaryService) Sys.getService(BTagDictionaryService.TYPE);
-        isTagGroup = getAllTagGroupInfo(dictService).stream().anyMatch(tgi -> tgi.getName().equals(tag.getId().getName()));
+        Optional<BTagDictionaryService> optDictService = getTagDictionaryService();
+        if (optDictService.isPresent())
+        {
+            BTagDictionaryService ds = optDictService.get();
+            isTagGroup = getAllTagGroupInfo(ds).stream().anyMatch(tgi -> tgi.getName().equals(tag.getId().getName()));
+        }
 
         return isTagGroup;
     }
 
+    /**
+     * Helper method to get the TagDictionaryService from the station.  Method
+     * caches the reference in the class instance for future use to save 
+     * looking it up every time it's needed.
+     * 
+     * @return a reference to the BTagDictionaryService or null
+     */
+    public Optional<BTagDictionaryService> getTagDictionaryService()
+    {
+        this.service.getTagDictionaryService();
+        if (this.dictService == null)
+        {
+            dictService = (BTagDictionaryService) Sys.getService(BTagDictionaryService.TYPE);
+        }
+
+        return Optional.of(dictService);
+    }
+
+    /**
+     * Create a simple list of all tag groups from all 
+     * Tag Dictionaries.  This will cache a value, if a
+     * new Tag Dicionary is added this will need to be
+     * recomputed due to the list of Tag Groups being 
+     * cached each on first execution.
+     * 
+     * @return a List of TagGroupInfo
+     */
     public List<TagGroupInfo> getAllTagGroupInfo(BTagDictionaryService service)
     {
+        // if a cached result exists use that instead 
+        // to save re-computing this list for every tag
         if (allTagGroups != null) return allTagGroups;
 
         allTagGroups = new ArrayList<>();
@@ -377,7 +410,7 @@ public class TagManager implements NHaystackConst
                 allTagGroups.add(it.next());
             }
         });
-
+            
         return allTagGroups;
     }
 
@@ -386,18 +419,14 @@ public class TagManager implements NHaystackConst
      */
     public HDict convertRelationsToRefTags(BComponent comp)
     {
-        LOG.fine("Converting relations to ref tags start for " + comp.getSlotPath().toDisplayString());
         List<String> namespaces = service.getPrioritizedNamespaceList();
         Collection<Relation> relations = comp.relations().getAll();
         HDictBuilder hdb = new HDictBuilder();
 
-        LOG.fine("Found " + namespaces.size() + " namespaces");
         for (int i = namespaces.size() - 1; i >= 0; --i)
         {
-            LOG.fine("Processing relations in namespace: " + namespaces.get(i));
             for (Relation relation : relations)
             {
-                LOG.fine("Processing relation: " + relation.getId().getQName());
                 if (relation.getId().getDictionary().equals(namespaces.get(i)))
                 {
                     BComponent relationEndpoint = (BComponent) relation.getEndpoint();
@@ -413,10 +442,6 @@ public class TagManager implements NHaystackConst
                         LOG.fine("Found relation pointing to TagGroup, filtering out:" + ((BComponent) relation.getEndpoint()).getName());
                         continue;
                     }
-                    else
-                    {
-                        LOG.fine("Found relation is acceptable: " + relation.getId().getQName());
-                    }
 
                     if (relation.isOutbound())
                     {
@@ -428,7 +453,6 @@ public class TagManager implements NHaystackConst
             }
         }
 
-        LOG.fine("Converting relations to ref tag end");
         return hdb.toDict();
     }
 
@@ -1402,7 +1426,9 @@ public class TagManager implements NHaystackConst
     private static final int ENUM_KIND    =  2;
     private static final int STRING_KIND  =  3;
 
+    private BTagDictionaryService dictService;
     private List<TagGroupInfo> allTagGroups;
+
     private final NHServer server;
     private final BNHaystackService service;
     private final SpaceManager spaceMgr;
