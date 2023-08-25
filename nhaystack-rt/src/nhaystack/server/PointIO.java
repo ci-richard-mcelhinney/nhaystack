@@ -350,11 +350,6 @@ public class PointIO
       return HDict.EMPTY;
     }
 
-    if (time.getFinish().isBefore(time.getStart()))
-    {
-      return HDict.EMPTY;
-    }
-
     HDictBuilder dict = new HDictBuilder();
 
     if (log != null)

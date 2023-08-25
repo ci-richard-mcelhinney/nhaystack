@@ -415,6 +415,15 @@ public class TagManager implements NHaystackConst
     }
 
     /**
+     * Nulls out the allTagGroupInfo property to trigger a
+     * rebuild of that list next time it is needed
+     */
+    public void resetTagGroupInfo()
+    {
+        allTagGroups = null;
+    }
+
+    /**
      * Generate a HDict HRef tags representation of the given component haystack relations
      */
     public HDict convertRelationsToRefTags(BComponent comp)

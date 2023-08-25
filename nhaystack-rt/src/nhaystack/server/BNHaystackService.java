@@ -1038,6 +1038,7 @@ public class BNHaystackService extends BAbstractService implements BINHaystackWo
 
     LOG.info("Begin initializing NHaystack");
 
+    getHaystackServer().getTagManager().resetTagGroupInfo();
     getHaystackServer().getCache().rebuild(getStats());
     getServlet().enableWithMessage(true);
     setInitialized(true);

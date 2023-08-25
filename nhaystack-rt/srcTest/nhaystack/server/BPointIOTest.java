@@ -174,10 +174,6 @@ public class BPointIOTest extends BTestNg
     assertEquals(PointIO.processTimes(new BTimeSchedule(), null, null), HDict.EMPTY);
     assertEquals(PointIO.processTimes(null, null, null), HDict.EMPTY);
 
-    time.setStart(BTime.make(23, 59, 59));
-    time.setFinish(BTime.make(1, 2, 3));
-    assertEquals(PointIO.processTimes(time, dayVal, null), HDict.EMPTY);
-
     HDictBuilder dict = new HDictBuilder();
     dict.add("start", HTime.make(2, 3, 4));
     dict.add("end", HTime.make(13, 14, 15));

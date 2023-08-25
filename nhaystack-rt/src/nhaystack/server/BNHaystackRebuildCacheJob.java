@@ -41,6 +41,7 @@ public class BNHaystackRebuildCacheJob extends BSimpleJob
     @Override
     public void run(Context cx) throws Exception
     {
+        service.getHaystackServer().getTagManager().resetTagGroupInfo();
         service.getHaystackServer().getCache().rebuild(service.getStats());
     }
 
