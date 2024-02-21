@@ -30,6 +30,7 @@ import javax.baja.history.BBooleanTrendRecord;
 import javax.baja.history.BEnumTrendRecord;
 import javax.baja.history.BHistoryConfig;
 import javax.baja.history.BHistoryId;
+import javax.baja.history.BHistorySummary;
 import javax.baja.history.BIHistory;
 import javax.baja.history.BNumericTrendRecord;
 import javax.baja.history.BStringTrendRecord;
@@ -67,6 +68,7 @@ import nhaystack.util.NHaystackConst;
 import nhaystack.util.SlotUtil;
 import org.projecthaystack.HBool;
 import org.projecthaystack.HCoord;
+import org.projecthaystack.HDateTime;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HDictBuilder;
 import org.projecthaystack.HGrid;
@@ -708,6 +710,8 @@ public class TagManager implements NHaystackConst
             }
         }
 
+        addHistorySummaryTags(cfg, hdb);
+
         // add custom tags
         hdb.add(server.createCustomTags(cfg));
 
@@ -893,6 +897,8 @@ public class TagManager implements NHaystackConst
                 if (historyExt instanceof BCovHistoryExt)
                     hdb.add("hisInterpolate", "cov");
             }
+
+            addHistorySummaryTags(cfg, hdb);
         }
 
         // cur, writable
@@ -942,6 +948,27 @@ public class TagManager implements NHaystackConst
 
         // siteRef, equipRef
         addSiteEquipTags(point, hdb, tags);
+    }
+
+    private void addHistorySummaryTags(BHistoryConfig cfg, HDictBuilder hdb)
+    {
+        BHistorySummary summary = spaceMgr.lookupHistorySummary(cfg.getId());
+        if(summary != null)
+        {
+            int recordCount = summary.getRecordCount();
+            if(recordCount > 0)
+            {
+                hdb.add("hisSize", recordCount);
+
+                HTimeZone tz = server.fromBajaTimeZone(cfg.getTimeZone());
+
+                HDateTime hisStart = HDateTime.make(summary.getFirstTimestamp().getMillis(), tz);
+                HDateTime hisEnd = HDateTime.make(summary.getLastTimestamp().getMillis(), tz);
+
+                hdb.add("hisStart", hisStart);
+                hdb.add("hisEnd", hisEnd);
+            }
+        }
     }
 
     private static String axStatus(BStatus status)
@@ -1407,7 +1434,10 @@ public class TagManager implements NHaystackConst
         "enum",
         "equip",
         "his",
+        "hisEnd",
         "hisInterpolate",
+        "hisSize",
+        "hisStart",
         "id",
         "kind",
         "maxVal",
