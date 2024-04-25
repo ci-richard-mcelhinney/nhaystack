@@ -51,8 +51,8 @@ import com.tridium.tagdictionary.condition.BIsTypeCondition;
 public class BNIdTag extends BTagInfo
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.server.tags.BNIdTag(2493110824)1.0$ @*/
-/* Generated Fri Feb 15 18:35:33 EST 2019 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.server.tags.BNIdTag(858832658)1.0$ @*/
+/* Generated Wed Apr 24 20:52:05 AEST 2024 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "validity"
@@ -64,18 +64,6 @@ public class BNIdTag extends BTagInfo
    * @see #setValidity
    */
   public static final Property validity = newProperty(0, new BIsTypeCondition(BComponent.TYPE), null);
-  
-  /**
-   * Get the {@code validity} property.
-   * @see #validity
-   */
-  public BTagRuleCondition getValidity() { return (BTagRuleCondition)get(validity); }
-  
-  /**
-   * Set the {@code validity} property.
-   * @see #validity
-   */
-  public void setValidity(BTagRuleCondition v) { set(validity, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type

@@ -85,399 +85,281 @@ import org.projecthaystack.client.HClient;
 @NiagaraAction(name = "learnStructure", returnType = "BOrd")
 public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent, BIPollable
 {
-  /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-  /*@ $nhaystack.driver.BNHaystackServer(3188354716)1.0$ @*/
-  /* Generated Mon May 14 23:00:03 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+  
+/*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
+/*@ $nhaystack.driver.BNHaystackServer(1154297842)1.0$ @*/
+/* Generated Wed Apr 24 20:52:06 AEST 2024 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "tls"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
-   * Slot for the <code>tls</code> property.
-   *
-   * @see nhaystack.driver.BNHaystackServer#getTls
-   * @see nhaystack.driver.BNHaystackServer#setTls
+   * Slot for the {@code tls} property.
+   * @see #getTls
+   * @see #setTls
    */
   public static final Property tls = newProperty(0, false, null);
-
+  
   /**
-   * Get the <code>tls</code> property.
-   *
-   * @see nhaystack.driver.BNHaystackServer#tls
+   * Get the {@code tls} property.
+   * @see #tls
    */
-  public boolean getTls()
-  {
-    return getBoolean(tls);
-  }
-
+  public boolean getTls() { return getBoolean(tls); }
+  
   /**
-   * Set the <code>tls</code> property.
-   *
-   * @see nhaystack.driver.BNHaystackServer#tls
+   * Set the {@code tls} property.
+   * @see #tls
    */
-  public void setTls(boolean v)
-  {
-    setBoolean(tls, v, null);
-  }
+  public void setTls(boolean v) { setBoolean(tls, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "internetAddress"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code internetAddress} property.
-   *
    * @see #getInternetAddress
    * @see #setInternetAddress
    */
   public static final Property internetAddress = newProperty(0, BInternetAddress.NULL, null);
-
+  
   /**
    * Get the {@code internetAddress} property.
-   *
    * @see #internetAddress
    */
-  public BInternetAddress getInternetAddress()
-  {
-    return (BInternetAddress) get(internetAddress);
-  }
-
+  public BInternetAddress getInternetAddress() { return (BInternetAddress)get(internetAddress); }
+  
   /**
    * Set the {@code internetAddress} property.
-   *
    * @see #internetAddress
    */
-  public void setInternetAddress(BInternetAddress v)
-  {
-    set(internetAddress, v, null);
-  }
+  public void setInternetAddress(BInternetAddress v) { set(internetAddress, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "uriPath"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code uriPath} property.
-   *
    * @see #getUriPath
    * @see #setUriPath
    */
   public static final Property uriPath = newProperty(0, "", null);
-
+  
   /**
    * Get the {@code uriPath} property.
-   *
    * @see #uriPath
    */
-  public String getUriPath()
-  {
-    return getString(uriPath);
-  }
-
+  public String getUriPath() { return getString(uriPath); }
+  
   /**
    * Set the {@code uriPath} property.
-   *
    * @see #uriPath
    */
-  public void setUriPath(String v)
-  {
-    setString(uriPath, v, null);
-  }
+  public void setUriPath(String v) { setString(uriPath, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "credentials"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code credentials} property.
-   *
    * @see #getCredentials
    * @see #setCredentials
    */
   public static final Property credentials = newProperty(0, new BUsernameAndPassword(), null);
-
+  
   /**
    * Get the {@code credentials} property.
-   *
    * @see #credentials
    */
-  public BUsernameAndPassword getCredentials()
-  {
-    return (BUsernameAndPassword) get(credentials);
-  }
-
+  public BUsernameAndPassword getCredentials() { return (BUsernameAndPassword)get(credentials); }
+  
   /**
    * Set the {@code credentials} property.
-   *
    * @see #credentials
    */
-  public void setCredentials(BUsernameAndPassword v)
-  {
-    set(credentials, v, null);
-  }
+  public void setCredentials(BUsernameAndPassword v) { set(credentials, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "histories"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code histories} property.
-   *
    * @see #getHistories
    * @see #setHistories
    */
   public static final Property histories = newProperty(0, new BNHaystackHistoryDeviceExt(), null);
-
+  
   /**
    * Get the {@code histories} property.
-   *
    * @see #histories
    */
-  public BNHaystackHistoryDeviceExt getHistories()
-  {
-    return (BNHaystackHistoryDeviceExt) get(histories);
-  }
-
+  public BNHaystackHistoryDeviceExt getHistories() { return (BNHaystackHistoryDeviceExt)get(histories); }
+  
   /**
    * Set the {@code histories} property.
-   *
    * @see #histories
    */
-  public void setHistories(BNHaystackHistoryDeviceExt v)
-  {
-    set(histories, v, null);
-  }
+  public void setHistories(BNHaystackHistoryDeviceExt v) { set(histories, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "points"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code points} property.
-   *
    * @see #getPoints
    * @see #setPoints
    */
   public static final Property points = newProperty(0, new BNHaystackPointDeviceExt(), null);
-
+  
   /**
    * Get the {@code points} property.
-   *
    * @see #points
    */
-  public BNHaystackPointDeviceExt getPoints()
-  {
-    return (BNHaystackPointDeviceExt) get(points);
-  }
-
+  public BNHaystackPointDeviceExt getPoints() { return (BNHaystackPointDeviceExt)get(points); }
+  
   /**
    * Set the {@code points} property.
-   *
    * @see #points
    */
-  public void setPoints(BNHaystackPointDeviceExt v)
-  {
-    set(points, v, null);
-  }
+  public void setPoints(BNHaystackPointDeviceExt v) { set(points, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "pollFrequency"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code pollFrequency} property.
-   *
    * @see #getPollFrequency
    * @see #setPollFrequency
    */
   public static final Property pollFrequency = newProperty(0, BPollFrequency.normal, null);
-
+  
   /**
    * Get the {@code pollFrequency} property.
-   *
    * @see #pollFrequency
    */
-  @Override
-  public BPollFrequency getPollFrequency()
-  {
-    return (BPollFrequency) get(pollFrequency);
-  }
-
+  public BPollFrequency getPollFrequency() { return (BPollFrequency)get(pollFrequency); }
+  
   /**
    * Set the {@code pollFrequency} property.
-   *
    * @see #pollFrequency
    */
-  public void setPollFrequency(BPollFrequency v)
-  {
-    set(pollFrequency, v, null);
-  }
+  public void setPollFrequency(BPollFrequency v) { set(pollFrequency, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "worker"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code worker} property.
-   *
    * @see #getWorker
    * @see #setWorker
    */
   public static final Property worker = newProperty(0, new BNHaystackWorker(), null);
-
+  
   /**
    * Get the {@code worker} property.
-   *
    * @see #worker
    */
-  public BNHaystackWorker getWorker()
-  {
-    return (BNHaystackWorker) get(worker);
-  }
-
+  public BNHaystackWorker getWorker() { return (BNHaystackWorker)get(worker); }
+  
   /**
    * Set the {@code worker} property.
-   *
    * @see #worker
    */
-  public void setWorker(BNHaystackWorker v)
-  {
-    set(worker, v, null);
-  }
+  public void setWorker(BNHaystackWorker v) { set(worker, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "alarmSourceInfo"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code alarmSourceInfo} property.
-   *
    * @see #getAlarmSourceInfo
    * @see #setAlarmSourceInfo
    */
   public static final Property alarmSourceInfo = newProperty(Flags.HIDDEN, new BAlarmSourceInfo(), null);
 
-  /**
-   * Get the {@code alarmSourceInfo} property.
-   *
-   * @see #alarmSourceInfo
-   */
-  @Override
-  public BAlarmSourceInfo getAlarmSourceInfo()
-  {
-    return (BAlarmSourceInfo) get(alarmSourceInfo);
-  }
-
-  /**
-   * Set the {@code alarmSourceInfo} property.
-   *
-   * @see #alarmSourceInfo
-   */
-  @Override
-  public void setAlarmSourceInfo(BAlarmSourceInfo v)
-  {
-    set(alarmSourceInfo, v, null);
-  }
-
 ////////////////////////////////////////////////////////////////
 // Property "leaseInterval"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code leaseInterval} property.
    * The amount of time that objects in watches are leased.
-   *
    * @see #getLeaseInterval
    * @see #setLeaseInterval
    */
   public static final Property leaseInterval = newProperty(0, BRelTime.make(2 * BRelTime.MINUTE.getMillis()), null);
-
+  
   /**
    * Get the {@code leaseInterval} property.
    * The amount of time that objects in watches are leased.
-   *
    * @see #leaseInterval
    */
-  public BRelTime getLeaseInterval()
-  {
-    return (BRelTime) get(leaseInterval);
-  }
-
+  public BRelTime getLeaseInterval() { return (BRelTime)get(leaseInterval); }
+  
   /**
    * Set the {@code leaseInterval} property.
    * The amount of time that objects in watches are leased.
-   *
    * @see #leaseInterval
    */
-  public void setLeaseInterval(BRelTime v)
-  {
-    set(leaseInterval, v, null);
-  }
+  public void setLeaseInterval(BRelTime v) { set(leaseInterval, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Property "structureSettings"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code structureSettings} property.
-   *
    * @see #getStructureSettings
    * @see #setStructureSettings
    */
   public static final Property structureSettings = newProperty(0, new BStructureSettings(), null);
-
+  
   /**
    * Get the {@code structureSettings} property.
-   *
    * @see #structureSettings
    */
-  public BStructureSettings getStructureSettings()
-  {
-    return (BStructureSettings) get(structureSettings);
-  }
-
+  public BStructureSettings getStructureSettings() { return (BStructureSettings)get(structureSettings); }
+  
   /**
    * Set the {@code structureSettings} property.
-   *
    * @see #structureSettings
    */
-  public void setStructureSettings(BStructureSettings v)
-  {
-    set(structureSettings, v, null);
-  }
+  public void setStructureSettings(BStructureSettings v) { set(structureSettings, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "submitLearnHistoriesJob"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code submitLearnHistoriesJob} action.
-   *
    * @see #submitLearnHistoriesJob()
    */
   public static final Action submitLearnHistoriesJob = newAction(Flags.HIDDEN, null);
-
+  
   /**
    * Invoke the {@code submitLearnHistoriesJob} action.
-   *
    * @see #submitLearnHistoriesJob
    */
-  public BOrd submitLearnHistoriesJob()
-  {
-    return (BOrd) invoke(submitLearnHistoriesJob, null, null);
-  }
+  public BOrd submitLearnHistoriesJob() { return (BOrd)invoke(submitLearnHistoriesJob, null, null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "submitLearnExpHistoriesJob"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code submitLearnExpHistoriesJob} action.
    * @see #submitLearnExpHistoriesJob()
    */
   public static final Action submitLearnExpHistoriesJob = newAction(Flags.HIDDEN, null);
-
+  
   /**
    * Invoke the {@code submitLearnExpHistoriesJob} action.
    * @see #submitLearnExpHistoriesJob
@@ -487,58 +369,44 @@ public class BNHaystackServer extends BDevice implements BINHaystackWorkerParent
 ////////////////////////////////////////////////////////////////
 // Action "submitLearnPointsJob"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code submitLearnPointsJob} action.
-   *
    * @see #submitLearnPointsJob()
    */
   public static final Action submitLearnPointsJob = newAction(Flags.HIDDEN, null);
-
+  
   /**
    * Invoke the {@code submitLearnPointsJob} action.
-   *
    * @see #submitLearnPointsJob
    */
-  public BOrd submitLearnPointsJob()
-  {
-    return (BOrd) invoke(submitLearnPointsJob, null, null);
-  }
+  public BOrd submitLearnPointsJob() { return (BOrd)invoke(submitLearnPointsJob, null, null); }
 
 ////////////////////////////////////////////////////////////////
 // Action "learnStructure"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code learnStructure} action.
-   *
    * @see #learnStructure()
    */
   public static final Action learnStructure = newAction(0, null);
-
+  
   /**
    * Invoke the {@code learnStructure} action.
-   *
    * @see #learnStructure
    */
-  public BOrd learnStructure()
-  {
-    return (BOrd) invoke(learnStructure, null, null);
-  }
+  public BOrd learnStructure() { return (BOrd)invoke(learnStructure, null, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
-
+  
   @Override
-  public Type getType()
-  {
-    return TYPE;
-  }
-
+  public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackServer.class);
 
-  /*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
+/*+ ------------ END BAJA AUTO GENERATED CODE -------------- +*/
 
   public BNHaystackServer() {
     super();

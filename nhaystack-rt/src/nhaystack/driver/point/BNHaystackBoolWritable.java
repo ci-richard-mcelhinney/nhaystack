@@ -32,8 +32,8 @@ public class BNHaystackBoolWritable
     extends BBooleanWritable
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.point.BNHaystackBoolWritable(653901817)1.0$ @*/
-/* Generated Mon Nov 20 14:58:00 EST 2017 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.driver.point.BNHaystackBoolWritable(909031452)1.0$ @*/
+/* Generated Wed Apr 24 20:52:06 AEST 2024 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "proxyExt"
@@ -45,20 +45,6 @@ public class BNHaystackBoolWritable
    * @see #setProxyExt
    */
   public static final Property proxyExt = newProperty(0, new BNHaystackBoolProxyExt(), null);
-  
-  /**
-   * Get the {@code proxyExt} property.
-   * @see #proxyExt
-   */
-  @Override
-  public BAbstractProxyExt getProxyExt() { return (BAbstractProxyExt)get(proxyExt); }
-  
-  /**
-   * Set the {@code proxyExt} property.
-   * @see #proxyExt
-   */
-  @Override
-  public void setProxyExt(BAbstractProxyExt v) { set(proxyExt, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type

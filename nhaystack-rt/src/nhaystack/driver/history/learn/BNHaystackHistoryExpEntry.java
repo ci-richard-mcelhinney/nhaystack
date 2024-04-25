@@ -39,26 +39,26 @@ public final class BNHaystackHistoryExpEntry extends BComponent
 {
 
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $nhaystack.driver.history.learn.BNHaystackHistoryExpEntry(1886900171)1.0$ @*/
-/* Generated Tue May 01 17:08:39 AEST 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.driver.history.learn.BNHaystackHistoryExpEntry(2964906478)1.0$ @*/
+/* Generated Wed Apr 24 20:52:06 AEST 2024 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "tz"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code tz} property.
    * @see #getTz
    * @see #setTz
    */
   public static final Property tz = newProperty(0, BHTimeZone.DEFAULT, null);
-
+  
   /**
    * Get the {@code tz} property.
    * @see #tz
    */
   public BHTimeZone getTz() { return (BHTimeZone)get(tz); }
-
+  
   /**
    * Set the {@code tz} property.
    * @see #tz
@@ -68,20 +68,20 @@ public final class BNHaystackHistoryExpEntry extends BComponent
 ////////////////////////////////////////////////////////////////
 // Property "historyId"
 ////////////////////////////////////////////////////////////////
-
+  
   /**
    * Slot for the {@code historyId} property.
    * @see #getHistoryId
    * @see #setHistoryId
    */
   public static final Property historyId = newProperty(0, BHistoryId.DEFAULT, null);
-
+  
   /**
    * Get the {@code historyId} property.
    * @see #historyId
    */
   public BHistoryId getHistoryId() { return (BHistoryId)get(historyId); }
-
+  
   /**
    * Set the {@code historyId} property.
    * @see #historyId
@@ -91,7 +91,7 @@ public final class BNHaystackHistoryExpEntry extends BComponent
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
-
+  
   @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BNHaystackHistoryExpEntry.class);

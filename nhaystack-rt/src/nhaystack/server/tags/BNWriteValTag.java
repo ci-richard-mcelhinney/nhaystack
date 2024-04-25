@@ -40,8 +40,8 @@ import com.tridium.tagdictionary.condition.BIsTypeCondition;
 public class BNWriteValTag extends BTagInfo
 {
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
-/*@ $com.tridium.haystack.BNWriteValTag(2543699998)1.0$ @*/
-/* Generated Mon Oct 08 16:08:37 EDT 2018 by Slot-o-Matic (c) Tridium, Inc. 2012 */
+/*@ $nhaystack.server.tags.BNWriteValTag(781975295)1.0$ @*/
+/* Generated Wed Apr 24 20:52:05 AEST 2024 by Slot-o-Matic (c) Tridium, Inc. 2012 */
 
 ////////////////////////////////////////////////////////////////
 // Property "validity"
@@ -53,18 +53,6 @@ public class BNWriteValTag extends BTagInfo
    * @see #setValidity
    */
   public static final Property validity = newProperty(0, new BIsTypeCondition(BIWritablePoint.TYPE), null);
-  
-  /**
-   * Get the {@code validity} property.
-   * @see #validity
-   */
-  public BTagRuleCondition getValidity() { return (BTagRuleCondition)get(validity); }
-  
-  /**
-   * Set the {@code validity} property.
-   * @see #validity
-   */
-  public void setValidity(BTagRuleCondition v) { set(validity, v, null); }
 
 ////////////////////////////////////////////////////////////////
 // Type
