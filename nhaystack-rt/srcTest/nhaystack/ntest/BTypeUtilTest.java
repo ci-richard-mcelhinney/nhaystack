@@ -1,5 +1,6 @@
 package nhaystack.ntest;
 
+import javax.baja.control.util.BEnumOverride;
 import nhaystack.util.*;
 
 import org.projecthaystack.*;
@@ -191,6 +192,133 @@ public class BTypeUtilTest extends BTestNg
     BEnum enm = (BEnum) TypeUtil.actionArgsToBaja(args, enumw, action);
     Assert.assertEquals(enm.getOrdinal(), BAlarmState.NORMAL);
 
+  }
+  @Test
+  public void verifyActionArgsToBaja_EnumOverride() {
+
+    BValue val;
+    BEnumOverride result;
+    HDict args;
+
+    // setup common properties
+    BEnumWritable enumw = mock(BEnumWritable.class);
+    Action action = mock(Action.class);
+    when(action.getParameterDefault()).thenReturn(new BEnumOverride());
+    when(enumw.getAction(action.getName())).thenReturn(action);
+
+    BEnumRange range = BEnumRange.make(new String[]{"enumTag0","enumTag1","enumTag2"});
+    BFacets facets = BFacets.makeEnum(range);
+
+    // happy path with value = tag name
+    args = new HDictBuilder()
+        .add("value", HStr.make("enumTag0"))
+        .add("duration",HNum.make(1,"min"))
+        .toDict();
+
+    when(action.getFacets()).thenReturn(BFacets.makeEnum(range));
+
+    val = TypeUtil.actionArgsToBaja(args, enumw, action);
+    Assert.assertTrue(val instanceof BEnumOverride);
+    result = (BEnumOverride) val;
+    Assert.assertEquals(result.getDuration(),BRelTime.makeMinutes(1));
+    Assert.assertEquals(result.getValue(),range.get("enumTag0"));
+
+    // happy path with value = enum ordinal
+    args = new HDictBuilder()
+        .add("value", HNum.make(1))
+        .add("duration",HNum.make(1,"min"))
+        .toDict();
+
+    val = TypeUtil.actionArgsToBaja(args, enumw, action);
+    Assert.assertTrue(val instanceof BEnumOverride);
+    result = (BEnumOverride) val;
+    Assert.assertEquals(result.getDuration(),BRelTime.makeMinutes(1));
+    Assert.assertEquals(result.getValue(),range.get("enumTag1"));
+
+    // facets not present
+    when(action.getFacets()).thenReturn(null);
+    try
+    {
+      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      Assert.fail("function should have thrown exception because of missing facets");
+    }
+    catch (Exception e)
+    {
+      Assert.assertEquals(e.getClass(), NullPointerException.class);
+    }
+
+    // range facets are not of correct type
+    when(action.getFacets()).thenReturn(BFacets.make("range","not_valid_range_object"));
+    try
+    {
+      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      Assert.fail("function should have thrown exception because of incorrect range facets");
+    }
+    catch (Exception e)
+    {
+      Assert.assertEquals(e.getClass(), ClassCastException.class);
+    }
+
+    // missing mandatory args
+    args = new HDictBuilder()
+        .add("maxOverrideDuration",HNum.make(1,"min"))
+        .toDict();
+    when(action.getFacets()).thenReturn(facets);
+    try
+    {
+      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      Assert.fail("function should have thrown exception because of missing fields");
+    }
+    catch (Exception e)
+    {
+      Assert.assertEquals(e.getClass(), IllegalArgumentException.class);
+    }
+
+    // non-matched enum tag in the arg 'value'
+    args = new HDictBuilder()
+        .add("value",HStr.make("unknownTag"))
+        .add("duration",HNum.make(1,"min"))
+        .toDict();
+    try
+    {
+      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      Assert.fail("function should have thrown exception because of unknown tag value");
+    }
+    catch (Exception e)
+    {
+      Assert.assertEquals(e.getClass(), IllegalStateException.class);
+    }
+
+    // incorrect type of the arg 'duration'
+    args = new HDictBuilder()
+        .add("value",HStr.make("enumTag0"))
+        .add("duration",HNum.make(1,"cm"))
+        .toDict();
+    try
+    {
+      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      Assert.fail("function should have thrown exception because of incorrect duration value");
+    }
+    catch (Exception e)
+    {
+      Assert.assertEquals(e.getClass(), IllegalStateException.class);
+    }
+
+    // incorrect type of the arg 'maxOverrideDuration'
+    args = new HDictBuilder()
+        .add("value",HStr.make("enumTag0"))
+        .add("duration",HNum.make(1,"min"))
+        .add("maxOverrideDuration",HStr.make("not_a_duration"))
+        .toDict();
+    try
+    {
+      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      Assert.fail("function should have thrown exception because of incorrect maxOverrideDuration value");
+    }
+    catch (Exception e)
+    {
+      Assert.assertEquals(e.getClass(), IllegalStateException.class);
+    }
   }
 
   @Test(enabled = true)
