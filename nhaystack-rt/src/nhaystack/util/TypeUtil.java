@@ -231,24 +231,30 @@ public abstract class TypeUtil
         }
         else if (def instanceof BEnumOverride)
         {
+            // define an instance of the default parameters for this override
             BEnumOverride cpx = (BEnumOverride) def;
-            BFacets facets = comp.getAction(action.getName()).getFacets();
+            BFacets facets = ((BEnumWritable)comp).getFacets();
             if (facets.isNull()) throw new NullPointerException(
-                "comp " + comp + " does not have "
+                "comp " + comp.getName() + " does not have "
                     + "facets that are needed for action " + action.getName());
             BEnumRange range;
-            try {
+            try
+            {
                 range = (BEnumRange) facets.get(BFacets.RANGE);
-            } catch (ClassCastException e) {
+            }
+            catch (ClassCastException e)
+            {
                 throw new ClassCastException("range facets of comp "
                     + comp + " must be of type " + BEnumRange.TYPE);
             }
 
-            if (args.missing("value")) {
+            if (args.missing("value"))
+            {
                 throw new IllegalArgumentException("action args must "
                     + "have a non-null value for key='value'");
             }
-            if (args.missing("duration")) {
+            if (args.missing("duration"))
+            {
                 throw new IllegalArgumentException("action args must "
                     + "have a non-null value for key='duration'");
             }
@@ -265,19 +271,23 @@ public abstract class TypeUtil
             }
             else
             {
-                try {
+                try
+                {
                     throw new IllegalStateException(
                         "value: " + value.toString()
                             + " is not ordinal nor tag of " + range.encodeToString());
-                } catch (IOException ex) {
+                }
+                catch (IOException ex)
+                {
                     throw new RuntimeException(ex);
                 }
             }
-            cpx.setValue((BDynamicEnum) value);
+            cpx.setValue(BDynamicEnum.make(((BEnum) value).getOrdinal()));
 
             // construction of BRelTime arg 'duration'
             BSimple duration = toBajaSimple(args.get("duration"));
-            if (!(duration instanceof BRelTime)) {
+            if (!(duration instanceof BRelTime))
+            {
                 throw new IllegalStateException(
                     "duration: " + duration.toString()
                         + " is not a time value");
