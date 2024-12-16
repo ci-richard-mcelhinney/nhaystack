@@ -37,3 +37,26 @@ curl --location --request POST 'http://localhost/haystack/invokeAction' \
 --data-raw 'ver:"3.0" action:"auto" id:@C.Apps.NumericWritable
 empty
 N'
+
+sleep 2s
+echo "Demonstrating EnumWritable override"
+
+curl --location --request POST 'http://localhost/haystack/invokeAction' \
+-H "Content-Type: text/zinc; charset=utf-8" \
+--user "<your_user>:<your_password>" \
+--verbose \
+--data-raw 'ver:"3.0" action:"override" id:@<C.Apps.EnterYourTestPointIdHere>
+value,duration
+1,1min' # need to put appropriate value for the Niagara enum being tested
+
+
+sleep 10s
+echo "Clearing EnumWritable override"
+
+curl --location --request POST 'http://localhost/haystack/invokeAction' \
+-H "Content-Type: text/zinc; charset=utf-8" \
+--user "<your_user>:<your_password>" \
+--verbose \
+--data-raw 'ver:"3.0" action:"auto" id:@<C.Apps.EnterYourTestPointIdHere>
+empty
+N'
