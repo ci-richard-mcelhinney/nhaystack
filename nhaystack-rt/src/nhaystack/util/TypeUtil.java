@@ -282,7 +282,8 @@ public abstract class TypeUtil
                     throw new RuntimeException(ex);
                 }
             }
-            cpx.setValue(BDynamicEnum.make(((BEnum) value).getOrdinal()));
+            BDynamicEnum em = BDynamicEnum.make(((BEnum) value).getOrdinal(), range);
+            cpx.setValue(em);
 
             // construction of BRelTime arg 'duration'
             BSimple duration = toBajaSimple(args.get("duration"));

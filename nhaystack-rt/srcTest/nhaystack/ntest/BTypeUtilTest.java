@@ -196,18 +196,16 @@ public class BTypeUtilTest extends BTestNg
   @Test
   public void verifyActionArgsToBaja_EnumOverride() {
 
+    // setup common properties
+    BEnumRange range = BEnumRange.make(new String[]{"enumTag0","enumTag1","enumTag2"});
+    BFacets facets = BFacets.makeEnum(range);
+    BEnumWritable ew = new BEnumWritable();
+    ew.setFacets(facets);
+    Action action = ew.getAction("override");
+
     BValue val;
     BEnumOverride result;
     HDict args;
-
-    // setup common properties
-    BEnumWritable enumw = mock(BEnumWritable.class);
-    Action action = mock(Action.class);
-    when(action.getParameterDefault()).thenReturn(new BEnumOverride());
-    when(enumw.getAction(action.getName())).thenReturn(action);
-
-    BEnumRange range = BEnumRange.make(new String[]{"enumTag0","enumTag1","enumTag2"});
-    BFacets facets = BFacets.makeEnum(range);
 
     // happy path with value = tag name
     args = new HDictBuilder()
@@ -215,13 +213,13 @@ public class BTypeUtilTest extends BTestNg
         .add("duration",HNum.make(1,"min"))
         .toDict();
 
-    when(action.getFacets()).thenReturn(BFacets.makeEnum(range));
+    val = TypeUtil.actionArgsToBaja(args, ew, action);
 
-    val = TypeUtil.actionArgsToBaja(args, enumw, action);
     Assert.assertTrue(val instanceof BEnumOverride);
     result = (BEnumOverride) val;
     Assert.assertEquals(result.getDuration(),BRelTime.makeMinutes(1));
-    Assert.assertEquals(result.getValue(),range.get("enumTag0"));
+    System.out.println(result.getValue().getTag() + " " + range.get("enumTag0").getTag());
+    Assert.assertEquals(result.getValue().getTag(),range.get("enumTag0").getTag());
 
     // happy path with value = enum ordinal
     args = new HDictBuilder()
@@ -229,17 +227,17 @@ public class BTypeUtilTest extends BTestNg
         .add("duration",HNum.make(1,"min"))
         .toDict();
 
-    val = TypeUtil.actionArgsToBaja(args, enumw, action);
+    val = TypeUtil.actionArgsToBaja(args, ew, action);
     Assert.assertTrue(val instanceof BEnumOverride);
     result = (BEnumOverride) val;
     Assert.assertEquals(result.getDuration(),BRelTime.makeMinutes(1));
     Assert.assertEquals(result.getValue(),range.get("enumTag1"));
 
     // facets not present
-    when(action.getFacets()).thenReturn(null);
+    ew.setFacets(BFacets.DEFAULT);
     try
     {
-      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      val = TypeUtil.actionArgsToBaja(args, ew, action);
       Assert.fail("function should have thrown exception because of missing facets");
     }
     catch (Exception e)
@@ -248,10 +246,10 @@ public class BTypeUtilTest extends BTestNg
     }
 
     // range facets are not of correct type
-    when(action.getFacets()).thenReturn(BFacets.make("range","not_valid_range_object"));
+    ew.setFacets(BFacets.make("range","not_valid_range_object"));
     try
     {
-      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      val = TypeUtil.actionArgsToBaja(args, ew, action);
       Assert.fail("function should have thrown exception because of incorrect range facets");
     }
     catch (Exception e)
@@ -263,10 +261,10 @@ public class BTypeUtilTest extends BTestNg
     args = new HDictBuilder()
         .add("maxOverrideDuration",HNum.make(1,"min"))
         .toDict();
-    when(action.getFacets()).thenReturn(facets);
+    ew.setFacets(facets);
     try
     {
-      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      val = TypeUtil.actionArgsToBaja(args, ew, action);
       Assert.fail("function should have thrown exception because of missing fields");
     }
     catch (Exception e)
@@ -281,7 +279,7 @@ public class BTypeUtilTest extends BTestNg
         .toDict();
     try
     {
-      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      val = TypeUtil.actionArgsToBaja(args, ew, action);
       Assert.fail("function should have thrown exception because of unknown tag value");
     }
     catch (Exception e)
@@ -296,7 +294,7 @@ public class BTypeUtilTest extends BTestNg
         .toDict();
     try
     {
-      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      val = TypeUtil.actionArgsToBaja(args, ew, action);
       Assert.fail("function should have thrown exception because of incorrect duration value");
     }
     catch (Exception e)
@@ -312,7 +310,7 @@ public class BTypeUtilTest extends BTestNg
         .toDict();
     try
     {
-      val = TypeUtil.actionArgsToBaja(args, enumw, action);
+      val = TypeUtil.actionArgsToBaja(args, ew, action);
       Assert.fail("function should have thrown exception because of incorrect maxOverrideDuration value");
     }
     catch (Exception e)

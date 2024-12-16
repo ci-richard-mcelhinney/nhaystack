@@ -100,6 +100,11 @@ public abstract class BNHaystackStationTestBase extends BStationTestBase
         return service;
     }
 
+    protected boolean isWebServiceEnabled()
+    {
+      return true;
+    }
+
     @BeforeTest
     @Override
     public void setupStation() throws Exception
