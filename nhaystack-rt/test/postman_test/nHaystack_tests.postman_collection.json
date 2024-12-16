@@ -1,0 +1,1251 @@
+{
+	"info": {
+		"_postman_id": "1ed1a494-00de-4a22-b3f3-141944d27fa5",
+		"name": "nHaystack | Haystack HTTP API Tests",
+		"description": "The Haystack HTTP API implementation tests for nHaystack.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6851438"
+	},
+	"item": [
+		{
+			"name": "about",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Verify that the response has the required fields - meta, cols, and rows\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData).to.have.property('meta');\r",
+							"    pm.expect(responseData).to.have.property('cols');\r",
+							"    pm.expect(responseData).to.have.property('rows');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate that the 'ver' field in the meta object is a non-empty string\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.meta.ver).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Value should not be empty\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Ensure that the 'cols' array contains at least one element with a non-empty name\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.cols).to.be.an('array').that.is.not.empty;\r",
+							"  responseData.cols.forEach(function(col) {\r",
+							"    pm.expect(col.name).to.exist.and.to.have.lengthOf.at.least(1, \"Name should not be empty\");\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"user-agent": true,
+					"accept": true,
+					"accept-encoding": true,
+					"connection": true
+				}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/about",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"about"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ops",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is within an acceptable range\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the structure of the response\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"    pm.expect(responseData.cols).to.exist.and.to.be.an('array');\r",
+							"    pm.expect(responseData.rows).to.exist.and.to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Ver field in meta object is present and non-empty\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.have.property('meta');\r",
+							"    pm.expect(responseData.meta).to.have.property('ver').that.is.not.empty;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Name and summary fields in the rows array are non-empty strings\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData).to.be.an('object');\r",
+							"  pm.expect(responseData.rows).to.be.an('array');\r",
+							"  \r",
+							"  responseData.rows.forEach(function(row) {\r",
+							"    pm.expect(row.name).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Name should not be empty\");\r",
+							"    pm.expect(row.summary).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Summary should not be empty\");\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/ops",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"ops"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "formats",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object exists and is not empty\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.meta).to.exist.and.to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array should exist and be an array\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.cols).to.exist.and.to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array in the response should exist and be an array\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.rows).to.exist.and.to.be.an('array');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/formats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"formats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "filetypes",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/filetypes",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"filetypes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ready by id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object should exist and be an object\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array has the correct structure\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData.cols).to.be.an('array').and.to.have.lengthOf.at.least(1, \"Cols array should not be empty\");\r",
+							"\r",
+							"    responseData.cols.forEach(function(col) {\r",
+							"        pm.expect(col).to.be.an('object');\r",
+							"        pm.expect(col.name).to.exist.and.to.be.a('string');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array structure is valid\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.rows).to.be.an('array');\r",
+							"  responseData.rows.forEach(function(row) {\r",
+							"    pm.expect(row).to.be.an('object');\r",
+							"    // Add more specific checks for properties inside the row object if needed\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/read?id=@S.Building-1.AHU~2d01.SAT",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"read"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "@S.Building-1.AHU~2d01.SAT"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read by filter site",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object should exist in the response\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.meta).to.exist;\r",
+							"    pm.expect(responseData).to.have.property('cols').to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array must exist in the response\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData).to.be.an('object');\r",
+							"  pm.expect(responseData.cols).to.exist.and.to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Rows must exist and there must be 2 rows, 1 for each site\", function() {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData).to.have.property('rows').to.be.an('array');    \r",
+							"    pm.expect(responseData).to.have.property('rows').length(2);    \r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/read?filter=site",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"read"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "site"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read by filter equip",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the response schema for meta, cols, and rows\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"\r",
+							"    pm.expect(responseData).to.have.property('meta').to.be.an('object');\r",
+							"    pm.expect(responseData).to.have.property('cols').to.be.an('array');\r",
+							"    pm.expect(responseData).to.have.property('rows').to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta version is a non-empty string\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.meta).to.be.an('object');\r",
+							"  pm.expect(responseData.meta.ver).to.be.a('string').and.to.have.lengthOf.at.least(1, \"Meta version should not be empty\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows contain non-empty values for specific properties\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"\r",
+							"  pm.expect(responseData.rows).to.be.an('array');\r",
+							"  \r",
+							"  responseData.rows.forEach(row => {\r",
+							"    pm.expect(row.hvac).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.dis).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.axType).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.navName).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.id).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.n4SlotPath).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.axSlotPath).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.siteRef).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.ahu).to.exist.and.to.not.be.empty;\r",
+							"    pm.expect(row.equip).to.exist.and.to.not.be.empty;\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/read?filter=equip",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"read"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "equip"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read by filter point",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object structure is valid\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"    pm.expect(responseData.meta.ver).to.exist.and.to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the structure of the 'cols' array\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.cols).to.be.an('array').and.to.have.lengthOf.at.least(1, \"Array should not be empty\");\r",
+							"\r",
+							"    responseData.cols.forEach(function(col) {\r",
+							"        pm.expect(col).to.be.an('object');\r",
+							"        pm.expect(col.name).to.exist.and.to.be.a('string');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array should have the expected structure\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData.rows).to.be.an('array').and.to.have.length.above(0);\r",
+							"    responseData.rows.forEach(function(row) {\r",
+							"        pm.expect(row).to.be.an('object');\r",
+							"        pm.expect(row).to.have.property('tz');\r",
+							"        pm.expect(row).to.have.property('point');\r",
+							"        pm.expect(row).to.have.property('dis');\r",
+							"        pm.expect(row).to.have.property('axType');\r",
+							"        pm.expect(row).to.have.property('navName');\r",
+							"        pm.expect(row).to.have.property('id');\r",
+							"        pm.expect(row).to.have.property('kind');\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/read?filter=point",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"read"
+					],
+					"query": [
+						{
+							"key": "filter",
+							"value": "point"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "nav root",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object exists in the response\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array should exist and be an array\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.cols).to.exist;\r",
+							"    pm.expect(responseData.cols).to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array should exist and be an array\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.rows).to.exist.and.to.be.an('array');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/nav",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nav"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "nav by navId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the response schema for the presence of meta, cols, and rows\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"    pm.expect(responseData.cols).to.exist.and.to.be.an('array');\r",
+							"    pm.expect(responseData.rows).to.exist.and.to.be.an('array');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta version is not empty\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.meta.ver).to.exist.and.to.not.be.empty;\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array contains objects with non-empty properties\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.rows).to.be.an('array').that.is.not.empty;\r",
+							"\r",
+							"  responseData.rows.forEach(function(row) {\r",
+							"    pm.expect(row).to.have.property('dis').that.is.a('string').and.is.not.empty;\r",
+							"    pm.expect(row).to.have.property('axType').that.is.a('string').and.is.not.empty;\r",
+							"    pm.expect(row).to.have.property('id').that.is.a('string').and.is.not.empty;\r",
+							"    pm.expect(row).to.have.property('n4SlotPath').that.is.a('string').and.is.not.empty;\r",
+							"    pm.expect(row).to.have.property('navId').that.is.a('string').and.is.not.empty;\r",
+							"    pm.expect(row).to.have.property('axSlotPath').that.is.a('string').and.is.not.empty;\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/nav?navId=slot:/Building$201/Floor_01/AHU$2d01",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nav"
+					],
+					"query": [
+						{
+							"key": "navId",
+							"value": "slot:/Building$201/Floor_01/AHU$2d01"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "hisRead",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is within an acceptable range\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response has the required fields - meta, cols, and rows\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData).to.have.property('meta');\r",
+							"    pm.expect(responseData).to.have.property('cols');\r",
+							"    pm.expect(responseData).to.have.property('rows');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Timestamp (ts) is in a valid format\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData.rows).to.be.an('array');\r",
+							"    responseData.rows.forEach(function(row) {\r",
+							"        pm.expect(row.ts).to.exist.and.be.a('string');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Value (val) is in a valid format\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData).to.be.an('object');\r",
+							"  pm.expect(responseData.rows).to.be.an('array');\r",
+							"  \r",
+							"  responseData.rows.forEach(function(row) {\r",
+							"    pm.expect(row.val).to.exist.and.to.be.a('string');\r",
+							"    // Add more specific checks for the format of val if needed\r",
+							"  });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/hisRead?id=@S.Building-1.AHU~2d01.SAT&range=today",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"hisRead"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "@S.Building-1.AHU~2d01.SAT"
+						},
+						{
+							"key": "range",
+							"value": "today"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "watchSub",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object must exist and have specific properties\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.meta).to.exist;\r",
+							"    pm.expect(responseData.meta).to.be.an('object');\r",
+							"    pm.expect(responseData.meta).to.have.property('ver');\r",
+							"    pm.expect(responseData.meta).to.have.property('watchId');\r",
+							"    pm.expect(responseData.meta).to.have.property('lease');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array schema is valid\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.cols).to.be.an('array');\r",
+							"    responseData.cols.forEach(function(col) {\r",
+							"        pm.expect(col).to.be.an('object');\r",
+							"        pm.expect(col.name).to.be.a('string');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array schema is valid\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.rows).to.be.an('array');\r",
+							"\r",
+							"    responseData.rows.forEach(function(row) {\r",
+							"        pm.expect(row).to.be.an('object');\r",
+							"        // Add more specific checks for properties within each row if needed\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"// Store the watchId in an environment or global variable\r",
+							"var watchId = pm.response.json().meta.watchId;\r",
+							"pm.collectionVariables.set(\"watchId\", watchId);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"user-agent": true,
+					"accept-encoding": true,
+					"connection": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "text/zinc"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"2.0\" watchDis:\"nHaystack Testing\" lease:150000ms\r\nid\r\n@S.Building-1.AHU~2d01.Bogus\r\n@S.Building-1.AHU~2d01.SAT\r\n@S.Building-1.AHU~2d01.RAT\r\n@S.Building-1.AHU~2d01.MAT\r\n@S.Building-2.AHU~2d01.Bogus\r\n@S.Building-2.AHU~2d01.SAT\r\n@S.Building-2.AHU~2d01.RAT\r\n@S.Building-2.AHU~2d01.MAT\r\n"
+				},
+				"url": {
+					"raw": "{{base_url}}/watchSub",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"watchSub"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "watchPoll",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is within an acceptable range\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object structure is valid\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"  pm.expect(responseData.meta.ver).to.exist.and.to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array should have the correct structure\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.cols).to.be.an('array');\r",
+							"  responseData.cols.forEach(function(col) {\r",
+							"    pm.expect(col).to.be.an('object');\r",
+							"    pm.expect(col.name).to.be.a('string');\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array structure is valid\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.rows).to.be.an('array');\r",
+							"\r",
+							"    responseData.rows.forEach(function(row) {\r",
+							"        pm.expect(row).to.be.an('object');\r",
+							"        pm.expect(row.curStatus).to.exist.and.to.be.a('string');\r",
+							"        pm.expect(row.curVal).to.exist;\r",
+							"        pm.expect(row.id).to.exist.and.to.be.a('string');\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "text/zinc"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"2.0\" watchId:\"{{watchId}}\" refresh\r\nid\r\n"
+				},
+				"url": {
+					"raw": "{{base_url}}/watchPoll",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"watchPoll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "watchUnsub",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is within an acceptable range\", function () {\r",
+							"  pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Meta object has the correct structure\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData.meta).to.exist.and.to.be.an('object');\r",
+							"  pm.expect(responseData.meta.ver).to.exist.and.to.be.a('string');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Cols array structure is valid\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"\r",
+							"  pm.expect(responseData).to.be.an('object');\r",
+							"  pm.expect(responseData.cols).to.be.an('array');\r",
+							"  responseData.cols.forEach(function(col) {\r",
+							"    pm.expect(col).to.be.an('object');\r",
+							"    pm.expect(col.name).to.be.a('string');\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Rows array is present and empty\", function () {\r",
+							"  const responseData = pm.response.json();\r",
+							"  \r",
+							"  pm.expect(responseData).to.have.property('rows').that.is.an('array').and.to.be.empty;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "Content-Type",
+						"value": "text/zinc"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"2.0\" watchId:\"{{watchId}}\"\r\nid\r\n@S.Building-1.AHU~2d01.SAT\r\n"
+				},
+				"url": {
+					"raw": "{{base_url}}/watchUnsub",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"watchUnsub"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "invokeAction - NumericWritable",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/zinc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"3.0\" id: @S.Building-1.AHU~2d01.SAT action:\"override\"\nvalue\n120.0",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/invokeAction",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"invokeAction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "invokeAction - NumericWritable Auto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/zinc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"3.0\" id: @S.Building-1.AHU~2d01.SAT action:\"auto\"\nempty\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/invokeAction",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"invokeAction"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "invokeAction - EnumWritable Override",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "text/zinc",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "ver:\"3.0\" id: @S.Building-1.AHU~2d01.enable action:\"override\"\nvalue,duration\n\"run\",1min",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/invokeAction",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"invokeAction"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "nhaystack",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://192.168.21.227:8081/haystack",
+			"type": "string"
+		},
+		{
+			"key": "watchId",
+			"value": ""
+		}
+	]
+}
