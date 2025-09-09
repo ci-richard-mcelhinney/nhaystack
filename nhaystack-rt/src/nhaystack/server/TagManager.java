@@ -920,7 +920,7 @@ public class TagManager implements NHaystackConst
         supportedFacetNames.put(BFacets.MAX, "maxVal");
         supportedFacetNames.put(BFacets.PRECISION, "precision");
         supportedFacetNames.forEach((k, v) -> {
-            BNumber facetVal = getNumberFacet(facets, k);
+            BNumber facetVal = getNumberFacet(facets, k, point);
             if (facetVal != BDouble.NaN)
             {
                 hdb.add(v, HNum.make(facetVal.getInt()));
@@ -994,9 +994,9 @@ public class TagManager implements NHaystackConst
         if (curStatus != null) hdb.add("curStatus", curStatus);
 
         // minVal, maxVal, precision
-        BNumber minVal    = getNumberFacet(facets, BFacets.MIN);
-        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX);
-        BNumber precision = getNumberFacet(facets, BFacets.PRECISION);
+        BNumber minVal    = getNumberFacet(facets, BFacets.MIN, point);
+        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX, point);
+        BNumber precision = getNumberFacet(facets, BFacets.PRECISION, point);
         if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
         if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
         if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
@@ -1070,11 +1070,11 @@ public class TagManager implements NHaystackConst
         return siteRef;
     }
 
-    public static BNumber getNumberFacet(BFacets facets, String name)
+    public static BNumber getNumberFacet(BFacets facets, String name, BComponent component)
     {
         if (!(facets.get(name) instanceof BNumber))
         {
-            LOG.warning("Detected incorrectly configured facet supplied for :" + name);
+            LOG.warning("Detected incorrectly configured facet supplied for :" + name + " " + component.getSlotPath());
             LOG.warning("Please check all facets are correctly configured on all Control Points");
             return BDouble.NaN;
         }
@@ -1083,7 +1083,7 @@ public class TagManager implements NHaystackConst
             !name.equals(BFacets.MIN) &&
             !name.equals(BFacets.PRECISION))
         {
-            LOG.warning("Trying to retrieve unsupported number facet: " + name);
+            LOG.warning("Trying to retrieve unsupported number facet: " + name + " " + component.getSlotPath());
             return BDouble.NaN;
         }
 

@@ -40,19 +40,19 @@ public class BTagManagerTest extends BTestNg
     number = new BNumericWritable();
     f = BFacets.make(BFacets.MIN, BRelTime.makeSeconds(5));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN, number);
     assertEquals(facetVal, BDouble.NaN);
 
     number = new BNumericWritable();
     f = BFacets.make(BFacets.MAX, BRelTime.makeSeconds(5));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX, number);
     assertEquals(facetVal, BDouble.NaN);
 
     number = new BNumericWritable();
     f = BFacets.make(BFacets.PRECISION, BRelTime.makeSeconds(5));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION, number);
     assertEquals(facetVal, BDouble.NaN);
   }
 
@@ -68,22 +68,22 @@ public class BTagManagerTest extends BTestNg
     number = new BNumericWritable();
     f = BFacets.make("testFacetName", BDouble.make(20d));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), "testFacetName");
+    facetVal = TagManager.getNumberFacet(number.getFacets(), "testFacetName", number);
     assertEquals(facetVal, BDouble.NaN);
 
     f = BFacets.make(BFacets.MAX, BDouble.make(100d));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX, number);
     assertEquals(facetVal, BDouble.make(100d));
 
     f = BFacets.make(BFacets.MIN, BDouble.make(-1d));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN, number);
     assertEquals(facetVal, BDouble.make(-1d));
 
     f = BFacets.make(BFacets.PRECISION, BDouble.make(2d));
     number.setFacets(f);
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION, number);
     assertEquals(facetVal, BDouble.make(2d));
   }
 
@@ -101,13 +101,13 @@ public class BTagManagerTest extends BTestNg
     );
     number.setFacets(f);
 
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MAX, number);
     assertEquals(facetVal, BDouble.NaN);
 
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.MIN, number);
     assertEquals(facetVal, BDouble.NaN);
 
-    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION);
+    facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION, number);
     assertEquals(facetVal, BDouble.make(2d));
   }
 }
