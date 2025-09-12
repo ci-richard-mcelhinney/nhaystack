@@ -27,10 +27,23 @@ plugins {
 vendor {
   // defaultVendor sets the "vendor" attribute on module and dist files; it's
   // what's shown in Niagara when viewing a module or dist.
-  defaultVendor("CIT")
+  defaultVendor("Project Haystack")
 
   // defaultModuleVersion sets the "vendorVersion" attribute on all modules
-  defaultModuleVersion("1.0")
+  defaultModuleVersion("4.0.0.0")
+}
+
+signingServices {
+  // Disable the use of the default profile; this will cause build failures instead
+  // of silently falling back to the default
+  signingProfileFactory {
+    allowDefaultProfile.set(false)
+  }
+}
+
+niagaraSigning {
+  aliases.set(listOf("ph-code-cert"))
+  signingProfileFile.set(project.layout.projectDirectory.file("C:\\Users\\Richard McElhinney\\.tridium\\security\\haystack_signing_profile.xml"))
 }
 
 
