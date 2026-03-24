@@ -43,7 +43,7 @@ signingServices {
 
 niagaraSigning {
   aliases.set(listOf("ph-code-cert"))
-  signingProfileFile.set(project.layout.projectDirectory.file("C:\\Users\\Richard McElhinney\\.tridium\\security\\haystack_signing_profile.xml"))
+  signingProfileFile.set(project.layout.projectDirectory.file("C:\\Users\\rmcelhinney\\.tridium\\security\\haystack_signing_profile.xml"))
 }
 
 

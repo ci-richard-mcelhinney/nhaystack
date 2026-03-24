@@ -81,7 +81,7 @@ pluginManagement {
 
   val gradlePluginRepoUrl = "file:///${gradlePluginHome.replace('\\', '/')}"
 
-  val gradlePluginVersion: String = "7.6.20"
+  val gradlePluginVersion: String = "7.6.22"
   val settingsPluginVersion: String = "7.6.3"
 
   repositories {
