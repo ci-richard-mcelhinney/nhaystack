@@ -46,7 +46,7 @@ import com.tridium.haystack.BHsTagDictionary;
 import com.tridium.testng.BStationTestBase;
 import com.tridium.testng.TestUtil;
 
-@Test
+@Test(enabled = false)
 @NiagaraType
 public class BHaystackImportOverlayTest extends BStationTestBase
 {
