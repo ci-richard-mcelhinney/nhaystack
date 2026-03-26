@@ -254,9 +254,12 @@ public class Nav
         String tagName = getTag(comp);
 
         BComponent[] points = null;
-        if (NHaystackConst.EQUIP.equals(tagName))  {
+        if (NHaystackConst.EQUIP.equals(tagName))  
+        {
             points = cache.getEquipPoints(comp);
-        } else if (NHaystackConst.SPACE.equals(tagName)) {
+        } 
+        else if (NHaystackConst.SPACE.equals(tagName)) 
+        {
             points = cache.getSpacePoints(comp);
         }
 
@@ -268,11 +271,13 @@ public class Nav
         HDict tags = tagMgr.createComponentTags(comp);
         openTag(out, tagName, tags, indent, !hasChildren);
 
-        for (BComponent child : children) {
+        for (BComponent child : children) 
+        {
             writeXml(out, indent + 1, child);
         }
 
-        if (points != null) {
+        if (points != null) 
+        {
             writePointListXml(out, indent + 1, points);
         }
 
