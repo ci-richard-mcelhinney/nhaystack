@@ -20,7 +20,8 @@ import javax.baja.tag.Id;
  */
 public interface NHaystackConst
 {
-    String NAME_SPACE = "hs";
+    String NAME_SPACE      = "hs";
+    String H4_NAME_SPACE   = "h4";
 
     String AHU             = "ahu";
     String AREA            = "area";
@@ -63,6 +64,8 @@ public interface NHaystackConst
     Id ID_SPACE_REF       = Id.newId(NAME_SPACE, SPACE_REF);
     Id ID_TZ              = Id.newId(NAME_SPACE, TZ);
     Id ID_VAV             = Id.newId(NAME_SPACE, VAV);
+
+    Id H4_ID_SITE_REF     = Id.newId(H4_NAME_SPACE, SITE_REF);
 
     String TN_AREA            = "hs$3aarea";
     String TN_EQUIP_REF       = "hs$3aequipRef";
