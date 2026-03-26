@@ -562,7 +562,13 @@ class Cache implements NHaystackConst
       BComponent entity, HDict tags
     )
     {
-        return findReferencedEntity(entity, tags, SITE_REF, ID_SITE_REF);
+        Id siteRefToUse = ID_SITE_REF;
+
+        String nameSpaces = server.getService().getPrioritizedNamespaces();
+        if (nameSpaces.contains("h4"))
+            siteRefToUse = H4_ID_SITE_REF;
+
+        return findReferencedEntity(entity, tags, SITE_REF, siteRefToUse);
     }
 
     /**
@@ -778,7 +784,8 @@ class Cache implements NHaystackConst
     /**
      * Throw an exception if the cache is not initialized.
      */
-    private void requireInitialized() {
+    private void requireInitialized() 
+    {
         if (!initialized) throw new IllegalStateException(NOT_INITIALIZED);
     }
 
