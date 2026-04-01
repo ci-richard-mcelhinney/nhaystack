@@ -30,7 +30,7 @@ public final class BHRef
     extends BSimple
 {
     /** * The default is null. */
-    public static final BHRef DEFAULT = new BHRef(null);
+    public static final BHRef DEFAULT = new BHRef(HRef.nullRef);
 
 /*+ ------------ BEGIN BAJA AUTO GENERATED CODE ------------ +*/
 /*@ $nhaystack.BHRef(2979906276)1.0$ @*/

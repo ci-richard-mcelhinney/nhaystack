@@ -4,3 +4,6 @@
 /nhaystack-wb/build/
 /nhaystack-rt/out/
 build/
+.vscode/
+nhaystack-rt/bin/
+nhaystack-wb/bin/
