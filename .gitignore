@@ -7,3 +7,4 @@ build/
 .vscode/
 nhaystack-rt/bin/
 nhaystack-wb/bin/
+*.bat
