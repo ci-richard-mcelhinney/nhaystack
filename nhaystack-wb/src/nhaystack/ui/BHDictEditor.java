@@ -104,7 +104,7 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
 ////////////////////////////////////////////////////////////////
 // Action "kindsModified"
 ////////////////////////////////////////////////////////////////
-  
+
   /**
    * Slot for the {@code kindsModified} action.
    * @see #kindsModified(BWidgetEvent parameter)
@@ -120,13 +120,13 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
 ////////////////////////////////////////////////////////////////
 // Action "namesModified"
 ////////////////////////////////////////////////////////////////
-  
+
   /**
    * Slot for the {@code namesModified} action.
    * @see #namesModified(BWidgetEvent parameter)
    */
   public static final Action namesModified = newAction(0, new BWidgetEvent(), null);
-  
+
   /**
    * Invoke the {@code namesModified} action.
    * @see #namesModified
@@ -136,13 +136,13 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
 ////////////////////////////////////////////////////////////////
 // Action "valueModified"
 ////////////////////////////////////////////////////////////////
-  
+
   /**
    * Slot for the {@code valueModified} action.
    * @see #valueModified(BWidgetEvent parameter)
    */
   public static final Action valueModified = newAction(0, new BWidgetEvent(), null);
-  
+
   /**
    * Invoke the {@code valueModified} action.
    * @see #valueModified
@@ -152,7 +152,7 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
 ////////////////////////////////////////////////////////////////
 // Type
 ////////////////////////////////////////////////////////////////
-  
+
   @Override
   public Type getType() { return TYPE; }
   public static final Type TYPE = Sys.loadType(BHDictEditor.class);
@@ -223,6 +223,7 @@ public class BHDictEditor extends BEdgePane implements NHaystackConst
         {
             String name = entry.getKey();
             HVal val = entry.getValue();
+
             // don't include the implied tag group name tag for direct tag
             // groups
             if (editorGroup.impliedTagGroupNames().containsKey(name))
