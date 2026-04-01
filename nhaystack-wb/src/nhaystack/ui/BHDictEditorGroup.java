@@ -276,7 +276,8 @@ public class BHDictEditorGroup extends BScrollPane implements NHaystackConst
         {
             NHRef ref = TagManager.makeSlotPathRef(comp);
             BHRef id = BHRef.make(ref.getHRef());
-            return ((BHDict)service.invoke(BNHaystackService.readById, id)).getDict();
+            HDict tags = ((BHDict)service.invoke(BNHaystackService.readById, id)).getDict();
+            return tags;
         }
         catch (Exception e)
         {
