@@ -18,6 +18,9 @@ import javax.baja.driver.BDevice;
 import javax.baja.driver.BDeviceNetwork;
 import javax.baja.driver.point.BPointDeviceExt;
 import javax.baja.history.BHistoryConfig;
+import javax.baja.history.BHistoryId;
+import javax.baja.history.BHistorySummary;
+import javax.baja.history.BIHistory;
 import javax.baja.history.HistorySpaceConnection;
 import javax.baja.history.ext.BHistoryExt;
 import javax.baja.naming.BOrd;
@@ -289,6 +292,21 @@ public class SpaceManager
         }
 
         return null;
+    }
+
+    BHistorySummary lookupHistorySummary(BHistoryId historyId)
+    {
+        try (HistorySpaceConnection conn = service.getHistoryDb().getConnection(null))
+        {
+            BIHistory history = conn.getHistory(historyId);
+
+            if(history == null)
+                return null;
+            
+            BHistorySummary summary = conn.getSummary(history);
+            
+            return summary;
+        }
     }
 
     /**
