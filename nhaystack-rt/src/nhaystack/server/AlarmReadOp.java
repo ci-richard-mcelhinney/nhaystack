@@ -139,7 +139,7 @@ public class AlarmReadOp extends HOp
     BPointExtension alarmExt = null;
     for (BPointExtension ext : exts)
     {
-      if (ext.getType() == BAlarmSourceExt.TYPE)
+      if (ext.getType().is(BAlarmSourceExt.TYPE))
       {
         return Optional.of((BAlarmSourceExt) ext);
       }
