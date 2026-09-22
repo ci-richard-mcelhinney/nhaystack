@@ -532,8 +532,12 @@ public class BNHaystackHistoryExport extends BHistoryExport
               {
                 case "history:AuditRecord":
                 case "history:LogRecord":
-                  // serialise the entire hrec
-                  val = HStr.make(hrec.toString());
+                  // Both types override toString(Context) with meaningful content
+                  // (Audit: userName/operation/slotName/oldValue/value; Log:
+                  // severity/message/exception) -- unlike the plain no-arg
+                  // toString(), which falls through to a generic default that
+                  // only renders the timestamp.
+                  val = HStr.make(hrec.toString(Context.NULL));
                   break;
                 case "history:SecurityAuditRecord":
                   // security record does not have a meaningful .toString()
