@@ -1229,8 +1229,8 @@ public class TagManager implements NHaystackConst
 
             case ENUM_KIND:
 
-                BEnumRange er = (BEnumRange) facets.get("range");
-                if (er == null)
+                BEnumRange er = facets == null ? null : (BEnumRange) facets.get("range");
+                if (er == null || er.isNull())
                 {
                     LOG.severe("No 'range' facets found for point " + point.getSlotPath());
                     return HStr.make("INVALID_ENUM");
@@ -1238,8 +1238,16 @@ public class TagManager implements NHaystackConst
                 else
                 {
                     BStatusEnum se = (BStatusEnum) sv;
+                    int ordinal = se.getEnum().getOrdinal();
+                    if (!er.isOrdinal(ordinal))
+                    {
+                        LOG.severe("Ordinal " + ordinal + " not found in 'range' facets for point " +
+                            point.getSlotPath());
+                        return HStr.make("INVALID_ENUM");
+                    }
+
                     return HStr.make(SlotUtil.fromEnum(
-                        er.getTag(se.getEnum().getOrdinal()),
+                        er.getTag(ordinal),
                         service.getTranslateEnums()));
                 }
 
