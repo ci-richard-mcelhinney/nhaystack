@@ -23,6 +23,7 @@ import javax.baja.security.PermissionException;
 import javax.baja.status.BStatus;
 import javax.baja.sys.*;
 import javax.baja.timezone.BTimeZone;
+import javax.baja.util.BTypeSpec;
 import java.util.*;
 import java.util.logging.*;
 
@@ -422,9 +423,51 @@ public class NHServer extends HServer
               }
               else
               {
-                // if its not a BTrendRecord, just do a toString()
-                // of the whole record
-                val = HStr.make(hrec.toString());
+                BTypeSpec recTypeSpec = cfg.getRecordType();
+                switch (recTypeSpec.toString()) // "module:type"
+                {
+                  case "history:AuditRecord":
+                  case "history:LogRecord":
+                    // Both types override toString(Context) with meaningful content
+                    // (Audit: userName/operation/slotName/oldValue/value; Log:
+                    // severity/message/exception) -- unlike the plain no-arg
+                    // toString(), which falls through to a generic default that
+                    // only renders the timestamp.
+                    val = HStr.make(hrec.toString(Context.NULL));
+                    break;
+                  case "history:SecurityAuditRecord":
+                    // SecurityAuditRecord has no meaningful toString() of either
+                    // form -- it just gives us the timestamp (which we already
+                    // have), so serialize its properties instead. Mirrors the same
+                    // handling in BNHaystackHistoryExport.
+                    Property[] recProps = hrec.getPropertiesArray();
+                    StringBuilder recStr = new StringBuilder();
+                    boolean firstEmitted = false;
+                    for (int i = 0; i < recProps.length; i++)
+                    {
+                      String prop = recProps[i].getName();
+                      if (prop == "timestamp")
+                      {
+                        // we'll handle this separately
+                        continue;
+                      }
+
+                      if (firstEmitted)
+                      {
+                        recStr.append("; ");
+                      }
+                      recStr.append(prop);
+                      recStr.append(": ");
+                      recStr.append(hrec.get(prop).toString());
+                      firstEmitted = true;
+                    }
+                    val = HStr.make(recStr.toString());
+                    break;
+                  default:
+                    // if its not a BTrendRecord, just do a toString()
+                    // of the whole record
+                    val = HStr.make(hrec.toString());
+                }
               }
 
               // add item
