@@ -531,10 +531,17 @@ public class BNHaystackHistoryExport extends BHistoryExport
               switch (recTypeSpec.toString()) // "module:type"
               {
                 case "history:AuditRecord":
-                case "history:LogRecord":
-                  // serialise the entire hrec
-                  val = HStr.make(hrec.toString());
+                  // Overrides toString(Context) with meaningful content
+                  // (userName/operation/slotName/oldValue/value) -- unlike the
+                  // plain no-arg toString(), which falls through to a generic
+                  // default that only renders the timestamp.
+                  val = HStr.make(hrec.toString(Context.NULL));
                   break;
+                case "history:LogRecord":
+                  // toString(Context) truncates message/exception to 60 chars
+                  // for display (BLogRecord.toString(Context) calls
+                  // TextUtil.truncate(..., 60)), so read the properties
+                  // directly instead to get the full text.
                 case "history:SecurityAuditRecord":
                   // security record does not have a meaningful .toString()
                   // it just gives us the timestamp (which we already have)
