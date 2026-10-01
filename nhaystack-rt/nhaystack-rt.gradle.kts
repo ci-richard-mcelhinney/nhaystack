@@ -48,7 +48,7 @@ configurations {
 // dependency types
 dependencies {
 //  implementation(files("c:\\dev\\nhaystack\\lib\\haystack-java.jar"))
-  uberjar(files("c:\\dev\\nhaystack\\nhaystack-rt\\lib\\haystack-java.jar"))
+  uberjar(files("lib/haystack-java.jar"))
 
   // NRE dependencies
   nre(":nre")
