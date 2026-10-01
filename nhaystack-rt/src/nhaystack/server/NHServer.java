@@ -427,14 +427,17 @@ public class NHServer extends HServer
                 switch (recTypeSpec.toString()) // "module:type"
                 {
                   case "history:AuditRecord":
-                  case "history:LogRecord":
-                    // Both types override toString(Context) with meaningful content
-                    // (Audit: userName/operation/slotName/oldValue/value; Log:
-                    // severity/message/exception) -- unlike the plain no-arg
-                    // toString(), which falls through to a generic default that
-                    // only renders the timestamp.
+                    // Overrides toString(Context) with meaningful content
+                    // (userName/operation/slotName/oldValue/value) -- unlike the
+                    // plain no-arg toString(), which falls through to a generic
+                    // default that only renders the timestamp.
                     val = HStr.make(hrec.toString(Context.NULL));
                     break;
+                  case "history:LogRecord":
+                    // toString(Context) truncates message/exception to 60 chars
+                    // for display (BLogRecord.toString(Context) calls
+                    // TextUtil.truncate(..., 60)), so read the properties
+                    // directly instead to get the full text.
                   case "history:SecurityAuditRecord":
                     // SecurityAuditRecord has no meaningful toString() of either
                     // form -- it just gives us the timestamp (which we already
