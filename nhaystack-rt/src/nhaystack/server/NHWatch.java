@@ -308,8 +308,16 @@ class NHWatch extends HWatch
                 if (event.getSlotName().equals("out") && // we only care about the "out" slot
                     allSubscribed.containsKey(comp))     // and lets double check that we are really subscribed
                 {
-                    HDict cov = server.getTagManager().createComponentCovTags(comp);
-                    nextPoll.put(comp, cov);
+                    try
+                    {
+                        HDict cov = server.getTagManager().createComponentCovTags(comp);
+                        nextPoll.put(comp, cov);
+                    }
+                    catch (Exception e)
+                    {
+                        LOG.warning("NHWatch " + watchId + " cannot create cov tags for " +
+                            comp.getSlotPath() + ": " + e.getMessage());
+                    }
                 }
             }
         }
