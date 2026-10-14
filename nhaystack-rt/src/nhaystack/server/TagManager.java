@@ -930,22 +930,12 @@ public class TagManager implements NHaystackConst
         hdb.add("axStatus", axStatus(point.getStatus()));
 
         // minVal, maxVal, precision
-        HashMap<String, String> supportedFacetNames = new HashMap<>();
-        supportedFacetNames.put(BFacets.MIN, "minVal");
-        supportedFacetNames.put(BFacets.MAX, "maxVal");
-        supportedFacetNames.put(BFacets.PRECISION, "precision");
-        supportedFacetNames.forEach((k, v) -> {
-            BNumber facetVal = getNumberFacet(facets, k, point);
+        for (String[] facetTag : NUMBER_FACET_TAGS)
+        {
+            BNumber facetVal = getNumberFacet(facets, facetTag[0], point);
             if (facetVal != BDouble.NaN)
-            {
-                hdb.add(v, HNum.make(facetVal.getInt()));
-            }
-            else
-            {
-                LOG.warning("Problem generating tags from facets for: " + point.getSlotPath().toDisplayString());
-                LOG.warning("Type of component with problem facets is: " + point.getType().getDisplayName(null));
-            }
-        });
+                hdb.add(facetTag[1], HNum.make(facetVal.getInt()));
+        }
 
         // actions tag
         if (point.isWritablePoint() || tags.has("writable"))
@@ -1087,13 +1077,6 @@ public class TagManager implements NHaystackConst
 
     public static BNumber getNumberFacet(BFacets facets, String name, BComponent component)
     {
-        if (!(facets.get(name) instanceof BNumber))
-        {
-            LOG.warning("Detected incorrectly configured facet supplied for :" + name + " " + component.getSlotPath());
-            LOG.warning("Please check all facets are correctly configured on all Control Points");
-            return BDouble.NaN;
-        }
-
         if (!name.equals(BFacets.MAX) &&
             !name.equals(BFacets.MIN) &&
             !name.equals(BFacets.PRECISION))
@@ -1102,10 +1085,22 @@ public class TagManager implements NHaystackConst
             return BDouble.NaN;
         }
 
-        BNumber num = (BNumber) facets.get(name);
-        if (num == null)                   return BDouble.NaN;
-        if (num.toString().equals("+inf")) return BDouble.NaN;
-        if (num.toString().equals("-inf")) return BDouble.NaN;
+        BObject facet = facets == null ? null : facets.get(name);
+
+        // a missing facet is normal (e.g. most points have no min/max), so don't log it
+        if (facet == null)
+            return BDouble.NaN;
+
+        // misconfigured facet; logged at FINE because tags are rebuilt on every read
+        if (!(facet instanceof BNumber))
+        {
+            if (LOG.isLoggable(Level.FINE))
+                LOG.fine("Incorrectly configured facet '" + name + "' on " + component.getSlotPath());
+            return BDouble.NaN;
+        }
+
+        BNumber num = (BNumber) facet;
+        if (Double.isInfinite(num.getDouble())) return BDouble.NaN;
         return num;
     }
 
@@ -1442,6 +1437,13 @@ public class TagManager implements NHaystackConst
     private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
+
+    // facet name -> tag name for the number facets exported on points
+    private static final String[][] NUMBER_FACET_TAGS = {
+        { BFacets.MIN,       "minVal"    },
+        { BFacets.MAX,       "maxVal"    },
+        { BFacets.PRECISION, "precision" }
+    };
 
     // point kinds
     private static final int UNKNOWN_KIND = -1;
