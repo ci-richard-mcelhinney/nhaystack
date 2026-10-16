@@ -1002,9 +1002,9 @@ public class TagManager implements NHaystackConst
         BNumber minVal    = getNumberFacet(facets, BFacets.MIN, point);
         BNumber maxVal    = getNumberFacet(facets, BFacets.MAX, point);
         BNumber precision = getNumberFacet(facets, BFacets.PRECISION, point);
-        if (minVal    != null) hdb.add("minVal",    HNum.make(minVal.getInt()));
-        if (maxVal    != null) hdb.add("maxVal",    HNum.make(maxVal.getInt()));
-        if (precision != null) hdb.add("precision", HNum.make(precision.getInt()));
+        if (minVal    != BDouble.NaN) hdb.add("minVal",    HNum.make(minVal.getDouble()));
+        if (maxVal    != BDouble.NaN) hdb.add("maxVal",    HNum.make(maxVal.getDouble()));
+        if (precision != BDouble.NaN) hdb.add("precision", HNum.make(precision.getInt()));
 
         // siteRef, equipRef
         addSiteEquipTags(point, hdb, tags);
