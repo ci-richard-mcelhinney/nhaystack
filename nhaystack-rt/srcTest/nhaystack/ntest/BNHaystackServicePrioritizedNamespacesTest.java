@@ -8,6 +8,7 @@
 package nhaystack.ntest;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertSame;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -103,6 +104,18 @@ public class BNHaystackServicePrioritizedNamespacesTest
     {
         nhaystackService.setPrioritizedNamespaces(propertyValue);
         assertEquals(nhaystackService.getPrioritizedNamespaceList(), expected);
+    }
+
+    @Test
+    public void prioritizedNamespacesCacheTracksPropertyChanges()
+    {
+        nhaystackService.setPrioritizedNamespaces("hs,b");
+        List<String> first = nhaystackService.getPrioritizedNamespaceList();
+        assertEquals(first, Arrays.asList("hs", "b"));
+        assertSame(nhaystackService.getPrioritizedNamespaceList(), first);
+
+        nhaystackService.setPrioritizedNamespaces("b,hs");
+        assertEquals(nhaystackService.getPrioritizedNamespaceList(), Arrays.asList("b", "hs"));
     }
 
     private Runnable configureAction = () -> {};
