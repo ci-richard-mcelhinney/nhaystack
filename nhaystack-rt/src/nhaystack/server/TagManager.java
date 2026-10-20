@@ -930,12 +930,12 @@ public class TagManager implements NHaystackConst
         hdb.add("axStatus", axStatus(point.getStatus()));
 
         // minVal, maxVal, precision
-        for (String[] facetTag : NUMBER_FACET_TAGS)
-        {
-            BNumber facetVal = getNumberFacet(facets, facetTag[0], point);
-            if (facetVal != BDouble.NaN)
-                hdb.add(facetTag[1], HNum.make(facetVal.getInt()));
-        }
+        BNumber minVal    = getNumberFacet(facets, BFacets.MIN, point);
+        BNumber maxVal    = getNumberFacet(facets, BFacets.MAX, point);
+        BNumber precision = getNumberFacet(facets, BFacets.PRECISION, point);
+        if (minVal    != BDouble.NaN) hdb.add("minVal",    HNum.make(minVal.getDouble()));
+        if (maxVal    != BDouble.NaN) hdb.add("maxVal",    HNum.make(maxVal.getDouble()));
+        if (precision != BDouble.NaN) hdb.add("precision", HNum.make(precision.getInt()));
 
         // actions tag
         if (point.isWritablePoint() || tags.has("writable"))
@@ -1437,13 +1437,6 @@ public class TagManager implements NHaystackConst
     private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
-
-    // facet name -> tag name for the number facets exported on points
-    private static final String[][] NUMBER_FACET_TAGS = {
-        { BFacets.MIN,       "minVal"    },
-        { BFacets.MAX,       "maxVal"    },
-        { BFacets.PRECISION, "precision" }
-    };
 
     // point kinds
     private static final int UNKNOWN_KIND = -1;
