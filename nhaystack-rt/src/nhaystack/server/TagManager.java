@@ -261,7 +261,7 @@ public class TagManager implements NHaystackConst
     {
         List<String> namespaces = service.getPrioritizedNamespaceList();
         Set<String> tagGroupNames = getTagGroupNames();
-        Collection<Tag> tags = comp.tags().getAll();
+        Collection<Tag> tags = getPrioritizedTags(comp, namespaces);
         HDictBuilder hdb = new HDictBuilder();
 
         for (int i = namespaces.size() - 1; i >= 0; --i)
@@ -451,6 +451,81 @@ public class TagManager implements NHaystackConst
     }
 
     /**
+     * Return the tags of a component that can end up in the export: its direct tags plus
+     * the tags implied by the dictionaries of the prioritized namespaces.
+     *
+     * comp.tags().getAll() asks every installed smart dictionary for its implied tags,
+     * including dictionaries whose namespace is never exported. With the Haystack4
+     * dictionary installed that evaluation costs far more than the rest of a read.
+     */
+    private Collection<Tag> getPrioritizedTags(BComponent comp, List<String> namespaces)
+    {
+        Tags tags = comp.tags();
+        Optional<BTagDictionaryService> ds = getTagDictionaryService();
+        if (!(tags instanceof SmartTags) || !ds.isPresent())
+            return tags.getAll();
+
+        Collection<Tag> result = new ArrayList<>();
+        for (String namespace : namespaces)
+        {
+            ds.get().getSmartTagDictionary(namespace)
+                .filter(TagDictionary::getEnabled)
+                .ifPresent(d -> d.addAllImpliedTags(comp, result));
+        }
+
+        // tag groups applied directly to the component are stored as n:tagGroup relations;
+        // getAll() expands them through the service, the per-dictionary call above does not
+        SlotCursor<Property> cursor = comp.getProperties();
+        while (cursor.next(BRelation.class))
+        {
+            BRelation relation = (BRelation) cursor.get();
+            if (!relation.isOutbound() || !relation.getId().equals(ID_TAG_GROUP))
+                continue;
+
+            Entity endpoint = relation.getEndpoint();
+            if (endpoint instanceof TagGroupInfo &&
+                namespaces.contains(((TagGroupInfo) endpoint).getGroupId().getDictionary()))
+            {
+                ((TagGroupInfo) endpoint).addAllImpliedTags(comp, result);
+            }
+        }
+
+        // direct tags last so they win over an implied tag with the same id
+        result.addAll(((SmartTags) tags).getDirectTags().getAll());
+        return result;
+    }
+
+    /**
+     * Return the outbound relations of a component that can end up as ref tags: its
+     * direct relations plus the relations implied by the dictionaries of the prioritized
+     * namespaces. Same reasoning as getPrioritizedTags, for comp.relations().getAll().
+     */
+    private Collection<Relation> getPrioritizedOutboundRelations(BComponent comp, List<String> namespaces)
+    {
+        Optional<BTagDictionaryService> ds = getTagDictionaryService();
+        if (!ds.isPresent())
+            return comp.relations().getAll(Relations.OUT);
+
+        // direct relations are stored on the component as BRelation slots
+        Collection<Relation> result = new ArrayList<>();
+        SlotCursor<Property> cursor = comp.getProperties();
+        while (cursor.next(BRelation.class))
+        {
+            BRelation relation = (BRelation) cursor.get();
+            if (relation.isOutbound())
+                result.add(relation);
+        }
+
+        for (String namespace : namespaces)
+        {
+            ds.get().getSmartTagDictionary(namespace)
+                .filter(TagDictionary::getEnabled)
+                .ifPresent(d -> d.addAllImpliedRelations(comp, result));
+        }
+        return result;
+    }
+
+    /**
      * Nulls out the cached tag group info to trigger a
      * rebuild next time it is needed
      */
@@ -466,7 +541,7 @@ public class TagManager implements NHaystackConst
     public HDict convertRelationsToRefTags(BComponent comp)
     {
         List<String> namespaces = service.getPrioritizedNamespaceList();
-        Collection<Relation> relations = comp.relations().getAll();
+        Collection<Relation> relations = getPrioritizedOutboundRelations(comp, namespaces);
         HDictBuilder hdb = new HDictBuilder();
 
         for (int i = namespaces.size() - 1; i >= 0; --i)
@@ -1464,6 +1539,9 @@ public class TagManager implements NHaystackConst
     private static final Logger LOG = Logger.getLogger("nhaystack");
 
     private static final HDict[] EMPTY_HDICT_ARRAY = new HDict[0];
+
+    // relation id of a tag group applied directly to a component
+    private static final Id ID_TAG_GROUP = Id.newId("n", "tagGroup");
 
     // point kinds
     private static final int UNKNOWN_KIND = -1;
