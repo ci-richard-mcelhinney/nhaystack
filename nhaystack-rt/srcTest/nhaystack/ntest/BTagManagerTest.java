@@ -110,4 +110,14 @@ public class BTagManagerTest extends BTestNg
     facetVal = TagManager.getNumberFacet(number.getFacets(), BFacets.PRECISION, number);
     assertEquals(facetVal, BDouble.make(2d));
   }
+
+  @Test
+  public void testGetNumberFacetsMissing()
+  {
+    BNumericWritable number = new BNumericWritable();
+    number.setFacets(BFacets.NULL);
+    assertEquals(TagManager.getNumberFacet(number.getFacets(), BFacets.MIN, number), BDouble.NaN);
+    assertEquals(TagManager.getNumberFacet(number.getFacets(), BFacets.MAX, number), BDouble.NaN);
+    assertEquals(TagManager.getNumberFacet(null, BFacets.PRECISION, number), BDouble.NaN);
+  }
 }
