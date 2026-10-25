@@ -22,17 +22,22 @@ import javax.baja.sys.BStation;
 import javax.baja.sys.BString;
 import javax.baja.sys.Sys;
 import javax.baja.sys.Type;
+import javax.baja.tag.Id;
 import javax.baja.tag.Tag;
+import javax.baja.tag.TagGroupInfo;
 import javax.baja.tag.Tags;
+import javax.baja.tagdictionary.BTagDictionaryService;
 import javax.baja.util.BFolder;
 
 import nhaystack.ntest.helper.BNHaystackStationTestBase;
+import nhaystack.server.TagManager;
 import org.projecthaystack.HDict;
 import org.projecthaystack.HMarker;
 import org.projecthaystack.HNum;
 import org.projecthaystack.HRef;
 import org.projecthaystack.HStr;
 import org.projecthaystack.HVal;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.DataProvider;
@@ -78,6 +83,27 @@ public class BMultiNamespaceTagsTest extends BNHaystackStationTestBase
         testFolder.add(POINT_NAME, point = new BNumericPoint());
 
         rebuildCache();
+    }
+
+    public void isTagGroupMatchesDictionaryTagGroups()
+    {
+        TagManager tagMgr = nhServer.getTagManager();
+        BTagDictionaryService ds = tagMgr.getTagDictionaryService().get();
+        List<TagGroupInfo> groups = tagMgr.getAllTagGroupInfo(ds);
+        if (groups.isEmpty())
+        {
+            throw new SkipException("No tag groups defined in the test tag dictionaries");
+        }
+
+        Tag groupTag = new Tag(Id.newId("hs", groups.get(0).getName()), BMarker.MARKER);
+        Tag plainTag = new Tag(Id.newId("hs", "notATagGroup"), BMarker.MARKER);
+        assertTrue(tagMgr.isTagGroup(groupTag));
+        assertFalse(tagMgr.isTagGroup(plainTag));
+
+        // cache rebuilds with the same result after a reset
+        tagMgr.resetTagGroupInfo();
+        assertTrue(tagMgr.isTagGroup(groupTag));
+        assertFalse(tagMgr.isTagGroup(plainTag));
     }
 
     public void emptyNamespaceReturnsHaystackTagsOnly()

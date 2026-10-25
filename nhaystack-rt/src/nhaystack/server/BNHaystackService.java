@@ -1151,7 +1151,24 @@ public class BNHaystackService extends BAbstractService implements BINHaystackWo
 
   public List<String> getPrioritizedNamespaceList()
   {
-    String[] namespaces = getPrioritizedNamespaces().split(",");
+    // parsing is cached against the raw property value so it is only
+    // redone when prioritizedNamespaces changes; this is called for
+    // every component when generating tags
+    String raw = getPrioritizedNamespaces();
+    NamespaceListCache cached = namespaceListCache;
+    if (cached != null && cached.raw.equals(raw))
+    {
+      return cached.list;
+    }
+
+    List<String> list = parsePrioritizedNamespaces(raw);
+    namespaceListCache = new NamespaceListCache(raw, list);
+    return list;
+  }
+
+  private List<String> parsePrioritizedNamespaces(String raw)
+  {
+    String[] namespaces = raw.split(",");
 
     TagDictionaryService tagDictionaryService = getTagDictionaryService();
 
@@ -1161,7 +1178,7 @@ public class BNHaystackService extends BAbstractService implements BINHaystackWo
       String trimmed = namespace.trim();
       if (!trimmed.isEmpty())
       {
-        if (tagDictionaryService != null)
+        if (tagDictionaryService != null && LOG.isLoggable(Level.FINE))
         {
           if (!tagDictionaryService.getTagDictionary(trimmed).isPresent())
           {
@@ -1178,7 +1195,19 @@ public class BNHaystackService extends BAbstractService implements BINHaystackWo
       namespaceList.add(NAME_SPACE);
     }
 
-    return namespaceList;
+    return Collections.unmodifiableList(namespaceList);
+  }
+
+  private static final class NamespaceListCache
+  {
+    NamespaceListCache(String raw, List<String> list)
+    {
+      this.raw = raw;
+      this.list = list;
+    }
+
+    final String raw;
+    final List<String> list;
   }
 
   public HGrid getSitesGrid()
@@ -1252,6 +1281,7 @@ public class BNHaystackService extends BAbstractService implements BINHaystackWo
 
   private BHistoryDatabase historyDb;
   private BDeviceNetwork niagaraNetwork;
+  private volatile NamespaceListCache namespaceListCache;
 
   private HGrid sites = null;
 }
