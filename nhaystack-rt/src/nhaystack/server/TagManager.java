@@ -44,6 +44,7 @@ import javax.baja.schedule.BEnumSchedule;
 import javax.baja.schedule.BNumericSchedule;
 import javax.baja.schedule.BStringSchedule;
 import javax.baja.schedule.BWeeklySchedule;
+import javax.baja.status.BIStatus;
 import javax.baja.status.BStatus;
 import javax.baja.status.BStatusBoolean;
 import javax.baja.status.BStatusEnum;
@@ -484,7 +485,7 @@ public class TagManager implements NHaystackConst
 
             Entity endpoint = relation.getEndpoint();
             if (endpoint instanceof TagGroupInfo &&
-                namespaces.contains(((TagGroupInfo) endpoint).getGroupId().getDictionary()))
+                isExportedTagGroup((TagGroupInfo) endpoint, namespaces))
             {
                 ((TagGroupInfo) endpoint).addAllImpliedTags(comp, result);
             }
@@ -493,6 +494,22 @@ public class TagManager implements NHaystackConst
         // direct tags last so they win over an implied tag with the same id
         result.addAll(((SmartTags) tags).getDirectTags().getAll());
         return result;
+    }
+
+    /**
+     * A directly applied tag group is expanded when it belongs to a prioritized namespace
+     * and its dictionary is valid (not disabled or in fault), the same condition getAll()
+     * applies before expanding it.
+     */
+    private static boolean isExportedTagGroup(TagGroupInfo tagGroup, List<String> namespaces)
+    {
+        if (!namespaces.contains(tagGroup.getGroupId().getDictionary()))
+            return false;
+
+        Optional<TagDictionary> dictionary = tagGroup.getDictionary();
+        return dictionary.isPresent() &&
+            (!(dictionary.get() instanceof BIStatus) ||
+             ((BIStatus) dictionary.get()).getStatus().isValid());
     }
 
     /**
